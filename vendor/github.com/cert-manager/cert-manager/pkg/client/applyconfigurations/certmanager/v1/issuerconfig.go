@@ -24,12 +24,26 @@ import (
 
 // IssuerConfigApplyConfiguration represents a declarative configuration of the IssuerConfig type for use
 // with apply.
+//
+// The configuration for the issuer.
+// Only one of these can be set.
 type IssuerConfigApplyConfiguration struct {
-	ACME       *acmev1.ACMEIssuerApplyConfiguration `json:"acme,omitempty"`
-	CA         *CAIssuerApplyConfiguration          `json:"ca,omitempty"`
-	Vault      *VaultIssuerApplyConfiguration       `json:"vault,omitempty"`
-	SelfSigned *SelfSignedIssuerApplyConfiguration  `json:"selfSigned,omitempty"`
-	Venafi     *VenafiIssuerApplyConfiguration      `json:"venafi,omitempty"`
+	// ACME configures this issuer to communicate with a RFC8555 (ACME) server
+	// to obtain signed x509 certificates.
+	ACME *acmev1.ACMEIssuerApplyConfiguration `json:"acme,omitempty"`
+	// CA configures this issuer to sign certificates using a signing CA keypair
+	// stored in a Secret resource.
+	// This is used to build internal PKIs that are managed by cert-manager.
+	CA *CAIssuerApplyConfiguration `json:"ca,omitempty"`
+	// Vault configures this issuer to sign certificates using a HashiCorp Vault
+	// PKI backend.
+	Vault *VaultIssuerApplyConfiguration `json:"vault,omitempty"`
+	// SelfSigned configures this issuer to 'self sign' certificates using the
+	// private key used to create the CertificateRequest object.
+	SelfSigned *SelfSignedIssuerApplyConfiguration `json:"selfSigned,omitempty"`
+	// Venafi configures this issuer to sign certificates using a CyberArk Certificate Manager Self-Hosted
+	// or SaaS policy zone.
+	Venafi *VenafiIssuerApplyConfiguration `json:"venafi,omitempty"`
 }
 
 // IssuerConfigApplyConfiguration constructs a declarative configuration of the IssuerConfig type for use with

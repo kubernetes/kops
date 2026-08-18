@@ -170,7 +170,7 @@ func (w *winRootFileInfo) Size() int64        { return 0 }
 func (w *winRootFileInfo) Mode() fs.FileMode  { return fs.ModeDir | 0555 } // read+execute for all
 func (w *winRootFileInfo) ModTime() time.Time { return w.modTime }
 func (w *winRootFileInfo) IsDir() bool        { return true }
-func (w *winRootFileInfo) Sys() interface{}   { return nil }
+func (w *winRootFileInfo) Sys() any   { return nil }
 
 // Create a new root FileInfo
 var rootFileInfo = &winRootFileInfo{

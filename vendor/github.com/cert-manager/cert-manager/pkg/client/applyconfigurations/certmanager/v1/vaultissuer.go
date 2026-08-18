@@ -24,16 +24,43 @@ import (
 
 // VaultIssuerApplyConfiguration represents a declarative configuration of the VaultIssuer type for use
 // with apply.
+//
+// Configures an issuer to sign certificates using a HashiCorp Vault
+// PKI backend.
 type VaultIssuerApplyConfiguration struct {
-	Auth                *VaultAuthApplyConfiguration                `json:"auth,omitempty"`
-	Server              *string                                     `json:"server,omitempty"`
-	ServerName          *string                                     `json:"serverName,omitempty"`
-	Path                *string                                     `json:"path,omitempty"`
-	Namespace           *string                                     `json:"namespace,omitempty"`
-	CABundle            []byte                                      `json:"caBundle,omitempty"`
-	CABundleSecretRef   *metav1.SecretKeySelectorApplyConfiguration `json:"caBundleSecretRef,omitempty"`
+	// Auth configures how cert-manager authenticates with the Vault server.
+	Auth *VaultAuthApplyConfiguration `json:"auth,omitempty"`
+	// Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200".
+	Server *string `json:"server,omitempty"`
+	// ServerName is used to verify the hostname on the returned certificates
+	// by the Vault server.
+	ServerName *string `json:"serverName,omitempty"`
+	// Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
+	// "my_pki_mount/sign/my-role-name".
+	Path *string `json:"path,omitempty"`
+	// Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1"
+	// More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
+	Namespace *string `json:"namespace,omitempty"`
+	// Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+	// chain presented by Vault. Only used if using HTTPS to connect to Vault and
+	// ignored for HTTP connections.
+	// Mutually exclusive with CABundleSecretRef.
+	// If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+	// the cert-manager controller container is used to validate the TLS connection.
+	CABundle []byte `json:"caBundle,omitempty"`
+	// Reference to a Secret containing a bundle of PEM-encoded CAs to use when
+	// verifying the certificate chain presented by Vault when using HTTPS.
+	// Mutually exclusive with CABundle.
+	// If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+	// the cert-manager controller container is used to validate the TLS connection.
+	// If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
+	CABundleSecretRef *metav1.SecretKeySelectorApplyConfiguration `json:"caBundleSecretRef,omitempty"`
+	// Reference to a Secret containing a PEM-encoded Client Certificate to use when the
+	// Vault server requires mTLS.
 	ClientCertSecretRef *metav1.SecretKeySelectorApplyConfiguration `json:"clientCertSecretRef,omitempty"`
-	ClientKeySecretRef  *metav1.SecretKeySelectorApplyConfiguration `json:"clientKeySecretRef,omitempty"`
+	// Reference to a Secret containing a PEM-encoded Client Private Key to use when the
+	// Vault server requires mTLS.
+	ClientKeySecretRef *metav1.SecretKeySelectorApplyConfiguration `json:"clientKeySecretRef,omitempty"`
 }
 
 // VaultIssuerApplyConfiguration constructs a declarative configuration of the VaultIssuer type for use with

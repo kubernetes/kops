@@ -85,8 +85,9 @@ type AttachServerVolumeRequestVolumeType string
 const (
 	AttachServerVolumeRequestVolumeTypeUnknownVolumeType = AttachServerVolumeRequestVolumeType("unknown_volume_type")
 	AttachServerVolumeRequestVolumeTypeLSSD              = AttachServerVolumeRequestVolumeType("l_ssd")
-	AttachServerVolumeRequestVolumeTypeBSSD              = AttachServerVolumeRequestVolumeType("b_ssd")
-	AttachServerVolumeRequestVolumeTypeSbsVolume         = AttachServerVolumeRequestVolumeType("sbs_volume")
+	// Deprecated.
+	AttachServerVolumeRequestVolumeTypeBSSD      = AttachServerVolumeRequestVolumeType("b_ssd")
+	AttachServerVolumeRequestVolumeTypeSbsVolume = AttachServerVolumeRequestVolumeType("sbs_volume")
 )
 
 func (enum AttachServerVolumeRequestVolumeType) String() string {
@@ -975,8 +976,10 @@ type SnapshotVolumeType string
 const (
 	SnapshotVolumeTypeUnknownVolumeType = SnapshotVolumeType("unknown_volume_type")
 	SnapshotVolumeTypeLSSD              = SnapshotVolumeType("l_ssd")
-	SnapshotVolumeTypeBSSD              = SnapshotVolumeType("b_ssd")
-	SnapshotVolumeTypeUnified           = SnapshotVolumeType("unified")
+	// Deprecated.
+	SnapshotVolumeTypeBSSD = SnapshotVolumeType("b_ssd")
+	// Deprecated.
+	SnapshotVolumeTypeUnified = SnapshotVolumeType("unified")
 )
 
 func (enum SnapshotVolumeType) String() string {
@@ -1106,7 +1109,8 @@ func (enum *VolumeServerState) UnmarshalJSON(data []byte) error {
 type VolumeServerVolumeType string
 
 const (
-	VolumeServerVolumeTypeLSSD      = VolumeServerVolumeType("l_ssd")
+	VolumeServerVolumeTypeLSSD = VolumeServerVolumeType("l_ssd")
+	// Deprecated.
 	VolumeServerVolumeTypeBSSD      = VolumeServerVolumeType("b_ssd")
 	VolumeServerVolumeTypeSbsVolume = VolumeServerVolumeType("sbs_volume")
 	VolumeServerVolumeTypeScratch   = VolumeServerVolumeType("scratch")
@@ -1151,6 +1155,7 @@ const (
 	VolumeStateSnapshotting = VolumeState("snapshotting")
 	VolumeStateFetching     = VolumeState("fetching")
 	VolumeStateSaving       = VolumeState("saving")
+	VolumeStateAttaching    = VolumeState("attaching")
 	VolumeStateResizing     = VolumeState("resizing")
 	VolumeStateHotsyncing   = VolumeState("hotsyncing")
 	VolumeStateError        = VolumeState("error")
@@ -1170,6 +1175,7 @@ func (enum VolumeState) Values() []VolumeState {
 		"snapshotting",
 		"fetching",
 		"saving",
+		"attaching",
 		"resizing",
 		"hotsyncing",
 		"error",
@@ -1194,8 +1200,10 @@ func (enum *VolumeState) UnmarshalJSON(data []byte) error {
 type VolumeVolumeType string
 
 const (
-	VolumeVolumeTypeLSSD        = VolumeVolumeType("l_ssd")
-	VolumeVolumeTypeBSSD        = VolumeVolumeType("b_ssd")
+	VolumeVolumeTypeLSSD = VolumeVolumeType("l_ssd")
+	// Deprecated.
+	VolumeVolumeTypeBSSD = VolumeVolumeType("b_ssd")
+	// Deprecated.
 	VolumeVolumeTypeUnified     = VolumeVolumeType("unified")
 	VolumeVolumeTypeScratch     = VolumeVolumeType("scratch")
 	VolumeVolumeTypeSbsVolume   = VolumeVolumeType("sbs_volume")
@@ -1280,7 +1288,7 @@ type Volume struct {
 	// Name: volume name.
 	Name string `json:"name"`
 
-	// Deprecated: ExportURI: show the volume NBD export URI.
+	// Deprecated: ExportURI: show the volume NBD export URI (deprecated, will always be empty).
 	ExportURI *string `json:"export_uri"`
 
 	// Size: volume disk size.
@@ -1436,6 +1444,15 @@ type PrivateNIC struct {
 
 	// Tags: private NIC tags.
 	Tags []string `json:"tags"`
+
+	// CreationDate: private NIC creation date.
+	CreationDate *time.Time `json:"creation_date"`
+
+	// Zone: the zone in which the Private NIC is located.
+	Zone scw.Zone `json:"zone"`
+
+	// IpamIPIDs: the list of IPAM IPs associated with this private NIC.
+	IpamIPIDs []string `json:"ipam_ip_ids"`
 }
 
 // SecurityGroupSummary: security group summary.
@@ -1729,6 +1746,9 @@ type Server struct {
 
 	// EndOfService: true if the Instance type has reached end of service.
 	EndOfService bool `json:"end_of_service"`
+
+	// DNS: public DNS of the server.
+	DNS *string `json:"dns"`
 }
 
 // IP: ip.
@@ -1943,30 +1963,31 @@ type Snapshot struct {
 
 // Task: task.
 type Task struct {
-	// ID: unique ID of the task.
+	// Deprecated: ID: unique ID of the task.
 	ID string `json:"id"`
 
-	// Description: description of the task.
+	// Deprecated: Description: description of the task.
 	Description string `json:"description"`
 
-	// Progress: progress of the task in percent.
+	// Deprecated: Progress: progress of the task in percent.
 	Progress int32 `json:"progress"`
 
-	// StartedAt: task start date.
+	// Deprecated: StartedAt: task start date.
 	StartedAt *time.Time `json:"started_at"`
 
-	// TerminatedAt: task end date.
+	// Deprecated: TerminatedAt: task end date.
 	TerminatedAt *time.Time `json:"terminated_at"`
 
-	// Status: task status.
+	// Deprecated: Status: task status.
 	// Default value: pending
 	Status TaskStatus `json:"status"`
 
 	HrefFrom string `json:"href_from"`
 
+	// HrefResult: location of the resulting resource.
 	HrefResult string `json:"href_result"`
 
-	// Zone: zone in which the task is executed.
+	// Deprecated: Zone: zone in which the task is executed.
 	Zone scw.Zone `json:"zone"`
 }
 
@@ -1992,17 +2013,19 @@ type Dashboard struct {
 
 	VolumesLSSDCount uint32 `json:"volumes_l_ssd_count"`
 
-	// Deprecated
-	VolumesBSSDCount *uint32 `json:"volumes_b_ssd_count"`
-
 	VolumesLSSDTotalSize scw.Size `json:"volumes_l_ssd_total_size"`
-
-	// Deprecated
-	VolumesBSSDTotalSize *scw.Size `json:"volumes_b_ssd_total_size"`
 
 	PrivateNicsCount uint32 `json:"private_nics_count"`
 
 	PlacementGroupsCount uint32 `json:"placement_groups_count"`
+
+	VolumesScratchCount uint32 `json:"volumes_scratch_count"`
+
+	// Deprecated
+	VolumesBSSDCount *uint32 `json:"volumes_b_ssd_count"`
+
+	// Deprecated
+	VolumesBSSDTotalSize *scw.Size `json:"volumes_b_ssd_total_size"`
 }
 
 // PlacementGroupServer: placement group server.
@@ -2064,6 +2087,9 @@ type ServerType struct {
 
 	// ScratchStorageMaxSize: maximum available scratch storage.
 	ScratchStorageMaxSize *scw.Size `json:"scratch_storage_max_size"`
+
+	// ScratchStorageMaxVolumesCount: maximum supported number of scratch volumes.
+	ScratchStorageMaxVolumesCount uint32 `json:"scratch_storage_max_volumes_count"`
 
 	// BlockBandwidth: the maximum bandwidth allocated to block storage access (in bytes per second).
 	BlockBandwidth *uint64 `json:"block_bandwidth"`
@@ -4260,7 +4286,7 @@ func NewAPI(client *scw.Client) *API {
 }
 
 func (s *API) Zones() []scw.Zone {
-	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2, scw.ZonePlWaw3}
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2, scw.ZonePlWaw3, scw.ZoneItMil1}
 }
 
 // GetServerTypesAvailability: Get availability for all Instance types.
@@ -4637,7 +4663,7 @@ func (s *API) ListServerActions(req *ListServerActionsRequest, opts ...scw.Reque
 // * `poweroff`: Fully stop the Instance and release the hypervisor slot.
 // * `stop_in_place`: Stop the Instance, but keep the slot on the hypervisor.
 // * `reboot`: Stop the instance and restart it.
-// * `backup`:  Create an image with all the volumes of an Instance.
+// * `backup`: Create an image with all the volumes of an Instance.
 // * `terminate`: Delete the Instance along with its attached local volumes.
 // * `enable_routed_ip`: Migrate the Instance to the new network stack.
 //

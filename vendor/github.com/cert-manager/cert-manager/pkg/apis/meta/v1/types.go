@@ -62,10 +62,6 @@ type IssuerReference struct {
 	Group string `json:"group,omitempty"`
 }
 
-// ObjectReference is a reference to an object with a given name, kind and group.
-// Deprecated: Use IssuerReference instead.
-type ObjectReference = IssuerReference
-
 // A reference to a specific 'key' within a Secret resource.
 // In some instances, `key` is a required field.
 type SecretKeySelector struct {

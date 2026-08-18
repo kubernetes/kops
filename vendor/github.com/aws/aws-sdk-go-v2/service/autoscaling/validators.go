@@ -1549,6 +1549,21 @@ func validateMixedInstancesPolicy(v *types.MixedInstancesPolicy) error {
 	}
 }
 
+func validateOperator(v *types.Operator) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "Operator"}
+	if v.Principal == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Principal"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOverrides(v []types.LaunchTemplateOverrides) error {
 	if v == nil {
 		return nil
@@ -2172,6 +2187,11 @@ func validateOpCreateAutoScalingGroupInput(v *CreateAutoScalingGroupInput) error
 	if v.TrafficSources != nil {
 		if err := validateTrafficSources(v.TrafficSources); err != nil {
 			invalidParams.AddNested("TrafficSources", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.Operator != nil {
+		if err := validateOperator(v.Operator); err != nil {
+			invalidParams.AddNested("Operator", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {
@@ -2895,9 +2915,6 @@ func validateOpTerminateInstanceInAutoScalingGroupInput(v *TerminateInstanceInAu
 		return nil
 	}
 	invalidParams := smithy.InvalidParamsError{Context: "TerminateInstanceInAutoScalingGroupInput"}
-	if v.InstanceId == nil {
-		invalidParams.Add(smithy.NewErrParamRequired("InstanceId"))
-	}
 	if v.ShouldDecrementDesiredCapacity == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("ShouldDecrementDesiredCapacity"))
 	}

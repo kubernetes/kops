@@ -24,6 +24,9 @@ import (
 
 // ACMEIssuerDNS01ProviderAkamaiApplyConfiguration represents a declarative configuration of the ACMEIssuerDNS01ProviderAkamai type for use
 // with apply.
+//
+// ACMEIssuerDNS01ProviderAkamai is a structure containing the DNS
+// configuration for Akamai DNS—Zone Record Management API
 type ACMEIssuerDNS01ProviderAkamaiApplyConfiguration struct {
 	ServiceConsumerDomain *string                                     `json:"serviceConsumerDomain,omitempty"`
 	ClientToken           *metav1.SecretKeySelectorApplyConfiguration `json:"clientTokenSecretRef,omitempty"`

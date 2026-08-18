@@ -334,7 +334,7 @@ func dedupRefToImage(refToImage map[name.Reference]v1.Image) ([]v1.Image, map[v1
 	}
 
 	// Force specific order on tags
-	imgs := []v1.Image{}
+	imgs := make([]v1.Image, 0, len(imageToTags))
 	for img, tags := range imageToTags {
 		sort.Strings(tags)
 		imgs = append(imgs, img)

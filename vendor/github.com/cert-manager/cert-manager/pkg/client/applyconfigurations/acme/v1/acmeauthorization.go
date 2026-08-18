@@ -24,12 +24,35 @@ import (
 
 // ACMEAuthorizationApplyConfiguration represents a declarative configuration of the ACMEAuthorization type for use
 // with apply.
+//
+// ACMEAuthorization contains data returned from the ACME server on an
+// authorization that must be completed in order validate a DNS name on an ACME
+// Order resource.
 type ACMEAuthorizationApplyConfiguration struct {
-	URL          *string                           `json:"url,omitempty"`
-	Identifier   *string                           `json:"identifier,omitempty"`
-	Wildcard     *bool                             `json:"wildcard,omitempty"`
-	InitialState *acmev1.State                     `json:"initialState,omitempty"`
-	Challenges   []ACMEChallengeApplyConfiguration `json:"challenges,omitempty"`
+	// URL is the URL of the Authorization that must be completed
+	URL *string `json:"url,omitempty"`
+	// Identifier is the DNS name to be validated as part of this authorization
+	Identifier *string `json:"identifier,omitempty"`
+	// Wildcard will be true if this authorization is for a wildcard DNS name.
+	// If this is true, the identifier will be the *non-wildcard* version of
+	// the DNS name.
+	// For example, if '*.example.com' is the DNS name being validated, this
+	// field will be 'true' and the 'identifier' field will be 'example.com'.
+	Wildcard *bool `json:"wildcard,omitempty"`
+	// InitialState is the initial state of the ACME authorization when first
+	// fetched from the ACME server.
+	// If an Authorization is already 'valid', the Order controller will not
+	// create a Challenge resource for the authorization. This will occur when
+	// working with an ACME server that enables 'authz reuse' (such as Let's
+	// Encrypt's production endpoint).
+	// If not set and 'identifier' is set, the state is assumed to be pending
+	// and a Challenge will be created.
+	InitialState *acmev1.State `json:"initialState,omitempty"`
+	// Challenges specifies the challenge types offered by the ACME server.
+	// One of these challenge types will be selected when validating the DNS
+	// name and an appropriate Challenge resource will be created to perform
+	// the ACME challenge process.
+	Challenges []ACMEChallengeApplyConfiguration `json:"challenges,omitempty"`
 }
 
 // ACMEAuthorizationApplyConfiguration constructs a declarative configuration of the ACMEAuthorization type for use with

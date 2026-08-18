@@ -84,7 +84,7 @@ func (r Result) extractIntoPtr(to any, label string) error {
 	}
 
 	toValue := reflect.ValueOf(to)
-	if toValue.Kind() == reflect.Ptr {
+	if toValue.Kind() == reflect.Pointer {
 		toValue = toValue.Elem()
 	}
 
@@ -117,6 +117,9 @@ func (r Result) extractIntoPtr(to any, label string) error {
 						// a struct that is never used, but it's good enough to
 						// trigger the UnmarshalJSON method.
 						for i := 0; i < newType.NumField(); i++ {
+							if newType.Field(i).Kind() != reflect.Struct {
+								continue
+							}
 							s := newType.Field(i).Addr().Interface()
 
 							// Unmarshal is used rather than NewDecoder to also work
@@ -185,23 +188,23 @@ func (r Result) ExtractIntoStructPtr(to any, label string) error {
 	}
 
 	if to == nil {
-		return fmt.Errorf("Expected pointer, got %T", to)
+		return fmt.Errorf("expected pointer, got %T", to)
 	}
 
 	t := reflect.TypeOf(to)
-	if k := t.Kind(); k != reflect.Ptr {
-		return fmt.Errorf("Expected pointer, got %v", k)
+	if k := t.Kind(); k != reflect.Pointer {
+		return fmt.Errorf("expected pointer, got %v", k)
 	}
 
 	if reflect.ValueOf(to).IsNil() {
-		return fmt.Errorf("Expected pointer, got %T", to)
+		return fmt.Errorf("expected pointer, got %T", to)
 	}
 
 	switch t.Elem().Kind() {
 	case reflect.Struct:
 		return r.extractIntoPtr(to, label)
 	default:
-		return fmt.Errorf("Expected pointer to struct, got: %v", t)
+		return fmt.Errorf("expected pointer to struct, got: %v", t)
 	}
 }
 
@@ -220,23 +223,23 @@ func (r Result) ExtractIntoSlicePtr(to any, label string) error {
 	}
 
 	if to == nil {
-		return fmt.Errorf("Expected pointer, got %T", to)
+		return fmt.Errorf("expected pointer, got %T", to)
 	}
 
 	t := reflect.TypeOf(to)
-	if k := t.Kind(); k != reflect.Ptr {
-		return fmt.Errorf("Expected pointer, got %v", k)
+	if k := t.Kind(); k != reflect.Pointer {
+		return fmt.Errorf("expected pointer, got %v", k)
 	}
 
 	if reflect.ValueOf(to).IsNil() {
-		return fmt.Errorf("Expected pointer, got %T", to)
+		return fmt.Errorf("expected pointer, got %T", to)
 	}
 
 	switch t.Elem().Kind() {
 	case reflect.Slice:
 		return r.extractIntoPtr(to, label)
 	default:
-		return fmt.Errorf("Expected pointer to slice, got: %v", t)
+		return fmt.Errorf("expected pointer to slice, got: %v", t)
 	}
 }
 

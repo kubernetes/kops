@@ -622,6 +622,33 @@ func (e *MalformedPolicyDocumentException) ErrorCode() string {
 }
 func (e *MalformedPolicyDocumentException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
+// The request was rejected because the resulting role name conflicts with an
+// existing role in the account.
+type NameConflictException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *NameConflictException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *NameConflictException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *NameConflictException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "NameConflict"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *NameConflictException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // The request was rejected because it referenced a resource entity that does not
 // exist. The error message describes the resource.
 type NoSuchEntityException struct {
@@ -845,6 +872,61 @@ func (e *ReportGenerationLimitExceededException) ErrorCode() string {
 func (e *ReportGenerationLimitExceededException) ErrorFault() smithy.ErrorFault {
 	return smithy.FaultClient
 }
+
+// The request was rejected because someone modified the role template while the
+// service was creating the role. Wait a few minutes and try the request again.
+type RoleModifiedException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *RoleModifiedException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *RoleModifiedException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *RoleModifiedException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "RoleModified"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *RoleModifiedException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
+// The request was rejected because the specified role template is disabled. A
+// disabled role template cannot be used to create new roles. Contact your
+// administrator to enable the role template, or use a different role template.
+type RoleTemplateDisabledException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *RoleTemplateDisabledException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *RoleTemplateDisabledException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *RoleTemplateDisabledException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "RoleTemplateDisabled"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *RoleTemplateDisabledException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The request was rejected because trusted access is not enabled for IAM in
 // Organizations. For details, see IAM and Organizations in the Organizations User

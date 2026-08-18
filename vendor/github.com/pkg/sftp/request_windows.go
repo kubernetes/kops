@@ -4,10 +4,10 @@ import (
 	"syscall"
 )
 
-func fakeFileInfoSys() interface{} {
+func fakeFileInfoSys() any {
 	return syscall.Win32FileAttributeData{}
 }
 
-func testOsSys(sys interface{}) error {
+func testOsSys(sys any) error {
 	return nil
 }

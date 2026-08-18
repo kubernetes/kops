@@ -24,10 +24,16 @@ import (
 
 // ACMEIssuerDNS01ProviderCloudDNSApplyConfiguration represents a declarative configuration of the ACMEIssuerDNS01ProviderCloudDNS type for use
 // with apply.
+//
+// ACMEIssuerDNS01ProviderCloudDNS is a structure containing the DNS
+// configuration for Google Cloud DNS
 type ACMEIssuerDNS01ProviderCloudDNSApplyConfiguration struct {
 	ServiceAccount *metav1.SecretKeySelectorApplyConfiguration `json:"serviceAccountSecretRef,omitempty"`
 	Project        *string                                     `json:"project,omitempty"`
-	HostedZoneName *string                                     `json:"hostedZoneName,omitempty"`
+	// HostedZoneName is an optional field that tells cert-manager in which
+	// Cloud DNS zone the challenge record has to be created.
+	// If left empty cert-manager will automatically choose a zone.
+	HostedZoneName *string `json:"hostedZoneName,omitempty"`
 }
 
 // ACMEIssuerDNS01ProviderCloudDNSApplyConfiguration constructs a declarative configuration of the ACMEIssuerDNS01ProviderCloudDNS type for use with

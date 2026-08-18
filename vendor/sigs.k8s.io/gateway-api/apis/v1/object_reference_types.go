@@ -54,13 +54,13 @@ type SecretObjectReference struct {
 	//
 	// +optional
 	// +kubebuilder:default=""
-	Group *Group `json:"group"`
+	Group *Group `json:"group,omitempty"`
 
 	// Kind is kind of the referent. For example "Secret".
 	//
 	// +optional
 	// +kubebuilder:default=Secret
-	Kind *Kind `json:"kind"`
+	Kind *Kind `json:"kind,omitempty"`
 
 	// Name is the name of the referent.
 	// +required
@@ -95,6 +95,10 @@ type SecretObjectReference struct {
 // References to objects with invalid Group and Kind are not valid, and must
 // be rejected by the implementation, with appropriate Conditions set
 // on the containing object.
+//
+// If the backend service requires TLS, use BackendTLSPolicy to tell the
+// implementation to supply the TLS details to be used to connect to that
+// backend.
 //
 // +kubebuilder:validation:XValidation:message="Must have port for Service reference",rule="(size(self.group) == 0 && self.kind == 'Service') ? has(self.port) : true"
 type BackendObjectReference struct {

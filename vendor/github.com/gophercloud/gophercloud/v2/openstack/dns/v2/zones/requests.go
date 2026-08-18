@@ -12,6 +12,11 @@ type ListOptsBuilder interface {
 	ToZoneListQuery() (string, error)
 }
 
+// ListOptsHeadersBuilder allows extensions to add additional headers to the List request.
+type ListOptsHeadersBuilder interface {
+	ToZoneListHeaders() (map[string]string, error)
+}
+
 // ListOpts allows the filtering and sorting of paginated collections through
 // the API. Filtering is achieved by passing in struct field values that map to
 // the server attributes you want to see returned. Marker and Limit are used
@@ -32,6 +37,12 @@ type ListOpts struct {
 	Status      string `q:"status"`
 	TTL         int    `q:"ttl"`
 	Type        string `q:"type"`
+
+	// All projects header
+	AllProjects bool `h:"X-Auth-All-Projects"`
+
+	// SudoTenantID impersonates the given project.
+	SudoTenantID string `h:"X-Auth-Sudo-Tenant-ID"`
 }
 
 // ToZoneListQuery formats a ListOpts into a query string.
@@ -40,19 +51,37 @@ func (opts ListOpts) ToZoneListQuery() (string, error) {
 	return q.String(), err
 }
 
+// ToZoneListHeaders formats a ListOpts into header parameters.
+func (opts ListOpts) ToZoneListHeaders() (map[string]string, error) {
+	return gophercloud.BuildHeaders(opts)
+}
+
 // List implements a zone List request.
 func List(client *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 	url := baseURL(client)
+	var h map[string]string
+
 	if opts != nil {
 		query, err := opts.ToZoneListQuery()
 		if err != nil {
 			return pagination.Pager{Err: err}
 		}
 		url += query
+
+		// Check if opts implements the optional headers interface
+		if optsWithHeaders, ok := opts.(ListOptsHeadersBuilder); ok {
+			h, err = optsWithHeaders.ToZoneListHeaders()
+			if err != nil {
+				return pagination.Pager{Err: err}
+			}
+		}
 	}
-	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
+
+	pager := pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
 		return ZonePage{pagination.LinkedPageBase{PageResult: r}}
 	})
+	pager.Headers = h
+	return pager
 }
 
 // Get returns information about a zone, given its ID.

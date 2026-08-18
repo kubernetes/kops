@@ -91,7 +91,7 @@ func List(c *gophercloud.ServiceClient, containerName string, opts ListOptsBuild
 
 	pager := pagination.NewPager(c, url, func(r pagination.PageResult) pagination.Page {
 		p := ObjectPage{pagination.MarkerPageBase{PageResult: r}}
-		p.MarkerPageBase.Owner = p
+		p.Owner = p
 		return p
 	})
 	pager.Headers = headers

@@ -25,10 +25,23 @@ import (
 
 // ACMEChallengeSolverHTTP01GatewayHTTPRouteApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01GatewayHTTPRoute type for use
 // with apply.
+//
+// The ACMEChallengeSolverHTTP01GatewayHTTPRoute solver will create HTTPRoute objects for a Gateway class
+// routing to an ACME challenge solver pod.
 type ACMEChallengeSolverHTTP01GatewayHTTPRouteApplyConfiguration struct {
-	ServiceType *corev1.ServiceType                                            `json:"serviceType,omitempty"`
-	Labels      map[string]string                                              `json:"labels,omitempty"`
-	ParentRefs  []apisv1.ParentReference                                       `json:"parentRefs,omitempty"`
+	// Optional service type for Kubernetes solver service. Supported values
+	// are NodePort or ClusterIP. If unset, defaults to NodePort.
+	ServiceType *corev1.ServiceType `json:"serviceType,omitempty"`
+	// Custom labels that will be applied to HTTPRoutes created by cert-manager
+	// while solving HTTP-01 challenges.
+	Labels map[string]string `json:"labels,omitempty"`
+	// When solving an HTTP-01 challenge, cert-manager creates an HTTPRoute.
+	// cert-manager needs to know which parentRefs should be used when creating
+	// the HTTPRoute. Usually, the parentRef references a Gateway. See:
+	// https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways
+	ParentRefs []apisv1.ParentReference `json:"parentRefs,omitempty"`
+	// Optional pod template used to configure the ACME challenge solver pods
+	// used for HTTP01 challenges.
 	PodTemplate *ACMEChallengeSolverHTTP01IngressPodTemplateApplyConfiguration `json:"podTemplate,omitempty"`
 }
 

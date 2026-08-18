@@ -29,11 +29,19 @@ import (
 
 // ClusterIssuerApplyConfiguration represents a declarative configuration of the ClusterIssuer type for use
 // with apply.
+//
+// A ClusterIssuer represents a certificate issuing authority which can be
+// referenced as part of `issuerRef` fields.
+// It is similar to an Issuer, however it is cluster-scoped and therefore can
+// be referenced by resources that exist in *any* namespace, not just the same
+// namespace as the referent.
 type ClusterIssuerApplyConfiguration struct {
 	metav1.TypeMetaApplyConfiguration    `json:",inline"`
 	*metav1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                                 *IssuerSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                               *IssuerStatusApplyConfiguration `json:"status,omitempty"`
+	// Desired state of the ClusterIssuer resource.
+	Spec *IssuerSpecApplyConfiguration `json:"spec,omitempty"`
+	// Status of the ClusterIssuer. This is set and managed automatically.
+	Status *IssuerStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // ClusterIssuer constructs a declarative configuration of the ClusterIssuer type for use with
@@ -46,29 +54,14 @@ func ClusterIssuer(name string) *ClusterIssuerApplyConfiguration {
 	return b
 }
 
-// ExtractClusterIssuer extracts the applied configuration owned by fieldManager from
-// clusterIssuer. If no managedFields are found in clusterIssuer for fieldManager, a
-// ClusterIssuerApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractClusterIssuerFrom extracts the applied configuration owned by fieldManager from
+// clusterIssuer for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // clusterIssuer must be a unmodified ClusterIssuer API object that was retrieved from the Kubernetes API.
-// ExtractClusterIssuer provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractClusterIssuerFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractClusterIssuer(clusterIssuer *certmanagerv1.ClusterIssuer, fieldManager string) (*ClusterIssuerApplyConfiguration, error) {
-	return extractClusterIssuer(clusterIssuer, fieldManager, "")
-}
-
-// ExtractClusterIssuerStatus is the same as ExtractClusterIssuer except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractClusterIssuerStatus(clusterIssuer *certmanagerv1.ClusterIssuer, fieldManager string) (*ClusterIssuerApplyConfiguration, error) {
-	return extractClusterIssuer(clusterIssuer, fieldManager, "status")
-}
-
-func extractClusterIssuer(clusterIssuer *certmanagerv1.ClusterIssuer, fieldManager string, subresource string) (*ClusterIssuerApplyConfiguration, error) {
+func ExtractClusterIssuerFrom(clusterIssuer *certmanagerv1.ClusterIssuer, fieldManager string, subresource string) (*ClusterIssuerApplyConfiguration, error) {
 	b := &ClusterIssuerApplyConfiguration{}
 	err := managedfields.ExtractInto(clusterIssuer, internal.Parser().Type("com.github.cert-manager.cert-manager.pkg.apis.certmanager.v1.ClusterIssuer"), fieldManager, b, subresource)
 	if err != nil {
@@ -80,6 +73,27 @@ func extractClusterIssuer(clusterIssuer *certmanagerv1.ClusterIssuer, fieldManag
 	b.WithAPIVersion("cert-manager.io/v1")
 	return b, nil
 }
+
+// ExtractClusterIssuer extracts the applied configuration owned by fieldManager from
+// clusterIssuer. If no managedFields are found in clusterIssuer for fieldManager, a
+// ClusterIssuerApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// clusterIssuer must be a unmodified ClusterIssuer API object that was retrieved from the Kubernetes API.
+// ExtractClusterIssuer provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractClusterIssuer(clusterIssuer *certmanagerv1.ClusterIssuer, fieldManager string) (*ClusterIssuerApplyConfiguration, error) {
+	return ExtractClusterIssuerFrom(clusterIssuer, fieldManager, "")
+}
+
+// ExtractClusterIssuerStatus extracts the applied configuration owned by fieldManager from
+// clusterIssuer for the status subresource.
+func ExtractClusterIssuerStatus(clusterIssuer *certmanagerv1.ClusterIssuer, fieldManager string) (*ClusterIssuerApplyConfiguration, error) {
+	return ExtractClusterIssuerFrom(clusterIssuer, fieldManager, "status")
+}
+
 func (b ClusterIssuerApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

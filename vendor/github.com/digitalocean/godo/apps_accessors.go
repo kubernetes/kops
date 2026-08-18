@@ -405,12 +405,44 @@ func (a *AppAutoscalingSpecMetricCPU) GetPercent() int64 {
 	return a.Percent
 }
 
+// GetP95Milliseconds returns the P95Milliseconds field.
+func (a *AppAutoscalingSpecMetricRequestDuration) GetP95Milliseconds() int64 {
+	if a == nil {
+		return 0
+	}
+	return a.P95Milliseconds
+}
+
+// GetPerInstance returns the PerInstance field.
+func (a *AppAutoscalingSpecMetricRequestsPerSecond) GetPerInstance() int64 {
+	if a == nil {
+		return 0
+	}
+	return a.PerInstance
+}
+
 // GetCPU returns the CPU field.
 func (a *AppAutoscalingSpecMetrics) GetCPU() *AppAutoscalingSpecMetricCPU {
 	if a == nil {
 		return nil
 	}
 	return a.CPU
+}
+
+// GetRequestDuration returns the RequestDuration field.
+func (a *AppAutoscalingSpecMetrics) GetRequestDuration() *AppAutoscalingSpecMetricRequestDuration {
+	if a == nil {
+		return nil
+	}
+	return a.RequestDuration
+}
+
+// GetRequestsPerSecond returns the RequestsPerSecond field.
+func (a *AppAutoscalingSpecMetrics) GetRequestsPerSecond() *AppAutoscalingSpecMetricRequestsPerSecond {
+	if a == nil {
+		return nil
+	}
+	return a.RequestsPerSecond
 }
 
 // GetCNBVersioning returns the CNBVersioning field.
@@ -1047,18 +1079,18 @@ func (a *AppIngressSpecRuleRoutingRedirect) GetUri() string {
 
 // GetExact returns the Exact field.
 func (a *AppIngressSpecRuleStringMatch) GetExact() string {
-	if a == nil {
+	if a == nil || a.Exact == nil {
 		return ""
 	}
-	return a.Exact
+	return *a.Exact
 }
 
 // GetPrefix returns the Prefix field.
 func (a *AppIngressSpecRuleStringMatch) GetPrefix() string {
-	if a == nil {
+	if a == nil || a.Prefix == nil {
 		return ""
 	}
-	return a.Prefix
+	return *a.Prefix
 }
 
 // GetComponentName returns the ComponentName field.
@@ -1869,6 +1901,14 @@ func (a *AppServiceSpec) GetImage() *ImageSourceSpec {
 	return a.Image
 }
 
+// GetInactivitySleep returns the InactivitySleep field.
+func (a *AppServiceSpec) GetInactivitySleep() *AppServiceSpecInactivitySleep {
+	if a == nil {
+		return nil
+	}
+	return a.InactivitySleep
+}
+
 // GetInstanceCount returns the InstanceCount field.
 func (a *AppServiceSpec) GetInstanceCount() int64 {
 	if a == nil {
@@ -2019,6 +2059,22 @@ func (a *AppServiceSpecHealthCheck) GetTimeoutSeconds() int32 {
 		return 0
 	}
 	return a.TimeoutSeconds
+}
+
+// GetAfterSeconds returns the AfterSeconds field.
+func (a *AppServiceSpecInactivitySleep) GetAfterSeconds() int32 {
+	if a == nil {
+		return 0
+	}
+	return a.AfterSeconds
+}
+
+// GetLoadingPage returns the LoadingPage field.
+func (a *AppServiceSpecInactivitySleep) GetLoadingPage() *InactivitySleepLoadingPage {
+	if a == nil {
+		return nil
+	}
+	return a.LoadingPage
 }
 
 // GetDrainSeconds returns the DrainSeconds field.
@@ -2611,6 +2667,38 @@ func (a *AutoscalerActionScaleChange) GetTo() int64 {
 		return 0
 	}
 	return a.To
+}
+
+// GetTriggeringMetric returns the TriggeringMetric field.
+func (a *AutoscalerActionScaleChange) GetTriggeringMetric() string {
+	if a == nil {
+		return ""
+	}
+	return a.TriggeringMetric
+}
+
+// GetFrom returns the From field.
+func (a *AutoscalingEventComponentScaleChange) GetFrom() int64 {
+	if a == nil {
+		return 0
+	}
+	return a.From
+}
+
+// GetTo returns the To field.
+func (a *AutoscalingEventComponentScaleChange) GetTo() int64 {
+	if a == nil {
+		return 0
+	}
+	return a.To
+}
+
+// GetTriggeringMetric returns the TriggeringMetric field.
+func (a *AutoscalingEventComponentScaleChange) GetTriggeringMetric() string {
+	if a == nil {
+		return ""
+	}
+	return a.TriggeringMetric
 }
 
 // GetBranch returns the Branch field.
@@ -3669,6 +3757,70 @@ func (d *DetectResponseServerlessPackage) GetName() string {
 	return d.Name
 }
 
+// GetAutoscaling returns the Autoscaling field.
+func (e *Event) GetAutoscaling() *EventAutoscalingEvent {
+	if e == nil {
+		return nil
+	}
+	return e.Autoscaling
+}
+
+// GetCreatedAt returns the CreatedAt field.
+func (e *Event) GetCreatedAt() time.Time {
+	if e == nil {
+		return time.Time{}
+	}
+	return e.CreatedAt
+}
+
+// GetDeployment returns the Deployment field.
+func (e *Event) GetDeployment() *Deployment {
+	if e == nil {
+		return nil
+	}
+	return e.Deployment
+}
+
+// GetDeploymentID returns the DeploymentID field.
+func (e *Event) GetDeploymentID() string {
+	if e == nil {
+		return ""
+	}
+	return e.DeploymentID
+}
+
+// GetID returns the ID field.
+func (e *Event) GetID() string {
+	if e == nil {
+		return ""
+	}
+	return e.ID
+}
+
+// GetType returns the Type field.
+func (e *Event) GetType() EventType {
+	if e == nil {
+		return ""
+	}
+	return e.Type
+}
+
+// GetComponents returns the Components field.
+func (e *EventAutoscalingEvent) GetComponents() map[string]AutoscalingEventComponentScaleChange {
+	if e == nil {
+		return nil
+	}
+	return e.Components
+}
+
+// GetPhase returns the Phase field.
+func (e *EventAutoscalingEvent) GetPhase() EventAutoscalingEventPhase {
+	if e == nil {
+		return ""
+	}
+	return e.Phase
+}
+
 // GetFunctionsComponentHealthMetrics returns the FunctionsComponentHealthMetrics field.
 func (f *FunctionsComponentHealth) GetFunctionsComponentHealthMetrics() []*FunctionsComponentHealthMetrics {
 	if f == nil {
@@ -4063,6 +4215,22 @@ func (i *ImageSourceSpec) GetTag() string {
 
 // GetEnabled returns the Enabled field.
 func (i *ImageSourceSpecDeployOnPush) GetEnabled() bool {
+	if i == nil {
+		return false
+	}
+	return i.Enabled
+}
+
+// GetCustomURL returns the CustomURL field.
+func (i *InactivitySleepLoadingPage) GetCustomURL() string {
+	if i == nil {
+		return ""
+	}
+	return i.CustomURL
+}
+
+// GetEnabled returns the Enabled field.
+func (i *InactivitySleepLoadingPage) GetEnabled() bool {
 	if i == nil {
 		return false
 	}

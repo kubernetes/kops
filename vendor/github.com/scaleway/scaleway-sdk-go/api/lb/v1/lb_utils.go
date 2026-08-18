@@ -13,25 +13,6 @@ const (
 	defaultTimeout       = 5 * time.Minute
 )
 
-// WaitForLBRequest is used by WaitForLb method.
-type WaitForLBRequest struct {
-	LBID          string
-	Region        scw.Region
-	Timeout       *time.Duration
-	RetryInterval *time.Duration
-}
-
-// WaitForLb waits for the lb to be in a "terminal state" before returning.
-// This function can be used to wait for a lb to be ready for example.
-func (s *API) WaitForLb(req *WaitForLBRequest, opts ...scw.RequestOption) (*LB, error) {
-	return waitForLb(req.Timeout, req.RetryInterval, func() (*LB, error) {
-		return s.GetLB(&GetLBRequest{
-			Region: req.Region,
-			LBID:   req.LBID,
-		}, opts...)
-	})
-}
-
 // ZonedAPIWaitForLBRequest is used by WaitForLb method.
 type ZonedAPIWaitForLBRequest struct {
 	LBID          string

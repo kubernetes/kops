@@ -58,12 +58,12 @@ above.
 */
 func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 	optsValue := reflect.ValueOf(opts)
-	if optsValue.Kind() == reflect.Ptr {
+	if optsValue.Kind() == reflect.Pointer {
 		optsValue = optsValue.Elem()
 	}
 
 	optsType := reflect.TypeOf(opts)
-	if optsType.Kind() == reflect.Ptr {
+	if optsType.Kind() == reflect.Pointer {
 		optsType = optsType.Elem()
 	}
 
@@ -104,12 +104,12 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 				if reflect.ValueOf(xorField.Interface()) == reflect.Zero(xorField.Type()) {
 					xorFieldIsZero = true
 				} else {
-					if xorField.Kind() == reflect.Ptr {
+					if xorField.Kind() == reflect.Pointer {
 						xorField = xorField.Elem()
 					}
 					xorFieldIsZero = isZero(xorField)
 				}
-				if !(zero != xorFieldIsZero) {
+				if zero == xorFieldIsZero {
 					err := ErrMissingInput{}
 					err.Argument = fmt.Sprintf("%s/%s", f.Name, xorTag)
 					err.Info = fmt.Sprintf("Exactly one of %s and %s must be provided", f.Name, xorTag)
@@ -126,7 +126,7 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 					if reflect.ValueOf(orField.Interface()) == reflect.Zero(orField.Type()) {
 						orFieldIsZero = true
 					} else {
-						if orField.Kind() == reflect.Ptr {
+						if orField.Kind() == reflect.Pointer {
 							orField = orField.Elem()
 						}
 						orFieldIsZero = isZero(orField)
@@ -145,15 +145,15 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 				continue
 			}
 
-			if v.Kind() == reflect.Slice || (v.Kind() == reflect.Ptr && v.Elem().Kind() == reflect.Slice) {
+			if v.Kind() == reflect.Slice || (v.Kind() == reflect.Pointer && v.Elem().Kind() == reflect.Slice) {
 				sliceValue := v
-				if sliceValue.Kind() == reflect.Ptr {
+				if sliceValue.Kind() == reflect.Pointer {
 					sliceValue = sliceValue.Elem()
 				}
 
 				for i := 0; i < sliceValue.Len(); i++ {
 					element := sliceValue.Index(i)
-					if element.Kind() == reflect.Struct || (element.Kind() == reflect.Ptr && element.Elem().Kind() == reflect.Struct) {
+					if element.Kind() == reflect.Struct || (element.Kind() == reflect.Pointer && element.Elem().Kind() == reflect.Struct) {
 						_, err := BuildRequestBody(element.Interface(), "")
 						if err != nil {
 							return nil, err
@@ -161,7 +161,7 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 					}
 				}
 			}
-			if v.Kind() == reflect.Struct || (v.Kind() == reflect.Ptr && v.Elem().Kind() == reflect.Struct) {
+			if v.Kind() == reflect.Struct || (v.Kind() == reflect.Pointer && v.Elem().Kind() == reflect.Struct) {
 				if zero {
 					//fmt.Printf("value before change: %+v\n", optsValue.Field(i))
 					if jsonTag != "" {
@@ -169,7 +169,7 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 						if len(jsonTagPieces) > 1 && jsonTagPieces[1] == "omitempty" {
 							if v.CanSet() {
 								if !v.IsNil() {
-									if v.Kind() == reflect.Ptr {
+									if v.Kind() == reflect.Pointer {
 										v.Set(reflect.Zero(v.Type()))
 									}
 								}
@@ -219,12 +219,12 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 			optsMaps[i] = b
 		}
 		if parent == "" {
-			return nil, fmt.Errorf("Parent is required when passing an array or a slice.")
+			return nil, fmt.Errorf("parent is required when passing an array or a slice")
 		}
 		return map[string]any{parent: optsMaps}, nil
 	}
 	// Return an error if we can't work with the underlying type of 'opts'
-	return nil, fmt.Errorf("Options type is not a struct, a slice, or an array.")
+	return nil, fmt.Errorf("options type is not a struct, a slice, or an array")
 }
 
 // EnabledState is a convenience type, mostly used in Create and Update
@@ -292,7 +292,7 @@ func MaybeInt(original int) *int {
 /*
 func isUnderlyingStructZero(v reflect.Value) bool {
 	switch v.Kind() {
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return isUnderlyingStructZero(v.Elem())
 	default:
 		return isZero(v)
@@ -305,7 +305,7 @@ var t time.Time
 func isZero(v reflect.Value) bool {
 	//fmt.Printf("\n\nchecking isZero for value: %+v\n", v)
 	switch v.Kind() {
-	case reflect.Ptr:
+	case reflect.Pointer:
 		if v.IsNil() {
 			return true
 		}
@@ -365,12 +365,12 @@ Slice are handled in one of two ways:
 */
 func BuildQueryString(opts any) (*url.URL, error) {
 	optsValue := reflect.ValueOf(opts)
-	if optsValue.Kind() == reflect.Ptr {
+	if optsValue.Kind() == reflect.Pointer {
 		optsValue = optsValue.Elem()
 	}
 
 	optsType := reflect.TypeOf(opts)
-	if optsType.Kind() == reflect.Ptr {
+	if optsType.Kind() == reflect.Pointer {
 		optsType = optsType.Elem()
 	}
 
@@ -390,7 +390,7 @@ func BuildQueryString(opts any) (*url.URL, error) {
 				if !isZero(v) {
 				loop:
 					switch v.Kind() {
-					case reflect.Ptr:
+					case reflect.Pointer:
 						v = v.Elem()
 						goto loop
 					case reflect.String:
@@ -429,7 +429,7 @@ func BuildQueryString(opts any) (*url.URL, error) {
 				} else {
 					// if the field has a 'required' tag, it can't have a zero-value
 					if requiredTag := f.Tag.Get("required"); requiredTag == "true" {
-						return &url.URL{}, fmt.Errorf("Required query parameter [%s] not set.", f.Name)
+						return &url.URL{}, fmt.Errorf("required query parameter [%s] not set", f.Name)
 					}
 				}
 			}
@@ -438,7 +438,7 @@ func BuildQueryString(opts any) (*url.URL, error) {
 		return &url.URL{RawQuery: params.Encode()}, nil
 	}
 	// Return an error if the underlying type of 'opts' isn't a struct.
-	return nil, fmt.Errorf("Options type is not a struct.")
+	return nil, fmt.Errorf("options type is not a struct")
 }
 
 /*
@@ -471,12 +471,12 @@ booleans and string values are supported.
 */
 func BuildHeaders(opts any) (map[string]string, error) {
 	optsValue := reflect.ValueOf(opts)
-	if optsValue.Kind() == reflect.Ptr {
+	if optsValue.Kind() == reflect.Pointer {
 		optsValue = optsValue.Elem()
 	}
 
 	optsType := reflect.TypeOf(opts)
-	if optsType.Kind() == reflect.Ptr {
+	if optsType.Kind() == reflect.Pointer {
 		optsType = optsType.Elem()
 	}
 
@@ -493,7 +493,7 @@ func BuildHeaders(opts any) (map[string]string, error) {
 
 				// if the field is set, add it to the slice of query pieces
 				if !isZero(v) {
-					if v.Kind() == reflect.Ptr {
+					if v.Kind() == reflect.Pointer {
 						v = v.Elem()
 					}
 					switch v.Kind() {
@@ -509,7 +509,7 @@ func BuildHeaders(opts any) (map[string]string, error) {
 				} else {
 					// if the field has a 'required' tag, it can't have a zero-value
 					if requiredTag := f.Tag.Get("required"); requiredTag == "true" {
-						return optsMap, fmt.Errorf("Required header [%s] not set.", f.Name)
+						return optsMap, fmt.Errorf("required header [%s] not set", f.Name)
 					}
 				}
 			}
@@ -518,7 +518,7 @@ func BuildHeaders(opts any) (map[string]string, error) {
 		return optsMap, nil
 	}
 	// Return an error if the underlying type of 'opts' isn't a struct.
-	return optsMap, fmt.Errorf("Options type is not a struct.")
+	return optsMap, fmt.Errorf("options type is not a struct")
 }
 
 // IDSliceToQueryString takes a slice of elements and converts them into a query

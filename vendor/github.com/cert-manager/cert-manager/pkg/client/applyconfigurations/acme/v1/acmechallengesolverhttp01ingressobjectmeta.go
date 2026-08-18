@@ -21,8 +21,10 @@ package v1
 // ACMEChallengeSolverHTTP01IngressObjectMetaApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01IngressObjectMeta type for use
 // with apply.
 type ACMEChallengeSolverHTTP01IngressObjectMetaApplyConfiguration struct {
+	// Annotations that should be added to the created ACME HTTP01 solver ingress.
 	Annotations map[string]string `json:"annotations,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	// Labels that should be added to the created ACME HTTP01 solver ingress.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // ACMEChallengeSolverHTTP01IngressObjectMetaApplyConfiguration constructs a declarative configuration of the ACMEChallengeSolverHTTP01IngressObjectMeta type for use with

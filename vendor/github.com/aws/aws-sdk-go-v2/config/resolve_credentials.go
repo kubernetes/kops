@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -346,7 +345,7 @@ func resolveHTTPCredProvider(ctx context.Context, cfg *aws.Config, url, authToke
 				options.AuthorizationTokenProvider = endpointcreds.TokenProviderFunc(func() (string, error) {
 					var contents []byte
 					var err error
-					if contents, err = ioutil.ReadFile(authFilePath); err != nil {
+					if contents, err = os.ReadFile(authFilePath); err != nil {
 						return "", fmt.Errorf("failed to read authorization token from %v: %v", authFilePath, err)
 					}
 					return string(contents), nil
@@ -641,6 +640,7 @@ func resolveLoginCredentials(ctx context.Context, cfg *aws.Config, sharedCfg *Sh
 	svc := signin.NewFromConfig(*cfg)
 	provider := logincreds.New(svc, tokenPath, func(o *logincreds.Options) {
 		o.CredentialSources = getCredentialSources(ctx)
+		o.RestrictPermissions = cfg.RestrictFilePermissions != aws.RestrictFilePermissionsUnrestricted
 	})
 	cfg.Credentials, err = wrapWithCredentialsCache(ctx, configs, provider)
 	if err != nil {

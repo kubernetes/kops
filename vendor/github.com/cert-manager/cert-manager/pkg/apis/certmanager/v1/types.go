@@ -130,6 +130,15 @@ const (
 	// Annotation key used to set the PrivateKeyRotationPolicy for a Certificate.
 	// If unset a policy `Never` will be used.
 	PrivateKeyRotationPolicyAnnotationKey = "cert-manager.io/private-key-rotation-policy"
+
+	// CertificateIgnoreTLSListeners is an annotation that specifies which
+	// Gateway API listeners in a ListenerSet or Gateway cert-manager should
+	// ignore while creating Certificate objects through the certificate-shim
+	// controller.
+	// The value of this annotation should be a comma-separated list of listener names.
+	// This is useful for users who want to use cert-manager to manage
+	// certificates for some, but not all, of the listeners for a given parent.
+	CertificateIgnoreTLSListeners = "cert-manager.io/ignore-tls-listeners"
 )
 
 const (
@@ -143,6 +152,9 @@ const (
 	// IngressACMEIssuerHTTP01IngressClassAnnotationKey holds the acmeIssuerHTTP01IngressClassAnnotation value
 	// which can be used to override the http01 ingressClass if the challenge type is set to http01
 	IngressACMEIssuerHTTP01IngressClassAnnotationKey = "acme.cert-manager.io/http01-ingress-class"
+	// IngressACMEIssuerHTTP01IngressClassNameAnnotationKey holds the annotation value
+	// which can be used to override the http01 ingressClassName if the challenge type is set to http01
+	IngressACMEIssuerHTTP01IngressClassNameAnnotationKey = "acme.cert-manager.io/http01-ingress-ingressclassname"
 
 	// IngressClassAnnotationKey picks a specific "class" for the Ingress. The
 	// controller only processes Ingresses with this annotation either unset, or
@@ -211,15 +223,15 @@ const (
 
 // Issuer specific Annotations
 const (
-	// VenafiCustomFieldsAnnotationKey is the annotation that passes on JSON encoded custom fields to the Venafi issuer
-	// This will only work with Venafi TPP v19.3 and higher
+	// VenafiCustomFieldsAnnotationKey is the annotation that passes on JSON encoded custom fields to the Certificate Manager issuer
+	// This will only work with CyberArk Certificate Manager Self-Hosted v19.3 and higher
 	// The value is an array with objects containing the name and value keys
 	// for example: `[{"name": "custom-field", "value": "custom-value"}]`
 	VenafiCustomFieldsAnnotationKey = "venafi.cert-manager.io/custom-fields"
 
 	// VenafiPickupIDAnnotationKey is the annotation key used to record the
-	// Venafi Pickup ID of a certificate signing request that has been submitted
-	// to the Venafi API for collection later.
+	// Certificate Manager Pickup ID of a certificate signing request that has been submitted
+	// to the Certificate Manager for collection later.
 	VenafiPickupIDAnnotationKey = "venafi.cert-manager.io/pickup-id"
 )
 

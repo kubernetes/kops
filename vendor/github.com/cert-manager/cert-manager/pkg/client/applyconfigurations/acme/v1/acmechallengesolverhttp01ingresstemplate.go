@@ -21,6 +21,10 @@ package v1
 // ACMEChallengeSolverHTTP01IngressTemplateApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01IngressTemplate type for use
 // with apply.
 type ACMEChallengeSolverHTTP01IngressTemplateApplyConfiguration struct {
+	// ObjectMeta overrides for the ingress used to solve HTTP01 challenges.
+	// Only the 'labels' and 'annotations' fields may be set.
+	// If labels or annotations overlap with in-built values, the values here
+	// will override the in-built values.
 	*ACMEChallengeSolverHTTP01IngressObjectMetaApplyConfiguration `json:"metadata,omitempty"`
 }
 

@@ -21,8 +21,15 @@ package v1
 // ACMEChallengeSolverHTTP01IngressPodTemplateApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01IngressPodTemplate type for use
 // with apply.
 type ACMEChallengeSolverHTTP01IngressPodTemplateApplyConfiguration struct {
+	// ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+	// Only the 'labels' and 'annotations' fields may be set.
+	// If labels or annotations overlap with in-built values, the values here
+	// will override the in-built values.
 	*ACMEChallengeSolverHTTP01IngressPodObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                                                             *ACMEChallengeSolverHTTP01IngressPodSpecApplyConfiguration `json:"spec,omitempty"`
+	// PodSpec defines overrides for the HTTP01 challenge solver pod.
+	// Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+	// All other fields will be ignored.
+	Spec *ACMEChallengeSolverHTTP01IngressPodSpecApplyConfiguration `json:"spec,omitempty"`
 }
 
 // ACMEChallengeSolverHTTP01IngressPodTemplateApplyConfiguration constructs a declarative configuration of the ACMEChallengeSolverHTTP01IngressPodTemplate type for use with

@@ -24,9 +24,16 @@ import (
 
 // IssuerStatusApplyConfiguration represents a declarative configuration of the IssuerStatus type for use
 // with apply.
+//
+// IssuerStatus contains status information about an Issuer
 type IssuerStatusApplyConfiguration struct {
-	Conditions []IssuerConditionApplyConfiguration        `json:"conditions,omitempty"`
-	ACME       *acmev1.ACMEIssuerStatusApplyConfiguration `json:"acme,omitempty"`
+	// List of status conditions to indicate the status of a CertificateRequest.
+	// Known condition types are `Ready`.
+	Conditions []IssuerConditionApplyConfiguration `json:"conditions,omitempty"`
+	// ACME specific status options.
+	// This field should only be set if the Issuer is configured to use an ACME
+	// server to issue certificates.
+	ACME *acmev1.ACMEIssuerStatusApplyConfiguration `json:"acme,omitempty"`
 }
 
 // IssuerStatusApplyConfiguration constructs a declarative configuration of the IssuerStatus type for use with

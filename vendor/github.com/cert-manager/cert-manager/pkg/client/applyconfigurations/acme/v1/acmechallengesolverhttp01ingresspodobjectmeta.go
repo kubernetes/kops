@@ -21,8 +21,10 @@ package v1
 // ACMEChallengeSolverHTTP01IngressPodObjectMetaApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01IngressPodObjectMeta type for use
 // with apply.
 type ACMEChallengeSolverHTTP01IngressPodObjectMetaApplyConfiguration struct {
+	// Annotations that should be added to the created ACME HTTP01 solver pods.
 	Annotations map[string]string `json:"annotations,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	// Labels that should be added to the created ACME HTTP01 solver pods.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // ACMEChallengeSolverHTTP01IngressPodObjectMetaApplyConfiguration constructs a declarative configuration of the ACMEChallengeSolverHTTP01IngressPodObjectMeta type for use with

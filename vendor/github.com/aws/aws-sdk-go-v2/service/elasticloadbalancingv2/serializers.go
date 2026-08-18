@@ -4596,6 +4596,11 @@ func awsAwsquery_serializeDocumentSourceIpConditionConfig(v *types.SourceIpCondi
 	object := value.Object()
 	_ = object
 
+	if len(v.IpAddressType) > 0 {
+		objectKey := object.Key("IpAddressType")
+		objectKey.String(string(v.IpAddressType))
+	}
+
 	if v.Values != nil {
 		objectKey := object.Key("Values")
 		if err := awsAwsquery_serializeDocumentListOfString(v.Values, objectKey); err != nil {

@@ -218,5 +218,5 @@ func (p *Puller) referrers(ctx context.Context, d name.Digest, filter map[string
 	if err != nil {
 		return nil, err
 	}
-	return f.fetchReferrers(ctx, filter, d)
+	return f.fetchReferrers(ctx, filter, d, p.o.referrersTagFallback)
 }

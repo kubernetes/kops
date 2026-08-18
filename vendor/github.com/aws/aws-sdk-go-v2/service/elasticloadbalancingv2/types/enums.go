@@ -408,6 +408,25 @@ func (RevocationType) Values() []RevocationType {
 	}
 }
 
+type SourceIpAddressTypeEnum string
+
+// Enum values for SourceIpAddressTypeEnum
+const (
+	SourceIpAddressTypeEnumIpv4 SourceIpAddressTypeEnum = "ipv4"
+	SourceIpAddressTypeEnumIpv6 SourceIpAddressTypeEnum = "ipv6"
+)
+
+// Values returns all known values for SourceIpAddressTypeEnum. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (SourceIpAddressTypeEnum) Values() []SourceIpAddressTypeEnum {
+	return []SourceIpAddressTypeEnum{
+		"ipv4",
+		"ipv6",
+	}
+}
+
 type TargetAdministrativeOverrideReasonEnum string
 
 // Enum values for TargetAdministrativeOverrideReasonEnum

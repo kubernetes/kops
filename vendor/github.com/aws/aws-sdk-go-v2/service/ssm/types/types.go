@@ -182,6 +182,13 @@ type AssociationDescription struct {
 	// it. This parameter isn't supported for rate expressions.
 	ApplyOnlyAtCronInterval bool
 
+	// A role used by association to take actions on your behalf. State Manager will
+	// assume this role and call required APIs when dispatching configurations to
+	// nodes. If not specified, [service-linked role for Systems Manager]will be used by default.
+	//
+	// [service-linked role for Systems Manager]: https://docs.aws.amazon.com/systems-manager/latest/userguide/using-service-linked-roles.html
+	AssociationDispatchAssumeRole *string
+
 	// The association ID.
 	AssociationId *string
 
@@ -484,6 +491,13 @@ type AssociationVersionInfo struct {
 	// it. This parameter isn't supported for rate expressions.
 	ApplyOnlyAtCronInterval bool
 
+	// A role used by association to take actions on your behalf. State Manager will
+	// assume this role and call required APIs when dispatching configurations to
+	// nodes. If not specified, [service-linked role for Systems Manager]will be used by default.
+	//
+	// [service-linked role for Systems Manager]: https://docs.aws.amazon.com/systems-manager/latest/userguide/using-service-linked-roles.html
+	AssociationDispatchAssumeRole *string
+
 	// The ID created by the system when the association was created.
 	AssociationId *string
 
@@ -784,6 +798,10 @@ type AutomationExecution struct {
 	// Variables defined for the automation.
 	Variables map[string][]string
 
+	// A message that describes a non-critical issue that occurred during the
+	// automation execution.
+	WarningMessage *string
+
 	noSmithyDocumentSerde
 }
 
@@ -888,7 +906,8 @@ type AutomationExecutionMetadata struct {
 	// The time the execution started.
 	ExecutionStartTime *time.Time
 
-	// The list of execution outputs as defined in the Automation runbook.
+	// A message that describes a failure that occurred during the automation
+	// execution.
 	FailureMessage *string
 
 	// An S3 bucket where execution information is stored.
@@ -945,6 +964,10 @@ type AutomationExecutionMetadata struct {
 	// The CloudWatch alarm that was invoked by the automation.
 	TriggeredAlarms []AlarmStateInformation
 
+	// A message that describes a non-critical issue that occurred during the
+	// automation execution.
+	WarningMessage *string
+
 	noSmithyDocumentSerde
 }
 
@@ -979,6 +1002,47 @@ type AutomationExecutionPreview struct {
 	// Information about the Amazon Web Services accounts that were included in the
 	// execution preview.
 	TotalAccounts int32
+
+	noSmithyDocumentSerde
+}
+
+// The access details and targets for connecting to a Microsoft Azure tenant,
+// including the application registration used for authentication and the
+// subscriptions to target.
+type AzureConfiguration struct {
+
+	// The ID of the Azure application registration used for authentication.
+	//
+	// This member is required.
+	ApplicationId *string
+
+	// The ID of the Azure tenant.
+	//
+	// This member is required.
+	TenantId *string
+
+	// The display name of the Azure application registration.
+	ApplicationDisplayName *string
+
+	// The target Azure subscriptions for the cloud connector.
+	Targets ConfigurationTargets
+
+	// The display name of the Azure tenant.
+	TenantDisplayName *string
+
+	noSmithyDocumentSerde
+}
+
+// Information about an Azure subscription targeted by the cloud connector.
+type AzureSubscription struct {
+
+	// The ID of the Azure subscription.
+	//
+	// This member is required.
+	Id *string
+
+	// The display name of the Azure subscription.
+	DisplayName *string
 
 	noSmithyDocumentSerde
 }
@@ -1038,6 +1102,67 @@ type BaselineOverride struct {
 	// target operating systems and source repositories. Applies to Linux managed nodes
 	// only.
 	Sources []PatchSource
+
+	noSmithyDocumentSerde
+}
+
+// The configuration that provides access details and targets for connecting to a
+// third-party cloud environment.
+//
+// The following types satisfy this interface:
+//
+//	CloudConnectorConfigurationMemberAzureConfiguration
+type CloudConnectorConfiguration interface {
+	isCloudConnectorConfiguration()
+}
+
+// The access details and targets for connecting to a Microsoft Azure environment.
+type CloudConnectorConfigurationMemberAzureConfiguration struct {
+	Value AzureConfiguration
+
+	noSmithyDocumentSerde
+}
+
+func (*CloudConnectorConfigurationMemberAzureConfiguration) isCloudConnectorConfiguration() {}
+
+// A filter for listing cloud connectors.
+type CloudConnectorFilter struct {
+
+	// The name of the filter key.
+	FilterKey CloudConnectorFilterKey
+
+	// The filter values. Valid values for each filter key are as follows:
+	//
+	// SubscriptionId The Azure subscription ID to filter by. To return only
+	// tenant-level connectors, specify NONE .
+	//
+	// TenantId The Azure tenant ID to filter by. Filters the results to connectors
+	// that target the specified tenant.
+	FilterValues []string
+
+	noSmithyDocumentSerde
+}
+
+// Summary information about a cloud connector.
+type CloudConnectorSummary struct {
+
+	// The ID of the cloud connector.
+	CloudConnectorId *string
+
+	// The date and time the cloud connector was created.
+	CreatedAt *time.Time
+
+	// The description of the cloud connector.
+	Description *string
+
+	// The friendly name of the cloud connector.
+	DisplayName *string
+
+	// The ARN of the IAM role used by the cloud connector.
+	RoleArn *string
+
+	// The date and time the cloud connector was last updated.
+	UpdatedAt *time.Time
 
 	noSmithyDocumentSerde
 }
@@ -1692,6 +1817,24 @@ type CompliantSummary struct {
 
 	noSmithyDocumentSerde
 }
+
+// The target resources in the third-party cloud environment.
+//
+// The following types satisfy this interface:
+//
+//	ConfigurationTargetsMemberSubscriptions
+type ConfigurationTargets interface {
+	isConfigurationTargets()
+}
+
+// A list of Azure subscriptions to target.
+type ConfigurationTargetsMemberSubscriptions struct {
+	Value []AzureSubscription
+
+	noSmithyDocumentSerde
+}
+
+func (*ConfigurationTargetsMemberSubscriptions) isConfigurationTargets() {}
 
 // Describes the association of a Amazon Web Services Systems Manager document
 // (SSM document) and a managed node.
@@ -2555,6 +2698,12 @@ type InstanceInfo struct {
 	// The version number of the agent installed on the node.
 	AgentVersion *string
 
+	// The Availability Zone where the managed node is located.
+	AvailabilityZone *string
+
+	// The Availability Zone ID where the managed node is located.
+	AvailabilityZoneId *string
+
 	// The fully qualified host name of the managed node.
 	ComputerName *string
 
@@ -2566,6 +2715,9 @@ type InstanceInfo struct {
 
 	// Indicates whether the node is managed by Systems Manager.
 	ManagedStatus ManagedStatus
+
+	// The name assigned to the managed node.
+	Name *string
 
 	// The name of the operating system platform running on your managed node.
 	PlatformName *string
@@ -2579,6 +2731,17 @@ type InstanceInfo struct {
 	// The type of instance, either an EC2 instance or another supported machine type
 	// in a hybrid fleet.
 	ResourceType ResourceType
+
+	// The ID of the source resource. For IoT Greengrass devices, SourceId is the
+	// Thing name.
+	SourceId *string
+
+	// The location of the source resource in the third-party cloud environment.
+	SourceLocation *string
+
+	// The type of the source resource. For IoT Greengrass devices, SourceType is
+	// AWS::IoT::Thing .
+	SourceType SourceType
 
 	noSmithyDocumentSerde
 }
@@ -2677,8 +2840,12 @@ type InstanceInformation struct {
 	// Thing name.
 	SourceId *string
 
+	// The location of the source resource in the third-party cloud environment.
+	SourceLocation *string
+
 	// The type of the source resource. For IoT Greengrass devices, SourceType is
-	// AWS::IoT::Thing .
+	// AWS::IoT::Thing . For Azure Virtual Machines, SourceType is
+	// Microsoft.Compute/virtualMachines .
 	SourceType SourceType
 
 	noSmithyDocumentSerde
@@ -2710,7 +2877,7 @@ type InstanceInformationStringFilter struct {
 	// The filter key name to describe your managed nodes.
 	//
 	// Valid filter key values: ActivationIds | AgentVersion | AssociationStatus |
-	// IamRole | InstanceIds | PingStatus | PlatformType | ResourceType | SourceIds |
+	// IamRole | InstanceIds | PingStatus | PlatformTypes | ResourceType | SourceIds |
 	// SourceTypes | "tag-key" | "tag: {keyname}
 	//
 	//   - Valid values for the AssociationStatus filter key: Success | Pending | Failed
@@ -2718,12 +2885,12 @@ type InstanceInformationStringFilter struct {
 	//   - Valid values for the PingStatus filter key: Online | ConnectionLost |
 	//   Inactive (deprecated)
 	//
-	//   - Valid values for the PlatformType filter key: Windows | Linux | MacOS
+	//   - Valid values for the PlatformTypes filter key: Windows | Linux | MacOS
 	//
 	//   - Valid values for the ResourceType filter key: EC2Instance | ManagedInstance
 	//
 	//   - Valid values for the SourceType filter key: AWS::EC2::Instance |
-	//   AWS::SSM::ManagedInstance | AWS::IoT::Thing
+	//   AWS::SSM::ManagedInstance | AWS::IoT::Thing | Microsoft.Compute/virtualMachines
 	//
 	//   - Valid tag examples: Key=tag-key,Values=Purpose | Key=tag:Purpose,Values=Test
 	//   .
@@ -2952,6 +3119,9 @@ type InstanceProperty struct {
 	// The status of the State Manager association applied to the managed node.
 	AssociationStatus *string
 
+	// The Availability Zone where the managed node is located.
+	AvailabilityZone *string
+
 	// The fully qualified host name of the managed node.
 	ComputerName *string
 
@@ -3018,7 +3188,11 @@ type InstanceProperty struct {
 	// The ID of the source resource.
 	SourceId *string
 
-	// The type of the source resource.
+	// The location of the source resource in the third-party cloud environment.
+	SourceLocation *string
+
+	// The type of the source resource. Valid values: AWS::EC2::Instance |
+	// AWS::SSM::ManagedInstance | AWS::IoT::Thing | Microsoft.Compute/virtualMachines .
 	SourceType SourceType
 
 	noSmithyDocumentSerde
@@ -3847,6 +4021,9 @@ type MaintenanceWindowTask struct {
 	// task types, TaskArn is the Amazon Web Services Systems Manager (SSM document)
 	// name or ARN. For LAMBDA tasks, it's the function name or ARN. For STEP_FUNCTIONS
 	// tasks, it's the state machine ARN.
+	//
+	// Maintenance Window does not validate the TaskArn when you register a task. A
+	// successful registration does not guarantee that the TaskArn is valid.
 	TaskArn *string
 
 	// The parameters that should be passed to the task when it is run.
@@ -5065,8 +5242,8 @@ type PatchRule struct {
 	// of 7 means that patches are approved seven days after they are released.
 	//
 	// Patch Manager evaluates patch release dates using Coordinated Universal Time
-	// (UTC). If the day represented by 7 is 2025-11-16 , patches released between
-	// 2025-11-16T00:00:00Z and 2025-11-16T23:59:59Z will be included in the approval.
+	// (UTC). If a patch is released at 2025-11-09T18:00:00Z and ApproveAfterDays is
+	// set to 7 , the patch will be approved after 2025-11-16T18:00:00Z .
 	//
 	// This parameter is marked as Required: No , but your request must include a value
 	// for either ApproveAfterDays or ApproveUntilDate .
@@ -5897,6 +6074,10 @@ type StepExecution struct {
 	// add step:stepName to support the automation to go to another specific step.
 	ValidNextSteps []string
 
+	// A message that describes a non-critical issue that occurred during the step
+	// execution. Present only if the step status includes a warning.
+	WarningMessage *string
+
 	noSmithyDocumentSerde
 }
 
@@ -6028,8 +6209,6 @@ type TargetLocation struct {
 
 	// Indicates whether to include child organizational units (OUs) that are children
 	// of the targeted OUs. The default is false .
-	//
-	// This parameter is not supported by State Manager.
 	IncludeChildOrganizationUnits bool
 
 	// The Amazon Web Services Regions targeted by the current Automation execution.
@@ -6083,6 +6262,39 @@ type TargetPreview struct {
 	noSmithyDocumentSerde
 }
 
+// A validation finding from a cloud connector validation check.
+type ValidationFinding struct {
+
+	// A code that identifies the specific validation finding.
+	Code ValidationFindingCode
+
+	// A message that describes the validation finding.
+	Message *string
+
+	// A message from the third-party cloud provider related to the validation finding.
+	ProviderMessage *string
+
+	// The scope of the validation finding, identifying the specific resource affected.
+	Scope *ValidationFindingScope
+
+	// The type of the validation finding.
+	Type ValidationFindingType
+
+	noSmithyDocumentSerde
+}
+
+// Identifies the specific resource scope of a validation finding.
+type ValidationFindingScope struct {
+
+	// The ID of the resource within the scope.
+	Id *string
+
+	// The type of the resource scope.
+	Type ValidationFindingScopeType
+
+	noSmithyDocumentSerde
+}
+
 type noSmithyDocumentSerde = smithydocument.NoSerde
 
 // UnknownUnionMember is returned when a union member is returned over the wire,
@@ -6094,6 +6306,8 @@ type UnknownUnionMember struct {
 	noSmithyDocumentSerde
 }
 
-func (*UnknownUnionMember) isExecutionInputs()  {}
-func (*UnknownUnionMember) isExecutionPreview() {}
-func (*UnknownUnionMember) isNodeType()         {}
+func (*UnknownUnionMember) isCloudConnectorConfiguration() {}
+func (*UnknownUnionMember) isConfigurationTargets()        {}
+func (*UnknownUnionMember) isExecutionInputs()             {}
+func (*UnknownUnionMember) isExecutionPreview()            {}
+func (*UnknownUnionMember) isNodeType()                    {}

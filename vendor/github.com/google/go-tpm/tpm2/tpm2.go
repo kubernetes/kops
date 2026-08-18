@@ -303,7 +303,7 @@ type LoadExternalResponse struct {
 // See definition in Part 3, Commands, section 12.4
 type ReadPublic struct {
 	// TPM handle of an object
-	ObjectHandle TPMIDHObject `gotpm:"handle"`
+	ObjectHandle handle `gotpm:"handle"`
 }
 
 // Command implements the Command interface.

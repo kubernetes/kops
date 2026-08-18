@@ -124,7 +124,7 @@ const (
 	AppAlertSpecOperator_LessThan            AppAlertSpecOperator = "LESS_THAN"
 )
 
-// AppAlertSpecRule  - CPU_UTILIZATION: Represents CPU for a given container instance. Only applicable at the component level.  - MEM_UTILIZATION: Represents RAM for a given container instance. Only applicable at the component level.  - RESTART_COUNT: Represents restart count for a given container instance. Only applicable at the component level.  - DEPLOYMENT_FAILED: Represents whether a deployment has failed. Only applicable at the app level.  - DEPLOYMENT_LIVE: Represents whether a deployment has succeeded. Only applicable at the app level.  - DEPLOYMENT_STARTED: Represents whether a deployment has started. Only applicable at the app level.  - DEPLOYMENT_CANCELED: Represents whether a deployment has been canceled. Only applicable at the app level.  - DOMAIN_FAILED: Represents whether a domain configuration has failed. Only applicable at the app level.  - DOMAIN_LIVE: Represents whether a domain configuration has succeeded. Only applicable at the app level.  - AUTOSCALE_FAILED: Represents whether autoscaling has failed. Only applicable at the app level.  - AUTOSCALE_SUCCEEDED: Represents whether autoscaling has succeeded. Only applicable at the app level. - FUNCTIONS_ACTIVATION_COUNT: Represents an activation count for a given functions instance. Only applicable to functions components.  - FUNCTIONS_AVERAGE_DURATION_MS: Represents the average duration for function runtimes. Only applicable to functions components.  - FUNCTIONS_ERROR_RATE_PER_MINUTE: Represents an error rate per minute for a given functions instance. Only applicable to functions components.  - FUNCTIONS_AVERAGE_WAIT_TIME_MS: Represents the average wait time for functions. Only applicable to functions components.  - FUNCTIONS_ERROR_COUNT: Represents an error count for a given functions instance. Only applicable to functions components.  - FUNCTIONS_GB_RATE_PER_SECOND: Represents the rate of memory consumption (GB x seconds) for functions. Only applicable to functions components.
+// AppAlertSpecRule  - CPU_UTILIZATION: Represents CPU for a given container instance. Only applicable at the component level.  - MEM_UTILIZATION: Represents RAM for a given container instance. Only applicable at the component level.  - RESTART_COUNT: Represents restart count for a given container instance. Only applicable at the component level.  - DEPLOYMENT_FAILED: Represents whether a deployment has failed. Only applicable at the app level.  - DEPLOYMENT_LIVE: Represents whether a deployment has succeeded. Only applicable at the app level.  - DEPLOYMENT_STARTED: Represents whether a deployment has started. Only applicable at the app level.  - DEPLOYMENT_CANCELED: Represents whether a deployment has been canceled. Only applicable at the app level.  - DOMAIN_FAILED: Represents whether a domain configuration has failed. Only applicable at the app level.  - DOMAIN_LIVE: Represents whether a domain configuration has succeeded. Only applicable at the app level.  - AUTOSCALE_FAILED: Represents whether autoscaling has failed. Only applicable at the app level.  - AUTOSCALE_SUCCEEDED: Represents whether autoscaling has succeeded. Only applicable at the app level.  - JOB_INVOCATION_FAILED: Represents whether a job invocation has failed. Only applicable to scheduled job components.  - FUNCTIONS_ACTIVATION_COUNT: Represents an activation count for a given functions instance. Only applicable to functions components.  - FUNCTIONS_AVERAGE_DURATION_MS: Represents the average duration for function runtimes. Only applicable to functions components.  - FUNCTIONS_ERROR_RATE_PER_MINUTE: Represents an error rate per minute for a given functions instance. Only applicable to functions components.  - FUNCTIONS_AVERAGE_WAIT_TIME_MS: Represents the average wait time for functions. Only applicable to functions components.  - FUNCTIONS_ERROR_COUNT: Represents an error count for a given functions instance. Only applicable to functions components.  - FUNCTIONS_GB_RATE_PER_SECOND: Represents the rate of memory consumption (GB x seconds) for functions. Only applicable to functions components.  - REQUESTS_PER_SECOND: Represents requests per second for a service. Only applicable to service components.  - REQUEST_DURATION_P95_MS: Represents request duration p95 in milliseconds for a service. Only applicable to service components.
 type AppAlertSpecRule string
 
 // List of AppAlertSpecRule
@@ -148,6 +148,8 @@ const (
 	AppAlertSpecRule_FunctionsAverageWaitTimeMs  AppAlertSpecRule = "FUNCTIONS_AVERAGE_WAIT_TIME_MS"
 	AppAlertSpecRule_FunctionsErrorCount         AppAlertSpecRule = "FUNCTIONS_ERROR_COUNT"
 	AppAlertSpecRule_FunctionsGBRatePerSecond    AppAlertSpecRule = "FUNCTIONS_GB_RATE_PER_SECOND"
+	AppAlertSpecRule_RequestsPerSecond           AppAlertSpecRule = "REQUESTS_PER_SECOND"
+	AppAlertSpecRule_RequestDurationP95Ms        AppAlertSpecRule = "REQUEST_DURATION_P95_MS"
 )
 
 // AppAlertSpecWindow the model 'AppAlertSpecWindow'
@@ -177,9 +179,23 @@ type AppAutoscalingSpecMetricCPU struct {
 	Percent int64 `json:"percent,omitempty"`
 }
 
+// AppAutoscalingSpecMetricRequestDuration struct for AppAutoscalingSpecMetricRequestDuration
+type AppAutoscalingSpecMetricRequestDuration struct {
+	// The p95 target request duration in milliseconds for the component.
+	P95Milliseconds int64 `json:"p95_milliseconds,omitempty"`
+}
+
+// AppAutoscalingSpecMetricRequestsPerSecond struct for AppAutoscalingSpecMetricRequestsPerSecond
+type AppAutoscalingSpecMetricRequestsPerSecond struct {
+	// The target number of requests per second per instance for the component.
+	PerInstance int64 `json:"per_instance,omitempty"`
+}
+
 // AppAutoscalingSpecMetrics struct for AppAutoscalingSpecMetrics
 type AppAutoscalingSpecMetrics struct {
-	CPU *AppAutoscalingSpecMetricCPU `json:"cpu,omitempty"`
+	CPU               *AppAutoscalingSpecMetricCPU               `json:"cpu,omitempty"`
+	RequestsPerSecond *AppAutoscalingSpecMetricRequestsPerSecond `json:"requests_per_second,omitempty"`
+	RequestDuration   *AppAutoscalingSpecMetricRequestDuration   `json:"request_duration,omitempty"`
 }
 
 // AppBuildConfig struct for AppBuildConfig
@@ -319,7 +335,8 @@ type AppIngressSpec struct {
 	LoadBalancer     AppIngressSpecLoadBalancer `json:"load_balancer,omitempty"`
 	LoadBalancerSize int64                      `json:"load_balancer_size,omitempty"`
 	// Rules for configuring HTTP ingress for component routes, CORS, rewrites, and redirects.
-	Rules []*AppIngressSpecRule `json:"rules,omitempty"`
+	Rules        []*AppIngressSpecRule `json:"rules,omitempty"`
+	SecureHeader *AppSecureHeaderSpec  `json:"secure_header,omitempty"`
 }
 
 // AppIngressSpecLoadBalancer the model 'AppIngressSpecLoadBalancer'
@@ -372,8 +389,17 @@ type AppIngressSpecRuleRoutingRedirect struct {
 // AppIngressSpecRuleStringMatch The string match configuration.
 type AppIngressSpecRuleStringMatch struct {
 	// Prefix-based match. For example, `/api` will match `/api`, `/api/`, and any nested paths such as `/api/v1/endpoint`.
-	Prefix string `json:"prefix,omitempty"`
-	Exact  string `json:"exact,omitempty"`
+	Prefix *string `json:"prefix,omitempty"`
+	Exact  *string `json:"exact,omitempty"`
+}
+
+type AppSecureHeaderSpec struct {
+	// The name of the header to set.
+	Key string `json:"key,omitempty"`
+	// The value of the header to set.
+	Value string `json:"value,omitempty"`
+	// Remove the header from incoming requests before forwarding to the app.
+	RemoveHeader bool `json:"remove_header,omitempty"`
 }
 
 // AppInstance struct for AppInstance
@@ -565,9 +591,11 @@ type AppServiceSpec struct {
 	// A list of configured alerts which apply to the component.
 	Alerts []*AppAlertSpec `json:"alerts,omitempty"`
 	// A list of configured log forwarding destinations.
-	LogDestinations     []*AppLogDestinationSpec   `json:"log_destinations,omitempty"`
-	Termination         *AppServiceSpecTermination `json:"termination,omitempty"`
-	LivenessHealthCheck *HealthCheckSpec           `json:"liveness_health_check,omitempty"`
+	LogDestinations []*AppLogDestinationSpec   `json:"log_destinations,omitempty"`
+	Termination     *AppServiceSpecTermination `json:"termination,omitempty"`
+	// A configuration for putting the service to sleep after it has been inactive. Note: this is in Private Preview.
+	InactivitySleep     *AppServiceSpecInactivitySleep `json:"inactivity_sleep,omitempty"`
+	LivenessHealthCheck *HealthCheckSpec               `json:"liveness_health_check,omitempty"`
 }
 
 // AppServiceSpecHealthCheck struct for AppServiceSpecHealthCheck
@@ -588,6 +616,13 @@ type AppServiceSpecHealthCheck struct {
 	HTTPPath string `json:"http_path,omitempty"`
 	// The port on which the health check will be performed. If not set, the health check will be performed on the component's http_port.
 	Port int64 `json:"port,omitempty"`
+}
+
+// AppServiceSpecInactivitySleep struct for AppServiceSpecInactivitySleep
+type AppServiceSpecInactivitySleep struct {
+	// The number of seconds to wait before putting the service to sleep after it has been inactive. Minimum 600, Maximum 86400.
+	AfterSeconds int32                       `json:"after_seconds,omitempty"`
+	LoadingPage  *InactivitySleepLoadingPage `json:"loading_page,omitempty"`
 }
 
 // AppServiceSpecTermination struct for AppServiceSpecTermination
@@ -737,6 +772,16 @@ type AppWorkerSpecTermination struct {
 type AutoscalerActionScaleChange struct {
 	From int64 `json:"from,omitempty"`
 	To   int64 `json:"to,omitempty"`
+	// The metric that triggered the scale change while scaling up. Known values are \"cpu\", \"requests_per_second\", \"request_duration\". For inactivity sleep, \"scale_from_zero\" and \"scale_to_zero\" are used.
+	TriggeringMetric string `json:"triggering_metric,omitempty"`
+}
+
+// AutoscalingEventComponentScaleChange struct for AutoscalingEventComponentScaleChange
+type AutoscalingEventComponentScaleChange struct {
+	From int64 `json:"from,omitempty"`
+	To   int64 `json:"to,omitempty"`
+	// The metric that triggered the scale change while scaling up. Known values are \"cpu\", \"requests_per_second\", \"request_duration\". For inactivity sleep, \"scale_from_zero\" and \"scale_to_zero\" are used.
+	TriggeringMetric string `json:"triggering_metric,omitempty"`
 }
 
 // BitbucketSourceSpec struct for BitbucketSourceSpec
@@ -1186,6 +1231,45 @@ type AppDomainValidation struct {
 	TXTValue string `json:"txt_value,omitempty"`
 }
 
+// Event struct for Event
+type Event struct {
+	ID           string                 `json:"id,omitempty"`
+	Type         EventType              `json:"type,omitempty"`
+	CreatedAt    time.Time              `json:"created_at,omitempty"`
+	DeploymentID string                 `json:"deployment_id,omitempty"`
+	Deployment   *Deployment            `json:"deployment,omitempty"`
+	Autoscaling  *EventAutoscalingEvent `json:"autoscaling,omitempty"`
+}
+
+// EventAutoscalingEvent struct for EventAutoscalingEvent
+type EventAutoscalingEvent struct {
+	Phase      EventAutoscalingEventPhase                      `json:"phase,omitempty"`
+	Components map[string]AutoscalingEventComponentScaleChange `json:"components,omitempty"`
+}
+
+// EventAutoscalingEventPhase the model 'EventAutoscalingEventPhase'
+type EventAutoscalingEventPhase string
+
+// List of EventAutoscalingEventPhase
+const (
+	EVENTAUTOSCALINGEVENTPHASE_Unknown    EventAutoscalingEventPhase = "UNKNOWN"
+	EVENTAUTOSCALINGEVENTPHASE_Pending    EventAutoscalingEventPhase = "PENDING"
+	EVENTAUTOSCALINGEVENTPHASE_InProgress EventAutoscalingEventPhase = "IN_PROGRESS"
+	EVENTAUTOSCALINGEVENTPHASE_Succeeded  EventAutoscalingEventPhase = "SUCCEEDED"
+	EVENTAUTOSCALINGEVENTPHASE_Failed     EventAutoscalingEventPhase = "FAILED"
+	EVENTAUTOSCALINGEVENTPHASE_Canceled   EventAutoscalingEventPhase = "CANCELED"
+)
+
+// EventType the model 'EventType'
+type EventType string
+
+// List of EventType
+const (
+	EVENTTYPE_Unknown     EventType = "UNKNOWN"
+	EVENTTYPE_Deployment  EventType = "DEPLOYMENT"
+	EVENTTYPE_Autoscaling EventType = "AUTOSCALING"
+)
+
 // FunctionsComponentHealth struct for FunctionsComponentHealth
 type FunctionsComponentHealth struct {
 	Name                            string                             `json:"name,omitempty"`
@@ -1319,6 +1403,14 @@ const (
 	ImageSourceSpecRegistryType_DockerHub   ImageSourceSpecRegistryType = "DOCKER_HUB"
 	ImageSourceSpecRegistryType_Ghcr        ImageSourceSpecRegistryType = "GHCR"
 )
+
+// InactivitySleepLoadingPage struct for InactivitySleepLoadingPage
+type InactivitySleepLoadingPage struct {
+	// Whether to show a loading page while the service is waking up from sleep. Defaults to false. If this is enabled and there is a request header `Accept` containing `text/html`, then the app will show a loading page with a 503 status code until the service is woken up.
+	Enabled bool `json:"enabled,omitempty"`
+	// A custom loading page to display when the service is woken up from sleep. If not provided, a default loading page will be shown.
+	CustomURL string `json:"custom_url,omitempty"`
+}
 
 // AppInstanceSize struct for AppInstanceSize
 type AppInstanceSize struct {

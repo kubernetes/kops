@@ -20,9 +20,16 @@ package v1
 
 // IssuerReferenceApplyConfiguration represents a declarative configuration of the IssuerReference type for use
 // with apply.
+//
+// IssuerReference is a reference to a certificate issuer object with a given name, kind and group.
 type IssuerReferenceApplyConfiguration struct {
-	Name  *string `json:"name,omitempty"`
-	Kind  *string `json:"kind,omitempty"`
+	// Name of the issuer being referred to.
+	Name *string `json:"name,omitempty"`
+	// Kind of the issuer being referred to.
+	// Defaults to 'Issuer'.
+	Kind *string `json:"kind,omitempty"`
+	// Group of the issuer being referred to.
+	// Defaults to 'cert-manager.io'.
 	Group *string `json:"group,omitempty"`
 }
 

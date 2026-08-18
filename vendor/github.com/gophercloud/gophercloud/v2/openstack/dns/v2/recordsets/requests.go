@@ -42,9 +42,24 @@ func (opts ListOpts) ToRecordSetListQuery() (string, error) {
 	return q.String(), err
 }
 
-// ListByZone implements the recordset list request.
+// ListByZone implements the recordset list request for a specific zone.
 func ListByZone(client *gophercloud.ServiceClient, zoneID string, opts ListOptsBuilder) pagination.Pager {
 	url := baseURL(client, zoneID)
+	if opts != nil {
+		query, err := opts.ToRecordSetListQuery()
+		if err != nil {
+			return pagination.Pager{Err: err}
+		}
+		url += query
+	}
+	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
+		return RecordSetPage{pagination.LinkedPageBase{PageResult: r}}
+	})
+}
+
+// ListAll implements the recordset list request across all zones.
+func ListAll(client *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
+	url := listAllRecordSetsURL(client)
 	if opts != nil {
 		query, err := opts.ToRecordSetListQuery()
 		if err != nil {
@@ -155,7 +170,7 @@ func (opts UpdateOpts) ToRecordSetUpdateMap() (map[string]any, error) {
 	return b, nil
 }
 
-// Update updates a recordset in a given zone
+// Update updates a recordset in a given zone.
 func Update(ctx context.Context, client *gophercloud.ServiceClient, zoneID string, rrsetID string, opts UpdateOptsBuilder) (r UpdateResult) {
 	b, err := opts.ToRecordSetUpdateMap()
 	if err != nil {

@@ -3,4 +3,4 @@
 package autoscaling
 
 // goModuleVersion is the tagged release for this module
-const goModuleVersion = "1.62.4"
+const goModuleVersion = "1.72.1"

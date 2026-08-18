@@ -24,8 +24,17 @@ import (
 
 // ACMEChallengeSolverHTTP01IngressPodResourcesApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01IngressPodResources type for use
 // with apply.
+//
+// ACMEChallengeSolverHTTP01IngressPodResources defines resource requirements for ACME HTTP01 solver pods.
+// To keep API surface essential, this trims down the 'corev1.ResourceRequirements' type to only include the Requests and Limits fields.
 type ACMEChallengeSolverHTTP01IngressPodResourcesApplyConfiguration struct {
-	Limits   *corev1.ResourceList `json:"limits,omitempty"`
+	// Limits describes the maximum amount of compute resources allowed.
+	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+	Limits *corev1.ResourceList `json:"limits,omitempty"`
+	// Requests describes the minimum amount of compute resources required.
+	// If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+	// otherwise to the global values configured via controller flags. Requests cannot exceed Limits.
+	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 	Requests *corev1.ResourceList `json:"requests,omitempty"`
 }
 

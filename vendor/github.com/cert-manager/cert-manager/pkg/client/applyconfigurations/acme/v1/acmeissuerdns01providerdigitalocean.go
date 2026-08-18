@@ -24,6 +24,9 @@ import (
 
 // ACMEIssuerDNS01ProviderDigitalOceanApplyConfiguration represents a declarative configuration of the ACMEIssuerDNS01ProviderDigitalOcean type for use
 // with apply.
+//
+// ACMEIssuerDNS01ProviderDigitalOcean is a structure containing the DNS
+// configuration for DigitalOcean Domains
 type ACMEIssuerDNS01ProviderDigitalOceanApplyConfiguration struct {
 	Token *metav1.SecretKeySelectorApplyConfiguration `json:"tokenSecretRef,omitempty"`
 }

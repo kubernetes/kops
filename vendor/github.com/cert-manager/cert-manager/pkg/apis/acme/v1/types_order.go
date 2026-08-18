@@ -30,6 +30,9 @@ import (
 // +kubebuilder:printcolumn:name="Reason",type="string",JSONPath=".status.reason",description="",priority=1
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC."
 // +kubebuilder:resource:scope=Namespaced,categories={cert-manager,cert-manager-acme}
+// +kubebuilder:selectablefield:JSONPath=.spec.issuerRef.group
+// +kubebuilder:selectablefield:JSONPath=.spec.issuerRef.kind
+// +kubebuilder:selectablefield:JSONPath=.spec.issuerRef.name
 // +kubebuilder:subresource:status
 
 // Order is a type to represent an Order with an ACME server
@@ -86,7 +89,7 @@ type OrderSpec struct {
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 
 	// Duration is the duration for the not after date for the requested certificate.
-	// this is set on order creation as pe the ACME spec.
+	// This is set on order creation as per the ACME spec.
 	// +optional
 	Duration *metav1.Duration `json:"duration,omitempty"`
 
@@ -94,6 +97,15 @@ type OrderSpec struct {
 	// Supported profiles are listed by the server's ACME directory URL.
 	// +optional
 	Profile string `json:"profile,omitempty"`
+
+	// Replaces is the ARI CertID (RFC 9773 §4.1) of the certificate that this
+	// Order is intended to replace. When set, cert-manager will include the
+	// "replaces" field on the newOrder request to the ACME server if and only
+	// if the server advertises ARI support in its directory. The CertID has
+	// the form "base64url(AKI).base64url(serial)" and is derived locally from
+	// the currently issued leaf certificate.
+	// +optional
+	Replaces string `json:"replaces,omitempty"`
 }
 
 type OrderStatus struct {

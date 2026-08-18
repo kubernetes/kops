@@ -24,9 +24,18 @@ import (
 
 // ACMEIssuerDNS01ProviderCloudflareApplyConfiguration represents a declarative configuration of the ACMEIssuerDNS01ProviderCloudflare type for use
 // with apply.
+//
+// ACMEIssuerDNS01ProviderCloudflare is a structure containing the DNS
+// configuration for Cloudflare.
+// One of `apiKeySecretRef` or `apiTokenSecretRef` must be provided.
 type ACMEIssuerDNS01ProviderCloudflareApplyConfiguration struct {
-	Email    *string                                     `json:"email,omitempty"`
-	APIKey   *metav1.SecretKeySelectorApplyConfiguration `json:"apiKeySecretRef,omitempty"`
+	// Email of the account, only required when using API key based authentication.
+	Email *string `json:"email,omitempty"`
+	// API key to use to authenticate with Cloudflare.
+	// Note: using an API token to authenticate is now the recommended method
+	// as it allows greater control of permissions.
+	APIKey *metav1.SecretKeySelectorApplyConfiguration `json:"apiKeySecretRef,omitempty"`
+	// API token used to authenticate with Cloudflare.
 	APIToken *metav1.SecretKeySelectorApplyConfiguration `json:"apiTokenSecretRef,omitempty"`
 }
 

@@ -62,6 +62,27 @@ func (AssignmentStatusType) Values() []AssignmentStatusType {
 	}
 }
 
+type AttachmentType string
+
+// Enum values for AttachmentType
+const (
+	AttachmentTypeUser  AttachmentType = "user"
+	AttachmentTypeGroup AttachmentType = "group"
+	AttachmentTypeRole  AttachmentType = "role"
+)
+
+// Values returns all known values for AttachmentType. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (AttachmentType) Values() []AttachmentType {
+	return []AttachmentType{
+		"user",
+		"group",
+		"role",
+	}
+}
+
 type ContextKeyTypeEnum string
 
 // Enum values for ContextKeyTypeEnum
@@ -227,6 +248,50 @@ func (JobStatusType) Values() []JobStatusType {
 	}
 }
 
+type ManagedByTypeType string
+
+// Enum values for ManagedByTypeType
+const (
+	ManagedByTypeTypeService ManagedByTypeType = "Service"
+)
+
+// Values returns all known values for ManagedByTypeType. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ManagedByTypeType) Values() []ManagedByTypeType {
+	return []ManagedByTypeType{
+		"Service",
+	}
+}
+
+type ParameterTypeType string
+
+// Enum values for ParameterTypeType
+const (
+	ParameterTypeTypeString     ParameterTypeType = "String"
+	ParameterTypeTypeStringList ParameterTypeType = "StringList"
+	ParameterTypeTypeNumber     ParameterTypeType = "Number"
+	ParameterTypeTypeNumberList ParameterTypeType = "NumberList"
+	ParameterTypeTypeArn        ParameterTypeType = "Arn"
+	ParameterTypeTypeArnList    ParameterTypeType = "ArnList"
+)
+
+// Values returns all known values for ParameterTypeType. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ParameterTypeType) Values() []ParameterTypeType {
+	return []ParameterTypeType{
+		"String",
+		"StringList",
+		"Number",
+		"NumberList",
+		"Arn",
+		"ArnList",
+	}
+}
+
 type PermissionCheckResultType string
 
 // Enum values for PermissionCheckResultType
@@ -306,6 +371,33 @@ func (PolicyEvaluationDecisionType) Values() []PolicyEvaluationDecisionType {
 		"allowed",
 		"explicitDeny",
 		"implicitDeny",
+	}
+}
+
+type PolicyIdentifierPolicyType string
+
+// Enum values for PolicyIdentifierPolicyType
+const (
+	PolicyIdentifierPolicyTypeInline             PolicyIdentifierPolicyType = "inline"
+	PolicyIdentifierPolicyTypeAwsManaged         PolicyIdentifierPolicyType = "aws-managed"
+	PolicyIdentifierPolicyTypeUserManaged        PolicyIdentifierPolicyType = "user-managed"
+	PolicyIdentifierPolicyTypePermissionBoundary PolicyIdentifierPolicyType = "permission-boundary"
+	PolicyIdentifierPolicyTypeScp                PolicyIdentifierPolicyType = "scp"
+	PolicyIdentifierPolicyTypeRcp                PolicyIdentifierPolicyType = "rcp"
+)
+
+// Values returns all known values for PolicyIdentifierPolicyType. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (PolicyIdentifierPolicyType) Values() []PolicyIdentifierPolicyType {
+	return []PolicyIdentifierPolicyType{
+		"inline",
+		"aws-managed",
+		"user-managed",
+		"permission-boundary",
+		"scp",
+		"rcp",
 	}
 }
 

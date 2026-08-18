@@ -20,9 +20,16 @@ package v1
 
 // SecretKeySelectorApplyConfiguration represents a declarative configuration of the SecretKeySelector type for use
 // with apply.
+//
+// A reference to a specific 'key' within a Secret resource.
+// In some instances, `key` is a required field.
 type SecretKeySelectorApplyConfiguration struct {
+	// The name of the Secret resource being referred to.
 	LocalObjectReferenceApplyConfiguration `json:",inline"`
-	Key                                    *string `json:"key,omitempty"`
+	// The key of the entry in the Secret resource's `data` field to be used.
+	// Some instances of this field may be defaulted, in others it may be
+	// required.
+	Key *string `json:"key,omitempty"`
 }
 
 // SecretKeySelectorApplyConfiguration constructs a declarative configuration of the SecretKeySelector type for use with

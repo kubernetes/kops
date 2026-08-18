@@ -29,11 +29,29 @@ import (
 
 // CertificateRequestApplyConfiguration represents a declarative configuration of the CertificateRequest type for use
 // with apply.
+//
+// A CertificateRequest is used to request a signed certificate from one of the
+// configured issuers.
+//
+// All fields within the CertificateRequest's `spec` are immutable after creation.
+// A CertificateRequest will either succeed or fail, as denoted by its `Ready` status
+// condition and its `status.failureTime` field.
+//
+// A CertificateRequest is a one-shot resource, meaning it represents a single
+// point in time request for a certificate and cannot be re-used.
 type CertificateRequestApplyConfiguration struct {
-	metav1.TypeMetaApplyConfiguration    `json:",inline"`
+	metav1.TypeMetaApplyConfiguration `json:",inline"`
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 	*metav1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                                 *CertificateRequestSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                               *CertificateRequestStatusApplyConfiguration `json:"status,omitempty"`
+	// Specification of the desired state of the CertificateRequest resource.
+	// https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	Spec *CertificateRequestSpecApplyConfiguration `json:"spec,omitempty"`
+	// Status of the CertificateRequest.
+	// This is set and managed automatically.
+	// Read-only.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	Status *CertificateRequestStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // CertificateRequest constructs a declarative configuration of the CertificateRequest type for use with
@@ -47,29 +65,14 @@ func CertificateRequest(name, namespace string) *CertificateRequestApplyConfigur
 	return b
 }
 
-// ExtractCertificateRequest extracts the applied configuration owned by fieldManager from
-// certificateRequest. If no managedFields are found in certificateRequest for fieldManager, a
-// CertificateRequestApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractCertificateRequestFrom extracts the applied configuration owned by fieldManager from
+// certificateRequest for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // certificateRequest must be a unmodified CertificateRequest API object that was retrieved from the Kubernetes API.
-// ExtractCertificateRequest provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractCertificateRequestFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractCertificateRequest(certificateRequest *certmanagerv1.CertificateRequest, fieldManager string) (*CertificateRequestApplyConfiguration, error) {
-	return extractCertificateRequest(certificateRequest, fieldManager, "")
-}
-
-// ExtractCertificateRequestStatus is the same as ExtractCertificateRequest except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractCertificateRequestStatus(certificateRequest *certmanagerv1.CertificateRequest, fieldManager string) (*CertificateRequestApplyConfiguration, error) {
-	return extractCertificateRequest(certificateRequest, fieldManager, "status")
-}
-
-func extractCertificateRequest(certificateRequest *certmanagerv1.CertificateRequest, fieldManager string, subresource string) (*CertificateRequestApplyConfiguration, error) {
+func ExtractCertificateRequestFrom(certificateRequest *certmanagerv1.CertificateRequest, fieldManager string, subresource string) (*CertificateRequestApplyConfiguration, error) {
 	b := &CertificateRequestApplyConfiguration{}
 	err := managedfields.ExtractInto(certificateRequest, internal.Parser().Type("com.github.cert-manager.cert-manager.pkg.apis.certmanager.v1.CertificateRequest"), fieldManager, b, subresource)
 	if err != nil {
@@ -82,6 +85,27 @@ func extractCertificateRequest(certificateRequest *certmanagerv1.CertificateRequ
 	b.WithAPIVersion("cert-manager.io/v1")
 	return b, nil
 }
+
+// ExtractCertificateRequest extracts the applied configuration owned by fieldManager from
+// certificateRequest. If no managedFields are found in certificateRequest for fieldManager, a
+// CertificateRequestApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// certificateRequest must be a unmodified CertificateRequest API object that was retrieved from the Kubernetes API.
+// ExtractCertificateRequest provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractCertificateRequest(certificateRequest *certmanagerv1.CertificateRequest, fieldManager string) (*CertificateRequestApplyConfiguration, error) {
+	return ExtractCertificateRequestFrom(certificateRequest, fieldManager, "")
+}
+
+// ExtractCertificateRequestStatus extracts the applied configuration owned by fieldManager from
+// certificateRequest for the status subresource.
+func ExtractCertificateRequestStatus(certificateRequest *certmanagerv1.CertificateRequest, fieldManager string) (*CertificateRequestApplyConfiguration, error) {
+	return ExtractCertificateRequestFrom(certificateRequest, fieldManager, "status")
+}
+
 func (b CertificateRequestApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

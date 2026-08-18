@@ -15,6 +15,7 @@
 package transport
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -23,9 +24,9 @@ import (
 	"strings"
 	"time"
 
-	authchallenge "github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/google/go-containerregistry/pkg/logs"
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote/internal/authchallenge"
 )
 
 // 300ms is the default fallback period for go's DNS dialer but we could make this configurable.
@@ -75,7 +76,10 @@ func pingSingle(ctx context.Context, reg name.Registry, t http.RoundTripper, sch
 		resp.Body.Close()
 	}()
 
-	insecure := scheme == "http"
+	// If resp.Request is set, we may have followed a redirect,
+	// so we want to prefer resp.Request.URL.Scheme (if it's set)
+	// falling back to the original request's scheme.
+	insecure := cmp.Or(resp.Request, req).URL.Scheme == "http"
 
 	switch resp.StatusCode {
 	case http.StatusOK:

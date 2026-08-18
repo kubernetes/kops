@@ -16,10 +16,16 @@ import (
 
 	std "github.com/scaleway/scaleway-sdk-go/api/std"
 	"github.com/scaleway/scaleway-sdk-go/errors"
+	"github.com/scaleway/scaleway-sdk-go/internal/async"
 	"github.com/scaleway/scaleway-sdk-go/marshaler"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/parameter"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	defaultDomainRetryInterval = 15 * time.Second
+	defaultDomainTimeout       = 5 * time.Minute
 )
 
 // always import dependencies
@@ -1683,6 +1689,8 @@ type Record struct {
 	ViewConfig *RecordViewConfig `json:"view_config,omitempty"`
 
 	ID string `json:"id"`
+
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 // RecordIdentifier: record identifier.
@@ -1721,6 +1729,23 @@ type ContactExtensionFR struct {
 
 	// Precisely one of IndividualInfo, DunsInfo, AssociationInfo, TrademarkInfo, CodeAuthAfnicInfo must be set.
 	CodeAuthAfnicInfo *ContactExtensionFRCodeAuthAfnicInfo `json:"code_auth_afnic_info,omitempty"`
+}
+
+// ContactExtensionIT: contact extension it.
+type ContactExtensionIT struct {
+	// Deprecated: EuropeanCitizenship: this option is useless anymore.
+	EuropeanCitizenship *string `json:"european_citizenship,omitempty"`
+
+	// Deprecated: TaxCode: tax_code is renamed to pin.
+	TaxCode *string `json:"tax_code,omitempty"`
+
+	// Pin: domain name registrant's Taxcode (mandatory / only optional when the trustee is used)
+	//
+	// If the requester:
+	// * is an Italian natural person it contains his/her Codice Fiscale (16 characters format).
+	// * For others than residents of IT it can contain a document number. (ID Card).
+	// * In all other cases it must be equal to VAT number (in the 16 characters format if nationality is IT) or the numeric Codice Fiscale.
+	Pin string `json:"pin"`
 }
 
 // ContactExtensionNL: contact extension nl.
@@ -1838,9 +1863,6 @@ type Contact struct {
 
 	Resale bool `json:"resale"`
 
-	// Deprecated
-	Questions *[]*ContactQuestion `json:"questions,omitempty"`
-
 	ExtensionFr *ContactExtensionFR `json:"extension_fr"`
 
 	ExtensionEu *ContactExtensionEU `json:"extension_eu"`
@@ -1856,6 +1878,11 @@ type Contact struct {
 
 	// Status: default value: status_unknown
 	Status ContactStatus `json:"status"`
+
+	ExtensionIt *ContactExtensionIT `json:"extension_it"`
+
+	// Deprecated
+	Questions *[]*ContactQuestion `json:"questions,omitempty"`
 }
 
 // ContactRolesRoles: contact roles roles.
@@ -1937,9 +1964,6 @@ type NewContact struct {
 
 	Resale bool `json:"resale"`
 
-	// Deprecated
-	Questions *[]*ContactQuestion `json:"questions,omitempty"`
-
 	ExtensionFr *ContactExtensionFR `json:"extension_fr"`
 
 	ExtensionEu *ContactExtensionEU `json:"extension_eu"`
@@ -1949,6 +1973,11 @@ type NewContact struct {
 	State *string `json:"state"`
 
 	ExtensionNl *ContactExtensionNL `json:"extension_nl"`
+
+	ExtensionIt *ContactExtensionIT `json:"extension_it"`
+
+	// Deprecated
+	Questions *[]*ContactQuestion `json:"questions,omitempty"`
 }
 
 // CheckContactsCompatibilityResponseContactCheckResult: check contacts compatibility response contact check result.
@@ -2258,7 +2287,7 @@ type CloneDNSZoneRequest struct {
 
 // CreateDNSZoneRequest: create dns zone request.
 type CreateDNSZoneRequest struct {
-	// Domain: domain in which to crreate the DNS zone.
+	// Domain: domain in which to create the DNS zone.
 	Domain string `json:"domain"`
 
 	// Subdomain: subdomain of the DNS zone to create.
@@ -3176,6 +3205,18 @@ type RegistrarAPIRenewDomainsRequest struct {
 	ForceLateRenewal *bool `json:"force_late_renewal,omitempty"`
 }
 
+// RegistrarAPIRetryInboundTransferRequest: registrar api retry inbound transfer request.
+type RegistrarAPIRetryInboundTransferRequest struct {
+	// Domain: the domain being transferred.
+	Domain string `json:"domain"`
+
+	// ProjectID: the project ID to associated with the inbound transfer.
+	ProjectID string `json:"project_id"`
+
+	// AuthCode: an optional new auth code to replace the previous one for the retry.
+	AuthCode *string `json:"auth_code,omitempty"`
+}
+
 // RegistrarAPISearchAvailableDomainsRequest: registrar api search available domains request.
 type RegistrarAPISearchAvailableDomainsRequest struct {
 	// Domains: a list of domain to search, TLD is optional.
@@ -3186,6 +3227,9 @@ type RegistrarAPISearchAvailableDomainsRequest struct {
 
 	// StrictSearch: search exact match.
 	StrictSearch bool `json:"-"`
+
+	// IncludeExactMatch: if an exact match is found, include it in response as a separate element.
+	IncludeExactMatch bool `json:"-"`
 }
 
 // RegistrarAPITradeDomainRequest: registrar api trade domain request.
@@ -3262,18 +3306,20 @@ type RegistrarAPIUpdateContactRequest struct {
 
 	Resale *bool `json:"resale,omitempty"`
 
-	// Deprecated
-	Questions *[]*UpdateContactRequestQuestion `json:"questions,omitempty"`
-
 	ExtensionFr *ContactExtensionFR `json:"extension_fr,omitempty"`
 
 	ExtensionEu *ContactExtensionEU `json:"extension_eu,omitempty"`
+
+	ExtensionNl *ContactExtensionNL `json:"extension_nl,omitempty"`
+
+	ExtensionIt *ContactExtensionIT `json:"extension_it,omitempty"`
 
 	WhoisOptIn *bool `json:"whois_opt_in,omitempty"`
 
 	State *string `json:"state,omitempty"`
 
-	ExtensionNl *ContactExtensionNL `json:"extension_nl,omitempty"`
+	// Deprecated
+	Questions *[]*UpdateContactRequestQuestion `json:"questions,omitempty"`
 }
 
 // RegistrarAPIUpdateDomainHostRequest: registrar api update domain host request.
@@ -3318,10 +3364,32 @@ type RestoreDNSZoneVersionRequest struct {
 // RestoreDNSZoneVersionResponse: restore dns zone version response.
 type RestoreDNSZoneVersionResponse struct{}
 
+// RetryInboundTransferResponse: retry inbound transfer response.
+type RetryInboundTransferResponse struct{}
+
+// SearchAvailableDomainsConsoleResponse: search available domains console response.
+type SearchAvailableDomainsConsoleResponse struct {
+	ExactMatchDomain *AvailableDomain `json:"exact_match_domain"`
+
+	AvailableDomains []*AvailableDomain `json:"available_domains"`
+}
+
 // SearchAvailableDomainsResponse: search available domains response.
 type SearchAvailableDomainsResponse struct {
 	// AvailableDomains: array of available domains.
 	AvailableDomains []*AvailableDomain `json:"available_domains"`
+
+	// ExactMatchDomain: if an exact match was asked and found, the result is in this field.
+	ExactMatchDomain *AvailableDomain `json:"exact_match_domain"`
+}
+
+// UnauthenticatedRegistrarAPISearchAvailableDomainsConsoleRequest: unauthenticated registrar api search available domains console request.
+type UnauthenticatedRegistrarAPISearchAvailableDomainsConsoleRequest struct {
+	Domain string `json:"-"`
+
+	Tlds []string `json:"-"`
+
+	StrictSearch bool `json:"-"`
 }
 
 // UpdateDNSZoneNameserversRequest: update dns zone nameservers request.
@@ -3365,7 +3433,7 @@ type UpdateDNSZoneRecordsResponse struct {
 
 // UpdateDNSZoneRequest: update dns zone request.
 type UpdateDNSZoneRequest struct {
-	// DNSZone: DNS zone to update.
+	// DNSZone: the full name of the DNS zone to modify. For a root zone (e.g., example.com), enter `example.com`. For a specific sub-zone (e.g., prod.example.com), enter `prod.example.com`.
 	DNSZone string `json:"-"`
 
 	// NewDNSZone: name of the new DNS zone to create.
@@ -3919,7 +3987,7 @@ func (s *API) RestoreDNSZoneVersion(req *RestoreDNSZoneVersionRequest, opts ...s
 	return &resp, nil
 }
 
-// GetSSLCertificate: Get the DNS zone's TLS certificate. If you do not have a certificate, the ouptut returns `no certificate found`.
+// GetSSLCertificate: Get the DNS zone's TLS certificate. If you do not have a certificate, the output returns `no certificate found`.
 func (s *API) GetSSLCertificate(req *GetSSLCertificateRequest, opts ...scw.RequestOption) (*SSLCertificate, error) {
 	var err error
 
@@ -3939,6 +4007,51 @@ func (s *API) GetSSLCertificate(req *GetSSLCertificateRequest, opts ...scw.Reque
 		return nil, err
 	}
 	return &resp, nil
+}
+
+// WaitForSSLCertificateRequest is used by WaitForSSLCertificate method.
+type WaitForSSLCertificateRequest struct {
+	DNSZone       string
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
+}
+
+// WaitForSSLCertificate waits for the SSLCertificate to reach a terminal state.
+func (s *API) WaitForSSLCertificate(req *WaitForSSLCertificateRequest, opts ...scw.RequestOption) (*SSLCertificate, error) {
+	timeout := defaultDomainTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+
+	retryInterval := defaultDomainRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+	transientStatuses := map[SSLCertificateStatus]struct{}{
+		SSLCertificateStatusPending: {},
+	}
+
+	res, err := async.WaitSync(&async.WaitSyncConfig{
+		Get: func() (any, bool, error) {
+			res, err := s.GetSSLCertificate(&GetSSLCertificateRequest{
+				DNSZone: req.DNSZone,
+			}, opts...)
+			if err != nil {
+				return nil, false, err
+			}
+
+			_, isTransient := transientStatuses[res.Status]
+
+			return res, !isTransient, nil
+		},
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
+		Timeout:          timeout,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "waiting for SSLCertificate failed")
+	}
+
+	return res.(*SSLCertificate), nil
 }
 
 // CreateSSLCertificate: Create a new TLS certificate or retrieve information about an existing TLS certificate.
@@ -4105,7 +4218,8 @@ func (s *RegistrarAPI) ListTasks(req *RegistrarAPIListTasksRequest, opts ...scw.
 	return &resp, nil
 }
 
-// ListInboundTransfers:
+// ListInboundTransfers: List all inbound transfer operations on the account.
+// You can filter the list of inbound transfers by domain name.
 func (s *RegistrarAPI) ListInboundTransfers(req *RegistrarAPIListInboundTransfersRequest, opts ...scw.RequestOption) (*ListInboundTransfersResponse, error) {
 	var err error
 
@@ -4138,6 +4252,34 @@ func (s *RegistrarAPI) ListInboundTransfers(req *RegistrarAPIListInboundTransfer
 	}
 
 	var resp ListInboundTransfersResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// RetryInboundTransfer: Request a retry for the transfer of a domain from another registrar to Scaleway Domains and DNS.
+func (s *RegistrarAPI) RetryInboundTransfer(req *RegistrarAPIRetryInboundTransferRequest, opts ...scw.RequestOption) (*RetryInboundTransferResponse, error) {
+	var err error
+
+	if req.ProjectID == "" {
+		defaultProjectID, _ := s.client.GetDefaultProjectID()
+		req.ProjectID = defaultProjectID
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/domain/v2beta1/retry-inbound-transfer",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp RetryInboundTransferResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -4501,6 +4643,57 @@ func (s *RegistrarAPI) GetDomain(req *RegistrarAPIGetDomainRequest, opts ...scw.
 	return &resp, nil
 }
 
+// WaitForDomainRequest is used by WaitForDomain method.
+type WaitForDomainRequest struct {
+	Domain        string
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
+}
+
+// WaitForDomain waits for the Domain to reach a terminal state.
+func (s *RegistrarAPI) WaitForDomain(req *WaitForDomainRequest, opts ...scw.RequestOption) (*Domain, error) {
+	timeout := defaultDomainTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+
+	retryInterval := defaultDomainRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+	transientStatuses := map[DomainStatus]struct{}{
+		DomainStatusCreating: {},
+		DomainStatusRenewing: {},
+		DomainStatusXfering:  {},
+		DomainStatusExpiring: {},
+		DomainStatusUpdating: {},
+		DomainStatusChecking: {},
+		DomainStatusDeleting: {},
+	}
+
+	res, err := async.WaitSync(&async.WaitSyncConfig{
+		Get: func() (any, bool, error) {
+			res, err := s.GetDomain(&RegistrarAPIGetDomainRequest{
+				Domain: req.Domain,
+			}, opts...)
+			if err != nil {
+				return nil, false, err
+			}
+
+			_, isTransient := transientStatuses[res.Status]
+
+			return res, !isTransient, nil
+		},
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
+		Timeout:          timeout,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "waiting for Domain failed")
+	}
+
+	return res.(*Domain), nil
+}
+
 // UpdateDomain: Update contacts for a specific domain or create a new contact.<br/>
 // If you add the same contact for multiple roles (owner, administrative, technical), only one ID will be created and used for all of the roles.
 func (s *RegistrarAPI) UpdateDomain(req *RegistrarAPIUpdateDomainRequest, opts ...scw.RequestOption) (*Domain, error) {
@@ -4637,7 +4830,7 @@ func (s *RegistrarAPI) DisableDomainAutoRenew(req *RegistrarAPIDisableDomainAuto
 	return &resp, nil
 }
 
-// GetDomainAuthCode: Retrieve the authorization code to tranfer an unlocked domain. The output returns an error if the domain is locked.
+// GetDomainAuthCode: Retrieve the authorization code to transfer an unlocked domain. The output returns an error if the domain is locked.
 // Some TLDs may have a different procedure to retrieve the authorization code. In that case, the information displays in the message field.
 func (s *RegistrarAPI) GetDomainAuthCode(req *RegistrarAPIGetDomainAuthCodeRequest, opts ...scw.RequestOption) (*GetDomainAuthCodeResponse, error) {
 	var err error
@@ -4724,6 +4917,7 @@ func (s *RegistrarAPI) SearchAvailableDomains(req *RegistrarAPISearchAvailableDo
 	parameter.AddToQuery(query, "domains", req.Domains)
 	parameter.AddToQuery(query, "tlds", req.Tlds)
 	parameter.AddToQuery(query, "strict_search", req.StrictSearch)
+	parameter.AddToQuery(query, "include_exact_match", req.IncludeExactMatch)
 
 	scwReq := &scw.ScalewayRequest{
 		Method: "GET",
@@ -4878,6 +5072,60 @@ func (s *RegistrarAPI) DeleteDomainHost(req *RegistrarAPIDeleteDomainHostRequest
 	}
 
 	var resp Host
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// Unauthenticated Domain search API.
+type UnauthenticatedRegistrarAPI struct {
+	client *scw.Client
+}
+
+// NewUnauthenticatedRegistrarAPI returns a UnauthenticatedRegistrarAPI object from a Scaleway client.
+func NewUnauthenticatedRegistrarAPI(client *scw.Client) *UnauthenticatedRegistrarAPI {
+	return &UnauthenticatedRegistrarAPI{
+		client: client,
+	}
+}
+
+// GetServiceInfo:
+func (s *UnauthenticatedRegistrarAPI) GetServiceInfo(opts ...scw.RequestOption) (*scw.ServiceInfo, error) {
+	var err error
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/domain/v2beta1/search",
+	}
+
+	var resp scw.ServiceInfo
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// SearchAvailableDomainsConsole:
+func (s *UnauthenticatedRegistrarAPI) SearchAvailableDomainsConsole(req *UnauthenticatedRegistrarAPISearchAvailableDomainsConsoleRequest, opts ...scw.RequestOption) (*SearchAvailableDomainsConsoleResponse, error) {
+	var err error
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "domain", req.Domain)
+	parameter.AddToQuery(query, "tlds", req.Tlds)
+	parameter.AddToQuery(query, "strict_search", req.StrictSearch)
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/domain/v2beta1/search-domains-console",
+		Query:  query,
+	}
+
+	var resp SearchAvailableDomainsConsoleResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {

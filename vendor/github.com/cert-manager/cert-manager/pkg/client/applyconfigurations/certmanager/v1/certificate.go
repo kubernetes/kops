@@ -29,11 +29,24 @@ import (
 
 // CertificateApplyConfiguration represents a declarative configuration of the Certificate type for use
 // with apply.
+//
+// A Certificate resource should be created to ensure an up to date and signed
+// X.509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`.
+//
+// The stored certificate will be renewed before it expires (as configured by `spec.renewBefore`).
 type CertificateApplyConfiguration struct {
-	metav1.TypeMetaApplyConfiguration    `json:",inline"`
+	metav1.TypeMetaApplyConfiguration `json:",inline"`
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 	*metav1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                                 *CertificateSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                               *CertificateStatusApplyConfiguration `json:"status,omitempty"`
+	// Specification of the desired state of the Certificate resource.
+	// https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	Spec *CertificateSpecApplyConfiguration `json:"spec,omitempty"`
+	// Status of the Certificate.
+	// This is set and managed automatically.
+	// Read-only.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	Status *CertificateStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // Certificate constructs a declarative configuration of the Certificate type for use with
@@ -47,29 +60,14 @@ func Certificate(name, namespace string) *CertificateApplyConfiguration {
 	return b
 }
 
-// ExtractCertificate extracts the applied configuration owned by fieldManager from
-// certificate. If no managedFields are found in certificate for fieldManager, a
-// CertificateApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractCertificateFrom extracts the applied configuration owned by fieldManager from
+// certificate for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // certificate must be a unmodified Certificate API object that was retrieved from the Kubernetes API.
-// ExtractCertificate provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractCertificateFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractCertificate(certificate *certmanagerv1.Certificate, fieldManager string) (*CertificateApplyConfiguration, error) {
-	return extractCertificate(certificate, fieldManager, "")
-}
-
-// ExtractCertificateStatus is the same as ExtractCertificate except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractCertificateStatus(certificate *certmanagerv1.Certificate, fieldManager string) (*CertificateApplyConfiguration, error) {
-	return extractCertificate(certificate, fieldManager, "status")
-}
-
-func extractCertificate(certificate *certmanagerv1.Certificate, fieldManager string, subresource string) (*CertificateApplyConfiguration, error) {
+func ExtractCertificateFrom(certificate *certmanagerv1.Certificate, fieldManager string, subresource string) (*CertificateApplyConfiguration, error) {
 	b := &CertificateApplyConfiguration{}
 	err := managedfields.ExtractInto(certificate, internal.Parser().Type("com.github.cert-manager.cert-manager.pkg.apis.certmanager.v1.Certificate"), fieldManager, b, subresource)
 	if err != nil {
@@ -82,6 +80,27 @@ func extractCertificate(certificate *certmanagerv1.Certificate, fieldManager str
 	b.WithAPIVersion("cert-manager.io/v1")
 	return b, nil
 }
+
+// ExtractCertificate extracts the applied configuration owned by fieldManager from
+// certificate. If no managedFields are found in certificate for fieldManager, a
+// CertificateApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// certificate must be a unmodified Certificate API object that was retrieved from the Kubernetes API.
+// ExtractCertificate provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractCertificate(certificate *certmanagerv1.Certificate, fieldManager string) (*CertificateApplyConfiguration, error) {
+	return ExtractCertificateFrom(certificate, fieldManager, "")
+}
+
+// ExtractCertificateStatus extracts the applied configuration owned by fieldManager from
+// certificate for the status subresource.
+func ExtractCertificateStatus(certificate *certmanagerv1.Certificate, fieldManager string) (*CertificateApplyConfiguration, error) {
+	return ExtractCertificateFrom(certificate, fieldManager, "status")
+}
+
 func (b CertificateApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

@@ -89,7 +89,7 @@ func ExtractNames(page pagination.Page) ([]string, error) {
 
 		return names, nil
 	default:
-		return nil, fmt.Errorf("Cannot extract names from response with content-type: [%s]", ct)
+		return nil, fmt.Errorf("cannot extract names from response with content-type: [%s]", ct)
 	}
 }
 

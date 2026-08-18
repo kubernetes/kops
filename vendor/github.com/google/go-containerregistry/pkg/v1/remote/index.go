@@ -225,8 +225,12 @@ func (r *remoteIndex) childDescriptor(child v1.Descriptor, platform v1.Platform)
 		mf, _ := v1.ParseManifest(bytes.NewReader(manifest))
 		// Failing to parse as a manifest should just be ignored.
 		// The manifest might not be valid, and that's okay.
-		if mf != nil && !mf.Config.MediaType.IsConfig() {
-			child.ArtifactType = string(mf.Config.MediaType)
+		if mf != nil {
+			if mf.ArtifactType != "" {
+				child.ArtifactType = mf.ArtifactType
+			} else {
+				child.ArtifactType = string(mf.Config.MediaType)
+			}
 		}
 	}
 

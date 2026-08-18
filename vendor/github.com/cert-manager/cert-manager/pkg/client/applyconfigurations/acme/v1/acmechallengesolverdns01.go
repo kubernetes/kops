@@ -24,17 +24,35 @@ import (
 
 // ACMEChallengeSolverDNS01ApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverDNS01 type for use
 // with apply.
+//
+// Used to configure a DNS01 challenge provider to be used when solving DNS01
+// challenges.
+// Only one DNS provider may be configured per solver.
 type ACMEChallengeSolverDNS01ApplyConfiguration struct {
-	CNAMEStrategy *acmev1.CNAMEStrategy                                  `json:"cnameStrategy,omitempty"`
-	Akamai        *ACMEIssuerDNS01ProviderAkamaiApplyConfiguration       `json:"akamai,omitempty"`
-	CloudDNS      *ACMEIssuerDNS01ProviderCloudDNSApplyConfiguration     `json:"cloudDNS,omitempty"`
-	Cloudflare    *ACMEIssuerDNS01ProviderCloudflareApplyConfiguration   `json:"cloudflare,omitempty"`
-	Route53       *ACMEIssuerDNS01ProviderRoute53ApplyConfiguration      `json:"route53,omitempty"`
-	AzureDNS      *ACMEIssuerDNS01ProviderAzureDNSApplyConfiguration     `json:"azureDNS,omitempty"`
-	DigitalOcean  *ACMEIssuerDNS01ProviderDigitalOceanApplyConfiguration `json:"digitalocean,omitempty"`
-	AcmeDNS       *ACMEIssuerDNS01ProviderAcmeDNSApplyConfiguration      `json:"acmeDNS,omitempty"`
-	RFC2136       *ACMEIssuerDNS01ProviderRFC2136ApplyConfiguration      `json:"rfc2136,omitempty"`
-	Webhook       *ACMEIssuerDNS01ProviderWebhookApplyConfiguration      `json:"webhook,omitempty"`
+	// CNAMEStrategy configures how the DNS01 provider should handle CNAME
+	// records when found in DNS zones.
+	CNAMEStrategy *acmev1.CNAMEStrategy `json:"cnameStrategy,omitempty"`
+	// Use the Akamai DNS zone management API to manage DNS01 challenge records.
+	Akamai *ACMEIssuerDNS01ProviderAkamaiApplyConfiguration `json:"akamai,omitempty"`
+	// Use the Google Cloud DNS API to manage DNS01 challenge records.
+	CloudDNS *ACMEIssuerDNS01ProviderCloudDNSApplyConfiguration `json:"cloudDNS,omitempty"`
+	// Use the Cloudflare API to manage DNS01 challenge records.
+	Cloudflare *ACMEIssuerDNS01ProviderCloudflareApplyConfiguration `json:"cloudflare,omitempty"`
+	// Use the AWS Route53 API to manage DNS01 challenge records.
+	Route53 *ACMEIssuerDNS01ProviderRoute53ApplyConfiguration `json:"route53,omitempty"`
+	// Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+	AzureDNS *ACMEIssuerDNS01ProviderAzureDNSApplyConfiguration `json:"azureDNS,omitempty"`
+	// Use the DigitalOcean DNS API to manage DNS01 challenge records.
+	DigitalOcean *ACMEIssuerDNS01ProviderDigitalOceanApplyConfiguration `json:"digitalocean,omitempty"`
+	// Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage
+	// DNS01 challenge records.
+	AcmeDNS *ACMEIssuerDNS01ProviderAcmeDNSApplyConfiguration `json:"acmeDNS,omitempty"`
+	// Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/)
+	// to manage DNS01 challenge records.
+	RFC2136 *ACMEIssuerDNS01ProviderRFC2136ApplyConfiguration `json:"rfc2136,omitempty"`
+	// Configure an external webhook based DNS01 challenge solver to manage
+	// DNS01 challenge records.
+	Webhook *ACMEIssuerDNS01ProviderWebhookApplyConfiguration `json:"webhook,omitempty"`
 }
 
 // ACMEChallengeSolverDNS01ApplyConfiguration constructs a declarative configuration of the ACMEChallengeSolverDNS01 type for use with

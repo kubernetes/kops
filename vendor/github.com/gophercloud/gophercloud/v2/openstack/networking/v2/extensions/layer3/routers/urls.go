@@ -23,3 +23,15 @@ func removeInterfaceURL(c *gophercloud.ServiceClient, id string) string {
 func listl3AgentsURL(c *gophercloud.ServiceClient, id string) string {
 	return c.ServiceURL(resourcePath, id, "l3-agents")
 }
+
+func addExternalGatewaysURL(c *gophercloud.ServiceClient, id string) string {
+	return c.ServiceURL(resourcePath, id, "add_external_gateways")
+}
+
+func updateExternalGatewaysURL(c *gophercloud.ServiceClient, id string) string {
+	return c.ServiceURL(resourcePath, id, "update_external_gateways")
+}
+
+func removeExternalGatewaysURL(c *gophercloud.ServiceClient, id string) string {
+	return c.ServiceURL(resourcePath, id, "remove_external_gateways")
+}

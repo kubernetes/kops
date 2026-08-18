@@ -5,10 +5,8 @@ package autoscaling
 import (
 	"context"
 	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/smithy-go/middleware"
-	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Gets information about the scaling activities in the account and Region.
@@ -42,16 +40,47 @@ func (c *Client) DescribeScalingActivities(ctx context.Context, params *Describe
 
 type DescribeScalingActivitiesInput struct {
 
-	// The activity IDs of the desired scaling activities. If you omit this property,
-	// all activities for the past six weeks are described. If unknown activities are
-	// requested, they are ignored with no error. If you specify an Auto Scaling group,
-	// the results are limited to that group.
+	//  The activity IDs of the desired scaling activities. If unknown activity IDs
+	// are requested, they are ignored with no error. Only activities started within
+	// the last six weeks can be returned regardless of the activity IDs specified. If
+	// other filters are specified with the request, only results matching all filter
+	// criteria can be returned.
 	//
 	// Array Members: Maximum number of 50 IDs.
 	ActivityIds []string
 
 	// The name of the Auto Scaling group.
+	//
+	// Omitting this property performs an account-wide operation, which can result in
+	// slower or timed-out requests.
 	AutoScalingGroupName *string
+
+	//  One or more filters to limit the results based on specific criteria. The
+	// following filters are supported:
+	//
+	//   - StartTimeLowerBound - The earliest scaling activities to return based on the
+	//   activity start time. Scaling activities with a start time earlier than this
+	//   value are not included in the results. Only activities started within the last
+	//   six weeks can be returned regardless of the value specified.
+	//
+	//   - StartTimeUpperBound - The latest scaling activities to return based on the
+	//   activity start time. Scaling activities with a start time later than this value
+	//   are not included in the results. Only activities started within the last six
+	//   weeks can be returned regardless of the value specified.
+	//
+	//   - Status - The StatusCode value of the scaling activity. This filter can only
+	//   be used in combination with the AutoScalingGroupName parameter. For valid
+	//   StatusCode values, see [Activity]in the Amazon EC2 Auto Scaling API Reference.
+	//
+	// StartTimeLowerBound and StartTimeUpperBound accept ISO 8601 formatted
+	// timestamps. Timestamps without a timezone offset are assumed to be UTC.
+	//
+	//   - 2000-01-18T08:15:00Z
+	//
+	//   - 2000-01-18T16:15:00+08:00
+	//
+	// [Activity]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_Activity.html
+	Filters []types.Filter
 
 	// Indicates whether to include scaling activity from deleted Auto Scaling groups.
 	IncludeDeletedGroups *bool
@@ -88,9 +117,6 @@ type DescribeScalingActivitiesOutput struct {
 }
 
 func (c *Client) addOperationDescribeScalingActivitiesMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsAwsquery_serializeOpDescribeScalingActivities{}, middleware.After)
 	if err != nil {
 		return err
@@ -99,19 +125,7 @@ func (c *Client) addOperationDescribeScalingActivitiesMiddlewares(stack *middlew
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "DescribeScalingActivities"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
-	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
-		return err
-	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = addClientRequestID(stack); err != nil {
-		return err
-	}
 	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
@@ -121,43 +135,10 @@ func (c *Client) addOperationDescribeScalingActivitiesMiddlewares(stack *middlew
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
-		return err
-	}
-	if err = addRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = addRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addSpanRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addTimeOffsetBuild(stack, c); err != nil {
-		return err
-	}
-	if err = addUserAgentRetryMode(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack, options); err != nil {
 		return err
 	}
 	if err = addCredentialSource(stack, options); err != nil {
-		return err
-	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeScalingActivities(options.Region), middleware.Before); err != nil {
-		return err
-	}
-	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -170,12 +151,6 @@ func (c *Client) addOperationDescribeScalingActivitiesMiddlewares(stack *middlew
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
 	if err = addInterceptors(stack, options); err != nil {
@@ -279,11 +254,3 @@ type DescribeScalingActivitiesAPIClient interface {
 }
 
 var _ DescribeScalingActivitiesAPIClient = (*Client)(nil)
-
-func newServiceMetadataMiddleware_opDescribeScalingActivities(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "DescribeScalingActivities",
-	}
-}

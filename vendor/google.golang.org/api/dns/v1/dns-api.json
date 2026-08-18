@@ -117,7 +117,7 @@
     "changes": {
       "methods": {
         "create": {
-          "description": "Atomically updates the ResourceRecordSet collection.",
+          "description": "Atomically updates the ResourceRecordSet collection. Note: While `dns.changes.create` is the baseline permission required to invoke this method, additional permissions are checked depending on the specific additions or deletions contained in the payload.",
           "flatPath": "dns/v1/projects/{project}/managedZones/{managedZone}/changes",
           "httpMethod": "POST",
           "id": "dns.changes.create",
@@ -483,7 +483,7 @@
     "managedZones": {
       "methods": {
         "create": {
-          "description": "Creates a new ManagedZone.",
+          "description": "Creates a new ManagedZone. Note: While `dns.managedZones.create` is the baseline permission required to invoke this method, additional permissions are required if the managed zone configuration references other resources.",
           "flatPath": "dns/v1/projects/{project}/managedZones",
           "httpMethod": "POST",
           "id": "dns.managedZones.create",
@@ -1829,7 +1829,7 @@
       }
     }
   },
-  "revision": "20260616",
+  "revision": "20260714",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {

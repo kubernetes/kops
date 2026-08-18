@@ -18,7 +18,9 @@ package transport
 const (
 	PullScope string = "pull"
 	PushScope string = "push,pull"
-	// For now DELETE is PUSH, which is the read/write ACL.
-	DeleteScope  string = PushScope
+	// DeleteScope requests "delete" in addition to push/pull so that
+	// registries requiring an explicit delete action (e.g. IBM Cloud
+	// Container Registry) grant the necessary access.
+	DeleteScope  string = "push,pull,delete"
 	CatalogScope string = "catalog"
 )

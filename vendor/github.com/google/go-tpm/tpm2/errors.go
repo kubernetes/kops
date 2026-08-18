@@ -166,7 +166,7 @@ var fmt1Descs = map[TPMRC]errorDesc{
 		description: "value is out of range or is not correct for the context",
 	},
 	TPMRCHierarchy: {
-		name:        "TPM_RC_HIERATPMRCHY",
+		name:        "TPM_RC_HIERARCHY",
 		description: "hierarchy is not enabled or is not correct for the use",
 	},
 	TPMRCKeySize: {

@@ -62,8 +62,7 @@ type orderedRequest struct {
 func (s *packetManager) newOrderedRequest(p requestPacket) orderedRequest {
 	return orderedRequest{requestPacket: p, orderid: s.newOrderID()}
 }
-func (p orderedRequest) orderID() uint32       { return p.orderid }
-func (p orderedRequest) setOrderID(oid uint32) { p.orderid = oid }
+func (p orderedRequest) orderID() uint32 { return p.orderid }
 
 type orderedResponse struct {
 	responsePacket
@@ -74,8 +73,7 @@ func (s *packetManager) newOrderedResponse(p responsePacket, id uint32,
 ) orderedResponse {
 	return orderedResponse{responsePacket: p, orderid: id}
 }
-func (p orderedResponse) orderID() uint32       { return p.orderid }
-func (p orderedResponse) setOrderID(oid uint32) { p.orderid = oid }
+func (p orderedResponse) orderID() uint32 { return p.orderid }
 
 type orderedPacket interface {
 	id() uint32

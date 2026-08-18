@@ -20,7 +20,16 @@ package v1
 
 // LocalObjectReferenceApplyConfiguration represents a declarative configuration of the LocalObjectReference type for use
 // with apply.
+//
+// A reference to an object in the same namespace as the referent.
+// If the referent is a cluster-scoped resource (e.g., a ClusterIssuer),
+// the reference instead refers to the resource with the given name in the
+// configured 'cluster resource namespace', which is set as a flag on the
+// controller component (and defaults to the namespace that cert-manager
+// runs in).
 type LocalObjectReferenceApplyConfiguration struct {
+	// Name of the resource being referred to.
+	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
 	Name *string `json:"name,omitempty"`
 }
 

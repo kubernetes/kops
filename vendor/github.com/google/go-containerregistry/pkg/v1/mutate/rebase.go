@@ -97,13 +97,21 @@ func Rebase(orig, oldBase, newBase v1.Image) (v1.Image, error) {
 		return nil, fmt.Errorf("could not get new base layers for new base: %w", err)
 	}
 	// Add new base layers.
-	rebasedImage, err = Append(rebasedImage, createAddendums(0, 0, newConfig.History, newBaseLayers)...)
+	newBaseAdds, err := createAddendums(0, 0, newConfig.History, newBaseLayers)
+	if err != nil {
+		return nil, fmt.Errorf("failed to process new base image: %w", err)
+	}
+	rebasedImage, err = Append(rebasedImage, newBaseAdds...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to append new base image: %w", err)
 	}
 
 	// Add original layers above the old base.
-	rebasedImage, err = Append(rebasedImage, createAddendums(len(oldConfig.History), len(oldBaseLayers)+1, origConfig.History, origLayers)...)
+	origAdds, err := createAddendums(len(oldConfig.History), len(oldBaseLayers)+1, origConfig.History, origLayers)
+	if err != nil {
+		return nil, fmt.Errorf("failed to process original image: %w", err)
+	}
+	rebasedImage, err = Append(rebasedImage, origAdds...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to append original image: %w", err)
 	}
@@ -113,7 +121,7 @@ func Rebase(orig, oldBase, newBase v1.Image) (v1.Image, error) {
 
 // createAddendums makes a list of addendums from a history and layers starting from a specific history and layer
 // indexes.
-func createAddendums(startHistory, startLayer int, history []v1.History, layers []v1.Layer) []Addendum {
+func createAddendums(startHistory, startLayer int, history []v1.History, layers []v1.Layer) ([]Addendum, error) {
 	var adds []Addendum
 	// History should be a superset of layers; empty layers (e.g. ENV statements) only exist in history.
 	// They cannot be iterated identically but must be walked independently, only advancing the iterator for layers
@@ -123,6 +131,9 @@ func createAddendums(startHistory, startLayer int, history []v1.History, layers 
 		var layer v1.Layer
 		emptyLayer := history[historyIndex].EmptyLayer
 		if !emptyLayer {
+			if layerIndex >= len(layers) {
+				return nil, fmt.Errorf("malformed image: config history references at least %d non-empty layer(s), but only %d layer(s) are present", layerIndex+1, len(layers))
+			}
 			layer = layers[layerIndex]
 			layerIndex++
 		}
@@ -136,9 +147,9 @@ func createAddendums(startHistory, startLayer int, history []v1.History, layers 
 	// In the event history was malformed or non-existent, append the remaining layers.
 	for i := layerIndex; i < len(layers); i++ {
 		if i >= startLayer {
-			adds = append(adds, Addendum{Layer: layers[layerIndex]})
+			adds = append(adds, Addendum{Layer: layers[i]})
 		}
 	}
 
-	return adds
+	return adds, nil
 }

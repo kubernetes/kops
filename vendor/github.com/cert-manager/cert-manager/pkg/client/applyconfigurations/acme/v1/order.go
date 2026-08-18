@@ -29,6 +29,8 @@ import (
 
 // OrderApplyConfiguration represents a declarative configuration of the Order type for use
 // with apply.
+//
+// Order is a type to represent an Order with an ACME server
 type OrderApplyConfiguration struct {
 	metav1.TypeMetaApplyConfiguration    `json:",inline"`
 	*metav1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -47,29 +49,14 @@ func Order(name, namespace string) *OrderApplyConfiguration {
 	return b
 }
 
-// ExtractOrder extracts the applied configuration owned by fieldManager from
-// order. If no managedFields are found in order for fieldManager, a
-// OrderApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractOrderFrom extracts the applied configuration owned by fieldManager from
+// order for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // order must be a unmodified Order API object that was retrieved from the Kubernetes API.
-// ExtractOrder provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractOrderFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractOrder(order *acmev1.Order, fieldManager string) (*OrderApplyConfiguration, error) {
-	return extractOrder(order, fieldManager, "")
-}
-
-// ExtractOrderStatus is the same as ExtractOrder except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractOrderStatus(order *acmev1.Order, fieldManager string) (*OrderApplyConfiguration, error) {
-	return extractOrder(order, fieldManager, "status")
-}
-
-func extractOrder(order *acmev1.Order, fieldManager string, subresource string) (*OrderApplyConfiguration, error) {
+func ExtractOrderFrom(order *acmev1.Order, fieldManager string, subresource string) (*OrderApplyConfiguration, error) {
 	b := &OrderApplyConfiguration{}
 	err := managedfields.ExtractInto(order, internal.Parser().Type("com.github.cert-manager.cert-manager.pkg.apis.acme.v1.Order"), fieldManager, b, subresource)
 	if err != nil {
@@ -82,6 +69,27 @@ func extractOrder(order *acmev1.Order, fieldManager string, subresource string) 
 	b.WithAPIVersion("acme.cert-manager.io/v1")
 	return b, nil
 }
+
+// ExtractOrder extracts the applied configuration owned by fieldManager from
+// order. If no managedFields are found in order for fieldManager, a
+// OrderApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// order must be a unmodified Order API object that was retrieved from the Kubernetes API.
+// ExtractOrder provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractOrder(order *acmev1.Order, fieldManager string) (*OrderApplyConfiguration, error) {
+	return ExtractOrderFrom(order, fieldManager, "")
+}
+
+// ExtractOrderStatus extracts the applied configuration owned by fieldManager from
+// order for the status subresource.
+func ExtractOrderStatus(order *acmev1.Order, fieldManager string) (*OrderApplyConfiguration, error) {
+	return ExtractOrderFrom(order, fieldManager, "status")
+}
+
 func (b OrderApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

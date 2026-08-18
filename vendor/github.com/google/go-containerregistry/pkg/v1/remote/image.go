@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"net/http"
 	"net/url"
 	"sync"
 
@@ -27,7 +26,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
-	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 )
 
@@ -172,7 +170,7 @@ func (rl *remoteImageLayer) Digest() (v1.Hash, error) {
 
 // Compressed implements partial.CompressedLayer
 func (rl *remoteImageLayer) Compressed() (io.ReadCloser, error) {
-	urls := []url.URL{rl.ri.fetcher.url("blobs", rl.digest.String())}
+	u := rl.ri.fetcher.url("blobs", rl.digest.String())
 
 	// Add alternative layer sources from URLs (usually none).
 	d, err := partial.BlobDescriptor(rl, rl.digest)
@@ -187,38 +185,38 @@ func (rl *remoteImageLayer) Compressed() (io.ReadCloser, error) {
 	// We don't want to log binary layers -- this can break terminals.
 	ctx := redact.NewContext(rl.ctx, "omitting binary blobs from logs")
 
-	for _, s := range d.URLs {
-		u, err := url.Parse(s)
-		if err != nil {
-			return nil, err
-		}
-		urls = append(urls, *u)
-	}
+	insecure := rl.ri.fetcher.target.Scheme() == "http"
 
 	// The lastErr for most pulls will be the same (the first error), but for
 	// foreign layers we'll want to surface the last one, since we try to pull
 	// from the registry first, which would often fail.
 	// TODO: Maybe we don't want to try pulling from the registry first?
 	var lastErr error
-	for _, u := range urls {
-		req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	rc, err := rl.ri.fetcher.fetchBlobURL(ctx, u, d.Size, rl.digest)
+	if err == nil {
+		return rc, nil
+	}
+	lastErr = err
+
+	foreignURLs := make([]url.URL, 0, len(d.URLs))
+	for _, s := range d.URLs {
+		if err := validateForeignURL(s, insecure); err != nil {
+			return nil, err
+		}
+		fu, err := url.Parse(s)
 		if err != nil {
 			return nil, err
 		}
+		foreignURLs = append(foreignURLs, *fu)
+	}
 
-		resp, err := rl.ri.fetcher.Do(req.WithContext(ctx))
+	for _, fu := range foreignURLs {
+		rc, err := rl.ri.fetcher.fetchForeignBlobURL(ctx, fu, d.Size, rl.digest, insecure)
 		if err != nil {
 			lastErr = err
 			continue
 		}
-
-		if err := transport.CheckError(resp, http.StatusOK); err != nil {
-			resp.Body.Close()
-			lastErr = err
-			continue
-		}
-
-		return verify.ReadCloser(resp.Body, d.Size, rl.digest)
+		return rc, nil
 	}
 
 	return nil, lastErr

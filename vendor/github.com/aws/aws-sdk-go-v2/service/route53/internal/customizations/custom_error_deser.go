@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"github.com/aws/smithy-go"
@@ -62,7 +61,7 @@ func (m *processResponse) HandleDeserialize(
 	}
 
 	// rewind response body
-	response.Body = ioutil.NopCloser(io.MultiReader(&readBuff, response.Body))
+	response.Body = io.NopCloser(io.MultiReader(&readBuff, response.Body))
 
 	// if start tag is "InvalidChangeBatch", the error response needs custom unmarshaling.
 	if strings.EqualFold(t.Name.Local, "InvalidChangeBatch") {

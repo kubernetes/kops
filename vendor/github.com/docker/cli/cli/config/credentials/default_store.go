@@ -2,12 +2,19 @@ package credentials
 
 import "os/exec"
 
-// DetectDefaultStore return the default credentials store for the platform if
-// no user-defined store is passed, and the store executable is available.
-func DetectDefaultStore(store string) string {
-	if store != "" {
+// DetectDefaultStore returns the credentials store to use if no user-defined
+// custom helper is passed.
+//
+// Some platforms define a preferred helper, in which case it attempts to look
+// up the helper binary before falling back to the platform's default.
+//
+// If no user-defined helper is passed, and no helper is found, it returns an
+// empty string, which means credentials are stored unencrypted in the CLI's
+// config-file without the use of a credentials store.
+func DetectDefaultStore(customStore string) string {
+	if customStore != "" {
 		// use user-defined
-		return store
+		return customStore
 	}
 
 	platformDefault := defaultCredentialsStore()

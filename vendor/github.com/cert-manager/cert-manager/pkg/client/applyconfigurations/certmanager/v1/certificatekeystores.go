@@ -20,8 +20,15 @@ package v1
 
 // CertificateKeystoresApplyConfiguration represents a declarative configuration of the CertificateKeystores type for use
 // with apply.
+//
+// CertificateKeystores configures additional keystore output formats to be
+// created in the Certificate's output Secret.
 type CertificateKeystoresApplyConfiguration struct {
-	JKS    *JKSKeystoreApplyConfiguration    `json:"jks,omitempty"`
+	// JKS configures options for storing a JKS keystore in the
+	// `spec.secretName` Secret resource.
+	JKS *JKSKeystoreApplyConfiguration `json:"jks,omitempty"`
+	// PKCS12 configures options for storing a PKCS12 keystore in the
+	// `spec.secretName` Secret resource.
 	PKCS12 *PKCS12KeystoreApplyConfiguration `json:"pkcs12,omitempty"`
 }
 

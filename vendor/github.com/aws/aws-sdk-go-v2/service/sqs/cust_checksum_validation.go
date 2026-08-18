@@ -22,7 +22,7 @@ func addValidateSendMessageChecksum(stack *middleware.Stack, o Options) error {
 // message payload MD5 checksum matches that returned by the API.
 //
 // The input and output types must match the SendMessage operation.
-func validateSendMessageChecksum(input, output interface{}) error {
+func validateSendMessageChecksum(input, output any) error {
 	in, ok := input.(*SendMessageInput)
 	if !ok {
 		return fmt.Errorf("wrong input type, expect %T, got %T", in, input)
@@ -56,7 +56,7 @@ func addValidateSendMessageBatchChecksum(stack *middleware.Stack, o Options) err
 // input messages body MD5 checksum matches those returned by the API.
 //
 // The input and output types must match the SendMessageBatch operation.
-func validateSendMessageBatchChecksum(input, output interface{}) error {
+func validateSendMessageBatchChecksum(input, output any) error {
 	in, ok := input.(*SendMessageBatchInput)
 	if !ok {
 		return fmt.Errorf("wrong input type, expect %T, got %T", in, input)
@@ -106,7 +106,7 @@ func addValidateReceiveMessageChecksum(stack *middleware.Stack, o Options) error
 // input messages body MD5 checksum matches those returned by the API.
 //
 // The input and output types must match the ReceiveMessage operation.
-func validateReceiveMessageChecksum(_, output interface{}) error {
+func validateReceiveMessageChecksum(_, output any) error {
 	out, ok := output.(*ReceiveMessageOutput)
 	if !ok {
 		return fmt.Errorf("wrong output type, expect %T, got %T", out, output)
@@ -138,7 +138,7 @@ func validateReceiveMessageChecksum(_, output interface{}) error {
 
 // messageChecksumValidator provides the function signature for the operation's
 // validator.
-type messageChecksumValidator func(input, output interface{}) error
+type messageChecksumValidator func(input, output any) error
 
 // addValidateMessageChecksum adds the ValidateMessageChecksum middleware to
 // the stack with the passed in validator specified.

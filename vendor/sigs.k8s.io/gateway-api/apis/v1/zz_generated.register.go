@@ -34,6 +34,7 @@ const GroupName = "gateway.networking.k8s.io"
 var GroupVersion = metav1.GroupVersion{Group: GroupName, Version: "v1"}
 
 // SchemeGroupVersion is group version used to register these objects
+//
 // Deprecated: use GroupVersion instead.
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1"}
 
@@ -71,6 +72,16 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&GatewayList{},
 		&HTTPRoute{},
 		&HTTPRouteList{},
+		&ListenerSet{},
+		&ListenerSetList{},
+		&ReferenceGrant{},
+		&ReferenceGrantList{},
+		&TCPRoute{},
+		&TCPRouteList{},
+		&TLSRoute{},
+		&TLSRouteList{},
+		&UDPRoute{},
+		&UDPRouteList{},
 	)
 	// AddToGroupVersion allows the serialization of client types like ListOptions.
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)

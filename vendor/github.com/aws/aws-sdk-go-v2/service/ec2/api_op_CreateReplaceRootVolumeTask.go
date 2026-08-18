@@ -5,16 +5,15 @@ package ec2
 import (
 	"context"
 	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go/middleware"
-	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Replaces the EBS-backed root volume for a running instance with a new volume
 // that is restored to the original root volume's launch state, that is restored to
-// a specific snapshot taken from the original root volume, or that is restored
-// from an AMI that has the same key characteristics as that of the instance.
+// a specific snapshot taken from the original root volume, that is restored from
+// an AMI that has the same key characteristics as that of the instance, or that is
+// replaced by a specified volume.
 //
 // For more information, see [Replace a root volume] in the Amazon EC2 User Guide.
 //
@@ -65,8 +64,9 @@ type CreateReplaceRootVolumeTaskInput struct {
 	// have the same product code, billing information, architecture type, and
 	// virtualization type as that of the instance.
 	//
-	// If you want to restore the replacement volume from a specific snapshot, or if
-	// you want to restore it to its launch state, omit this parameter.
+	// If you want to restore the replacement volume from a specific snapshot, if you
+	// want to restore it to its launch state, or if you want to replace the root
+	// volume with a specified volume, omit this parameter.
 	ImageId *string
 
 	// The ID of the snapshot from which to restore the replacement root volume. The
@@ -74,12 +74,21 @@ type CreateReplaceRootVolumeTaskInput struct {
 	// original root volume.
 	//
 	// If you want to restore the replacement root volume to the initial launch state,
-	// or if you want to restore the replacement root volume from an AMI, omit this
-	// parameter.
+	// if you want to restore the replacement root volume from an AMI, or if you want
+	// to replace the root volume with a specified volume, omit this parameter.
 	SnapshotId *string
 
 	// The tags to apply to the root volume replacement task.
 	TagSpecifications []types.TagSpecification
+
+	// The ID of the volume to use as the replacement root volume. The specified
+	// volume must be in the same Availability Zone as the instance, must be in the
+	// available state, and must not be attached to an instance. If the original root
+	// volume is encrypted, the specified volume must also be encrypted.
+	//
+	// If you want to restore the replacement root volume from a specific snapshot, an
+	// AMI, or to its launch state, omit this parameter.
+	VolumeId *string
 
 	// Specifies the Amazon EBS Provisioned Rate for Volume Initialization (volume
 	// initialization rate), in MiB/s, at which to download the snapshot blocks from
@@ -121,9 +130,6 @@ type CreateReplaceRootVolumeTaskOutput struct {
 }
 
 func (c *Client) addOperationCreateReplaceRootVolumeTaskMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsEc2query_serializeOpCreateReplaceRootVolumeTask{}, middleware.After)
 	if err != nil {
 		return err
@@ -132,19 +138,7 @@ func (c *Client) addOperationCreateReplaceRootVolumeTaskMiddlewares(stack *middl
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "CreateReplaceRootVolumeTask"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
-	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
-		return err
-	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = addClientRequestID(stack); err != nil {
-		return err
-	}
 	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
@@ -154,34 +148,7 @@ func (c *Client) addOperationCreateReplaceRootVolumeTaskMiddlewares(stack *middl
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
-		return err
-	}
-	if err = addRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = addRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addSpanRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addTimeOffsetBuild(stack, c); err != nil {
-		return err
-	}
-	if err = addUserAgentRetryMode(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack, options); err != nil {
 		return err
 	}
 	if err = addCredentialSource(stack, options); err != nil {
@@ -191,12 +158,6 @@ func (c *Client) addOperationCreateReplaceRootVolumeTaskMiddlewares(stack *middl
 		return err
 	}
 	if err = addOpCreateReplaceRootVolumeTaskValidationMiddleware(stack); err != nil {
-		return err
-	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opCreateReplaceRootVolumeTask(options.Region), middleware.Before); err != nil {
-		return err
-	}
-	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -209,12 +170,6 @@ func (c *Client) addOperationCreateReplaceRootVolumeTaskMiddlewares(stack *middl
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
 	if err = addInterceptors(stack, options); err != nil {
@@ -254,12 +209,4 @@ func (m *idempotencyToken_initializeOpCreateReplaceRootVolumeTask) HandleInitial
 }
 func addIdempotencyToken_opCreateReplaceRootVolumeTaskMiddleware(stack *middleware.Stack, cfg Options) error {
 	return stack.Initialize.Add(&idempotencyToken_initializeOpCreateReplaceRootVolumeTask{tokenProvider: cfg.IdempotencyTokenProvider}, middleware.Before)
-}
-
-func newServiceMetadataMiddleware_opCreateReplaceRootVolumeTask(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "CreateReplaceRootVolumeTask",
-	}
 }

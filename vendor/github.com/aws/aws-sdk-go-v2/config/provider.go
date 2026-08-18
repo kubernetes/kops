@@ -130,7 +130,7 @@ type IgnoreConfiguredEndpointsProvider interface {
 
 // GetIgnoreConfiguredEndpoints is used in knowing when to disable configured
 // endpoints feature.
-func GetIgnoreConfiguredEndpoints(ctx context.Context, configs []interface{}) (value bool, found bool, err error) {
+func GetIgnoreConfiguredEndpoints(ctx context.Context, configs []any) (value bool, found bool, err error) {
 	for _, cfg := range configs {
 		if p, ok := cfg.(IgnoreConfiguredEndpointsProvider); ok {
 			value, found, err = p.GetIgnoreConfiguredEndpoints(ctx)
@@ -200,6 +200,23 @@ func getDisableRequestCompression(ctx context.Context, configs configs) (value b
 	for _, cfg := range configs {
 		if p, ok := cfg.(disableRequestCompressionProvider); ok {
 			value, found, err = p.getDisableRequestCompression(ctx)
+			if err != nil || found {
+				break
+			}
+		}
+	}
+	return
+}
+
+// disableClockSkewCorrectionProvider provides access to the DisableClockSkewCorrection
+type disableClockSkewCorrectionProvider interface {
+	getDisableClockSkewCorrection(context.Context) (bool, bool, error)
+}
+
+func getDisableClockSkewCorrection(ctx context.Context, configs configs) (value bool, found bool, err error) {
+	for _, cfg := range configs {
+		if p, ok := cfg.(disableClockSkewCorrectionProvider); ok {
+			value, found, err = p.getDisableClockSkewCorrection(ctx)
 			if err != nil || found {
 				break
 			}
@@ -783,4 +800,20 @@ func getServiceOptions(ctx context.Context, configs configs) (v []func(string, a
 		}
 	}
 	return v, found, err
+}
+
+type restrictFilePermissionsProvider interface {
+	getRestrictFilePermissions(context.Context) (aws.RestrictFilePermissions, bool, error)
+}
+
+func getRestrictFilePermissions(ctx context.Context, configs configs) (value aws.RestrictFilePermissions, found bool, err error) {
+	for _, cfg := range configs {
+		if p, ok := cfg.(restrictFilePermissionsProvider); ok {
+			value, found, err = p.getRestrictFilePermissions(ctx)
+			if err != nil || found {
+				break
+			}
+		}
+	}
+	return
 }
