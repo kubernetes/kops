@@ -6082,6 +6082,7 @@ func Convert_kops_KubenetNetworkingSpec_To_v1alpha2_KubenetNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha2_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(in *KuberouterNetworkingSpec, out *kops.KuberouterNetworkingSpec, s conversion.Scope) error {
+	out.UseNFTablesForNetpol = in.UseNFTablesForNetpol
 	return nil
 }
 
@@ -6091,6 +6092,7 @@ func Convert_v1alpha2_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(
 }
 
 func autoConvert_kops_KuberouterNetworkingSpec_To_v1alpha2_KuberouterNetworkingSpec(in *kops.KuberouterNetworkingSpec, out *KuberouterNetworkingSpec, s conversion.Scope) error {
+	out.UseNFTablesForNetpol = in.UseNFTablesForNetpol
 	return nil
 }
 
