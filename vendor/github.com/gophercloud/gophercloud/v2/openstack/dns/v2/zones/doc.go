@@ -22,6 +22,26 @@ Example to List Zones
 		fmt.Printf("%+v\n", zone)
 	}
 
+Example to List Zones Across All Projects
+
+	listOpts := zones.ListOpts{
+		AllProjects: true,
+	}
+
+	allPages, err := zones.List(dnsClient, listOpts).AllPages(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+
+	allZones, err := zones.ExtractZones(allPages)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, zone := range allZones {
+		fmt.Printf("%+v\n", zone)
+	}
+
 Example to Create a Zone
 
 	createOpts := zones.CreateOpts{

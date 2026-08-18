@@ -24,11 +24,32 @@ import (
 
 // JKSKeystoreApplyConfiguration represents a declarative configuration of the JKSKeystore type for use
 // with apply.
+//
+// JKS configures options for storing a JKS keystore in the target secret.
+// Either PasswordSecretRef or Password must be provided.
 type JKSKeystoreApplyConfiguration struct {
-	Create            *bool                                       `json:"create,omitempty"`
-	Alias             *string                                     `json:"alias,omitempty"`
+	// Create enables JKS keystore creation for the Certificate.
+	// If true, a file named `keystore.jks` will be created in the target
+	// Secret resource, encrypted using the password stored in
+	// `passwordSecretRef` or `password`.
+	// The keystore file will be updated immediately.
+	// If the issuer provided a CA certificate, a file named `truststore.jks`
+	// will also be created in the target Secret resource, encrypted using the
+	// password stored in `passwordSecretRef`
+	// containing the issuing Certificate Authority
+	Create *bool `json:"create,omitempty"`
+	// Alias specifies the alias of the key in the keystore, required by the JKS format.
+	// If not provided, the default alias `certificate` will be used.
+	Alias *string `json:"alias,omitempty"`
+	// PasswordSecretRef is a reference to a non-empty key in a Secret resource
+	// containing the password used to encrypt the JKS keystore.
+	// Mutually exclusive with password.
+	// One of password or passwordSecretRef must provide a password with a non-zero length.
 	PasswordSecretRef *metav1.SecretKeySelectorApplyConfiguration `json:"passwordSecretRef,omitempty"`
-	Password          *string                                     `json:"password,omitempty"`
+	// Password provides a literal password used to encrypt the JKS keystore.
+	// Mutually exclusive with passwordSecretRef.
+	// One of password or passwordSecretRef must provide a password with a non-zero length.
+	Password *string `json:"password,omitempty"`
 }
 
 // JKSKeystoreApplyConfiguration constructs a declarative configuration of the JKSKeystore type for use with

@@ -1046,41 +1046,6 @@ func (s CreateServiceAccountRequest) MarshalJSON() ([]byte, error) {
 
 // DisableServiceAccountKeyRequest: The service account key disable request.
 type DisableServiceAccountKeyRequest struct {
-	// ExtendedStatusMessage: Optional. Usable by internal google services only. An
-	// extended_status_message can be used to include additional information about
-	// the key, such as its private key data being exposed on a public repository
-	// like GitHub.
-	ExtendedStatusMessage string `json:"extendedStatusMessage,omitempty"`
-	// ServiceAccountKeyDisableReason: Optional. Describes the reason this key is
-	// being disabled. If unspecified, the default value of
-	// SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED will be used.
-	//
-	// Possible values:
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED" - Unspecified disable
-	// reason
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED" - Disabled by the user
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED" - Google detected this
-	// Service Account external key's private key data as exposed, typically in a
-	// public repository on GitHub or similar.
-	//   "SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED" - This service
-	// account external key was detected as compromised and used by an attacker.
-	ServiceAccountKeyDisableReason string `json:"serviceAccountKeyDisableReason,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "ExtendedStatusMessage") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
-	// details.
-	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "ExtendedStatusMessage") to
-	// include in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
-	NullFields []string `json:"-"`
-}
-
-func (s DisableServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
-	type NoMethod DisableServiceAccountKeyRequest
-	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // DisableServiceAccountRequest: The service account disable request.
@@ -3161,12 +3126,14 @@ func (s ServiceAccount) MarshalJSON() ([]byte, error) {
 }
 
 // ServiceAccountKey: Represents a service account key. A service account has
-// two sets of key-pairs: user-managed, and system-managed. User-managed
-// key-pairs can be created and deleted by users. Users are responsible for
-// rotating these keys periodically to ensure security of their service
-// accounts. Users retain the private key of these key-pairs, and Google
-// retains ONLY the public key. System-managed keys are automatically rotated
-// by Google, and are used for signing for a maximum of two weeks. The rotation
+// two sets of key-pairs: user-managed and system-managed. System-managed keys
+// are also called _Google-owned and managed keys_. User-managed key-pairs can
+// be created and deleted by users. Users are responsible for rotating these
+// keys periodically to ensure security of their service accounts. Users retain
+// the private key of these key-pairs, and Google retains ONLY the public key.
+// System-managed keys that are actively used for signing are rotated regularly
+// according to security best practices
+// (https://docs.cloud.google.com/iam/docs/key-rotation#timing). The rotation
 // process is probabilistic, and usage of the new key will gradually ramp up
 // and down over the key's lifetime. If you cache the public key set for a
 // service account, we recommend that you update the cache every 15 minutes.

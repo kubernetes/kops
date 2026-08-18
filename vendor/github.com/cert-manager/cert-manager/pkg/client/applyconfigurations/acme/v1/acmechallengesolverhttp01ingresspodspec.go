@@ -25,14 +25,29 @@ import (
 // ACMEChallengeSolverHTTP01IngressPodSpecApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01IngressPodSpec type for use
 // with apply.
 type ACMEChallengeSolverHTTP01IngressPodSpecApplyConfiguration struct {
-	NodeSelector       map[string]string                                                     `json:"nodeSelector,omitempty"`
-	Affinity           *corev1.Affinity                                                      `json:"affinity,omitempty"`
-	Tolerations        []corev1.Toleration                                                   `json:"tolerations,omitempty"`
-	PriorityClassName  *string                                                               `json:"priorityClassName,omitempty"`
-	ServiceAccountName *string                                                               `json:"serviceAccountName,omitempty"`
-	ImagePullSecrets   []corev1.LocalObjectReference                                         `json:"imagePullSecrets,omitempty"`
-	SecurityContext    *ACMEChallengeSolverHTTP01IngressPodSecurityContextApplyConfiguration `json:"securityContext,omitempty"`
-	Resources          *ACMEChallengeSolverHTTP01IngressPodResourcesApplyConfiguration       `json:"resources,omitempty"`
+	// NodeSelector is a selector which must be true for the pod to fit on a node.
+	// Selector which must match a node's labels for the pod to be scheduled on that node.
+	// More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	// If specified, the pod's scheduling constraints
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+	// If specified, the pod's tolerations.
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// If specified, the pod's priorityClassName.
+	PriorityClassName *string `json:"priorityClassName,omitempty"`
+	// If specified, the pod's service account
+	ServiceAccountName *string `json:"serviceAccountName,omitempty"`
+	// If specified, the pod's imagePullSecrets
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+	// If specified, the pod's security context
+	SecurityContext *ACMEChallengeSolverHTTP01IngressPodSecurityContextApplyConfiguration `json:"securityContext,omitempty"`
+	// If specified, the pod's resource requirements.
+	// These values override the global resource configuration flags.
+	// Note that when only specifying resource limits, ensure they are greater than or equal
+	// to the corresponding global resource requests configured via controller flags
+	// (--acme-http01-solver-resource-request-cpu, --acme-http01-solver-resource-request-memory).
+	// Kubernetes will reject pod creation if limits are lower than requests, causing challenge failures.
+	Resources *ACMEChallengeSolverHTTP01IngressPodResourcesApplyConfiguration `json:"resources,omitempty"`
 }
 
 // ACMEChallengeSolverHTTP01IngressPodSpecApplyConfiguration constructs a declarative configuration of the ACMEChallengeSolverHTTP01IngressPodSpec type for use with

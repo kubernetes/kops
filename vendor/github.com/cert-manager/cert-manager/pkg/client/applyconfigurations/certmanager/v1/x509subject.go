@@ -20,15 +20,25 @@ package v1
 
 // X509SubjectApplyConfiguration represents a declarative configuration of the X509Subject type for use
 // with apply.
+//
+// X509Subject Full X509 name specification
 type X509SubjectApplyConfiguration struct {
-	Organizations       []string `json:"organizations,omitempty"`
-	Countries           []string `json:"countries,omitempty"`
+	// Organizations to be used on the Certificate.
+	Organizations []string `json:"organizations,omitempty"`
+	// Countries to be used on the Certificate.
+	Countries []string `json:"countries,omitempty"`
+	// Organizational Units to be used on the Certificate.
 	OrganizationalUnits []string `json:"organizationalUnits,omitempty"`
-	Localities          []string `json:"localities,omitempty"`
-	Provinces           []string `json:"provinces,omitempty"`
-	StreetAddresses     []string `json:"streetAddresses,omitempty"`
-	PostalCodes         []string `json:"postalCodes,omitempty"`
-	SerialNumber        *string  `json:"serialNumber,omitempty"`
+	// Cities to be used on the Certificate.
+	Localities []string `json:"localities,omitempty"`
+	// State/Provinces to be used on the Certificate.
+	Provinces []string `json:"provinces,omitempty"`
+	// Street addresses to be used on the Certificate.
+	StreetAddresses []string `json:"streetAddresses,omitempty"`
+	// Postal codes to be used on the Certificate.
+	PostalCodes []string `json:"postalCodes,omitempty"`
+	// Serial number to be used on the Certificate.
+	SerialNumber *string `json:"serialNumber,omitempty"`
 }
 
 // X509SubjectApplyConfiguration constructs a declarative configuration of the X509Subject type for use with

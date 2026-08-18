@@ -68,5 +68,5 @@ func (w *writer) cancelUpload(loc string) {
 	if err != nil {
 		return
 	}
-	_, _ = w.client.Do(req)
+	_, _ = w.getClient().Do(req)
 }

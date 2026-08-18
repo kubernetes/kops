@@ -128,6 +128,7 @@ const (
 	AssociationFilterKeyLastExecutedAfter  AssociationFilterKey = "LastExecutedAfter"
 	AssociationFilterKeyAssociationName    AssociationFilterKey = "AssociationName"
 	AssociationFilterKeyResourceGroupName  AssociationFilterKey = "ResourceGroupName"
+	AssociationFilterKeyCloudConnectorId   AssociationFilterKey = "CloudConnectorId"
 )
 
 // Values returns all known values for AssociationFilterKey. Note that this can be
@@ -144,6 +145,7 @@ func (AssociationFilterKey) Values() []AssociationFilterKey {
 		"LastExecutedAfter",
 		"AssociationName",
 		"ResourceGroupName",
+		"CloudConnectorId",
 	}
 }
 
@@ -394,6 +396,25 @@ func (CalendarState) Values() []CalendarState {
 	return []CalendarState{
 		"OPEN",
 		"CLOSED",
+	}
+}
+
+type CloudConnectorFilterKey string
+
+// Enum values for CloudConnectorFilterKey
+const (
+	CloudConnectorFilterKeySubscriptionId CloudConnectorFilterKey = "SubscriptionId"
+	CloudConnectorFilterKeyTenantId       CloudConnectorFilterKey = "TenantId"
+)
+
+// Values returns all known values for CloudConnectorFilterKey. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (CloudConnectorFilterKey) Values() []CloudConnectorFilterKey {
+	return []CloudConnectorFilterKey{
+		"SubscriptionId",
+		"TenantId",
 	}
 }
 
@@ -1330,12 +1351,14 @@ type NodeAttributeName string
 
 // Enum values for NodeAttributeName
 const (
-	NodeAttributeNameAgentVersion    NodeAttributeName = "AgentVersion"
-	NodeAttributeNamePlatformName    NodeAttributeName = "PlatformName"
-	NodeAttributeNamePlatformType    NodeAttributeName = "PlatformType"
-	NodeAttributeNamePlatformVersion NodeAttributeName = "PlatformVersion"
-	NodeAttributeNameRegion          NodeAttributeName = "Region"
-	NodeAttributeNameResourceType    NodeAttributeName = "ResourceType"
+	NodeAttributeNameAgentVersion     NodeAttributeName = "AgentVersion"
+	NodeAttributeNamePlatformName     NodeAttributeName = "PlatformName"
+	NodeAttributeNamePlatformType     NodeAttributeName = "PlatformType"
+	NodeAttributeNamePlatformVersion  NodeAttributeName = "PlatformVersion"
+	NodeAttributeNameRegion           NodeAttributeName = "Region"
+	NodeAttributeNameResourceType     NodeAttributeName = "ResourceType"
+	NodeAttributeNameSourceType       NodeAttributeName = "SourceType"
+	NodeAttributeNameAvailabilityZone NodeAttributeName = "AvailabilityZone"
 )
 
 // Values returns all known values for NodeAttributeName. Note that this can be
@@ -1350,6 +1373,8 @@ func (NodeAttributeName) Values() []NodeAttributeName {
 		"PlatformVersion",
 		"Region",
 		"ResourceType",
+		"SourceType",
+		"AvailabilityZone",
 	}
 }
 
@@ -1372,6 +1397,11 @@ const (
 	NodeFilterKeyOrganizationalUnitPath NodeFilterKey = "OrganizationalUnitPath"
 	NodeFilterKeyRegion                 NodeFilterKey = "Region"
 	NodeFilterKeyAccountId              NodeFilterKey = "AccountId"
+	NodeFilterKeySourceType             NodeFilterKey = "SourceType"
+	NodeFilterKeySourceId               NodeFilterKey = "SourceId"
+	NodeFilterKeySourceLocation         NodeFilterKey = "SourceLocation"
+	NodeFilterKeyAvailabilityZone       NodeFilterKey = "AvailabilityZone"
+	NodeFilterKeyAvailabilityZoneId     NodeFilterKey = "AvailabilityZoneId"
 )
 
 // Values returns all known values for NodeFilterKey. Note that this can be
@@ -1395,6 +1425,11 @@ func (NodeFilterKey) Values() []NodeFilterKey {
 		"OrganizationalUnitPath",
 		"Region",
 		"AccountId",
+		"SourceType",
+		"SourceId",
+		"SourceLocation",
+		"AvailabilityZone",
+		"AvailabilityZoneId",
 	}
 }
 
@@ -2224,6 +2259,7 @@ const (
 	ResourceTypeForTaggingOpsmetadata       ResourceTypeForTagging = "OpsMetadata"
 	ResourceTypeForTaggingAutomation        ResourceTypeForTagging = "Automation"
 	ResourceTypeForTaggingAssociation       ResourceTypeForTagging = "Association"
+	ResourceTypeForTaggingCloudConnector    ResourceTypeForTagging = "CloudConnector"
 )
 
 // Values returns all known values for ResourceTypeForTagging. Note that this can
@@ -2241,6 +2277,7 @@ func (ResourceTypeForTagging) Values() []ResourceTypeForTagging {
 		"OpsMetadata",
 		"Automation",
 		"Association",
+		"CloudConnector",
 	}
 }
 
@@ -2376,6 +2413,7 @@ const (
 	SourceTypeAwsEc2Instance        SourceType = "AWS::EC2::Instance"
 	SourceTypeAwsIotThing           SourceType = "AWS::IoT::Thing"
 	SourceTypeAwsSsmManagedinstance SourceType = "AWS::SSM::ManagedInstance"
+	SourceTypeAzureInstance         SourceType = "Microsoft.Compute/virtualMachines"
 )
 
 // Values returns all known values for SourceType. Note that this can be expanded
@@ -2387,6 +2425,7 @@ func (SourceType) Values() []SourceType {
 		"AWS::EC2::Instance",
 		"AWS::IoT::Thing",
 		"AWS::SSM::ManagedInstance",
+		"Microsoft.Compute/virtualMachines",
 	}
 }
 
@@ -2439,5 +2478,78 @@ func (StopType) Values() []StopType {
 	return []StopType{
 		"Complete",
 		"Cancel",
+	}
+}
+
+type ValidationFindingCode string
+
+// Enum values for ValidationFindingCode
+const (
+	ValidationFindingCodeTargetInaccessible                    ValidationFindingCode = "TargetInaccessible"
+	ValidationFindingCodeTargetUnusable                        ValidationFindingCode = "TargetUnusable"
+	ValidationFindingCodeTargetStateWarning                    ValidationFindingCode = "TargetStateWarning"
+	ValidationFindingCodeAwsRoleAssumptionFailed               ValidationFindingCode = "AwsRoleAssumptionFailed"
+	ValidationFindingCodeWebIdentityTokenFailed                ValidationFindingCode = "WebIdentityTokenFailed"
+	ValidationFindingCodeOutboundWebIdentityFederationDisabled ValidationFindingCode = "OutboundWebIdentityFederationDisabled"
+	ValidationFindingCodeProviderCredentialCreationFailed      ValidationFindingCode = "ProviderCredentialCreationFailed"
+	ValidationFindingCodeTenantSummary                         ValidationFindingCode = "TenantSummary"
+	ValidationFindingCodeSubscriptionAccessible                ValidationFindingCode = "SubscriptionAccessible"
+)
+
+// Values returns all known values for ValidationFindingCode. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ValidationFindingCode) Values() []ValidationFindingCode {
+	return []ValidationFindingCode{
+		"TargetInaccessible",
+		"TargetUnusable",
+		"TargetStateWarning",
+		"AwsRoleAssumptionFailed",
+		"WebIdentityTokenFailed",
+		"OutboundWebIdentityFederationDisabled",
+		"ProviderCredentialCreationFailed",
+		"TenantSummary",
+		"SubscriptionAccessible",
+	}
+}
+
+type ValidationFindingScopeType string
+
+// Enum values for ValidationFindingScopeType
+const (
+	ValidationFindingScopeTypeAzureTenant       ValidationFindingScopeType = "azure:tenant"
+	ValidationFindingScopeTypeAzureSubscription ValidationFindingScopeType = "azure:subscription"
+)
+
+// Values returns all known values for ValidationFindingScopeType. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ValidationFindingScopeType) Values() []ValidationFindingScopeType {
+	return []ValidationFindingScopeType{
+		"azure:tenant",
+		"azure:subscription",
+	}
+}
+
+type ValidationFindingType string
+
+// Enum values for ValidationFindingType
+const (
+	ValidationFindingTypeInfo  ValidationFindingType = "INFO"
+	ValidationFindingTypeWarn  ValidationFindingType = "WARN"
+	ValidationFindingTypeError ValidationFindingType = "ERROR"
+)
+
+// Values returns all known values for ValidationFindingType. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ValidationFindingType) Values() []ValidationFindingType {
+	return []ValidationFindingType{
+		"INFO",
+		"WARN",
+		"ERROR",
 	}
 }

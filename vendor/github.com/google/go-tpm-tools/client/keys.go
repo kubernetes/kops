@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-tpm-tools/internal"
 	pb "github.com/google/go-tpm-tools/proto/tpm"
+	tpmquote "github.com/google/go-tpm-tools/quote"
 	"github.com/google/go-tpm/legacy/tpm2"
 	"github.com/google/go-tpm/tpmutil"
 )
@@ -462,7 +463,7 @@ func (k *Key) Quote(selpcr tpm2.PCRSelection, extraData []byte) (*pb.Quote, erro
 	}
 	// Verify the quote client-side to make sure we didn't mess things up.
 	// NOTE: the quote still must be verified server-side as well.
-	if err := internal.VerifyQuote(quote, k.PublicKey(), extraData); err != nil {
+	if err := tpmquote.Verify(quote, k.PublicKey(), extraData); err != nil {
 		return nil, fmt.Errorf("failed to verify quote: %w", err)
 	}
 	return quote, nil
@@ -499,6 +500,10 @@ func (k *Key) CertDERBytes() []byte {
 
 // SetCert assigns the provided certificate to the key after verifying it matches the key.
 func (k *Key) SetCert(cert *x509.Certificate) error {
+	if cert == nil || cert.PublicKey == nil {
+		return errors.New("no certificate publickey provided")
+	}
+
 	certPubKey := cert.PublicKey.(crypto.PublicKey) // This cast cannot fail
 	if !internal.PubKeysEqual(certPubKey, k.pubKey) {
 		return errors.New("certificate does not match key")

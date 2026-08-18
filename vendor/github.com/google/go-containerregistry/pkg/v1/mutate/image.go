@@ -52,6 +52,16 @@ func (i *image) MediaType() (types.MediaType, error) {
 	return i.base.MediaType()
 }
 
+// isImageConfig reports whether the media type is a Docker or OCI image config.
+func isImageConfig(mt types.MediaType) bool {
+	switch mt {
+	case types.DockerConfigJSON, types.OCIConfigJSON:
+		return true
+	default:
+		return false
+	}
+}
+
 func (i *image) compute() error {
 	i.Lock()
 	defer i.Unlock()
@@ -60,6 +70,24 @@ func (i *image) compute() error {
 	if i.computed {
 		return nil
 	}
+
+	m, err := i.base.Manifest()
+	if err != nil {
+		return err
+	}
+	manifest := m.DeepCopy()
+
+	diffIDMap := make(map[v1.Hash]v1.Layer)
+	digestMap := make(map[v1.Hash]v1.Layer)
+
+	// Determine effective config media type (user override takes precedence).
+	cfgMediaType := manifest.Config.MediaType
+	if i.configMediaType != nil {
+		cfgMediaType = *i.configMediaType
+	}
+
+	imageConfig := isImageConfig(cfgMediaType)
+
 	var configFile *v1.ConfigFile
 	if i.configFile != nil {
 		configFile = i.configFile
@@ -70,33 +98,32 @@ func (i *image) compute() error {
 		}
 		configFile = cf.DeepCopy()
 	}
-	diffIDs := configFile.RootFS.DiffIDs
-	history := configFile.History
 
-	diffIDMap := make(map[v1.Hash]v1.Layer)
-	digestMap := make(map[v1.Hash]v1.Layer)
+	// For image configs, update RootFS.DiffIDs and History from added layers.
+	// For artifacts, skip this: the config has no rootfs or history fields.
+	if imageConfig {
+		diffIDs := configFile.RootFS.DiffIDs
+		history := configFile.History
 
-	for _, add := range i.adds {
-		history = append(history, add.History)
-		if add.Layer != nil {
-			diffID, err := add.Layer.DiffID()
-			if err != nil {
-				return err
+		for _, add := range i.adds {
+			history = append(history, add.History)
+			if add.Layer != nil {
+				diffID, err := add.Layer.DiffID()
+				if err != nil {
+					return err
+				}
+				diffIDs = append(diffIDs, diffID)
+				diffIDMap[diffID] = add.Layer
 			}
-			diffIDs = append(diffIDs, diffID)
-			diffIDMap[diffID] = add.Layer
 		}
+
+		configFile.RootFS.DiffIDs = diffIDs
+		configFile.History = history
 	}
 
-	m, err := i.base.Manifest()
-	if err != nil {
-		return err
-	}
-	manifest := m.DeepCopy()
 	manifestLayers := manifest.Layers
 	for _, add := range i.adds {
 		if add.Layer == nil {
-			// Empty layers include only history in manifest.
 			continue
 		}
 
@@ -105,14 +132,12 @@ func (i *image) compute() error {
 			return err
 		}
 
-		// Fields in the addendum override the original descriptor.
 		if len(add.Annotations) != 0 {
 			desc.Annotations = add.Annotations
 		}
 		if len(add.URLs) != 0 {
 			desc.URLs = add.URLs
 		}
-
 		if add.MediaType != "" {
 			desc.MediaType = add.MediaType
 		}
@@ -120,42 +145,38 @@ func (i *image) compute() error {
 		manifestLayers = append(manifestLayers, *desc)
 		digestMap[desc.Digest] = add.Layer
 	}
-
-	configFile.RootFS.DiffIDs = diffIDs
-	configFile.History = history
-
 	manifest.Layers = manifestLayers
 
-	rcfg, err := json.Marshal(configFile)
-	if err != nil {
-		return err
-	}
-	d, sz, err := v1.SHA256(bytes.NewBuffer(rcfg))
-	if err != nil {
-		return err
-	}
-	manifest.Config.Digest = d
-	manifest.Config.Size = sz
+	// For image configs, re-marshal the config and update the manifest digest.
+	// For artifacts, preserve the original config blob as-is to avoid
+	// corrupting the digest via re-marshaling.
+	if imageConfig {
+		rcfg, err := json.Marshal(configFile)
+		if err != nil {
+			return err
+		}
+		d, sz, err := v1.SHA256(bytes.NewBuffer(rcfg))
+		if err != nil {
+			return err
+		}
+		manifest.Config.Digest = d
+		manifest.Config.Size = sz
 
-	// If Data was set in the base image, we need to update it in the mutated image.
-	if m.Config.Data != nil {
-		manifest.Config.Data = rcfg
+		if m.Config.Data != nil {
+			manifest.Config.Data = rcfg
+		}
 	}
 
-	// If the user wants to mutate the media type of the config
 	if i.configMediaType != nil {
 		manifest.Config.MediaType = *i.configMediaType
 	}
-
 	if i.mediaType != nil {
 		manifest.MediaType = *i.mediaType
 	}
-
 	if i.annotations != nil {
 		if manifest.Annotations == nil {
 			manifest.Annotations = map[string]string{}
 		}
-
 		for k, v := range i.annotations {
 			manifest.Annotations[k] = v
 		}
@@ -173,29 +194,34 @@ func (i *image) compute() error {
 // Layers returns the ordered collection of filesystem layers that comprise this image.
 // The order of the list is oldest/base layer first, and most-recent/top layer last.
 func (i *image) Layers() ([]v1.Layer, error) {
-	if err := i.compute(); errors.Is(err, stream.ErrNotComputed) {
-		// Image contains a streamable layer which has not yet been
-		// consumed. Just return the layers we have in case the caller
-		// is going to consume the layers.
+	if err := i.compute(); errors.Is(err, stream.ErrNotComputed) || (i.manifest != nil && !isImageConfig(i.manifest.Config.MediaType)) {
+		// Stream not yet consumed, or non-image OCI artifact (RootFS.DiffIDs
+		// is empty so partial.DiffIDs returns nothing). Fall back to the base
+		// layers plus any added layers.
 		layers, err := i.base.Layers()
 		if err != nil {
 			return nil, err
 		}
 		for _, add := range i.adds {
-			layers = append(layers, add.Layer)
+			if add.Layer != nil {
+				layers = append(layers, add.Layer)
+			}
 		}
 		return layers, nil
 	} else if err != nil {
 		return nil, err
 	}
 
-	diffIDs, err := partial.DiffIDs(i)
-	if err != nil {
-		return nil, err
-	}
-	ls := make([]v1.Layer, 0, len(diffIDs))
-	for _, h := range diffIDs {
-		l, err := i.LayerByDiffID(h)
+	// Walk manifest layer descriptors by digest rather than rootfs diff
+	// IDs. Two layers can legitimately share a diff ID — same uncompressed
+	// content, different compression — and produce distinct digests. The
+	// manifest preserves the per-occurrence digest; LayerByDiffID does not,
+	// which previously caused duplicate-diff-ID layers to collapse to a
+	// single entry in the returned slice and break blob upload for
+	// downstream pushers (see #2034).
+	ls := make([]v1.Layer, 0, len(i.manifest.Layers))
+	for _, desc := range i.manifest.Layers {
+		l, err := i.LayerByDigest(desc.Digest)
 		if err != nil {
 			return nil, err
 		}
@@ -220,10 +246,17 @@ func (i *image) ConfigFile() (*v1.ConfigFile, error) {
 	return i.configFile.DeepCopy(), nil
 }
 
-// RawConfigFile returns the serialized bytes of ConfigFile()
+// RawConfigFile returns the serialized bytes of ConfigFile().
+// For non-image OCI artifacts, returns the original raw config to preserve
+// the config blob digest.
 func (i *image) RawConfigFile() ([]byte, error) {
 	if err := i.compute(); err != nil {
 		return nil, err
+	}
+	// If the manifest config is not a standard image config, return the
+	// original raw bytes to avoid corrupting the digest via re-marshaling.
+	if i.manifest != nil && !isImageConfig(i.manifest.Config.MediaType) {
+		return i.base.RawConfigFile()
 	}
 	return json.Marshal(i.configFile)
 }

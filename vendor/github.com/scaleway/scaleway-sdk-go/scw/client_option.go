@@ -52,6 +52,13 @@ func WithAPIURL(apiURL string) ClientOption {
 	}
 }
 
+// WithS3Endpoint client option overrides the S3 URL of the Scaleway Object Bucket API to the given URL.
+func WithS3Endpoint(s3Endpoint string) ClientOption {
+	return func(s *settings) {
+		s.s3Endpoint = s3Endpoint
+	}
+}
+
 // WithInsecure client option enables insecure transport on the client.
 func WithInsecure() ClientOption {
 	return func(s *settings) {
@@ -91,6 +98,10 @@ func WithProfile(p *Profile) ClientOption {
 
 		if p.APIURL != nil {
 			s.apiURL = *p.APIURL
+		}
+
+		if p.S3Endpoint != nil {
+			s.s3Endpoint = *p.S3Endpoint
 		}
 
 		if p.Insecure != nil {
@@ -172,6 +183,7 @@ func WithDefaultPageSize(pageSize uint32) ClientOption {
 // settings hold the values of all client options
 type settings struct {
 	apiURL                string
+	s3Endpoint            string
 	token                 auth.Auth
 	userAgent             string
 	httpClient            httpClient
@@ -268,6 +280,16 @@ func (s *settings) validate() error {
 	}
 	if s.apiURL[len(s.apiURL)-1:] == "/" {
 		return NewInvalidClientOptionError("invalid API url '%s' it should not have a trailing slash", s.apiURL)
+	}
+
+	// S3 endpoint.
+	if s.s3Endpoint != "" {
+		if !validation.IsURL(s.s3Endpoint) {
+			return NewInvalidClientOptionError("invalid S3 endpoint '%s'", s.s3Endpoint)
+		}
+		if s.s3Endpoint[len(s.s3Endpoint)-1:] == "/" {
+			return NewInvalidClientOptionError("invalid S3 endpoint '%s': trailing slash is not allowed", s.s3Endpoint)
+		}
 	}
 
 	// TODO: check for max s.defaultPageSize

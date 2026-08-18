@@ -121,8 +121,9 @@ type CapacityDistributionStrategy string
 
 // Enum values for CapacityDistributionStrategy
 const (
-	CapacityDistributionStrategyBalancedOnly       CapacityDistributionStrategy = "balanced-only"
-	CapacityDistributionStrategyBalancedBestEffort CapacityDistributionStrategy = "balanced-best-effort"
+	CapacityDistributionStrategyBalancedOnly             CapacityDistributionStrategy = "balanced-only"
+	CapacityDistributionStrategyBalancedBestEffort       CapacityDistributionStrategy = "balanced-best-effort"
+	CapacityDistributionStrategyReservationsThenBalanced CapacityDistributionStrategy = "reservations-then-balanced"
 )
 
 // Values returns all known values for CapacityDistributionStrategy. Note that
@@ -134,6 +135,7 @@ func (CapacityDistributionStrategy) Values() []CapacityDistributionStrategy {
 	return []CapacityDistributionStrategy{
 		"balanced-only",
 		"balanced-best-effort",
+		"reservations-then-balanced",
 	}
 }
 
@@ -181,6 +183,27 @@ func (CpuManufacturer) Values() []CpuManufacturer {
 		"amd",
 		"amazon-web-services",
 		"apple",
+	}
+}
+
+type DeletionProtection string
+
+// Enum values for DeletionProtection
+const (
+	DeletionProtectionNone                 DeletionProtection = "none"
+	DeletionProtectionPreventForceDeletion DeletionProtection = "prevent-force-deletion"
+	DeletionProtectionPreventAllDeletion   DeletionProtection = "prevent-all-deletion"
+)
+
+// Values returns all known values for DeletionProtection. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (DeletionProtection) Values() []DeletionProtection {
+	return []DeletionProtection{
+		"none",
+		"prevent-force-deletion",
+		"prevent-all-deletion",
 	}
 }
 
@@ -302,29 +325,36 @@ type LifecycleState string
 
 // Enum values for LifecycleState
 const (
-	LifecycleStatePending                  LifecycleState = "Pending"
-	LifecycleStatePendingWait              LifecycleState = "Pending:Wait"
-	LifecycleStatePendingProceed           LifecycleState = "Pending:Proceed"
-	LifecycleStateQuarantined              LifecycleState = "Quarantined"
-	LifecycleStateInService                LifecycleState = "InService"
-	LifecycleStateTerminating              LifecycleState = "Terminating"
-	LifecycleStateTerminatingWait          LifecycleState = "Terminating:Wait"
-	LifecycleStateTerminatingProceed       LifecycleState = "Terminating:Proceed"
-	LifecycleStateTerminated               LifecycleState = "Terminated"
-	LifecycleStateDetaching                LifecycleState = "Detaching"
-	LifecycleStateDetached                 LifecycleState = "Detached"
-	LifecycleStateEnteringStandby          LifecycleState = "EnteringStandby"
-	LifecycleStateStandby                  LifecycleState = "Standby"
-	LifecycleStateWarmedPending            LifecycleState = "Warmed:Pending"
-	LifecycleStateWarmedPendingWait        LifecycleState = "Warmed:Pending:Wait"
-	LifecycleStateWarmedPendingProceed     LifecycleState = "Warmed:Pending:Proceed"
-	LifecycleStateWarmedTerminating        LifecycleState = "Warmed:Terminating"
-	LifecycleStateWarmedTerminatingWait    LifecycleState = "Warmed:Terminating:Wait"
-	LifecycleStateWarmedTerminatingProceed LifecycleState = "Warmed:Terminating:Proceed"
-	LifecycleStateWarmedTerminated         LifecycleState = "Warmed:Terminated"
-	LifecycleStateWarmedStopped            LifecycleState = "Warmed:Stopped"
-	LifecycleStateWarmedRunning            LifecycleState = "Warmed:Running"
-	LifecycleStateWarmedHibernated         LifecycleState = "Warmed:Hibernated"
+	LifecycleStatePending                    LifecycleState = "Pending"
+	LifecycleStatePendingWait                LifecycleState = "Pending:Wait"
+	LifecycleStatePendingProceed             LifecycleState = "Pending:Proceed"
+	LifecycleStateQuarantined                LifecycleState = "Quarantined"
+	LifecycleStateInService                  LifecycleState = "InService"
+	LifecycleStateTerminating                LifecycleState = "Terminating"
+	LifecycleStateTerminatingWait            LifecycleState = "Terminating:Wait"
+	LifecycleStateTerminatingProceed         LifecycleState = "Terminating:Proceed"
+	LifecycleStateTerminatingRetained        LifecycleState = "Terminating:Retained"
+	LifecycleStateTerminated                 LifecycleState = "Terminated"
+	LifecycleStateDetaching                  LifecycleState = "Detaching"
+	LifecycleStateDetached                   LifecycleState = "Detached"
+	LifecycleStateEnteringStandby            LifecycleState = "EnteringStandby"
+	LifecycleStateStandby                    LifecycleState = "Standby"
+	LifecycleStateReplacingRootVolume        LifecycleState = "ReplacingRootVolume"
+	LifecycleStateReplacingRootVolumeWait    LifecycleState = "ReplacingRootVolume:Wait"
+	LifecycleStateReplacingRootVolumeProceed LifecycleState = "ReplacingRootVolume:Proceed"
+	LifecycleStateRootVolumeReplaced         LifecycleState = "RootVolumeReplaced"
+	LifecycleStateWarmedPending              LifecycleState = "Warmed:Pending"
+	LifecycleStateWarmedPendingWait          LifecycleState = "Warmed:Pending:Wait"
+	LifecycleStateWarmedPendingProceed       LifecycleState = "Warmed:Pending:Proceed"
+	LifecycleStateWarmedPendingRetained      LifecycleState = "Warmed:Pending:Retained"
+	LifecycleStateWarmedTerminating          LifecycleState = "Warmed:Terminating"
+	LifecycleStateWarmedTerminatingWait      LifecycleState = "Warmed:Terminating:Wait"
+	LifecycleStateWarmedTerminatingProceed   LifecycleState = "Warmed:Terminating:Proceed"
+	LifecycleStateWarmedTerminatingRetained  LifecycleState = "Warmed:Terminating:Retained"
+	LifecycleStateWarmedTerminated           LifecycleState = "Warmed:Terminated"
+	LifecycleStateWarmedStopped              LifecycleState = "Warmed:Stopped"
+	LifecycleStateWarmedRunning              LifecycleState = "Warmed:Running"
+	LifecycleStateWarmedHibernated           LifecycleState = "Warmed:Hibernated"
 )
 
 // Values returns all known values for LifecycleState. Note that this can be
@@ -341,17 +371,24 @@ func (LifecycleState) Values() []LifecycleState {
 		"Terminating",
 		"Terminating:Wait",
 		"Terminating:Proceed",
+		"Terminating:Retained",
 		"Terminated",
 		"Detaching",
 		"Detached",
 		"EnteringStandby",
 		"Standby",
+		"ReplacingRootVolume",
+		"ReplacingRootVolume:Wait",
+		"ReplacingRootVolume:Proceed",
+		"RootVolumeReplaced",
 		"Warmed:Pending",
 		"Warmed:Pending:Wait",
 		"Warmed:Pending:Proceed",
+		"Warmed:Pending:Retained",
 		"Warmed:Terminating",
 		"Warmed:Terminating:Wait",
 		"Warmed:Terminating:Proceed",
+		"Warmed:Terminating:Retained",
 		"Warmed:Terminated",
 		"Warmed:Stopped",
 		"Warmed:Running",

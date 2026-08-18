@@ -30,6 +30,26 @@ func (m *validateOpAcceptDelegationRequest) HandleInitialize(ctx context.Context
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpAcquireRole struct {
+}
+
+func (*validateOpAcquireRole) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpAcquireRole) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*AcquireRoleInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpAcquireRoleInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpAddClientIDToOpenIDConnectProvider struct {
 }
 
@@ -1310,6 +1330,26 @@ func (m *validateOpGetRolePolicy) HandleInitialize(ctx context.Context, in middl
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpGetRoleTemplateVersion struct {
+}
+
+func (*validateOpGetRoleTemplateVersion) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpGetRoleTemplateVersion) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*GetRoleTemplateVersionInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpGetRoleTemplateVersionInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpGetSAMLProvider struct {
 }
 
@@ -1825,6 +1865,26 @@ func (m *validateOpListUserTags) HandleInitialize(ctx context.Context, in middle
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpListUserTagsInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpPutAccountProperties struct {
+}
+
+func (*validateOpPutAccountProperties) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpPutAccountProperties) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*PutAccountPropertiesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpPutAccountPropertiesInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -2814,6 +2874,10 @@ func addOpAcceptDelegationRequestValidationMiddleware(stack *middleware.Stack) e
 	return stack.Initialize.Add(&validateOpAcceptDelegationRequest{}, middleware.After)
 }
 
+func addOpAcquireRoleValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpAcquireRole{}, middleware.After)
+}
+
 func addOpAddClientIDToOpenIDConnectProviderValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpAddClientIDToOpenIDConnectProvider{}, middleware.After)
 }
@@ -3070,6 +3134,10 @@ func addOpGetRolePolicyValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetRolePolicy{}, middleware.After)
 }
 
+func addOpGetRoleTemplateVersionValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpGetRoleTemplateVersion{}, middleware.After)
+}
+
 func addOpGetSAMLProviderValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetSAMLProvider{}, middleware.After)
 }
@@ -3172,6 +3240,10 @@ func addOpListUserPoliciesValidationMiddleware(stack *middleware.Stack) error {
 
 func addOpListUserTagsValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpListUserTags{}, middleware.After)
+}
+
+func addOpPutAccountPropertiesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpPutAccountProperties{}, middleware.After)
 }
 
 func addOpPutGroupPolicyValidationMiddleware(stack *middleware.Stack) error {
@@ -3370,6 +3442,96 @@ func addOpUploadSSHPublicKeyValidationMiddleware(stack *middleware.Stack) error 
 	return stack.Initialize.Add(&validateOpUploadSSHPublicKey{}, middleware.After)
 }
 
+func validateInlinePolicyIdentifierType(v *types.InlinePolicyIdentifierType) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "InlinePolicyIdentifierType"}
+	if v.PolicyName == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("PolicyName"))
+	}
+	if len(v.AttachmentType) == 0 {
+		invalidParams.Add(smithy.NewErrParamRequired("AttachmentType"))
+	}
+	if v.AttachmentName == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("AttachmentName"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateMapStringReplacementValueEntry(v map[string]types.ReplacementValueEntry) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "MapStringReplacementValueEntry"}
+	for key := range v {
+		value := v[key]
+		if err := validateReplacementValueEntry(&value); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%q]", key), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validatePolicyExclusionsListType(v []types.PolicyIdentifier) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "PolicyExclusionsListType"}
+	for i := range v {
+		if err := validatePolicyIdentifier(v[i]); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validatePolicyIdentifier(v types.PolicyIdentifier) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "PolicyIdentifier"}
+	switch uv := v.(type) {
+	case *types.PolicyIdentifierMemberInlinePolicyIdentifier:
+		if err := validateInlinePolicyIdentifierType(&uv.Value); err != nil {
+			invalidParams.AddNested("[InlinePolicyIdentifier]", err.(smithy.InvalidParamsError))
+		}
+
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateReplacementValueEntry(v *types.ReplacementValueEntry) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ReplacementValueEntry"}
+	if v.Values == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Values"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateTag(v *types.Tag) error {
 	if v == nil {
 		return nil
@@ -3412,6 +3574,26 @@ func validateOpAcceptDelegationRequestInput(v *AcceptDelegationRequestInput) err
 	invalidParams := smithy.InvalidParamsError{Context: "AcceptDelegationRequestInput"}
 	if v.DelegationRequestId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("DelegationRequestId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpAcquireRoleInput(v *AcquireRoleInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "AcquireRoleInput"}
+	if v.TemplateArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("TemplateArn"))
+	}
+	if v.ReplacementValues != nil {
+		if err := validateMapStringReplacementValueEntry(v.ReplacementValues); err != nil {
+			invalidParams.AddNested("ReplacementValues", err.(smithy.InvalidParamsError))
+		}
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -4505,6 +4687,21 @@ func validateOpGetRolePolicyInput(v *GetRolePolicyInput) error {
 	}
 }
 
+func validateOpGetRoleTemplateVersionInput(v *GetRoleTemplateVersionInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "GetRoleTemplateVersionInput"}
+	if v.TemplateArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("TemplateArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpGetSAMLProviderInput(v *GetSAMLProviderInput) error {
 	if v == nil {
 		return nil
@@ -4910,6 +5107,21 @@ func validateOpListUserTagsInput(v *ListUserTagsInput) error {
 	}
 }
 
+func validateOpPutAccountPropertiesInput(v *PutAccountPropertiesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "PutAccountPropertiesInput"}
+	if v.Properties == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Properties"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpPutGroupPolicyInput(v *PutGroupPolicyInput) error {
 	if v == nil {
 		return nil
@@ -5190,6 +5402,11 @@ func validateOpSimulatePrincipalPolicyInput(v *SimulatePrincipalPolicyInput) err
 	invalidParams := smithy.InvalidParamsError{Context: "SimulatePrincipalPolicyInput"}
 	if v.PolicySourceArn == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("PolicySourceArn"))
+	}
+	if v.PolicyExclusionList != nil {
+		if err := validatePolicyExclusionsListType(v.PolicyExclusionList); err != nil {
+			invalidParams.AddNested("PolicyExclusionList", err.(smithy.InvalidParamsError))
+		}
 	}
 	if v.ActionNames == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("ActionNames"))

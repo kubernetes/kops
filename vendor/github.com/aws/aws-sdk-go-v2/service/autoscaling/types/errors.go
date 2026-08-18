@@ -62,6 +62,35 @@ func (e *AlreadyExistsFault) ErrorCode() string {
 }
 func (e *AlreadyExistsFault) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
+//	The service is currently processing another request with the same client
+//
+// token. Retry the request with the same client token—the in-flight operation will
+// complete and return its result.
+type IdempotentCallInProgressFault struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *IdempotentCallInProgressFault) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *IdempotentCallInProgressFault) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *IdempotentCallInProgressFault) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "IdempotentCallInProgress"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *IdempotentCallInProgressFault) ErrorFault() smithy.ErrorFault { return smithy.FaultServer }
+
 //	Indicates that the parameters in the current request do not match the
 //
 // parameters from a previous request with the same client token within the

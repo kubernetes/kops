@@ -21,10 +21,15 @@ package v1
 // NameConstraintItemApplyConfiguration represents a declarative configuration of the NameConstraintItem type for use
 // with apply.
 type NameConstraintItemApplyConfiguration struct {
-	DNSDomains     []string `json:"dnsDomains,omitempty"`
-	IPRanges       []string `json:"ipRanges,omitempty"`
+	// DNSDomains is a list of DNS domains that are permitted or excluded.
+	DNSDomains []string `json:"dnsDomains,omitempty"`
+	// IPRanges is a list of IP Ranges that are permitted or excluded.
+	// This should be a valid CIDR notation.
+	IPRanges []string `json:"ipRanges,omitempty"`
+	// EmailAddresses is a list of Email Addresses that are permitted or excluded.
 	EmailAddresses []string `json:"emailAddresses,omitempty"`
-	URIDomains     []string `json:"uriDomains,omitempty"`
+	// URIDomains is a list of URI domains that are permitted or excluded.
+	URIDomains []string `json:"uriDomains,omitempty"`
 }
 
 // NameConstraintItemApplyConfiguration constructs a declarative configuration of the NameConstraintItem type for use with

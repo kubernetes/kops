@@ -171,6 +171,36 @@ type Metadata struct {
 		CreationDate     string `json:"creation_date,omitempty"`
 		Zone             string `json:"zone,omitempty"`
 	} `json:"private_nics,omitempty"`
+	MACAddress    string `json:"mac_address,omitempty"`
+	EndOfService  bool   `json:"end_of_service,omitempty"`
+	Protected     bool   `json:"protected,omitempty"`
+	SecurityGroup struct {
+		ID   string `json:"id,omitempty"`
+		Name string `json:"name,omitempty"`
+	} `json:"security_group,omitempty"`
+	State          string   `json:"state,omitempty"`
+	Arch           string   `json:"arch,omitempty"`
+	AllowedActions []string `json:"allowed_actions,omitempty"`
+	FileSystems    []struct {
+		FileSystemID string `json:"filesystem_id,omitempty"`
+		State        string `json:"state,omitempty"`
+	}
+	CreatedAt         string `json:"creation_date,omitempty"`
+	UpdatedAt         string `json:"modification_date,omitempty"`
+	Zone              string `json:"zone,omitempty"`
+	EnableIPv6        bool   `json:"enable_ipv6,omitempty"`
+	DynamicIPRequired bool   `json:"dynamic_ip_required,omitempty"`
+	PlacementGroup    struct {
+		ID              string   `json:"id,omitempty"`
+		Name            string   `json:"name,omitempty"`
+		Organization    string   `json:"organization,omitempty"`
+		Project         string   `json:"project,omitempty"`
+		PolicyMode      string   `json:"policy_mode,omitempty"`
+		PolicyType      string   `json:"policy_type,omitempty"`
+		PolicyRespected bool     `json:"policy_respected,omitempty"`
+		Tags            []string `json:"tags,omitempty"`
+		Zone            string   `json:"zone,omitempty"`
+	} `json:"placement_group,omitempty"`
 }
 
 // ListUserData returns the metadata available from the server

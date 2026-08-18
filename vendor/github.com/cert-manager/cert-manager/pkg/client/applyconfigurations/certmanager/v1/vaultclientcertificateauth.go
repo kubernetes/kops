@@ -20,10 +20,22 @@ package v1
 
 // VaultClientCertificateAuthApplyConfiguration represents a declarative configuration of the VaultClientCertificateAuth type for use
 // with apply.
+//
+// VaultClientCertificateAuth is used to authenticate against Vault using a client
+// certificate stored in a Secret.
 type VaultClientCertificateAuthApplyConfiguration struct {
-	Path       *string `json:"mountPath,omitempty"`
+	// The Vault mountPath here is the mount path to use when authenticating with
+	// Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+	// `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+	// default value "/v1/auth/cert" will be used.
+	Path *string `json:"mountPath,omitempty"`
+	// Reference to Kubernetes Secret of type "kubernetes.io/tls" (hence containing
+	// tls.crt and tls.key) used to authenticate to Vault using TLS client
+	// authentication.
 	SecretName *string `json:"secretName,omitempty"`
-	Name       *string `json:"name,omitempty"`
+	// Name of the certificate role to authenticate against.
+	// If not set, matching any certificate role, if available.
+	Name *string `json:"name,omitempty"`
 }
 
 // VaultClientCertificateAuthApplyConfiguration constructs a declarative configuration of the VaultClientCertificateAuth type for use with

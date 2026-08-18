@@ -1,5 +1,78 @@
 # Release History
 
+## 3.0.0-beta.3 (2026-04-09)
+### Breaking Changes
+
+- Type of `AccessReviewDecisionInsightProperties.InsightCreatedDateTime` has been changed from `any` to `*time.Time`
+- Type of `AccessReviewDecisionUserSignInInsightProperties.InsightCreatedDateTime` has been changed from `any` to `*time.Time`
+- Type of `AccessReviewDecisionUserSignInInsightProperties.LastSignInDateTime` has been changed from `any` to `*time.Time`
+- Type of `DenyAssignmentProperties.ExcludePrincipals` has been changed from `[]*Principal` to `[]*DenyAssignmentPrincipal`
+- Type of `DenyAssignmentProperties.Principals` has been changed from `[]*Principal` to `[]*DenyAssignmentPrincipal`
+- Struct `DenyAssignmentFilter` has been removed
+- Struct `ErrorAdditionalInfo` has been removed
+- Struct `ErrorDefinition` has been removed
+- Struct `ErrorDefinitionProperties` has been removed
+- Struct `ErrorDetail` has been removed
+- Struct `ErrorResponse` has been removed
+- Struct `RoleAssignmentFilter` has been removed
+- Struct `RoleAssignmentScheduleFilter` has been removed
+- Struct `RoleAssignmentScheduleInstanceFilter` has been removed
+- Struct `RoleAssignmentScheduleRequestFilter` has been removed
+- Struct `RoleDefinitionFilter` has been removed
+- Struct `RoleEligibilityScheduleFilter` has been removed
+- Struct `RoleEligibilityScheduleInstanceFilter` has been removed
+- Struct `RoleEligibilityScheduleRequestFilter` has been removed
+- Struct `ValidationResponse` has been removed
+- Struct `ValidationResponseErrorInfo` has been removed
+
+### Features Added
+
+- New value `RoleManagementPolicyRuleTypeRoleManagementPolicyPimOnlyModeRule` added to enum type `RoleManagementPolicyRuleType`
+- New enum type `CreatedByType` with values `CreatedByTypeApplication`, `CreatedByTypeKey`, `CreatedByTypeManagedIdentity`, `CreatedByTypeUser`
+- New enum type `DenyAssignmentEffect` with values `DenyAssignmentEffectAudit`, `DenyAssignmentEffectEnforced`
+- New enum type `ExcludedPrincipalTypes` with values `ExcludedPrincipalTypesServicePrincipalsAsRequestor`, `ExcludedPrincipalTypesServicePrincipalsAsTarget`
+- New enum type `PIMOnlyMode` with values `PIMOnlyModeDisabled`, `PIMOnlyModeEnabled`, `PIMOnlyModeReportOnly`
+- New enum type `UsersOrServicePrincipalSetUserType` with values `UsersOrServicePrincipalSetUserTypeGroup`, `UsersOrServicePrincipalSetUserTypeServicePrincipal`, `UsersOrServicePrincipalSetUserTypeUser`
+- New function `NewAttributeNamespacesClient(credential azcore.TokenCredential, options *arm.ClientOptions) (*AttributeNamespacesClient, error)`
+- New function `*AttributeNamespacesClient.Create(ctx context.Context, attributeNamespace string, parameters AttributeNamespaceCreateRequest, options *AttributeNamespacesClientCreateOptions) (AttributeNamespacesClientCreateResponse, error)`
+- New function `*AttributeNamespacesClient.Delete(ctx context.Context, attributeNamespace string, options *AttributeNamespacesClientDeleteOptions) (AttributeNamespacesClientDeleteResponse, error)`
+- New function `*AttributeNamespacesClient.Get(ctx context.Context, attributeNamespace string, options *AttributeNamespacesClientGetOptions) (AttributeNamespacesClientGetResponse, error)`
+- New function `*ClientFactory.NewAttributeNamespacesClient() *AttributeNamespacesClient`
+- New function `*DenyAssignmentsClient.CreateOrUpdate(ctx context.Context, scope string, denyAssignmentID string, parameters DenyAssignment, options *DenyAssignmentsClientCreateOrUpdateOptions) (DenyAssignmentsClientCreateOrUpdateResponse, error)`
+- New function `*DenyAssignmentsClient.Delete(ctx context.Context, scope string, denyAssignmentID string, options *DenyAssignmentsClientDeleteOptions) (DenyAssignmentsClientDeleteResponse, error)`
+- New function `*RoleManagementPolicyPimOnlyModeRule.GetRoleManagementPolicyRule() *RoleManagementPolicyRule`
+- New struct `AttributeNamespace`
+- New struct `AttributeNamespaceCreateRequest`
+- New struct `DenyAssignmentPrincipal`
+- New struct `PIMOnlyModeSettings`
+- New struct `RoleManagementPolicyPimOnlyModeRule`
+- New struct `SystemData`
+- New struct `UsersOrServicePrincipalSet`
+- New field `SystemData` in struct `AccessReviewDecision`
+- New field `SystemData` in struct `AccessReviewDefaultSettings`
+- New field `SystemData` in struct `AccessReviewHistoryDefinition`
+- New field `SystemData` in struct `AccessReviewInstance`
+- New field `SystemData` in struct `AccessReviewScheduleDefinition`
+- New field `SystemData` in struct `Alert`
+- New field `SystemData` in struct `AlertConfiguration`
+- New field `SystemData` in struct `AlertDefinition`
+- New field `SystemData` in struct `AlertIncident`
+- New field `SystemData` in struct `DenyAssignment`
+- New field `DenyAssignmentEffect` in struct `DenyAssignmentProperties`
+- New field `SystemData` in struct `RoleAssignment`
+- New field `SystemData` in struct `RoleAssignmentSchedule`
+- New field `SystemData` in struct `RoleAssignmentScheduleInstance`
+- New field `SystemData` in struct `RoleAssignmentScheduleRequest`
+- New field `SystemData` in struct `RoleDefinition`
+- New field `SystemData` in struct `RoleEligibilitySchedule`
+- New field `SystemData` in struct `RoleEligibilityScheduleInstance`
+- New field `SystemData` in struct `RoleEligibilityScheduleRequest`
+- New field `SystemData` in struct `RoleManagementPolicy`
+- New field `SystemData` in struct `RoleManagementPolicyAssignment`
+- New field `EffectiveRules` in struct `RoleManagementPolicyAssignmentProperties`
+- New field `ExceptionMembers` in struct `RoleManagementPolicyExpirationRule`
+
+
 ## 3.0.0-beta.2 (2023-11-30)
 ### Features Added
 

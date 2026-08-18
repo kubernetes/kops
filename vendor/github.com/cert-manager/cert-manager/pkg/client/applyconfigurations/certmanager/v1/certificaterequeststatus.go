@@ -24,11 +24,27 @@ import (
 
 // CertificateRequestStatusApplyConfiguration represents a declarative configuration of the CertificateRequestStatus type for use
 // with apply.
+//
+// CertificateRequestStatus defines the observed state of CertificateRequest and
+// resulting signed certificate.
 type CertificateRequestStatusApplyConfiguration struct {
-	Conditions  []CertificateRequestConditionApplyConfiguration `json:"conditions,omitempty"`
-	Certificate []byte                                          `json:"certificate,omitempty"`
-	CA          []byte                                          `json:"ca,omitempty"`
-	FailureTime *metav1.Time                                    `json:"failureTime,omitempty"`
+	// List of status conditions to indicate the status of a CertificateRequest.
+	// Known condition types are `Ready`, `InvalidRequest`, `Approved` and `Denied`.
+	Conditions []CertificateRequestConditionApplyConfiguration `json:"conditions,omitempty"`
+	// The PEM encoded X.509 certificate resulting from the certificate
+	// signing request.
+	// If not set, the CertificateRequest has either not been completed or has
+	// failed. More information on failure can be found by checking the
+	// `conditions` field.
+	Certificate []byte `json:"certificate,omitempty"`
+	// The PEM encoded X.509 certificate of the signer, also known as the CA
+	// (Certificate Authority).
+	// This is set on a best-effort basis by different issuers.
+	// If not set, the CA is assumed to be unknown/not available.
+	CA []byte `json:"ca,omitempty"`
+	// FailureTime stores the time that this CertificateRequest failed. This is
+	// used to influence garbage collection and back-off.
+	FailureTime *metav1.Time `json:"failureTime,omitempty"`
 }
 
 // CertificateRequestStatusApplyConfiguration constructs a declarative configuration of the CertificateRequestStatus type for use with

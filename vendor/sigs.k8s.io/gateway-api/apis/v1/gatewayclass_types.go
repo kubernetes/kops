@@ -48,6 +48,9 @@ import (
 // Gateway is not deleted while in use.
 //
 // GatewayClass is a Cluster level resource.
+//
+// A GatewayClass name SHOULD be compliant with RFC 1035, consisting of a maximum of 63 lower case alphanumeric
+// characters or hyphens ('-'), and MUST start and end with an alphanumeric character.
 type GatewayClass struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
@@ -64,7 +67,7 @@ type GatewayClass struct {
 	//
 	// +kubebuilder:default={conditions: {{type: "Accepted", status: "Unknown", message: "Waiting for controller", reason: "Pending", lastTransitionTime: "1970-01-01T00:00:00Z"}}}
 	// +optional
-	Status GatewayClassStatus `json:"status,omitempty"`
+	Status GatewayClassStatus `json:"status,omitempty,omitzero"`
 }
 
 const (

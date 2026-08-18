@@ -22,10 +22,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/containerd/stargz-snapshotter/estargz"
-	"github.com/google/go-containerregistry/internal/and"
 	comp "github.com/google/go-containerregistry/internal/compression"
-	gestargz "github.com/google/go-containerregistry/internal/estargz"
 	ggzip "github.com/google/go-containerregistry/internal/gzip"
 	"github.com/google/go-containerregistry/internal/zstd"
 	"github.com/google/go-containerregistry/pkg/compression"
@@ -43,7 +40,6 @@ type layer struct {
 	compression        compression.Compression
 	compressionLevel   int
 	annotations        map[string]string
-	estgzopts          []estargz.Option
 	mediaType          types.MediaType
 }
 
@@ -161,53 +157,15 @@ func WithCompressedCaching(l *layer) {
 // through estargz.Options to the underlying compression layer.  This is
 // only meaningful when estargz is enabled.
 //
-// Deprecated: WithEstargz is deprecated, and will be removed in a future release.
-func WithEstargzOptions(opts ...estargz.Option) LayerOption {
-	return func(l *layer) {
-		l.estgzopts = opts
-	}
+// Deprecated: WithEstargz is deprecated; it is a no-op.
+func WithEstargzOptions(...any) LayerOption {
+	return func(*layer) {}
 }
 
 // WithEstargz is a functional option that explicitly enables estargz support.
 //
-// Deprecated: WithEstargz is deprecated, and will be removed in a future release.
-func WithEstargz(l *layer) {
-	oguncompressed := l.uncompressedopener
-	estargz := func() (io.ReadCloser, error) {
-		crc, err := oguncompressed()
-		if err != nil {
-			return nil, err
-		}
-		eopts := append(l.estgzopts, estargz.WithCompressionLevel(l.compressionLevel))
-		rc, h, err := gestargz.ReadCloser(crc, eopts...)
-		if err != nil {
-			return nil, err
-		}
-		l.annotations[estargz.TOCJSONDigestAnnotation] = h.String()
-		return &and.ReadCloser{
-			Reader: rc,
-			CloseFunc: func() error {
-				err := rc.Close()
-				if err != nil {
-					return err
-				}
-				// As an optimization, leverage the DiffID exposed by the estargz ReadCloser
-				l.diffID, err = v1.NewHash(rc.DiffID().String())
-				return err
-			},
-		}, nil
-	}
-	uncompressed := func() (io.ReadCloser, error) {
-		urc, err := estargz()
-		if err != nil {
-			return nil, err
-		}
-		return ggzip.UnzipReadCloser(urc)
-	}
-
-	l.compressedopener = estargz
-	l.uncompressedopener = uncompressed
-}
+// Deprecated: WithEstargz is deprecated; it is a no-op.
+func WithEstargz(*layer) {}
 
 // LayerFromFile returns a v1.Layer given a tarball
 func LayerFromFile(path string, opts ...LayerOption) (v1.Layer, error) {
@@ -239,11 +197,6 @@ func LayerFromOpener(opener Opener, opts ...LayerOption) (v1.Layer, error) {
 		compressionLevel: gzip.BestSpeed,
 		annotations:      make(map[string]string, 1),
 		mediaType:        types.DockerLayer,
-	}
-
-	if estgz := os.Getenv("GGCR_EXPERIMENT_ESTARGZ"); estgz == "1" {
-		logs.Warn.Println("GGCR_EXPERIMENT_ESTARGZ is deprecated, and will be removed in a future release.")
-		opts = append([]LayerOption{WithEstargz}, opts...)
 	}
 
 	switch comp {

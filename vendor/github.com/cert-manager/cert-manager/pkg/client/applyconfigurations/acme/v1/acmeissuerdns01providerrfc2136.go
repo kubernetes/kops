@@ -25,12 +25,28 @@ import (
 
 // ACMEIssuerDNS01ProviderRFC2136ApplyConfiguration represents a declarative configuration of the ACMEIssuerDNS01ProviderRFC2136 type for use
 // with apply.
+//
+// ACMEIssuerDNS01ProviderRFC2136 is a structure containing the
+// configuration for RFC2136 DNS
 type ACMEIssuerDNS01ProviderRFC2136ApplyConfiguration struct {
-	Nameserver    *string                                     `json:"nameserver,omitempty"`
-	TSIGSecret    *metav1.SecretKeySelectorApplyConfiguration `json:"tsigSecretSecretRef,omitempty"`
-	TSIGKeyName   *string                                     `json:"tsigKeyName,omitempty"`
-	TSIGAlgorithm *string                                     `json:"tsigAlgorithm,omitempty"`
-	Protocol      *acmev1.RFC2136UpdateProtocol               `json:"protocol,omitempty"`
+	// The IP address or hostname of an authoritative DNS server supporting
+	// RFC2136 in the form host:port. If the host is an IPv6 address it must be
+	// enclosed in square brackets (e.g [2001:db8::1]); port is optional.
+	// This field is required.
+	Nameserver *string `json:"nameserver,omitempty"`
+	// The name of the secret containing the TSIG value.
+	// If “tsigKeyName“ is defined, this field is required.
+	TSIGSecret *metav1.SecretKeySelectorApplyConfiguration `json:"tsigSecretSecretRef,omitempty"`
+	// The TSIG Key name configured in the DNS.
+	// If “tsigSecretSecretRef“ is defined, this field is required.
+	TSIGKeyName *string `json:"tsigKeyName,omitempty"`
+	// The TSIG Algorithm configured in the DNS supporting RFC2136. Used only
+	// when “tsigSecretSecretRef“ and “tsigKeyName“ are defined.
+	// Supported values are (case-insensitive): “HMACMD5“ (default),
+	// “HMACSHA1“, “HMACSHA256“ or “HMACSHA512“.
+	TSIGAlgorithm *string `json:"tsigAlgorithm,omitempty"`
+	// Protocol to use for dynamic DNS update queries. Valid values are (case-sensitive) “TCP“ and “UDP“; “UDP“ (default).
+	Protocol *acmev1.RFC2136UpdateProtocol `json:"protocol,omitempty"`
 }
 
 // ACMEIssuerDNS01ProviderRFC2136ApplyConfiguration constructs a declarative configuration of the ACMEIssuerDNS01ProviderRFC2136 type for use with

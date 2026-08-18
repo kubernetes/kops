@@ -26,15 +26,42 @@ import (
 // ChallengeSpecApplyConfiguration represents a declarative configuration of the ChallengeSpec type for use
 // with apply.
 type ChallengeSpecApplyConfiguration struct {
-	URL              *string                                   `json:"url,omitempty"`
-	AuthorizationURL *string                                   `json:"authorizationURL,omitempty"`
-	DNSName          *string                                   `json:"dnsName,omitempty"`
-	Wildcard         *bool                                     `json:"wildcard,omitempty"`
-	Type             *acmev1.ACMEChallengeType                 `json:"type,omitempty"`
-	Token            *string                                   `json:"token,omitempty"`
-	Key              *string                                   `json:"key,omitempty"`
-	Solver           *ACMEChallengeSolverApplyConfiguration    `json:"solver,omitempty"`
-	IssuerRef        *metav1.IssuerReferenceApplyConfiguration `json:"issuerRef,omitempty"`
+	// The URL of the ACME Challenge resource for this challenge.
+	// This can be used to lookup details about the status of this challenge.
+	URL *string `json:"url,omitempty"`
+	// The URL to the ACME Authorization resource that this
+	// challenge is a part of.
+	AuthorizationURL *string `json:"authorizationURL,omitempty"`
+	// dnsName is the identifier that this challenge is for, e.g., example.com.
+	// If the requested DNSName is a 'wildcard', this field MUST be set to the
+	// non-wildcard domain, e.g., for `*.example.com`, it must be `example.com`.
+	DNSName *string `json:"dnsName,omitempty"`
+	// wildcard will be true if this challenge is for a wildcard identifier,
+	// for example '*.example.com'.
+	Wildcard *bool `json:"wildcard,omitempty"`
+	// The type of ACME challenge this resource represents.
+	// One of "HTTP-01" or "DNS-01".
+	Type *acmev1.ACMEChallengeType `json:"type,omitempty"`
+	// The ACME challenge token for this challenge.
+	// This is the raw value returned from the ACME server.
+	Token *string `json:"token,omitempty"`
+	// The ACME challenge key for this challenge
+	// For HTTP01 challenges, this is the value that must be responded with to
+	// complete the HTTP01 challenge in the format:
+	// `<private key JWK thumbprint>.<key from acme server for challenge>`.
+	// For DNS01 challenges, this is the base64 encoded SHA256 sum of the
+	// `<private key JWK thumbprint>.<key from acme server for challenge>`
+	// text that must be set as the TXT record content.
+	Key *string `json:"key,omitempty"`
+	// Contains the domain solving configuration that should be used to
+	// solve this challenge resource.
+	Solver *ACMEChallengeSolverApplyConfiguration `json:"solver,omitempty"`
+	// References a properly configured ACME-type Issuer which should
+	// be used to create this Challenge.
+	// If the Issuer does not exist, processing will be retried.
+	// If the Issuer is not an 'ACME' Issuer, an error will be returned and the
+	// Challenge will be marked as failed.
+	IssuerRef *metav1.IssuerReferenceApplyConfiguration `json:"issuerRef,omitempty"`
 }
 
 // ChallengeSpecApplyConfiguration constructs a declarative configuration of the ChallengeSpec type for use with

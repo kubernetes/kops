@@ -16,6 +16,7 @@ const (
 	ScwSecretKeyEnv             = "SCW_SECRET_KEY" // #nosec G101
 	ScwActiveProfileEnv         = "SCW_PROFILE"
 	ScwAPIURLEnv                = "SCW_API_URL"
+	ScwS3EndpointEnv            = "SCW_S3_ENDPOINT"
 	ScwInsecureEnv              = "SCW_INSECURE"
 	ScwDefaultOrganizationIDEnv = "SCW_DEFAULT_ORGANIZATION_ID"
 	ScwDefaultProjectIDEnv      = "SCW_DEFAULT_PROJECT_ID"
@@ -23,6 +24,10 @@ const (
 	ScwDefaultZoneEnv           = "SCW_DEFAULT_ZONE"
 	ScwEnableBeta               = "SCW_ENABLE_BETA"
 	DebugEnv                    = logger.DebugEnv
+
+	// AWS
+	AwsEndpointURL   = "AWS_ENDPOINT_URL"
+	AwsEndpointURLS3 = "AWS_ENDPOINT_URL_S3"
 
 	// All deprecated (cli&terraform)
 	terraformAccessKeyEnv    = "SCALEWAY_ACCESS_KEY" // used both as access key and secret key
@@ -74,6 +79,11 @@ func LoadEnvProfile() *Profile {
 		p.APIURL = &apiURL
 	}
 
+	s3Endpoint, _, envExist := getEnv(ScwS3EndpointEnv)
+	if envExist {
+		p.S3Endpoint = &s3Endpoint
+	}
+
 	insecureValue, envKey, envExist := getEnv(ScwInsecureEnv, cliTLSVerifyEnv)
 	if envExist {
 		insecure, err := strconv.ParseBool(insecureValue)
@@ -110,6 +120,20 @@ func LoadEnvProfile() *Profile {
 	}
 
 	return p
+}
+
+// GetS3EndpointFromAWSConf retrieves the set value of AWS_ENDPOINT_URL_S3
+// or, if not set, AWS_ENDPOINT_URL.
+// This function can be called from any client side code which intends to
+// be AWS compatible, thus check the environment variables.
+// In case AWS changes the key of these variable, this function should be the
+// single point to update.
+func GetS3EndpointFromAWSConf() string {
+	if ep := os.Getenv(AwsEndpointURLS3); ep != "" {
+		return ep
+	}
+
+	return os.Getenv(AwsEndpointURL)
 }
 
 func getEnv(upToDateKey string, deprecatedKeys ...string) (string, string, bool) {

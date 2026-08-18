@@ -17,6 +17,7 @@ limitations under the License.
 package set
 
 import (
+	"slices"
 	"sort"
 )
 
@@ -85,12 +86,7 @@ func (s Set[E]) HasAll(items ...E) bool {
 
 // HasAny returns true if any items are contained in the set.
 func (s Set[E]) HasAny(items ...E) bool {
-	for _, item := range items {
-		if s.Has(item) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(items, s.Has)
 }
 
 // Union returns a new set which includes items in either s1 or s2.

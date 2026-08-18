@@ -51,32 +51,30 @@ func ReadCloserLevel(r io.ReadCloser, level int) io.ReadCloser {
 
 	// Returns err so we can pw.CloseWithError(err)
 	go func() error {
-		// TODO(go1.14): Just defer {pw,gw,r}.Close like you'd expect.
-		// Context: https://golang.org/issue/24283
+		// Always close the source reader when the goroutine exits,
+		// regardless of which error path is taken. This prevents
+		// resource leaks (e.g. pullLimiter token slots held by
+		// limitedReadCloser wrappers around r).
+		defer r.Close()
+
 		gw, err := gzip.NewWriterLevel(bw, level)
 		if err != nil {
 			return pw.CloseWithError(err)
 		}
+		defer gw.Close()
+		defer pw.Close()
 
 		if _, err := io.Copy(gw, r); err != nil {
-			defer r.Close()
-			defer gw.Close()
 			return pw.CloseWithError(err)
 		}
 
-		// Close gzip writer to Flush it and write gzip trailers.
 		if err := gw.Close(); err != nil {
 			return pw.CloseWithError(err)
 		}
 
-		// Flush bufio writer to ensure we write out everything.
 		if err := bw.Flush(); err != nil {
 			return pw.CloseWithError(err)
 		}
-
-		// We don't really care if these fail.
-		defer pw.Close()
-		defer r.Close()
 
 		return nil
 	}()

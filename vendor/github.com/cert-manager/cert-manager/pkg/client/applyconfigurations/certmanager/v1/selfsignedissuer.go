@@ -20,7 +20,13 @@ package v1
 
 // SelfSignedIssuerApplyConfiguration represents a declarative configuration of the SelfSignedIssuer type for use
 // with apply.
+//
+// Configures an issuer to 'self sign' certificates using the
+// private key used to create the CertificateRequest object.
 type SelfSignedIssuerApplyConfiguration struct {
+	// The CRL distribution points is an X.509 v3 certificate extension which identifies
+	// the location of the CRL from which the revocation of this certificate can be checked.
+	// If not set certificate will be issued without CDP. Values are strings.
 	CRLDistributionPoints []string `json:"crlDistributionPoints,omitempty"`
 }
 

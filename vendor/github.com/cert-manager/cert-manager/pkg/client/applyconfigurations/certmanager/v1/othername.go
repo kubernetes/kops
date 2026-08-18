@@ -21,7 +21,12 @@ package v1
 // OtherNameApplyConfiguration represents a declarative configuration of the OtherName type for use
 // with apply.
 type OtherNameApplyConfiguration struct {
-	OID       *string `json:"oid,omitempty"`
+	// OID is the object identifier for the otherName SAN.
+	// The object identifier must be expressed as a dotted string, for
+	// example, "1.2.840.113556.1.4.221".
+	OID *string `json:"oid,omitempty"`
+	// utf8Value is the string value of the otherName SAN.
+	// The utf8Value accepts any valid UTF8 string to set as value for the otherName SAN.
 	UTF8Value *string `json:"utf8Value,omitempty"`
 }
 

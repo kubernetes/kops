@@ -20,15 +20,37 @@ package v1
 
 import (
 	acmev1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ChallengeStatusApplyConfiguration represents a declarative configuration of the ChallengeStatus type for use
 // with apply.
 type ChallengeStatusApplyConfiguration struct {
-	Processing *bool         `json:"processing,omitempty"`
-	Presented  *bool         `json:"presented,omitempty"`
-	Reason     *string       `json:"reason,omitempty"`
-	State      *acmev1.State `json:"state,omitempty"`
+	// Used to denote whether this challenge should be processed or not.
+	// This field will only be set to true by the 'scheduling' component.
+	// It will only be set to false by the 'challenges' controller, after the
+	// challenge has reached a final state or timed out.
+	// If this field is set to false, the challenge controller will not take
+	// any more action.
+	Processing *bool `json:"processing,omitempty"`
+	// Presented is true once cert-manager has configured the solver resources
+	// needed to expose this challenge's validation material.
+	// For example, the DNS01 TXT record has been created, or the HTTP01 solver
+	// has been configured to serve the challenge token.
+	// This does not imply the self check is passing, that the ACME server has
+	// validated the challenge, or that cert-manager has already accepted the
+	// challenge with the ACME server.
+	Presented *bool `json:"presented,omitempty"`
+	// PresentedAt records when cert-manager first configured the solver
+	// resources for this challenge. This is used by the optional delay-based
+	// readiness logic.
+	PresentedAt *metav1.Time `json:"presentedAt,omitempty"`
+	// Contains human readable information on why the Challenge is in the
+	// current state.
+	Reason *string `json:"reason,omitempty"`
+	// Contains the current 'state' of the challenge.
+	// If not set, the state of the challenge is unknown.
+	State *acmev1.State `json:"state,omitempty"`
 }
 
 // ChallengeStatusApplyConfiguration constructs a declarative configuration of the ChallengeStatus type for use with
@@ -50,6 +72,14 @@ func (b *ChallengeStatusApplyConfiguration) WithProcessing(value bool) *Challeng
 // If called multiple times, the Presented field is set to the value of the last call.
 func (b *ChallengeStatusApplyConfiguration) WithPresented(value bool) *ChallengeStatusApplyConfiguration {
 	b.Presented = &value
+	return b
+}
+
+// WithPresentedAt sets the PresentedAt field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the PresentedAt field is set to the value of the last call.
+func (b *ChallengeStatusApplyConfiguration) WithPresentedAt(value metav1.Time) *ChallengeStatusApplyConfiguration {
+	b.PresentedAt = &value
 	return b
 }
 

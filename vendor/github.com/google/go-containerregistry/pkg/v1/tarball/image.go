@@ -219,6 +219,15 @@ type tarFile struct {
 }
 
 func extractFileFromTar(opener Opener, filePath string) (io.ReadCloser, error) {
+	return followLinks(opener, filePath, make(map[string]bool))
+}
+
+func followLinks(opener Opener, filePath string, visited map[string]bool) (io.ReadCloser, error) {
+	if visited[filePath] {
+		return nil, fmt.Errorf("link cycle detected for %s", filePath)
+	}
+	visited[filePath] = true
+
 	f, err := opener()
 	if err != nil {
 		return nil, err
@@ -239,10 +248,10 @@ func extractFileFromTar(opener Opener, filePath string) (io.ReadCloser, error) {
 		if err != nil {
 			return nil, err
 		}
-		if hdr.Name == filePath {
+		if path.Clean(hdr.Name) == path.Clean(filePath) {
 			if hdr.Typeflag == tar.TypeSymlink || hdr.Typeflag == tar.TypeLink {
 				currentDir := filepath.Dir(filePath)
-				return extractFileFromTar(opener, path.Join(currentDir, path.Clean(hdr.Linkname)))
+				return followLinks(opener, path.Join(currentDir, path.Clean(hdr.Linkname)), visited)
 			}
 			needClose = false
 			return tarFile{
@@ -295,6 +304,9 @@ func (i *uncompressedImage) LayerByDiffID(h v1.Hash) (partial.UncompressedLayer,
 	}
 	for idx, diffID := range cfg.RootFS.DiffIDs {
 		if diffID == h {
+			if idx >= len(i.imgDescriptor.Layers) {
+				return nil, fmt.Errorf("config has %d rootfs.diff_id(s) but tarball manifest only references %d layer(s); the config may not describe a runnable image", len(cfg.RootFS.DiffIDs), len(i.imgDescriptor.Layers))
+			}
 			// Technically the media type should be 'application/tar' but given that our
 			// v1.Layer doesn't force consumers to care about whether the layer is compressed
 			// we should be fine returning the DockerLayer media type
@@ -364,6 +376,9 @@ func (c *compressedImage) Manifest() (*v1.Manifest, error) {
 		cfg, err := partial.ConfigFile(c)
 		if err != nil {
 			return nil, err
+		}
+		if i >= len(cfg.RootFS.DiffIDs) {
+			return nil, fmt.Errorf("tarball manifest references %d layer(s) but config has %d rootfs.diff_ids; the config may not describe a runnable image (for example, a buildkit cacheconfig)", len(c.imgDescriptor.Layers), len(cfg.RootFS.DiffIDs))
 		}
 		diffid := cfg.RootFS.DiffIDs[i]
 		if d, ok := c.imgDescriptor.LayerSources[diffid]; ok {

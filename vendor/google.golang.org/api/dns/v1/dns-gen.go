@@ -2780,7 +2780,10 @@ type ChangesCreateCall struct {
 	header_     http.Header
 }
 
-// Create: Atomically updates the ResourceRecordSet collection.
+// Create: Atomically updates the ResourceRecordSet collection. Note: While
+// `dns.changes.create` is the baseline permission required to invoke this
+// method, additional permissions are checked depending on the specific
+// additions or deletions contained in the payload.
 //
 //   - managedZone: Identifies the managed zone addressed by this request. Can be
 //     the managed zone name or ID.
@@ -3775,7 +3778,10 @@ type ManagedZonesCreateCall struct {
 	header_     http.Header
 }
 
-// Create: Creates a new ManagedZone.
+// Create: Creates a new ManagedZone. Note: While `dns.managedZones.create` is
+// the baseline permission required to invoke this method, additional
+// permissions are required if the managed zone configuration references other
+// resources.
 //
 // - project: Identifies the project addressed by this request.
 func (r *ManagedZonesService) Create(project string, managedzone *ManagedZone) *ManagedZonesCreateCall {

@@ -133,7 +133,7 @@ func ExtractNames(r pagination.Page) ([]string, error) {
 	case strings.HasPrefix(ct, "text/html"):
 		return []string{}, nil
 	default:
-		return nil, fmt.Errorf("Cannot extract names from response with content-type: [%s]", ct)
+		return nil, fmt.Errorf("cannot extract names from response with content-type: [%s]", ct)
 	}
 }
 
@@ -496,7 +496,7 @@ func extractLastMarker(r pagination.Page) (string, error) {
 	casted := r.(ObjectPage)
 
 	// If a delimiter was requested, check if a subdir exists.
-	queryParams, err := url.ParseQuery(casted.URL.RawQuery)
+	queryParams, err := url.ParseQuery(casted.RawQuery)
 	if err != nil {
 		return "", err
 	}
@@ -542,6 +542,6 @@ func extractLastMarker(r pagination.Page) (string, error) {
 	case strings.HasPrefix(ct, "text/html"):
 		return "", nil
 	default:
-		return "", fmt.Errorf("Cannot extract names from response with content-type: [%s]", ct)
+		return "", fmt.Errorf("cannot extract names from response with content-type: [%s]", ct)
 	}
 }

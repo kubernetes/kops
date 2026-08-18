@@ -20,7 +20,13 @@ package v1
 
 // Route53KubernetesAuthApplyConfiguration represents a declarative configuration of the Route53KubernetesAuth type for use
 // with apply.
+//
+// Route53KubernetesAuth is a configuration to authenticate against Route53
+// using a bound Kubernetes ServiceAccount token.
 type Route53KubernetesAuthApplyConfiguration struct {
+	// A reference to a service account that will be used to request a bound
+	// token (also known as "projected token"). To use this field, you must
+	// configure an RBAC rule to let cert-manager request a token.
 	ServiceAccountRef *ServiceAccountRefApplyConfiguration `json:"serviceAccountRef,omitempty"`
 }
 

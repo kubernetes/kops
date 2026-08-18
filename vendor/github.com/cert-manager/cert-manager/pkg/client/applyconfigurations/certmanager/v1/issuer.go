@@ -29,11 +29,18 @@ import (
 
 // IssuerApplyConfiguration represents a declarative configuration of the Issuer type for use
 // with apply.
+//
+// An Issuer represents a certificate issuing authority which can be
+// referenced as part of `issuerRef` fields.
+// It is scoped to a single namespace and can therefore only be referenced by
+// resources within the same namespace.
 type IssuerApplyConfiguration struct {
 	metav1.TypeMetaApplyConfiguration    `json:",inline"`
 	*metav1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                                 *IssuerSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                               *IssuerStatusApplyConfiguration `json:"status,omitempty"`
+	// Desired state of the Issuer resource.
+	Spec *IssuerSpecApplyConfiguration `json:"spec,omitempty"`
+	// Status of the Issuer. This is set and managed automatically.
+	Status *IssuerStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // Issuer constructs a declarative configuration of the Issuer type for use with
@@ -47,29 +54,14 @@ func Issuer(name, namespace string) *IssuerApplyConfiguration {
 	return b
 }
 
-// ExtractIssuer extracts the applied configuration owned by fieldManager from
-// issuer. If no managedFields are found in issuer for fieldManager, a
-// IssuerApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractIssuerFrom extracts the applied configuration owned by fieldManager from
+// issuer for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // issuer must be a unmodified Issuer API object that was retrieved from the Kubernetes API.
-// ExtractIssuer provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractIssuerFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractIssuer(issuer *certmanagerv1.Issuer, fieldManager string) (*IssuerApplyConfiguration, error) {
-	return extractIssuer(issuer, fieldManager, "")
-}
-
-// ExtractIssuerStatus is the same as ExtractIssuer except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractIssuerStatus(issuer *certmanagerv1.Issuer, fieldManager string) (*IssuerApplyConfiguration, error) {
-	return extractIssuer(issuer, fieldManager, "status")
-}
-
-func extractIssuer(issuer *certmanagerv1.Issuer, fieldManager string, subresource string) (*IssuerApplyConfiguration, error) {
+func ExtractIssuerFrom(issuer *certmanagerv1.Issuer, fieldManager string, subresource string) (*IssuerApplyConfiguration, error) {
 	b := &IssuerApplyConfiguration{}
 	err := managedfields.ExtractInto(issuer, internal.Parser().Type("com.github.cert-manager.cert-manager.pkg.apis.certmanager.v1.Issuer"), fieldManager, b, subresource)
 	if err != nil {
@@ -82,6 +74,27 @@ func extractIssuer(issuer *certmanagerv1.Issuer, fieldManager string, subresourc
 	b.WithAPIVersion("cert-manager.io/v1")
 	return b, nil
 }
+
+// ExtractIssuer extracts the applied configuration owned by fieldManager from
+// issuer. If no managedFields are found in issuer for fieldManager, a
+// IssuerApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// issuer must be a unmodified Issuer API object that was retrieved from the Kubernetes API.
+// ExtractIssuer provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractIssuer(issuer *certmanagerv1.Issuer, fieldManager string) (*IssuerApplyConfiguration, error) {
+	return ExtractIssuerFrom(issuer, fieldManager, "")
+}
+
+// ExtractIssuerStatus extracts the applied configuration owned by fieldManager from
+// issuer for the status subresource.
+func ExtractIssuerStatus(issuer *certmanagerv1.Issuer, fieldManager string) (*IssuerApplyConfiguration, error) {
+	return ExtractIssuerFrom(issuer, fieldManager, "status")
+}
+
 func (b IssuerApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

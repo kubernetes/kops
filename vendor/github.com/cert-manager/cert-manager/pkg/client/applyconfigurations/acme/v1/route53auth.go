@@ -20,7 +20,11 @@ package v1
 
 // Route53AuthApplyConfiguration represents a declarative configuration of the Route53Auth type for use
 // with apply.
+//
+// Route53Auth is configuration used to authenticate with a Route53.
 type Route53AuthApplyConfiguration struct {
+	// Kubernetes authenticates with Route53 using AssumeRoleWithWebIdentity
+	// by passing a bound ServiceAccount token.
 	Kubernetes *Route53KubernetesAuthApplyConfiguration `json:"kubernetes,omitempty"`
 }
 

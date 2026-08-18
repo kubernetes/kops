@@ -26,13 +26,28 @@ import (
 
 // IssuerConditionApplyConfiguration represents a declarative configuration of the IssuerCondition type for use
 // with apply.
+//
+// IssuerCondition contains condition information for an Issuer.
 type IssuerConditionApplyConfiguration struct {
-	Type               *certmanagerv1.IssuerConditionType `json:"type,omitempty"`
-	Status             *metav1.ConditionStatus            `json:"status,omitempty"`
-	LastTransitionTime *apismetav1.Time                   `json:"lastTransitionTime,omitempty"`
-	Reason             *string                            `json:"reason,omitempty"`
-	Message            *string                            `json:"message,omitempty"`
-	ObservedGeneration *int64                             `json:"observedGeneration,omitempty"`
+	// Type of the condition, known values are (`Ready`).
+	Type *certmanagerv1.IssuerConditionType `json:"type,omitempty"`
+	// Status of the condition, one of (`True`, `False`, `Unknown`).
+	Status *metav1.ConditionStatus `json:"status,omitempty"`
+	// LastTransitionTime is the timestamp corresponding to the last status
+	// change of this condition.
+	LastTransitionTime *apismetav1.Time `json:"lastTransitionTime,omitempty"`
+	// Reason is a brief machine readable explanation for the condition's last
+	// transition.
+	Reason *string `json:"reason,omitempty"`
+	// Message is a human readable description of the details of the last
+	// transition, complementing reason.
+	Message *string `json:"message,omitempty"`
+	// If set, this represents the .metadata.generation that the condition was
+	// set based upon.
+	// For instance, if .metadata.generation is currently 12, but the
+	// .status.condition[x].observedGeneration is 9, the condition is out of date
+	// with respect to the current state of the Issuer.
+	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
 }
 
 // IssuerConditionApplyConfiguration constructs a declarative configuration of the IssuerCondition type for use with

@@ -20,10 +20,18 @@ package v1
 
 // AzureManagedIdentityApplyConfiguration represents a declarative configuration of the AzureManagedIdentity type for use
 // with apply.
+//
+// AzureManagedIdentity contains the configuration for Azure Workload Identity or Azure Managed Service Identity
+// If the AZURE_FEDERATED_TOKEN_FILE environment variable is set, the Azure Workload Identity will be used.
+// Otherwise, we fall back to using Azure Managed Service Identity.
 type AzureManagedIdentityApplyConfiguration struct {
-	ClientID   *string `json:"clientID,omitempty"`
+	// client ID of the managed identity, cannot be used at the same time as resourceID
+	ClientID *string `json:"clientID,omitempty"`
+	// resource ID of the managed identity, cannot be used at the same time as clientID
+	// Cannot be used for Azure Managed Service Identity
 	ResourceID *string `json:"resourceID,omitempty"`
-	TenantID   *string `json:"tenantID,omitempty"`
+	// tenant ID of the managed identity, cannot be used at the same time as resourceID
+	TenantID *string `json:"tenantID,omitempty"`
 }
 
 // AzureManagedIdentityApplyConfiguration constructs a declarative configuration of the AzureManagedIdentity type for use with

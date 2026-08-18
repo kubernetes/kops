@@ -20,9 +20,14 @@ package v1
 
 // CertificateSecretTemplateApplyConfiguration represents a declarative configuration of the CertificateSecretTemplate type for use
 // with apply.
+//
+// CertificateSecretTemplate defines the default labels and annotations
+// to be copied to the Kubernetes Secret resource named in `CertificateSpec.secretName`.
 type CertificateSecretTemplateApplyConfiguration struct {
+	// Annotations is a key value map to be copied to the target Kubernetes Secret.
 	Annotations map[string]string `json:"annotations,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	// Labels is a key value map to be copied to the target Kubernetes Secret.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // CertificateSecretTemplateApplyConfiguration constructs a declarative configuration of the CertificateSecretTemplate type for use with

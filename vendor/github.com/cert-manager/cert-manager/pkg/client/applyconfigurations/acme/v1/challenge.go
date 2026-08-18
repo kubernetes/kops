@@ -29,6 +29,8 @@ import (
 
 // ChallengeApplyConfiguration represents a declarative configuration of the Challenge type for use
 // with apply.
+//
+// Challenge is a type to represent a Challenge request with an ACME server
 type ChallengeApplyConfiguration struct {
 	metav1.TypeMetaApplyConfiguration    `json:",inline"`
 	*metav1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -47,29 +49,14 @@ func Challenge(name, namespace string) *ChallengeApplyConfiguration {
 	return b
 }
 
-// ExtractChallenge extracts the applied configuration owned by fieldManager from
-// challenge. If no managedFields are found in challenge for fieldManager, a
-// ChallengeApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractChallengeFrom extracts the applied configuration owned by fieldManager from
+// challenge for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // challenge must be a unmodified Challenge API object that was retrieved from the Kubernetes API.
-// ExtractChallenge provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractChallengeFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractChallenge(challenge *acmev1.Challenge, fieldManager string) (*ChallengeApplyConfiguration, error) {
-	return extractChallenge(challenge, fieldManager, "")
-}
-
-// ExtractChallengeStatus is the same as ExtractChallenge except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractChallengeStatus(challenge *acmev1.Challenge, fieldManager string) (*ChallengeApplyConfiguration, error) {
-	return extractChallenge(challenge, fieldManager, "status")
-}
-
-func extractChallenge(challenge *acmev1.Challenge, fieldManager string, subresource string) (*ChallengeApplyConfiguration, error) {
+func ExtractChallengeFrom(challenge *acmev1.Challenge, fieldManager string, subresource string) (*ChallengeApplyConfiguration, error) {
 	b := &ChallengeApplyConfiguration{}
 	err := managedfields.ExtractInto(challenge, internal.Parser().Type("com.github.cert-manager.cert-manager.pkg.apis.acme.v1.Challenge"), fieldManager, b, subresource)
 	if err != nil {
@@ -82,6 +69,27 @@ func extractChallenge(challenge *acmev1.Challenge, fieldManager string, subresou
 	b.WithAPIVersion("acme.cert-manager.io/v1")
 	return b, nil
 }
+
+// ExtractChallenge extracts the applied configuration owned by fieldManager from
+// challenge. If no managedFields are found in challenge for fieldManager, a
+// ChallengeApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// challenge must be a unmodified Challenge API object that was retrieved from the Kubernetes API.
+// ExtractChallenge provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractChallenge(challenge *acmev1.Challenge, fieldManager string) (*ChallengeApplyConfiguration, error) {
+	return ExtractChallengeFrom(challenge, fieldManager, "")
+}
+
+// ExtractChallengeStatus extracts the applied configuration owned by fieldManager from
+// challenge for the status subresource.
+func ExtractChallengeStatus(challenge *acmev1.Challenge, fieldManager string) (*ChallengeApplyConfiguration, error) {
+	return ExtractChallengeFrom(challenge, fieldManager, "status")
+}
+
 func (b ChallengeApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

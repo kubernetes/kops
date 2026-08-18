@@ -20,8 +20,23 @@ package v1
 
 // ACMEChallengeSolverHTTP01ApplyConfiguration represents a declarative configuration of the ACMEChallengeSolverHTTP01 type for use
 // with apply.
+//
+// ACMEChallengeSolverHTTP01 contains configuration detailing how to solve
+// HTTP01 challenges within a Kubernetes cluster.
+// Typically this is accomplished through creating 'routes' of some description
+// that configure ingress controllers to direct traffic to 'solver pods', which
+// are responsible for responding to the ACME server's HTTP requests.
+// Only one of Ingress / Gateway can be specified.
 type ACMEChallengeSolverHTTP01ApplyConfiguration struct {
-	Ingress          *ACMEChallengeSolverHTTP01IngressApplyConfiguration          `json:"ingress,omitempty"`
+	// The ingress based HTTP01 challenge solver will solve challenges by
+	// creating or modifying Ingress resources in order to route requests for
+	// '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are
+	// provisioned by cert-manager for each Challenge to be completed.
+	Ingress *ACMEChallengeSolverHTTP01IngressApplyConfiguration `json:"ingress,omitempty"`
+	// The Gateway API is a sig-network community API that models service networking
+	// in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will
+	// create HTTPRoutes with the specified labels in the same namespace as the challenge.
+	// This solver is experimental, and fields / behaviour may change in the future.
 	GatewayHTTPRoute *ACMEChallengeSolverHTTP01GatewayHTTPRouteApplyConfiguration `json:"gatewayHTTPRoute,omitempty"`
 }
 

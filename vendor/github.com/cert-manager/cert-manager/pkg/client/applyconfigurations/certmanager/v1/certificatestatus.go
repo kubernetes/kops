@@ -24,15 +24,58 @@ import (
 
 // CertificateStatusApplyConfiguration represents a declarative configuration of the CertificateStatus type for use
 // with apply.
+//
+// CertificateStatus defines the observed state of Certificate
 type CertificateStatusApplyConfiguration struct {
-	Conditions               []CertificateConditionApplyConfiguration `json:"conditions,omitempty"`
-	LastFailureTime          *metav1.Time                             `json:"lastFailureTime,omitempty"`
-	NotBefore                *metav1.Time                             `json:"notBefore,omitempty"`
-	NotAfter                 *metav1.Time                             `json:"notAfter,omitempty"`
-	RenewalTime              *metav1.Time                             `json:"renewalTime,omitempty"`
-	Revision                 *int                                     `json:"revision,omitempty"`
-	NextPrivateKeySecretName *string                                  `json:"nextPrivateKeySecretName,omitempty"`
-	FailedIssuanceAttempts   *int                                     `json:"failedIssuanceAttempts,omitempty"`
+	// List of status conditions to indicate the status of certificates.
+	// Known condition types are `Ready` and `Issuing`.
+	Conditions []CertificateConditionApplyConfiguration `json:"conditions,omitempty"`
+	// LastFailureTime is set only if the latest issuance for this
+	// Certificate failed and contains the time of the failure. If an
+	// issuance has failed, the delay till the next issuance will be
+	// calculated using formula time.Hour * 2 ^ (failedIssuanceAttempts -
+	// 1). If the latest issuance has succeeded this field will be unset.
+	LastFailureTime *metav1.Time `json:"lastFailureTime,omitempty"`
+	// The time after which the certificate stored in the secret named
+	// by this resource in `spec.secretName` is valid.
+	NotBefore *metav1.Time `json:"notBefore,omitempty"`
+	// The expiration time of the certificate stored in the secret named
+	// by this resource in `spec.secretName`.
+	NotAfter *metav1.Time `json:"notAfter,omitempty"`
+	// RenewalTime is the time at which the certificate will be next
+	// renewed.
+	// If not set, no upcoming renewal is scheduled.
+	RenewalTime *metav1.Time `json:"renewalTime,omitempty"`
+	// The current 'revision' of the certificate as issued.
+	//
+	// When a CertificateRequest resource is created, it will have the
+	// `cert-manager.io/certificate-revision` set to one greater than the
+	// current value of this field.
+	//
+	// Upon issuance, this field will be set to the value of the annotation
+	// on the CertificateRequest resource used to issue the certificate.
+	//
+	// Persisting the value on the CertificateRequest resource allows the
+	// certificates controller to know whether a request is part of an old
+	// issuance or if it is part of the ongoing revision's issuance by
+	// checking if the revision value in the annotation is greater than this
+	// field.
+	Revision *int `json:"revision,omitempty"`
+	// The name of the Secret resource containing the private key to be used
+	// for the next certificate iteration.
+	// The keymanager controller will automatically set this field if the
+	// `Issuing` condition is set to `True`.
+	// It will automatically unset this field when the Issuing condition is
+	// not set or False.
+	NextPrivateKeySecretName *string `json:"nextPrivateKeySecretName,omitempty"`
+	// The number of continuous failed issuance attempts up till now. This
+	// field gets removed (if set) on a successful issuance and gets set to
+	// 1 if unset and an issuance has failed. If an issuance has failed, the
+	// delay till the next issuance will be calculated using formula
+	// time.Hour * 2 ^ (failedIssuanceAttempts - 1).
+	FailedIssuanceAttempts *int `json:"failedIssuanceAttempts,omitempty"`
+	// ACME stores information that is fetched from the ACME CA server.
+	ACME *CertificateACMEStatusApplyConfiguration `json:"acme,omitempty"`
 }
 
 // CertificateStatusApplyConfiguration constructs a declarative configuration of the CertificateStatus type for use with
@@ -107,5 +150,13 @@ func (b *CertificateStatusApplyConfiguration) WithNextPrivateKeySecretName(value
 // If called multiple times, the FailedIssuanceAttempts field is set to the value of the last call.
 func (b *CertificateStatusApplyConfiguration) WithFailedIssuanceAttempts(value int) *CertificateStatusApplyConfiguration {
 	b.FailedIssuanceAttempts = &value
+	return b
+}
+
+// WithACME sets the ACME field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ACME field is set to the value of the last call.
+func (b *CertificateStatusApplyConfiguration) WithACME(value *CertificateACMEStatusApplyConfiguration) *CertificateStatusApplyConfiguration {
+	b.ACME = value
 	return b
 }

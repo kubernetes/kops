@@ -24,8 +24,13 @@ import (
 
 // VenafiCloudApplyConfiguration represents a declarative configuration of the VenafiCloud type for use
 // with apply.
+//
+// VenafiCloud defines connection configuration details for CyberArk Certificate Manager SaaS
 type VenafiCloudApplyConfiguration struct {
-	URL               *string                                     `json:"url,omitempty"`
+	// URL is the base URL for CyberArk Certificate Manager SaaS.
+	// Defaults to "https://api.venafi.cloud/".
+	URL *string `json:"url,omitempty"`
+	// APITokenSecretRef is a secret key selector for the CyberArk Certificate Manager SaaS API token.
 	APITokenSecretRef *metav1.SecretKeySelectorApplyConfiguration `json:"apiTokenSecretRef,omitempty"`
 }
 

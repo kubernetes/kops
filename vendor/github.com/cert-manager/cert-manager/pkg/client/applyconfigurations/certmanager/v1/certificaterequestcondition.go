@@ -26,12 +26,23 @@ import (
 
 // CertificateRequestConditionApplyConfiguration represents a declarative configuration of the CertificateRequestCondition type for use
 // with apply.
+//
+// CertificateRequestCondition contains condition information for a CertificateRequest.
 type CertificateRequestConditionApplyConfiguration struct {
-	Type               *certmanagerv1.CertificateRequestConditionType `json:"type,omitempty"`
-	Status             *metav1.ConditionStatus                        `json:"status,omitempty"`
-	LastTransitionTime *apismetav1.Time                               `json:"lastTransitionTime,omitempty"`
-	Reason             *string                                        `json:"reason,omitempty"`
-	Message            *string                                        `json:"message,omitempty"`
+	// Type of the condition, known values are (`Ready`, `InvalidRequest`,
+	// `Approved`, `Denied`).
+	Type *certmanagerv1.CertificateRequestConditionType `json:"type,omitempty"`
+	// Status of the condition, one of (`True`, `False`, `Unknown`).
+	Status *metav1.ConditionStatus `json:"status,omitempty"`
+	// LastTransitionTime is the timestamp corresponding to the last status
+	// change of this condition.
+	LastTransitionTime *apismetav1.Time `json:"lastTransitionTime,omitempty"`
+	// Reason is a brief machine readable explanation for the condition's last
+	// transition.
+	Reason *string `json:"reason,omitempty"`
+	// Message is a human readable description of the details of the last
+	// transition, complementing reason.
+	Message *string `json:"message,omitempty"`
 }
 
 // CertificateRequestConditionApplyConfiguration constructs a declarative configuration of the CertificateRequestCondition type for use with

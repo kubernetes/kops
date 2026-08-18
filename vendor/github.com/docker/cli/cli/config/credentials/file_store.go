@@ -99,9 +99,14 @@ func (c *fileStore) Store(authConfig types.AuthConfig) error {
 	return nil
 }
 
-// ConvertToHostname converts a registry url which has http|https prepended
-// to just an hostname.
-// Copied from github.com/docker/docker/registry.ConvertToHostname to reduce dependencies.
+// ConvertToHostname normalizes a registry URL which has http|https prepended
+// to just its hostname. It is used to match credentials, which may be either
+// stored as hostname or as hostname including scheme (in legacy configuration
+// files).
+//
+// It's the equivalent to [registry.ConvertToHostname] in the daemon.
+//
+// [registry.ConvertToHostname]: https://pkg.go.dev/github.com/moby/moby/v2@v2.0.0-beta.7/daemon/pkg/registry#ConvertToHostname
 func ConvertToHostname(maybeURL string) string {
 	stripped := maybeURL
 	if strings.Contains(stripped, "://") {

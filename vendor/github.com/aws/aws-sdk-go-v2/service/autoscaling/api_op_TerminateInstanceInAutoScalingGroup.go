@@ -4,23 +4,24 @@ package autoscaling
 
 import (
 	"context"
-	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/smithy-go/middleware"
-	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Terminates the specified instance and optionally adjusts the desired group
 // size. This operation cannot be called on instances in a warm pool.
 //
-// This call simply makes a termination request. The instance is not terminated
+// This call simply makes a termination request. The instances are not terminated
 // immediately. When an instance is terminated, the instance status changes to
 // terminated . You can't connect to or start an instance after you've terminated
 // it.
 //
 // If you do not specify the option to decrement the desired capacity, Amazon EC2
 // Auto Scaling launches instances to replace the ones that are terminated.
+//
+// To terminate multiple instances in a single call, use the InstanceIds and
+// AutoScalingGroupName parameters instead of InstanceId . When terminating
+// multiple instances, the response populates Activities instead of Activity .
 //
 // By default, Amazon EC2 Auto Scaling balances instances across all Availability
 // Zones. If you decrement the desired capacity, your Auto Scaling group can become
@@ -46,21 +47,31 @@ func (c *Client) TerminateInstanceInAutoScalingGroup(ctx context.Context, params
 
 type TerminateInstanceInAutoScalingGroupInput struct {
 
-	// The ID of the instance.
-	//
-	// This member is required.
-	InstanceId *string
-
 	// Indicates whether terminating the instance also decrements the size of the Auto
 	// Scaling group.
 	//
 	// This member is required.
 	ShouldDecrementDesiredCapacity *bool
 
+	// The name of the Auto Scaling group. Required when using InstanceIds .
+	AutoScalingGroupName *string
+
+	// The ID of the instance.
+	InstanceId *string
+
+	// The IDs of the instances. You can specify up to 100 instances.
+	//
+	// This parameter requires that you also specify AutoScalingGroupName .
+	InstanceIds []string
+
 	noSmithyDocumentSerde
 }
 
 type TerminateInstanceInAutoScalingGroupOutput struct {
+
+	// The scaling activities related to terminating the instances from the Auto
+	// Scaling group.
+	Activities []types.Activity
 
 	// A scaling activity.
 	Activity *types.Activity
@@ -72,9 +83,6 @@ type TerminateInstanceInAutoScalingGroupOutput struct {
 }
 
 func (c *Client) addOperationTerminateInstanceInAutoScalingGroupMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsAwsquery_serializeOpTerminateInstanceInAutoScalingGroup{}, middleware.After)
 	if err != nil {
 		return err
@@ -83,19 +91,7 @@ func (c *Client) addOperationTerminateInstanceInAutoScalingGroupMiddlewares(stac
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "TerminateInstanceInAutoScalingGroup"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
-	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
-		return err
-	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = addClientRequestID(stack); err != nil {
-		return err
-	}
 	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
@@ -105,46 +101,13 @@ func (c *Client) addOperationTerminateInstanceInAutoScalingGroupMiddlewares(stac
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
-		return err
-	}
-	if err = addRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = addRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addSpanRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addTimeOffsetBuild(stack, c); err != nil {
-		return err
-	}
-	if err = addUserAgentRetryMode(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack, options); err != nil {
 		return err
 	}
 	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpTerminateInstanceInAutoScalingGroupValidationMiddleware(stack); err != nil {
-		return err
-	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opTerminateInstanceInAutoScalingGroup(options.Region), middleware.Before); err != nil {
-		return err
-	}
-	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -159,22 +122,8 @@ func (c *Client) addOperationTerminateInstanceInAutoScalingGroupMiddlewares(stac
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAttempt(stack, options); err != nil {
-		return err
-	}
 	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil
-}
-
-func newServiceMetadataMiddleware_opTerminateInstanceInAutoScalingGroup(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "TerminateInstanceInAutoScalingGroup",
-	}
 }

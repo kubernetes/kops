@@ -6,15 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config/internal/ini"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/aws/aws-sdk-go-v2/internal/ini"
 	"github.com/aws/aws-sdk-go-v2/internal/shareddefaults"
 	"github.com/aws/smithy-go/logging"
 	smithyrequestcompression "github.com/aws/smithy-go/private/requestcompression"
@@ -113,6 +112,8 @@ const (
 
 	disableRequestCompression      = "disable_request_compression"
 	requestMinCompressionSizeBytes = "request_min_compression_size_bytes"
+
+	disableClockSkewCorrection = "disable_clock_skew_correction"
 
 	s3DisableExpressSessionAuthKey = "s3_disable_express_session_auth"
 
@@ -347,6 +348,10 @@ type SharedConfig struct {
 	// retrieved from config file's profile field request_min_compression_size_bytes
 	RequestMinCompressSizeBytes *int64
 
+	// determine if clock skew correction is disabled, default to false
+	// retrieved from config file's profile field disable_clock_skew_correction
+	DisableClockSkewCorrection *bool
+
 	// Whether S3Express auth is disabled.
 	//
 	// This will NOT prevent requests from being made to S3Express buckets, it
@@ -502,7 +507,7 @@ func (c SharedConfig) getCustomCABundle(context.Context) (io.Reader, bool, error
 		return nil, false, nil
 	}
 
-	b, err := ioutil.ReadFile(c.CustomCABundle)
+	b, err := os.ReadFile(c.CustomCABundle)
 	if err != nil {
 		return nil, false, err
 	}
@@ -1150,6 +1155,9 @@ func (c *SharedConfig) setFromIniSection(profile string, section ini.Section) er
 	if err := updateDisableRequestCompression(&c.DisableRequestCompression, section, disableRequestCompression); err != nil {
 		return fmt.Errorf("failed to load %s from shared config, %w", disableRequestCompression, err)
 	}
+	if err := updateDisableRequestCompression(&c.DisableClockSkewCorrection, section, disableClockSkewCorrection); err != nil {
+		return fmt.Errorf("failed to load %s from shared config, %w", disableClockSkewCorrection, err)
+	}
 	if err := updateRequestMinCompressSizeBytes(&c.RequestMinCompressSizeBytes, section, requestMinCompressionSizeBytes); err != nil {
 		return fmt.Errorf("failed to load %s from shared config, %w", requestMinCompressionSizeBytes, err)
 	}
@@ -1291,6 +1299,13 @@ func (c SharedConfig) getDisableRequestCompression(ctx context.Context) (bool, b
 		return false, false, nil
 	}
 	return *c.DisableRequestCompression, true, nil
+}
+
+func (c SharedConfig) getDisableClockSkewCorrection(ctx context.Context) (bool, bool, error) {
+	if c.DisableClockSkewCorrection == nil {
+		return false, false, nil
+	}
+	return *c.DisableClockSkewCorrection, true, nil
 }
 
 func (c SharedConfig) getAccountIDEndpointMode(ctx context.Context) (aws.AccountIDEndpointMode, bool, error) {

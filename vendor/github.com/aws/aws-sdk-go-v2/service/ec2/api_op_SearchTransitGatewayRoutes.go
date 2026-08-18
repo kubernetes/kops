@@ -5,10 +5,8 @@ package ec2
 import (
 	"context"
 	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go/middleware"
-	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Searches for routes in the specified transit gateway route table.
@@ -76,6 +74,9 @@ type SearchTransitGatewayRoutesInput struct {
 	// is 1000.
 	MaxResults *int32
 
+	// The token for the next page of results.
+	NextToken *string
+
 	noSmithyDocumentSerde
 }
 
@@ -83,6 +84,10 @@ type SearchTransitGatewayRoutesOutput struct {
 
 	// Indicates whether there are additional routes available.
 	AdditionalRoutesAvailable *bool
+
+	// The token to use to retrieve the next page of results. This value is null when
+	// there are no more results to return.
+	NextToken *string
 
 	// Information about the routes.
 	Routes []types.TransitGatewayRoute
@@ -94,9 +99,6 @@ type SearchTransitGatewayRoutesOutput struct {
 }
 
 func (c *Client) addOperationSearchTransitGatewayRoutesMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsEc2query_serializeOpSearchTransitGatewayRoutes{}, middleware.After)
 	if err != nil {
 		return err
@@ -105,19 +107,7 @@ func (c *Client) addOperationSearchTransitGatewayRoutesMiddlewares(stack *middle
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "SearchTransitGatewayRoutes"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
-	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
-		return err
-	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = addClientRequestID(stack); err != nil {
-		return err
-	}
 	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
@@ -127,46 +117,13 @@ func (c *Client) addOperationSearchTransitGatewayRoutesMiddlewares(stack *middle
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
-		return err
-	}
-	if err = addRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = addRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addSpanRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addTimeOffsetBuild(stack, c); err != nil {
-		return err
-	}
-	if err = addUserAgentRetryMode(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack, options); err != nil {
 		return err
 	}
 	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpSearchTransitGatewayRoutesValidationMiddleware(stack); err != nil {
-		return err
-	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opSearchTransitGatewayRoutes(options.Region), middleware.Before); err != nil {
-		return err
-	}
-	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -181,22 +138,105 @@ func (c *Client) addOperationSearchTransitGatewayRoutesMiddlewares(stack *middle
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAttempt(stack, options); err != nil {
-		return err
-	}
 	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil
 }
 
-func newServiceMetadataMiddleware_opSearchTransitGatewayRoutes(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "SearchTransitGatewayRoutes",
+// SearchTransitGatewayRoutesPaginatorOptions is the paginator options for
+// SearchTransitGatewayRoutes
+type SearchTransitGatewayRoutesPaginatorOptions struct {
+	// The maximum number of routes to return. If a value is not provided, the default
+	// is 1000.
+	Limit int32
+
+	// Set to true if pagination should stop if the service returns a pagination token
+	// that matches the most recent token provided to the service.
+	StopOnDuplicateToken bool
+}
+
+// SearchTransitGatewayRoutesPaginator is a paginator for
+// SearchTransitGatewayRoutes
+type SearchTransitGatewayRoutesPaginator struct {
+	options   SearchTransitGatewayRoutesPaginatorOptions
+	client    SearchTransitGatewayRoutesAPIClient
+	params    *SearchTransitGatewayRoutesInput
+	nextToken *string
+	firstPage bool
+}
+
+// NewSearchTransitGatewayRoutesPaginator returns a new
+// SearchTransitGatewayRoutesPaginator
+func NewSearchTransitGatewayRoutesPaginator(client SearchTransitGatewayRoutesAPIClient, params *SearchTransitGatewayRoutesInput, optFns ...func(*SearchTransitGatewayRoutesPaginatorOptions)) *SearchTransitGatewayRoutesPaginator {
+	if params == nil {
+		params = &SearchTransitGatewayRoutesInput{}
+	}
+
+	options := SearchTransitGatewayRoutesPaginatorOptions{}
+	if params.MaxResults != nil {
+		options.Limit = *params.MaxResults
+	}
+
+	for _, fn := range optFns {
+		fn(&options)
+	}
+
+	return &SearchTransitGatewayRoutesPaginator{
+		options:   options,
+		client:    client,
+		params:    params,
+		firstPage: true,
+		nextToken: params.NextToken,
 	}
 }
+
+// HasMorePages returns a boolean indicating whether more pages are available
+func (p *SearchTransitGatewayRoutesPaginator) HasMorePages() bool {
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
+}
+
+// NextPage retrieves the next SearchTransitGatewayRoutes page.
+func (p *SearchTransitGatewayRoutesPaginator) NextPage(ctx context.Context, optFns ...func(*Options)) (*SearchTransitGatewayRoutesOutput, error) {
+	if !p.HasMorePages() {
+		return nil, fmt.Errorf("no more pages available")
+	}
+
+	params := *p.params
+	params.NextToken = p.nextToken
+
+	var limit *int32
+	if p.options.Limit > 0 {
+		limit = &p.options.Limit
+	}
+	params.MaxResults = limit
+
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
+	result, err := p.client.SearchTransitGatewayRoutes(ctx, &params, optFns...)
+	if err != nil {
+		return nil, err
+	}
+	p.firstPage = false
+
+	prevToken := p.nextToken
+	p.nextToken = result.NextToken
+
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
+		p.nextToken = nil
+	}
+
+	return result, nil
+}
+
+// SearchTransitGatewayRoutesAPIClient is a client that implements the
+// SearchTransitGatewayRoutes operation.
+type SearchTransitGatewayRoutesAPIClient interface {
+	SearchTransitGatewayRoutes(context.Context, *SearchTransitGatewayRoutesInput, ...func(*Options)) (*SearchTransitGatewayRoutesOutput, error)
+}
+
+var _ SearchTransitGatewayRoutesAPIClient = (*Client)(nil)

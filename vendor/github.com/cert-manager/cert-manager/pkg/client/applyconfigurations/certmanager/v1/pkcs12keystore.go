@@ -25,11 +25,44 @@ import (
 
 // PKCS12KeystoreApplyConfiguration represents a declarative configuration of the PKCS12Keystore type for use
 // with apply.
+//
+// PKCS12 configures options for storing a PKCS12 keystore in the
+// `spec.secretName` Secret resource.
 type PKCS12KeystoreApplyConfiguration struct {
-	Create            *bool                                       `json:"create,omitempty"`
-	Profile           *certmanagerv1.PKCS12Profile                `json:"profile,omitempty"`
+	// Create enables PKCS12 keystore creation for the Certificate.
+	// If true, a file named `keystore.p12` will be created in the target
+	// Secret resource, encrypted using the password stored in
+	// `passwordSecretRef` or in `password`.
+	// The keystore file will be updated immediately.
+	// If the issuer provided a CA certificate, a file named `truststore.p12` will
+	// also be created in the target Secret resource, encrypted using the
+	// password stored in `passwordSecretRef` containing the issuing Certificate
+	// Authority
+	Create *bool `json:"create,omitempty"`
+	// Profile specifies the key and certificate encryption algorithms and the HMAC algorithm
+	// used to create the PKCS12 keystore. Default value is `LegacyRC2` for backward compatibility.
+	//
+	// If provided, allowed values are:
+	// `LegacyRC2`: Deprecated. Not supported by default in OpenSSL 3 or Java 20.
+	// `LegacyDES`: Less secure algorithm. Use this option for maximal compatibility.
+	// `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
+	// (e.g., because of company policy). Please note that the security of the algorithm is not that important
+	// in reality, because the unencrypted certificate and private key are also stored in the Secret.
+	// `Modern2026`: Encodes PKCS#12 files using algorithms that are considered modern as of 2026.
+	// Private keys and certificates are encrypted using PBES2 with PBKDF2-HMAC-SHA-256 and AES-256-CBC.
+	// The MAC algorithm is PBMAC1 with PBKDF2-HMAC-SHA-256 and HMAC-SHA256.
+	// Files produced with this profile can be read by OpenSSL 3.4.0 and higher, Java 26 and higher,
+	// or with Java using compatible versions of Bouncy Castle. Meets FIPS 140-3 requirements.
+	Profile *certmanagerv1.PKCS12Profile `json:"profile,omitempty"`
+	// PasswordSecretRef is a reference to a non-empty key in a Secret resource
+	// containing the password used to encrypt the PKCS#12 keystore.
+	// Mutually exclusive with password.
+	// One of password or passwordSecretRef must provide a password with a non-zero length.
 	PasswordSecretRef *metav1.SecretKeySelectorApplyConfiguration `json:"passwordSecretRef,omitempty"`
-	Password          *string                                     `json:"password,omitempty"`
+	// Password provides a literal password used to encrypt the PKCS#12 keystore.
+	// Mutually exclusive with passwordSecretRef.
+	// One of password or passwordSecretRef must provide a password with a non-zero length.
+	Password *string `json:"password,omitempty"`
 }
 
 // PKCS12KeystoreApplyConfiguration constructs a declarative configuration of the PKCS12Keystore type for use with

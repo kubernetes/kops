@@ -282,3 +282,99 @@ func ListL3Agents(c *gophercloud.ServiceClient, id string) (result pagination.Pa
 		return ListL3AgentsPage{pagination.SinglePageBase(r)}
 	})
 }
+
+// AddExternalGatewaysOptsBuilder allows extensions to add additional parameters
+// to the AddExternalGateways request.
+type AddExternalGatewaysOptsBuilder interface {
+	ToRouterAddExternalGatewaysMap() (map[string]any, error)
+}
+
+// AddExternalGatewaysOpts represents the options for adding external gateways
+// to a router.
+type AddExternalGatewaysOpts struct {
+	ExternalGateways []GatewayInfo `json:"external_gateways" required:"true"`
+}
+
+// ToRouterAddExternalGatewaysMap builds a request body from AddExternalGatewaysOpts.
+func (opts AddExternalGatewaysOpts) ToRouterAddExternalGatewaysMap() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "router")
+}
+
+// AddExternalGateways adds external gateways to a router.
+// This requires the external-gateway-multihoming extension.
+func AddExternalGateways(ctx context.Context, c *gophercloud.ServiceClient, id string, opts AddExternalGatewaysOptsBuilder) (r UpdateResult) {
+	b, err := opts.ToRouterAddExternalGatewaysMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := c.Put(ctx, addExternalGatewaysURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
+
+// UpdateExternalGatewaysOptsBuilder allows extensions to add additional
+// parameters to the UpdateExternalGateways request.
+type UpdateExternalGatewaysOptsBuilder interface {
+	ToRouterUpdateExternalGatewaysMap() (map[string]any, error)
+}
+
+// UpdateExternalGatewaysOpts represents the options for updating external
+// gateways of a router.
+type UpdateExternalGatewaysOpts struct {
+	ExternalGateways []GatewayInfo `json:"external_gateways" required:"true"`
+}
+
+// ToRouterUpdateExternalGatewaysMap builds a request body from UpdateExternalGatewaysOpts.
+func (opts UpdateExternalGatewaysOpts) ToRouterUpdateExternalGatewaysMap() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "router")
+}
+
+// UpdateExternalGateways updates external gateways of a router.
+// This requires the external-gateway-multihoming extension.
+func UpdateExternalGateways(ctx context.Context, c *gophercloud.ServiceClient, id string, opts UpdateExternalGatewaysOptsBuilder) (r UpdateResult) {
+	b, err := opts.ToRouterUpdateExternalGatewaysMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := c.Put(ctx, updateExternalGatewaysURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
+
+// RemoveExternalGatewaysOptsBuilder allows extensions to add additional
+// parameters to the RemoveExternalGateways request.
+type RemoveExternalGatewaysOptsBuilder interface {
+	ToRouterRemoveExternalGatewaysMap() (map[string]any, error)
+}
+
+// RemoveExternalGatewaysOpts represents the options for removing external
+// gateways from a router.
+type RemoveExternalGatewaysOpts struct {
+	ExternalGateways []GatewayInfo `json:"external_gateways" required:"true"`
+}
+
+// ToRouterRemoveExternalGatewaysMap builds a request body from RemoveExternalGatewaysOpts.
+func (opts RemoveExternalGatewaysOpts) ToRouterRemoveExternalGatewaysMap() (map[string]any, error) {
+	return gophercloud.BuildRequestBody(opts, "router")
+}
+
+// RemoveExternalGateways removes external gateways from a router.
+// This requires the external-gateway-multihoming extension.
+func RemoveExternalGateways(ctx context.Context, c *gophercloud.ServiceClient, id string, opts RemoveExternalGatewaysOptsBuilder) (r UpdateResult) {
+	b, err := opts.ToRouterRemoveExternalGatewaysMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	resp, err := c.Put(ctx, removeExternalGatewaysURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
+		OkCodes: []int{200},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}

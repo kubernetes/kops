@@ -24,11 +24,27 @@ import (
 
 // VenafiTPPApplyConfiguration represents a declarative configuration of the VenafiTPP type for use
 // with apply.
+//
+// VenafiTPP defines connection configuration details for a CyberArk Certificate Manager Self-Hosted instance
 type VenafiTPPApplyConfiguration struct {
-	URL               *string                                        `json:"url,omitempty"`
-	CredentialsRef    *metav1.LocalObjectReferenceApplyConfiguration `json:"credentialsRef,omitempty"`
-	CABundle          []byte                                         `json:"caBundle,omitempty"`
-	CABundleSecretRef *metav1.SecretKeySelectorApplyConfiguration    `json:"caBundleSecretRef,omitempty"`
+	// URL is the base URL for the vedsdk endpoint of the CyberArk Certificate Manager Self-Hosted instance,
+	// for example: "https://tpp.example.com/vedsdk".
+	URL *string `json:"url,omitempty"`
+	// CredentialsRef is a reference to a Secret containing the CyberArk Certificate Manager Self-Hosted API credentials.
+	// The secret must contain the key 'access-token' for the Access Token Authentication,
+	// or two keys, 'username' and 'password' for the API Keys Authentication.
+	CredentialsRef *metav1.LocalObjectReferenceApplyConfiguration `json:"credentialsRef,omitempty"`
+	// Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+	// chain presented by the CyberArk Certificate Manager Self-Hosted server. Only used if using HTTPS; ignored for HTTP.
+	// If undefined, the certificate bundle in the cert-manager controller container
+	// is used to validate the chain.
+	CABundle []byte `json:"caBundle,omitempty"`
+	// Reference to a Secret containing a base64-encoded bundle of PEM CAs
+	// which will be used to validate the certificate chain presented by the CyberArk Certificate Manager Self-Hosted server.
+	// Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
+	// If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
+	// the cert-manager controller container is used to validate the TLS connection.
+	CABundleSecretRef *metav1.SecretKeySelectorApplyConfiguration `json:"caBundleSecretRef,omitempty"`
 }
 
 // VenafiTPPApplyConfiguration constructs a declarative configuration of the VenafiTPP type for use with

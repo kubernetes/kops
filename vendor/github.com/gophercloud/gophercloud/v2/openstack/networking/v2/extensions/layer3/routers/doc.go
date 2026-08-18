@@ -135,5 +135,67 @@ Example to List an L3 agents for a Router
 	for _, agent := range allL3Agents {
 		fmt.Printf("%+v\n", agent)
 	}
+
+Example to Add External Gateways to a Router: This requires the external-gateway-multihoming extension.
+
+	routerID := "4e8e5957-649f-477b-9e5b-f1f75b21c03c"
+
+	addOpts := routers.AddExternalGatewaysOpts{
+		ExternalGateways: []routers.GatewayInfo{
+			{
+				NetworkID: "8ca37218-28ff-41cb-9b10-039601ea7e6b",
+				ExternalFixedIPs: []routers.ExternalFixedIP{
+					{SubnetID: "ab561bc4-1a8e-48f2-9fbd-376fcb1a1def"},
+				},
+			},
+		},
+	}
+
+	router, err := routers.AddExternalGateways(context.TODO(), networkClient, routerID, addOpts).Extract()
+	if err != nil {
+		panic(err)
+	}
+
+Example to Update External Gateways of a Router: This requires the external-gateway-multihoming extension.
+
+	routerID := "4e8e5957-649f-477b-9e5b-f1f75b21c03c"
+
+	enableSNAT := true
+	updateOpts := routers.UpdateExternalGatewaysOpts{
+		ExternalGateways: []routers.GatewayInfo{
+			{
+				NetworkID:  "8ca37218-28ff-41cb-9b10-039601ea7e6b",
+				EnableSNAT: &enableSNAT,
+				ExternalFixedIPs: []routers.ExternalFixedIP{
+					{IPAddress: "192.0.2.17", SubnetID: "ab561bc4-1a8e-48f2-9fbd-376fcb1a1def"},
+				},
+			},
+		},
+	}
+
+	router, err := routers.UpdateExternalGateways(context.TODO(), networkClient, routerID, updateOpts).Extract()
+	if err != nil {
+		panic(err)
+	}
+
+Example to Remove External Gateways from a Router: This requires the external-gateway-multihoming extension.
+
+	routerID := "4e8e5957-649f-477b-9e5b-f1f75b21c03c"
+
+	removeOpts := routers.RemoveExternalGatewaysOpts{
+		ExternalGateways: []routers.GatewayInfo{
+			{
+				NetworkID: "8ca37218-28ff-41cb-9b10-039601ea7e6b",
+				ExternalFixedIPs: []routers.ExternalFixedIP{
+					{IPAddress: "192.0.2.17", SubnetID: "ab561bc4-1a8e-48f2-9fbd-376fcb1a1def"},
+				},
+			},
+		},
+	}
+
+	router, err := routers.RemoveExternalGateways(context.TODO(), networkClient, routerID, removeOpts).Extract()
+	if err != nil {
+		panic(err)
+	}
 */
 package routers

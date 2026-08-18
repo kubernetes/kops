@@ -243,8 +243,17 @@ type CommonRouteSpec struct {
 	// +optional
 	// +listType=atomic
 	// +kubebuilder:validation:MaxItems=32
+	// <gateway:util:excludeFromCRD>
+	// Ensures that when the same parent is referenced more than once, each reference
+	// carries a distinct, non-empty sectionName. The first rule enforces consistency
+	// (all refs specify sectionName or none do), the second enforces uniqueness.
+	// </gateway:util:excludeFromCRD>
 	// <gateway:standard:validation:XValidation:message="sectionName must be specified when parentRefs includes 2 or more references to the same parent",rule="self.all(p1, self.all(p2, p1.group == p2.group && p1.kind == p2.kind && p1.name == p2.name && (((!has(p1.__namespace__) || p1.__namespace__ == '') && (!has(p2.__namespace__) || p2.__namespace__ == '')) || (has(p1.__namespace__) && has(p2.__namespace__) && p1.__namespace__ == p2.__namespace__ )) ? ((!has(p1.sectionName) || p1.sectionName == '') == (!has(p2.sectionName) || p2.sectionName == '')) : true))">
 	// <gateway:standard:validation:XValidation:message="sectionName must be unique when parentRefs includes 2 or more references to the same parent",rule="self.all(p1, self.exists_one(p2, p1.group == p2.group && p1.kind == p2.kind && p1.name == p2.name && (((!has(p1.__namespace__) || p1.__namespace__ == '') && (!has(p2.__namespace__) || p2.__namespace__ == '')) || (has(p1.__namespace__) && has(p2.__namespace__) && p1.__namespace__ == p2.__namespace__ )) && (((!has(p1.sectionName) || p1.sectionName == '') && (!has(p2.sectionName) || p2.sectionName == '')) || (has(p1.sectionName) && has(p2.sectionName) && p1.sectionName == p2.sectionName))))">
+	// <gateway:util:excludeFromCRD>
+	// Experimental variants of the above rules that additionally require the combination
+	// of sectionName and port to be consistently specified and unique across refs.
+	// </gateway:util:excludeFromCRD>
 	// <gateway:experimental:validation:XValidation:message="sectionName or port must be specified when parentRefs includes 2 or more references to the same parent",rule="self.all(p1, self.all(p2, p1.group == p2.group && p1.kind == p2.kind && p1.name == p2.name && (((!has(p1.__namespace__) || p1.__namespace__ == '') && (!has(p2.__namespace__) || p2.__namespace__ == '')) || (has(p1.__namespace__) && has(p2.__namespace__) && p1.__namespace__ == p2.__namespace__)) ? ((!has(p1.sectionName) || p1.sectionName == '') == (!has(p2.sectionName) || p2.sectionName == '') && (!has(p1.port) || p1.port == 0) == (!has(p2.port) || p2.port == 0)): true))">
 	// <gateway:experimental:validation:XValidation:message="sectionName or port must be unique when parentRefs includes 2 or more references to the same parent",rule="self.all(p1, self.exists_one(p2, p1.group == p2.group && p1.kind == p2.kind && p1.name == p2.name && (((!has(p1.__namespace__) || p1.__namespace__ == '') && (!has(p2.__namespace__) || p2.__namespace__ == '')) || (has(p1.__namespace__) && has(p2.__namespace__) && p1.__namespace__ == p2.__namespace__ )) && (((!has(p1.sectionName) || p1.sectionName == '') && (!has(p2.sectionName) || p2.sectionName == '')) || ( has(p1.sectionName) && has(p2.sectionName) && p1.sectionName == p2.sectionName)) && (((!has(p1.port) || p1.port == 0) && (!has(p2.port) || p2.port == 0)) || (has(p1.port) && has(p2.port) && p1.port == p2.port))))">
 	ParentRefs []ParentReference `json:"parentRefs,omitempty"`
@@ -511,7 +520,7 @@ type RouteParentStatus struct {
 	//
 	// * The Route refers to a nonexistent parent.
 	// * The Route is of a type that the controller does not support.
-	// * The Route is in a namespace the controller does not have access to.
+	// * The Route is in a namespace to which the controller does not have access.
 	//
 	// <gateway:util:excludeFromCRD>
 	//
@@ -646,13 +655,12 @@ type AbsoluteURI string
 
 // The CORSOrigin MUST NOT be a relative URI, and it MUST follow the URI syntax and
 // encoding rules specified in RFC3986.  The CORSOrigin MUST include both a
-// scheme (e.g., "http" or "spiffe") and a scheme-specific-part, or it should be a single '*' character.
+// scheme ("http" or "https") and a scheme-specific-part, or it should be a single '*' character.
 // URIs that include an authority MUST include a fully qualified domain name or
 // IP address as the host.
-// <gateway:util:excludeFromCRD> The below regex was generated to simplify the assertion of scheme://host:<port> being port optional </gateway:util:excludeFromCRD>
 // +kubebuilder:validation:MinLength=1
 // +kubebuilder:validation:MaxLength=253
-// +kubebuilder:validation:Pattern=`(^\*$)|(^([a-zA-Z][a-zA-Z0-9+\-.]+):\/\/([^:/?#]+)(:([0-9]{1,5}))?$)`
+// +kubebuilder:validation:Pattern=`(^\*$)|(^(http(s)?):\/\/(((\*\.)?([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9-]+|\*)(:([0-9]{1,5}))?)$)`
 type CORSOrigin string
 
 // Group refers to a Kubernetes Group. It must either be an empty string or a
@@ -905,6 +913,7 @@ const (
 
 // SessionPersistence defines the desired state of SessionPersistence.
 // +kubebuilder:validation:XValidation:message="AbsoluteTimeout must be specified when cookie lifetimeType is Permanent",rule="!has(self.cookieConfig) || !has(self.cookieConfig.lifetimeType) || self.cookieConfig.lifetimeType != 'Permanent' || has(self.absoluteTimeout)"
+// +kubebuilder:validation:XValidation:message="cookieConfig can only be set with type Cookie",rule="!has(self.cookieConfig) || self.type == 'Cookie'"
 type SessionPersistence struct {
 	// SessionName defines the name of the persistent session token
 	// which may be reflected in the cookie or the header. Users
@@ -926,17 +935,8 @@ type SessionPersistence struct {
 	// +optional
 	AbsoluteTimeout *Duration `json:"absoluteTimeout,omitempty"`
 
-	// IdleTimeout defines the idle timeout of the persistent session.
-	// Once the session has been idle for more than the specified
-	// IdleTimeout duration, the session becomes invalid.
-	//
-	// Support: Extended
-	//
-	// +optional
-	IdleTimeout *Duration `json:"idleTimeout,omitempty"`
-
 	// Type defines the type of session persistence such as through
-	// the use a header or cookie. Defaults to cookie based session
+	// the use of a header or cookie. Defaults to cookie based session
 	// persistence.
 	//
 	// Support: Core for "Cookie" type
@@ -1027,4 +1027,31 @@ type Fraction struct {
 	// +kubebuilder:default=100
 	// +kubebuilder:validation:Minimum=1
 	Denominator *int32 `json:"denominator,omitempty"`
+}
+
+// ParentGatewayReference identifies an API object including its namespace,
+// defaulting to Gateway.
+type ParentGatewayReference struct {
+	// Group is the group of the referent.
+	//
+	// +optional
+	// +kubebuilder:default="gateway.networking.k8s.io"
+	Group *Group `json:"group,omitempty"`
+
+	// Kind is kind of the referent. For example "Gateway".
+	//
+	// +optional
+	// +kubebuilder:default=Gateway
+	Kind *Kind `json:"kind,omitempty"`
+
+	// Name is the name of the referent.
+	// +required
+	Name ObjectName `json:"name"`
+
+	// Namespace is the namespace of the referent.  If not present,
+	// the namespace of the referent is assumed to be the same as
+	// the namespace of the referring object.
+	//
+	// +optional
+	Namespace *Namespace `json:"namespace,omitempty"`
 }

@@ -20,10 +20,33 @@ package v1
 
 // CertificateDNSNameSelectorApplyConfiguration represents a declarative configuration of the CertificateDNSNameSelector type for use
 // with apply.
+//
+// CertificateDNSNameSelector selects certificates using a label selector, and
+// can optionally select individual DNS names within those certificates.
+// If both MatchLabels and DNSNames are empty, this selector will match all
+// certificates and DNS names within them.
 type CertificateDNSNameSelectorApplyConfiguration struct {
+	// A label selector that is used to refine the set of certificate's that
+	// this challenge solver will apply to.
 	MatchLabels map[string]string `json:"matchLabels,omitempty"`
-	DNSNames    []string          `json:"dnsNames,omitempty"`
-	DNSZones    []string          `json:"dnsZones,omitempty"`
+	// List of DNSNames that this solver will be used to solve.
+	// If specified and a match is found, a dnsNames selector will take
+	// precedence over a dnsZones selector.
+	// If multiple solvers match with the same dnsNames value, the solver
+	// with the most matching labels in matchLabels will be selected.
+	// If neither has more matches, the solver defined earlier in the list
+	// will be selected.
+	DNSNames []string `json:"dnsNames,omitempty"`
+	// List of DNSZones that this solver will be used to solve.
+	// The most specific DNS zone match specified here will take precedence
+	// over other DNS zone matches, so a solver specifying sys.example.com
+	// will be selected over one specifying example.com for the domain
+	// www.sys.example.com.
+	// If multiple solvers match with the same dnsZones value, the solver
+	// with the most matching labels in matchLabels will be selected.
+	// If neither has more matches, the solver defined earlier in the list
+	// will be selected.
+	DNSZones []string `json:"dnsZones,omitempty"`
 }
 
 // CertificateDNSNameSelectorApplyConfiguration constructs a declarative configuration of the CertificateDNSNameSelector type for use with

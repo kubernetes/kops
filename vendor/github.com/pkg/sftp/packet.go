@@ -95,7 +95,7 @@ func marshalStatus(b []byte, err StatusError) []byte {
 	return b
 }
 
-func marshal(b []byte, v interface{}) []byte {
+func marshal(b []byte, v any) []byte {
 	switch v := v.(type) {
 	case nil:
 		return b
@@ -225,6 +225,12 @@ func unmarshalFileStat(flags uint32, b []byte) (*FileStat, []byte, error) {
 			return nil, b, err
 		}
 
+		// Each extended attribute occupies at least 8 bytes (two
+		// length-prefixed strings), so a count larger than len(b)/8 cannot
+		// fit and is malformed.
+		if count > uint32(len(b)/8) {
+			return nil, b, errShortPacket
+		}
 		ext := make([]StatExtended, count)
 		for i := uint32(0); i < count; i++ {
 			var typ string
@@ -690,7 +696,7 @@ func (p *sshFxpRealpathPacket) UnmarshalBinary(b []byte) error {
 type sshFxpNameAttr struct {
 	Name     string
 	LongName string
-	Attrs    []interface{}
+	Attrs    []any
 }
 
 func (p *sshFxpNameAttr) MarshalBinary() ([]byte, error) {
@@ -740,7 +746,7 @@ type sshFxpOpenPacket struct {
 	Path   string
 	Pflags uint32
 	Flags  uint32
-	Attrs  interface{}
+	Attrs  any
 }
 
 func (p *sshFxpOpenPacket) id() uint32 { return p.ID }
@@ -1006,14 +1012,14 @@ type sshFxpSetstatPacket struct {
 	ID    uint32
 	Flags uint32
 	Path  string
-	Attrs interface{}
+	Attrs any
 }
 
 type sshFxpFsetstatPacket struct {
 	ID     uint32
 	Flags  uint32
 	Handle string
-	Attrs  interface{}
+	Attrs  any
 }
 
 func (p *sshFxpSetstatPacket) id() uint32  { return p.ID }

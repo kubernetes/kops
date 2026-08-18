@@ -21,9 +21,17 @@ package v1
 // ACMEIssuerStatusApplyConfiguration represents a declarative configuration of the ACMEIssuerStatus type for use
 // with apply.
 type ACMEIssuerStatusApplyConfiguration struct {
-	URI                 *string `json:"uri,omitempty"`
+	// URI is the unique account identifier, which can also be used to retrieve
+	// account details from the CA
+	URI *string `json:"uri,omitempty"`
+	// LastRegisteredEmail is the email associated with the latest registered
+	// ACME account, in order to track changes made to registered account
+	// associated with the  Issuer
 	LastRegisteredEmail *string `json:"lastRegisteredEmail,omitempty"`
-	LastPrivateKeyHash  *string `json:"lastPrivateKeyHash,omitempty"`
+	// LastPrivateKeyHash is a hash of the private key associated with the latest
+	// registered ACME account, in order to track changes made to registered account
+	// associated with the Issuer
+	LastPrivateKeyHash *string `json:"lastPrivateKeyHash,omitempty"`
 }
 
 // ACMEIssuerStatusApplyConfiguration constructs a declarative configuration of the ACMEIssuerStatus type for use with

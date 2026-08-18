@@ -167,7 +167,7 @@ func ExtractRouters(r pagination.Page) ([]Router, error) {
 
 // ExtractRoutersInto extracts the elements into a slice of Router structs.
 func ExtractRoutersInto(r pagination.Page, v any) error {
-	return r.(RouterPage).Result.ExtractIntoSlicePtr(v, "routers")
+	return r.(RouterPage).ExtractIntoSlicePtr(v, "routers")
 }
 
 type commonResult struct {

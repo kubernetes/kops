@@ -20,10 +20,23 @@ package v1
 
 // ACMEChallengeApplyConfiguration represents a declarative configuration of the ACMEChallenge type for use
 // with apply.
+//
+// Challenge specifies a challenge offered by the ACME server for an Order.
+// An appropriate Challenge resource can be created to perform the ACME
+// challenge process.
 type ACMEChallengeApplyConfiguration struct {
-	URL   *string `json:"url,omitempty"`
+	// URL is the URL of this challenge. It can be used to retrieve additional
+	// metadata about the Challenge from the ACME server.
+	URL *string `json:"url,omitempty"`
+	// Token is the token that must be presented for this challenge.
+	// This is used to compute the 'key' that must also be presented.
 	Token *string `json:"token,omitempty"`
-	Type  *string `json:"type,omitempty"`
+	// Type is the type of challenge being offered, e.g., 'http-01', 'dns-01',
+	// 'tls-sni-01', etc.
+	// This is the raw value retrieved from the ACME server.
+	// Only 'http-01' and 'dns-01' are supported by cert-manager, other values
+	// will be ignored.
+	Type *string `json:"type,omitempty"`
 }
 
 // ACMEChallengeApplyConfiguration constructs a declarative configuration of the ACMEChallenge type for use with

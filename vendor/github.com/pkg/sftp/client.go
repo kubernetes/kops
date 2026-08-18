@@ -561,7 +561,7 @@ func (c *Client) Symlink(oldname, newname string) error {
 	}
 }
 
-func (c *Client) fsetstat(handle string, flags uint32, attrs interface{}) error {
+func (c *Client) fsetstat(handle string, flags uint32, attrs any) error {
 	id := c.nextID()
 	typ, data, err := c.sendPacket(context.Background(), nil, &sshFxpFsetstatPacket{
 		ID:     id,
@@ -581,7 +581,7 @@ func (c *Client) fsetstat(handle string, flags uint32, attrs interface{}) error 
 }
 
 // setstat is a convience wrapper to allow for changing of various parts of the file descriptor.
-func (c *Client) setstat(path string, flags uint32, attrs interface{}) error {
+func (c *Client) setstat(path string, flags uint32, attrs any) error {
 	id := c.nextID()
 	typ, data, err := c.sendPacket(context.Background(), nil, &sshFxpSetstatPacket{
 		ID:    id,

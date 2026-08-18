@@ -20,8 +20,16 @@ package v1
 
 // ServiceAccountRefApplyConfiguration represents a declarative configuration of the ServiceAccountRef type for use
 // with apply.
+//
+// ServiceAccountRef is a service account used by cert-manager to request a
+// token. The expiration of the token is also set by cert-manager to 10 minutes.
 type ServiceAccountRefApplyConfiguration struct {
-	Name           *string  `json:"name,omitempty"`
+	// Name of the ServiceAccount used to request a token.
+	Name *string `json:"name,omitempty"`
+	// TokenAudiences is an optional list of audiences to include in the
+	// token passed to AWS. The default token consisting of the issuer's namespace
+	// and name is always included.
+	// If unset the audience defaults to `sts.amazonaws.com`.
 	TokenAudiences []string `json:"audiences,omitempty"`
 }
 

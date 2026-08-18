@@ -24,6 +24,9 @@ import (
 
 // ACMEIssuerDNS01ProviderAcmeDNSApplyConfiguration represents a declarative configuration of the ACMEIssuerDNS01ProviderAcmeDNS type for use
 // with apply.
+//
+// ACMEIssuerDNS01ProviderAcmeDNS is a structure containing the
+// configuration for ACME-DNS servers
 type ACMEIssuerDNS01ProviderAcmeDNSApplyConfiguration struct {
 	Host          *string                                     `json:"host,omitempty"`
 	AccountSecret *metav1.SecretKeySelectorApplyConfiguration `json:"accountSecretRef,omitempty"`

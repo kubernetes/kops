@@ -5,6 +5,6 @@ package sftp
 
 import "log"
 
-func debug(fmt string, args ...interface{}) {
+func debug(fmt string, args ...any) {
 	log.Printf(fmt, args...)
 }

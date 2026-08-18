@@ -444,6 +444,67 @@ func (m *awsAwsjson11_serializeOpCreateAssociationBatch) HandleSerialize(ctx con
 	return next.HandleSerialize(ctx, in)
 }
 
+type awsAwsjson11_serializeOpCreateCloudConnector struct {
+}
+
+func (*awsAwsjson11_serializeOpCreateCloudConnector) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpCreateCloudConnector) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*CreateCloudConnectorInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("AmazonSSM.CreateCloudConnector")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentCreateCloudConnectorInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
 type awsAwsjson11_serializeOpCreateDocument struct {
 }
 
@@ -915,6 +976,67 @@ func (m *awsAwsjson11_serializeOpDeleteAssociation) HandleSerialize(ctx context.
 
 	jsonEncoder := smithyjson.NewEncoder()
 	if err := awsAwsjson11_serializeOpDocumentDeleteAssociationInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
+type awsAwsjson11_serializeOpDeleteCloudConnector struct {
+}
+
+func (*awsAwsjson11_serializeOpDeleteCloudConnector) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpDeleteCloudConnector) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*DeleteCloudConnectorInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("AmazonSSM.DeleteCloudConnector")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentDeleteCloudConnectorInput(input, jsonEncoder.Value); err != nil {
 		return out, metadata, &smithy.SerializationError{Err: err}
 	}
 
@@ -4043,6 +4165,67 @@ func (m *awsAwsjson11_serializeOpGetCalendarState) HandleSerialize(ctx context.C
 	return next.HandleSerialize(ctx, in)
 }
 
+type awsAwsjson11_serializeOpGetCloudConnector struct {
+}
+
+func (*awsAwsjson11_serializeOpGetCloudConnector) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpGetCloudConnector) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*GetCloudConnectorInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("AmazonSSM.GetCloudConnector")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentGetCloudConnectorInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
 type awsAwsjson11_serializeOpGetCommandInvocation struct {
 }
 
@@ -5673,6 +5856,67 @@ func (m *awsAwsjson11_serializeOpListAssociationVersions) HandleSerialize(ctx co
 
 	jsonEncoder := smithyjson.NewEncoder()
 	if err := awsAwsjson11_serializeOpDocumentListAssociationVersionsInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
+type awsAwsjson11_serializeOpListCloudConnectors struct {
+}
+
+func (*awsAwsjson11_serializeOpListCloudConnectors) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpListCloudConnectors) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*ListCloudConnectorsInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("AmazonSSM.ListCloudConnectors")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentListCloudConnectorsInput(input, jsonEncoder.Value); err != nil {
 		return out, metadata, &smithy.SerializationError{Err: err}
 	}
 
@@ -8191,6 +8435,67 @@ func (m *awsAwsjson11_serializeOpUpdateAssociationStatus) HandleSerialize(ctx co
 	return next.HandleSerialize(ctx, in)
 }
 
+type awsAwsjson11_serializeOpUpdateCloudConnector struct {
+}
+
+func (*awsAwsjson11_serializeOpUpdateCloudConnector) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpUpdateCloudConnector) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*UpdateCloudConnectorInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("AmazonSSM.UpdateCloudConnector")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentUpdateCloudConnectorInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
 type awsAwsjson11_serializeOpUpdateDocument struct {
 }
 
@@ -8922,6 +9227,67 @@ func (m *awsAwsjson11_serializeOpUpdateServiceSetting) HandleSerialize(ctx conte
 	span.End()
 	return next.HandleSerialize(ctx, in)
 }
+
+type awsAwsjson11_serializeOpValidateCloudConnector struct {
+}
+
+func (*awsAwsjson11_serializeOpValidateCloudConnector) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsjson11_serializeOpValidateCloudConnector) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*ValidateCloudConnectorInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-amz-json-1.1")
+	httpBindingEncoder.SetHeader("X-Amz-Target").String("AmazonSSM.ValidateCloudConnector")
+
+	jsonEncoder := smithyjson.NewEncoder()
+	if err := awsAwsjson11_serializeOpDocumentValidateCloudConnectorInput(input, jsonEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(jsonEncoder.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
 func awsAwsjson11_serializeDocumentAccountIdList(v []string, value smithyjson.Value) error {
 	array := value.Array()
 	defer array.Close()
@@ -9249,7 +9615,7 @@ func awsAwsjson11_serializeDocumentAutomationExecutionInputs(v *types.Automation
 
 	if v.Targets != nil {
 		ok := object.Key("Targets")
-		if err := awsAwsjson11_serializeDocumentTargets(v.Targets, ok); err != nil {
+		if err := awsAwsjson11_serializeDocumentAutomationTargets(v.Targets, ok); err != nil {
 			return err
 		}
 	}
@@ -9280,6 +9646,83 @@ func awsAwsjson11_serializeDocumentAutomationParameterValueList(v []string, valu
 	for i := range v {
 		av := array.Value()
 		av.String(v[i])
+	}
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentAutomationTargets(v []types.Target, value smithyjson.Value) error {
+	array := value.Array()
+	defer array.Close()
+
+	for i := range v {
+		av := array.Value()
+		if err := awsAwsjson11_serializeDocumentTarget(&v[i], av); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentAzureConfiguration(v *types.AzureConfiguration, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.ApplicationDisplayName != nil {
+		ok := object.Key("ApplicationDisplayName")
+		ok.String(*v.ApplicationDisplayName)
+	}
+
+	if v.ApplicationId != nil {
+		ok := object.Key("ApplicationId")
+		ok.String(*v.ApplicationId)
+	}
+
+	if v.Targets != nil {
+		ok := object.Key("Targets")
+		if err := awsAwsjson11_serializeDocumentConfigurationTargets(v.Targets, ok); err != nil {
+			return err
+		}
+	}
+
+	if v.TenantDisplayName != nil {
+		ok := object.Key("TenantDisplayName")
+		ok.String(*v.TenantDisplayName)
+	}
+
+	if v.TenantId != nil {
+		ok := object.Key("TenantId")
+		ok.String(*v.TenantId)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentAzureSubscription(v *types.AzureSubscription, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.DisplayName != nil {
+		ok := object.Key("DisplayName")
+		ok.String(*v.DisplayName)
+	}
+
+	if v.Id != nil {
+		ok := object.Key("Id")
+		ok.String(*v.Id)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentAzureSubscriptionList(v []types.AzureSubscription, value smithyjson.Value) error {
+	array := value.Array()
+	defer array.Close()
+
+	for i := range v {
+		av := array.Value()
+		if err := awsAwsjson11_serializeDocumentAzureSubscription(&v[i], av); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -9352,6 +9795,67 @@ func awsAwsjson11_serializeDocumentBaselineOverride(v *types.BaselineOverride, v
 }
 
 func awsAwsjson11_serializeDocumentCalendarNameOrARNList(v []string, value smithyjson.Value) error {
+	array := value.Array()
+	defer array.Close()
+
+	for i := range v {
+		av := array.Value()
+		av.String(v[i])
+	}
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentCloudConnectorConfiguration(v types.CloudConnectorConfiguration, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	switch uv := v.(type) {
+	case *types.CloudConnectorConfigurationMemberAzureConfiguration:
+		av := object.Key("AzureConfiguration")
+		if err := awsAwsjson11_serializeDocumentAzureConfiguration(&uv.Value, av); err != nil {
+			return err
+		}
+
+	default:
+		return fmt.Errorf("attempted to serialize unknown member type %T for union %T", uv, v)
+
+	}
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentCloudConnectorFilter(v *types.CloudConnectorFilter, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if len(v.FilterKey) > 0 {
+		ok := object.Key("FilterKey")
+		ok.String(string(v.FilterKey))
+	}
+
+	if v.FilterValues != nil {
+		ok := object.Key("FilterValues")
+		if err := awsAwsjson11_serializeDocumentCloudConnectorFilterValues(v.FilterValues, ok); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentCloudConnectorFilterList(v []types.CloudConnectorFilter, value smithyjson.Value) error {
+	array := value.Array()
+	defer array.Close()
+
+	for i := range v {
+		av := array.Value()
+		if err := awsAwsjson11_serializeDocumentCloudConnectorFilter(&v[i], av); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentCloudConnectorFilterValues(v []string, value smithyjson.Value) error {
 	array := value.Array()
 	defer array.Close()
 
@@ -9555,6 +10059,24 @@ func awsAwsjson11_serializeDocumentComplianceStringFilterValueList(v []string, v
 	for i := range v {
 		av := array.Value()
 		av.String(v[i])
+	}
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentConfigurationTargets(v types.ConfigurationTargets, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	switch uv := v.(type) {
+	case *types.ConfigurationTargetsMemberSubscriptions:
+		av := object.Key("Subscriptions")
+		if err := awsAwsjson11_serializeDocumentAzureSubscriptionList(uv.Value, av); err != nil {
+			return err
+		}
+
+	default:
+		return fmt.Errorf("attempted to serialize unknown member type %T for union %T", uv, v)
+
 	}
 	return nil
 }
@@ -12089,7 +12611,7 @@ func awsAwsjson11_serializeDocumentTargetLocation(v *types.TargetLocation, value
 
 	if v.Targets != nil {
 		ok := object.Key("Targets")
-		if err := awsAwsjson11_serializeDocumentTargets(v.Targets, ok); err != nil {
+		if err := awsAwsjson11_serializeDocumentAutomationTargets(v.Targets, ok); err != nil {
 			return err
 		}
 	}
@@ -12319,6 +12841,11 @@ func awsAwsjson11_serializeOpDocumentCreateAssociationBatchInput(v *CreateAssoci
 	object := value.Object()
 	defer object.Close()
 
+	if v.AssociationDispatchAssumeRole != nil {
+		ok := object.Key("AssociationDispatchAssumeRole")
+		ok.String(*v.AssociationDispatchAssumeRole)
+	}
+
 	if v.Entries != nil {
 		ok := object.Key("Entries")
 		if err := awsAwsjson11_serializeDocumentCreateAssociationBatchRequestEntries(v.Entries, ok); err != nil {
@@ -12343,6 +12870,11 @@ func awsAwsjson11_serializeOpDocumentCreateAssociationInput(v *CreateAssociation
 	if v.ApplyOnlyAtCronInterval {
 		ok := object.Key("ApplyOnlyAtCronInterval")
 		ok.Boolean(v.ApplyOnlyAtCronInterval)
+	}
+
+	if v.AssociationDispatchAssumeRole != nil {
+		ok := object.Key("AssociationDispatchAssumeRole")
+		ok.String(*v.AssociationDispatchAssumeRole)
 	}
 
 	if v.AssociationName != nil {
@@ -12450,6 +12982,47 @@ func awsAwsjson11_serializeOpDocumentCreateAssociationInput(v *CreateAssociation
 	if v.Targets != nil {
 		ok := object.Key("Targets")
 		if err := awsAwsjson11_serializeDocumentTargets(v.Targets, ok); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeOpDocumentCreateCloudConnectorInput(v *CreateCloudConnectorInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.ConfigConnectorArn != nil {
+		ok := object.Key("ConfigConnectorArn")
+		ok.String(*v.ConfigConnectorArn)
+	}
+
+	if v.Configuration != nil {
+		ok := object.Key("Configuration")
+		if err := awsAwsjson11_serializeDocumentCloudConnectorConfiguration(v.Configuration, ok); err != nil {
+			return err
+		}
+	}
+
+	if v.Description != nil {
+		ok := object.Key("Description")
+		ok.String(*v.Description)
+	}
+
+	if v.DisplayName != nil {
+		ok := object.Key("DisplayName")
+		ok.String(*v.DisplayName)
+	}
+
+	if v.RoleArn != nil {
+		ok := object.Key("RoleArn")
+		ok.String(*v.RoleArn)
+	}
+
+	if v.Tags != nil {
+		ok := object.Key("Tags")
+		if err := awsAwsjson11_serializeDocumentTagList(v.Tags, ok); err != nil {
 			return err
 		}
 	}
@@ -12859,6 +13432,18 @@ func awsAwsjson11_serializeOpDocumentDeleteAssociationInput(v *DeleteAssociation
 	if v.Name != nil {
 		ok := object.Key("Name")
 		ok.String(*v.Name)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeOpDocumentDeleteCloudConnectorInput(v *DeleteCloudConnectorInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.CloudConnectorId != nil {
+		ok := object.Key("CloudConnectorId")
+		ok.String(*v.CloudConnectorId)
 	}
 
 	return nil
@@ -14061,6 +14646,18 @@ func awsAwsjson11_serializeOpDocumentGetCalendarStateInput(v *GetCalendarStateIn
 	return nil
 }
 
+func awsAwsjson11_serializeOpDocumentGetCloudConnectorInput(v *GetCloudConnectorInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.CloudConnectorId != nil {
+		ok := object.Key("CloudConnectorId")
+		ok.String(*v.CloudConnectorId)
+	}
+
+	return nil
+}
+
 func awsAwsjson11_serializeOpDocumentGetCommandInvocationInput(v *GetCommandInvocationInput, value smithyjson.Value) error {
 	object := value.Object()
 	defer object.Close()
@@ -14627,6 +15224,30 @@ func awsAwsjson11_serializeOpDocumentListAssociationVersionsInput(v *ListAssocia
 	if v.AssociationId != nil {
 		ok := object.Key("AssociationId")
 		ok.String(*v.AssociationId)
+	}
+
+	if v.MaxResults != nil {
+		ok := object.Key("MaxResults")
+		ok.Integer(*v.MaxResults)
+	}
+
+	if v.NextToken != nil {
+		ok := object.Key("NextToken")
+		ok.String(*v.NextToken)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeOpDocumentListCloudConnectorsInput(v *ListCloudConnectorsInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.Filters != nil {
+		ok := object.Key("Filters")
+		if err := awsAwsjson11_serializeDocumentCloudConnectorFilterList(v.Filters, ok); err != nil {
+			return err
+		}
 	}
 
 	if v.MaxResults != nil {
@@ -15765,7 +16386,7 @@ func awsAwsjson11_serializeOpDocumentStartAutomationExecutionInput(v *StartAutom
 
 	if v.Targets != nil {
 		ok := object.Key("Targets")
-		if err := awsAwsjson11_serializeDocumentTargets(v.Targets, ok); err != nil {
+		if err := awsAwsjson11_serializeDocumentAutomationTargets(v.Targets, ok); err != nil {
 			return err
 		}
 	}
@@ -15963,6 +16584,11 @@ func awsAwsjson11_serializeOpDocumentUpdateAssociationInput(v *UpdateAssociation
 		ok.Boolean(v.ApplyOnlyAtCronInterval)
 	}
 
+	if v.AssociationDispatchAssumeRole != nil {
+		ok := object.Key("AssociationDispatchAssumeRole")
+		ok.String(*v.AssociationDispatchAssumeRole)
+	}
+
 	if v.AssociationId != nil {
 		ok := object.Key("AssociationId")
 		ok.String(*v.AssociationId)
@@ -16092,6 +16718,35 @@ func awsAwsjson11_serializeOpDocumentUpdateAssociationStatusInput(v *UpdateAssoc
 	if v.Name != nil {
 		ok := object.Key("Name")
 		ok.String(*v.Name)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeOpDocumentUpdateCloudConnectorInput(v *UpdateCloudConnectorInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.CloudConnectorId != nil {
+		ok := object.Key("CloudConnectorId")
+		ok.String(*v.CloudConnectorId)
+	}
+
+	if v.Configuration != nil {
+		ok := object.Key("Configuration")
+		if err := awsAwsjson11_serializeDocumentCloudConnectorConfiguration(v.Configuration, ok); err != nil {
+			return err
+		}
+	}
+
+	if v.Description != nil {
+		ok := object.Key("Description")
+		ok.String(*v.Description)
+	}
+
+	if v.DisplayName != nil {
+		ok := object.Key("DisplayName")
+		ok.String(*v.DisplayName)
 	}
 
 	return nil
@@ -16656,6 +17311,28 @@ func awsAwsjson11_serializeOpDocumentUpdateServiceSettingInput(v *UpdateServiceS
 	if v.SettingValue != nil {
 		ok := object.Key("SettingValue")
 		ok.String(*v.SettingValue)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeOpDocumentValidateCloudConnectorInput(v *ValidateCloudConnectorInput, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.CloudConnectorId != nil {
+		ok := object.Key("CloudConnectorId")
+		ok.String(*v.CloudConnectorId)
+	}
+
+	if v.MaxResults != nil {
+		ok := object.Key("MaxResults")
+		ok.Integer(*v.MaxResults)
+	}
+
+	if v.NextToken != nil {
+		ok := object.Key("NextToken")
+		ok.String(*v.NextToken)
 	}
 
 	return nil

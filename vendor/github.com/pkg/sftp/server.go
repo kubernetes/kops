@@ -463,7 +463,7 @@ func (p *sshFxpStatResponse) MarshalBinary() ([]byte, error) {
 	return append(header, payload...), err
 }
 
-var emptyFileStat = []interface{}{uint32(0)}
+var emptyFileStat = []any{uint32(0)}
 
 func (p *sshFxpOpenPacket) readonly() bool {
 	return !p.hasPflags(sshFxfWrite)
@@ -542,7 +542,7 @@ func (p *sshFxpReaddirPacket) respond(svr *Server) responsePacket {
 		ret.NameAttrs = append(ret.NameAttrs, &sshFxpNameAttr{
 			Name:     dirent.Name(),
 			LongName: runLs(idLookup, dirent),
-			Attrs:    []interface{}{dirent},
+			Attrs:    []any{dirent},
 		})
 	}
 	return ret
@@ -597,7 +597,7 @@ func (p *sshFxpFsetstatPacket) respond(svr *Server) responsePacket {
 			Chtimes(atime, mtime time.Time) error
 		}
 
-		switch f := interface{}(f).(type) {
+		switch f := any(f).(type) {
 		case chtimer:
 			// future-compatible, for when/if *os.File supports Chtimes.
 			err = f.Chtimes(fs.AccessTime(), fs.ModTime())

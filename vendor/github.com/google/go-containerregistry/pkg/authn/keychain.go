@@ -25,7 +25,6 @@ import (
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/mitchellh/go-homedir"
 )
 
 // Resource represents a registry or repository that can be authenticated against.
@@ -95,7 +94,7 @@ func (dk *defaultKeychain) ResolveContext(_ context.Context, target Resource) (A
 
 	// First, check $HOME/.docker/config.json
 	foundDockerConfig := false
-	home, err := homedir.Dir()
+	home, err := os.UserHomeDir()
 	if err == nil {
 		foundDockerConfig = fileExists(filepath.Join(home, ".docker/config.json"))
 	}
@@ -103,11 +102,19 @@ func (dk *defaultKeychain) ResolveContext(_ context.Context, target Resource) (A
 	if !foundDockerConfig && os.Getenv("DOCKER_CONFIG") != "" {
 		foundDockerConfig = fileExists(filepath.Join(os.Getenv("DOCKER_CONFIG"), "config.json"))
 	}
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir == "" && home != "" {
+		configDir = filepath.Join(home, ".config")
+	}
+	podmanAuth := filepath.Join(os.Getenv("XDG_RUNTIME_DIR"), "containers/auth.json")
+	if (os.Getenv("XDG_RUNTIME_DIR") == "" || !fileExists(podmanAuth)) && configDir != "" {
+		podmanAuth = filepath.Join(configDir, "containers/auth.json")
+	}
 	// If either of those locations are found, load it using Docker's
 	// config.Load, which may fail if the config can't be parsed.
 	//
 	// If neither was found, look for Podman's auth at
-	// $REGISTRY_AUTH_FILE or $XDG_RUNTIME_DIR/containers/auth.json
+	// $REGISTRY_AUTH_FILE or containers/auth.json under XDG runtime/config dirs
 	// and attempt to load it as a Docker config.
 	//
 	// If neither are found, fallback to Anonymous.
@@ -117,8 +124,8 @@ func (dk *defaultKeychain) ResolveContext(_ context.Context, target Resource) (A
 		if err != nil {
 			return nil, err
 		}
-	} else if fileExists(os.Getenv("REGISTRY_AUTH_FILE")) {
-		f, err := os.Open(os.Getenv("REGISTRY_AUTH_FILE"))
+	} else if path := filepath.Clean(os.Getenv("REGISTRY_AUTH_FILE")); fileExists(path) {
+		f, err := os.Open(path)
 		if err != nil {
 			return nil, err
 		}
@@ -127,8 +134,8 @@ func (dk *defaultKeychain) ResolveContext(_ context.Context, target Resource) (A
 		if err != nil {
 			return nil, err
 		}
-	} else if fileExists(filepath.Join(os.Getenv("XDG_RUNTIME_DIR"), "containers/auth.json")) {
-		f, err := os.Open(filepath.Join(os.Getenv("XDG_RUNTIME_DIR"), "containers/auth.json"))
+	} else if path := filepath.Clean(podmanAuth); fileExists(path) {
+		f, err := os.Open(path)
 		if err != nil {
 			return nil, err
 		}

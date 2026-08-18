@@ -26,16 +26,66 @@ import (
 
 // CertificateRequestSpecApplyConfiguration represents a declarative configuration of the CertificateRequestSpec type for use
 // with apply.
+//
+// # CertificateRequestSpec defines the desired state of CertificateRequest
+//
+// NOTE: It is important to note that the issuer can choose to ignore or change
+// any of the requested attributes. How the issuer maps a certificate request
+// to a signed certificate is the full responsibility of the issuer itself.
+// For example, as an edge case, an issuer that inverts the isCA value is
+// free to do so.
 type CertificateRequestSpecApplyConfiguration struct {
-	Duration  *metav1.Duration                                             `json:"duration,omitempty"`
+	// Requested 'duration' (i.e. lifetime) of the Certificate. Note that the
+	// issuer may choose to ignore the requested duration, just like any other
+	// requested attribute.
+	Duration *metav1.Duration `json:"duration,omitempty"`
+	// Reference to the issuer responsible for issuing the certificate.
+	// If the issuer is namespace-scoped, it must be in the same namespace
+	// as the Certificate. If the issuer is cluster-scoped, it can be used
+	// from any namespace.
+	//
+	// The `name` field of the reference must always be specified.
 	IssuerRef *applyconfigurationsmetav1.IssuerReferenceApplyConfiguration `json:"issuerRef,omitempty"`
-	Request   []byte                                                       `json:"request,omitempty"`
-	IsCA      *bool                                                        `json:"isCA,omitempty"`
-	Usages    []certmanagerv1.KeyUsage                                     `json:"usages,omitempty"`
-	Username  *string                                                      `json:"username,omitempty"`
-	UID       *string                                                      `json:"uid,omitempty"`
-	Groups    []string                                                     `json:"groups,omitempty"`
-	Extra     map[string][]string                                          `json:"extra,omitempty"`
+	// The PEM-encoded X.509 certificate signing request to be submitted to the
+	// issuer for signing.
+	//
+	// If the CSR has a BasicConstraints extension, its isCA attribute must
+	// match the `isCA` value of this CertificateRequest.
+	// If the CSR has a KeyUsage extension, its key usages must match the
+	// key usages in the `usages` field of this CertificateRequest.
+	// If the CSR has a ExtKeyUsage extension, its extended key usages
+	// must match the extended key usages in the `usages` field of this
+	// CertificateRequest.
+	Request []byte `json:"request,omitempty"`
+	// Requested basic constraints isCA value. Note that the issuer may choose
+	// to ignore the requested isCA value, just like any other requested attribute.
+	//
+	// NOTE: If the CSR in the `Request` field has a BasicConstraints extension,
+	// it must have the same isCA value as specified here.
+	//
+	// If true, this will automatically add the `cert sign` usage to the list
+	// of requested `usages`.
+	IsCA *bool `json:"isCA,omitempty"`
+	// Requested key usages and extended key usages.
+	//
+	// NOTE: If the CSR in the `Request` field has uses the KeyUsage or
+	// ExtKeyUsage extension, these extensions must have the same values
+	// as specified here without any additional values.
+	//
+	// If unset, defaults to `digital signature` and `key encipherment`.
+	Usages []certmanagerv1.KeyUsage `json:"usages,omitempty"`
+	// Username contains the name of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	Username *string `json:"username,omitempty"`
+	// UID contains the uid of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	UID *string `json:"uid,omitempty"`
+	// Groups contains group membership of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	Groups []string `json:"groups,omitempty"`
+	// Extra contains extra attributes of the user that created the CertificateRequest.
+	// Populated by the cert-manager webhook on creation and immutable.
+	Extra map[string][]string `json:"extra,omitempty"`
 }
 
 // CertificateRequestSpecApplyConfiguration constructs a declarative configuration of the CertificateRequestSpec type for use with

@@ -24,7 +24,13 @@ import (
 
 // CertificateAdditionalOutputFormatApplyConfiguration represents a declarative configuration of the CertificateAdditionalOutputFormat type for use
 // with apply.
+//
+// CertificateAdditionalOutputFormat defines an additional output format of a
+// Certificate resource. These contain supplementary data formats of the signed
+// certificate chain and paired private key.
 type CertificateAdditionalOutputFormatApplyConfiguration struct {
+	// Type is the name of the format type that should be written to the
+	// Certificate's target Secret.
 	Type *certmanagerv1.CertificateOutputFormatType `json:"type,omitempty"`
 }
 

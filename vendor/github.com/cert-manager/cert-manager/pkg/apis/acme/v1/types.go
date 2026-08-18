@@ -34,6 +34,15 @@ const (
 	// solver for each ingress class.
 	ACMECertificateHTTP01IngressClassOverride = "acme.cert-manager.io/http01-override-ingress-class"
 
+	// ACMECertificateHTTP01IngressClassNameOverride is annotation to override ingressClassName.
+	// If this annotation is specified on a Certificate or Order resource when
+	// using the HTTP01 solver type, the ingress.ingressClassName field of the HTTP01
+	// solver's configuration will be set to the value given here.
+	// This is especially useful for users deploying many different ingress
+	// classes into a single cluster that want to be able to re-use a single
+	// solver for each ingress class.
+	ACMECertificateHTTP01IngressClassNameOverride = "acme.cert-manager.io/http01-override-ingress-ingressclassname"
+
 	// IngressEditInPlaceAnnotationKey is used to toggle the use of ingressClass instead
 	// of ingress on the created Certificate resource
 	IngressEditInPlaceAnnotationKey = "acme.cert-manager.io/http01-edit-in-place"
@@ -49,6 +58,24 @@ const (
 	// SolverIdentificationLabelKey is added to the labels of a Pod serving an ACME challenge.
 	// Its value will be the "true" if the Pod is an HTTP-01 solver.
 	SolverIdentificationLabelKey = "acme.cert-manager.io/http01-solver"
+
+	// ACMECertificateHTTP01ParentRefName is an annotation to specify the parent ref
+	// for the HTTPRoute that would be created by using the HTTP01 solver. If not specified
+	// then parentRef mentioned in the HTTP01 solver config will be used.
+	ACMECertificateHTTP01ParentRefName = "acme.cert-manager.io/http01-parentrefname"
+
+	// ACMECertificateHTTP01ParentRefKind is an annotation to specify the parent ref kind
+	// for the HTTPRoute that would be created by using the HTTP01 solver.
+	ACMECertificateHTTP01ParentRefKind = "acme.cert-manager.io/http01-parentrefkind"
+
+	// ACMECertificateHTTP01ParentRefNamespace is an annotation to specify the namespace
+	// of the parent ref for the HTTPRoute that would be created by using the HTTP01 solver.
+	ACMECertificateHTTP01ParentRefNamespace = "acme.cert-manager.io/http01-parentrefnamespace"
+
+	// ACMECertificateHTTP01ParentRefFallback is an annotation that can be set on a
+	// ListenerSet to indicate that the ACME HTTP-01 solver HTTPRoute should use the
+	// ListenerSet's parent Gateway as the parentRef instead of the ListenerSet itself.
+	ACMECertificateHTTP01ParentRefFallback = "acme.cert-manager.io/http01-parentreffallback"
 )
 
 const (

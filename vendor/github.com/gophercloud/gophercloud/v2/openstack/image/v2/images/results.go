@@ -70,7 +70,7 @@ type Image struct {
 
 	// Properties is a set of key-value pairs, if any, that are associated with
 	// the image.
-	Properties map[string]any
+	Properties map[string]any `json:"-"`
 
 	// CreatedAt is the date when the image has been created.
 	CreatedAt time.Time `json:"created_at"`
@@ -102,6 +102,7 @@ func (r *Image) UnmarshalJSON(b []byte) error {
 	type tmp Image
 	var s struct {
 		tmp
+		Properties                  string `json:"properties"`
 		SizeBytes                   any    `json:"size"`
 		OpenStackImageImportMethods string `json:"openstack-image-import-methods"`
 		OpenStackImageStoreIDs      string `json:"openstack-image-store-ids"`
@@ -120,10 +121,10 @@ func (r *Image) UnmarshalJSON(b []byte) error {
 	case float64:
 		r.SizeBytes = int64(t)
 	default:
-		return fmt.Errorf("Unknown type for SizeBytes: %v (value: %v)", reflect.TypeOf(t), t)
+		return fmt.Errorf("unknown type for SizeBytes: %v (value: %v)", reflect.TypeOf(t), t)
 	}
 
-	// Bundle all other fields into Properties
+	// Bundle all other fields into Properties, except for the field named "properties"
 	var result any
 	err = json.Unmarshal(b, &result)
 	if err != nil {
@@ -135,6 +136,11 @@ func (r *Image) UnmarshalJSON(b []byte) error {
 		delete(resultMap, "openstack-image-import-methods")
 		delete(resultMap, "openstack-image-store-ids")
 		r.Properties = gophercloud.RemainingKeys(Image{}, resultMap)
+	}
+
+	// Add the "properties" field to the image since it's not included in above step (i.e. in remaining keys)
+	if s.Properties != "" {
+		r.Properties["properties"] = s.Properties
 	}
 
 	if v := strings.FieldsFunc(strings.TrimSpace(s.OpenStackImageImportMethods), splitFunc); len(v) > 0 {

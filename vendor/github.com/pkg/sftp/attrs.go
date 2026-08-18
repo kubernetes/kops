@@ -40,7 +40,7 @@ func (fi *fileInfo) ModTime() time.Time { return fi.stat.ModTime() }
 // IsDir returns true if the file is a directory.
 func (fi *fileInfo) IsDir() bool { return fi.Mode().IsDir() }
 
-func (fi *fileInfo) Sys() interface{} { return fi.stat }
+func (fi *fileInfo) Sys() any { return fi.stat }
 
 // FileStat holds the original unmarshalled values from a call to READDIR or
 // *STAT. It is exported for the purposes of accessing the raw values via

@@ -310,7 +310,9 @@ type DelegationRequest struct {
 
 	// The expiry time of this delegation request
 	//
-	// See the Understanding the Request Lifecycle for details on the life time of a delegation request at each state.
+	// See the [Understanding the Request Lifecycle] for details on the life time of a delegation request at each state.
+	//
+	// [Understanding the Request Lifecycle]: https://docs.aws.amazon.com/IAM/latest/UserGuide/temporary-delegation-building-integration.html#temporary-delegation-request-lifecycle
 	ExpirationTime *time.Time
 
 	// Notes added to this delegation request, if this request was updated via the [UpdateDelegationRequest]
@@ -364,7 +366,9 @@ type DelegationRequest struct {
 
 	// If the PermissionPolicy includes role creation permissions, this element will
 	// include the list of permissions boundary policies associated with the role
-	// creation. See Permissions boundaries for IAM entitiesfor more details about IAM permission boundaries.
+	// creation. See [Permissions boundaries for IAM entities]for more details about IAM permission boundaries.
+	//
+	// [Permissions boundaries for IAM entities]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html
 	RolePermissionRestrictionArns []string
 
 	// The life-time of the requested session credential.
@@ -372,7 +376,9 @@ type DelegationRequest struct {
 
 	// The state of this delegation request.
 	//
-	// See the Understanding the Request Lifecycle for an explanation of how these states are transitioned.
+	// See the [Understanding the Request Lifecycle] for an explanation of how these states are transitioned.
+	//
+	// [Understanding the Request Lifecycle]: https://docs.aws.amazon.com/IAM/latest/UserGuide/temporary-delegation-building-integration.html#temporary-delegation-request-lifecycle
 	State StateType
 
 	// Last updated timestamp of the request.
@@ -498,6 +504,20 @@ type ErrorDetails struct {
 //
 // This data type is used by the return parameter of [SimulateCustomPolicy] and [SimulatePrincipalPolicy].
 //
+// The simulator now returns a single EvaluationResult per action, regardless of
+// how many resource ARNs are provided. Previously, simulating one action against N
+// resources returned N evaluation results, each containing the same aggregate
+// decision. The top-level fields ( EvalDecision , MatchedStatements ,
+// MissingContextValues , EvalDecisionDetails ) now represent the aggregate
+// decision across all requested resources. The top-level EvalDecision reflects
+// the most restrictive decision across all resources (for example, if any resource
+// produces explicitDeny , the top-level decision is explicitDeny ).
+//
+// To see the decision for each individual resource, use ResourceSpecificResults .
+// If your application parses evaluation results per resource ARN, update your code
+// to read per-resource decisions from ResourceSpecificResults rather than from
+// the top-level result.
+//
 // [SimulatePrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulatePrincipalPolicy.html
 // [SimulateCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulateCustomPolicy.html
 type EvaluationResult struct {
@@ -517,6 +537,9 @@ type EvaluationResult struct {
 	// brief summary of how each policy type contributes to the final evaluation
 	// decision.
 	//
+	// In the top-level result, this map reports the most restrictive decision per
+	// policy type across all requested resources.
+	//
 	// If the simulation evaluates policies within the same account and includes a
 	// resource ARN, then the parameter is present but the response is empty. If the
 	// simulation evaluates policies within the same account and specifies all
@@ -534,7 +557,14 @@ type EvaluationResult struct {
 	// [Evaluating policies within a single account]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-basics
 	EvalDecisionDetails map[string]PolicyEvaluationDecisionType
 
-	// The ARN of the resource that the indicated API operation was tested on.
+	// The ARN template for the simulated resource type (for example,
+	// arn:${Partition}:s3:::${BucketName}/${KeyName} ), or * if no ARN format is
+	// defined for the action. This is not a specific customer-provided resource ARN.
+	// To find the decision for a specific resource, use ResourceSpecificResults .
+	//
+	// If you previously relied on EvalResourceName to identify which specific
+	// resource a result applies to, you must now use the EvalResourceName field
+	// within individual entries in ResourceSpecificResults instead.
 	EvalResourceName *string
 
 	// A list of the statements in the input policies that determine the result for
@@ -542,6 +572,13 @@ type EvaluationResult struct {
 	// the resource, if only one statement denies that operation, then the explicit
 	// deny overrides any allow. In addition, the deny statement is the only entry
 	// included in the result.
+	//
+	// In the top-level result, this field contains the union of matched statements
+	// across all requested resources. Only statements that contributed to the reported
+	// decision are included. For per-resource matched statements, see
+	// ResourceSpecificResults . This field doesn't include statements from service
+	// control policies (SCPs). Only statements from identity-based and resource-based
+	// policies appear here.
 	MatchedStatements []Statement
 
 	// A list of context keys that are required by the included input policies but
@@ -551,6 +588,11 @@ type EvaluationResult struct {
 	// values are instead included under the ResourceSpecificResults section. To
 	// discover the context keys used by a set of policies, you can call [GetContextKeysForCustomPolicy]or [GetContextKeysForPrincipalPolicy].
 	//
+	// In the top-level result, this field contains the deduplicated set of missing
+	// context values across all requested resources. This field doesn't include
+	// context keys referenced by service control policies (SCPs). Only context keys
+	// referenced by identity-based and resource-based policies appear here.
+	//
 	// [GetContextKeysForPrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetContextKeysForPrincipalPolicy.html
 	// [GetContextKeysForCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetContextKeysForCustomPolicy.html
 	MissingContextValues []string
@@ -558,6 +600,10 @@ type EvaluationResult struct {
 	// A structure that details how Organizations and its service control policies
 	// affect the results of the simulation. Only applies if the simulated user's
 	// account is part of an organization.
+	//
+	// For resources that don't support organization-level evaluation, this field is
+	// omitted from the top-level result. For per-resource details, see
+	// ResourceSpecificResults .
 	OrganizationsDecisionDetail *OrganizationsDecisionDetail
 
 	// Contains information about the effect that a permissions boundary has on a
@@ -666,6 +712,51 @@ type GroupDetail struct {
 	//
 	// [IAM identifiers]: https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html
 	Path *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains an inline policy template that the service embeds in roles that you
+// create from a role template.
+type InlinePolicy struct {
+
+	// The inline policy document.
+	//
+	// This member is required.
+	PolicyDocument *string
+
+	// The name of the inline policy.
+	//
+	// This member is required.
+	PolicyName *string
+
+	noSmithyDocumentSerde
+}
+
+// Identifies one or more inline policies that are embedded in IAM users, groups,
+// or roles, by the name of the policy together with the type and name of the
+// entity that it is attached to. Wildcard characters in the entity name can match
+// multiple entities, so a single identifier can select more than one attached
+// inline policy.
+type InlinePolicyIdentifierType struct {
+
+	// The name of the IAM user, group, or role that the inline policy is attached to.
+	// Wildcard characters are supported to match multiple entities: use at most one *
+	// (matches any sequence of characters, including none), and any number of ? (each
+	// matches exactly one character).
+	//
+	// This member is required.
+	AttachmentName *string
+
+	// The type of IAM entity that the inline policy is attached to.
+	//
+	// This member is required.
+	AttachmentType AttachmentType
+
+	// The name of the inline policy.
+	//
+	// This member is required.
+	PolicyName *string
 
 	noSmithyDocumentSerde
 }
@@ -913,6 +1004,25 @@ type OpenIDConnectProviderListEntry struct {
 	noSmithyDocumentSerde
 }
 
+// Represents one level of an Organizations hierarchy—the organization root, an
+// organizational unit (OU), or an account—together with the service control
+// policies (SCPs) that apply at that level. Each element in the list represents
+// one level of the hierarchy, ordered from the organization root down to the
+// account.
+//
+// For more information about SCPs, see [Service control policies (SCPs)] in the Organizations User Guide.
+//
+// [Service control policies (SCPs)]: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html
+type OrderedOrganizationPolicyType struct {
+
+	// A list of SCP documents that apply at this level of the Organizations
+	// hierarchy. Each document is specified as a string containing the complete, valid
+	// JSON text of an SCP.
+	ServiceControlPolicyInputList []string
+
+	noSmithyDocumentSerde
+}
+
 // Contains information about the effect that Organizations has on a policy
 // simulation.
 type OrganizationsDecisionDetail struct {
@@ -920,6 +1030,43 @@ type OrganizationsDecisionDetail struct {
 	// Specifies whether the simulated operation is allowed by the Organizations
 	// service control policies that impact the simulated user's account.
 	AllowedByOrganizations bool
+
+	noSmithyDocumentSerde
+}
+
+// Defines a parameter that a role template accepts. You supply values for these
+// parameters when you create a role with [AcquireRole].
+//
+// [AcquireRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_AcquireRole.html
+type ParameterDefinition struct {
+
+	// The name of the parameter.
+	//
+	// This member is required.
+	Name *string
+
+	// The data type of the parameter. Valid values are String , StringList , Number ,
+	// NumberList , Arn , and ArnList .
+	//
+	// This member is required.
+	Type ParameterTypeType
+
+	// The value that the service uses for the parameter when you do not supply one.
+	DefaultValue *string
+
+	// A description of the parameter.
+	Description *string
+
+	// Specifies whether you can change the parameter value after you create the role.
+	Immutable bool
+
+	// Specifies whether you must supply a value for the parameter when you create a
+	// role from the template.
+	IsRequired bool
+
+	// An optional subtype that further constrains the values that are allowed for the
+	// parameter.
+	SubType *string
 
 	noSmithyDocumentSerde
 }
@@ -1174,6 +1321,59 @@ type PolicyGroup struct {
 	noSmithyDocumentSerde
 }
 
+// Identifies one or more policies as a union type. Specify exactly one of
+// PolicyType , PolicyArn , or InlinePolicyIdentifier to identify policies by
+// their type, by Amazon Resource Name (ARN), or by the name of an inline policy
+// and the entity it is attached to.
+//
+// The following types satisfy this interface:
+//
+//	PolicyIdentifierMemberInlinePolicyIdentifier
+//	PolicyIdentifierMemberPolicyArn
+//	PolicyIdentifierMemberPolicyType
+type PolicyIdentifier interface {
+	isPolicyIdentifier()
+}
+
+// An inline policy identifier consisting of a policy name and the entity it is
+// attached to. Wildcard characters ( * and ? ) in the entity name can match
+// multiple entities.
+type PolicyIdentifierMemberInlinePolicyIdentifier struct {
+	Value InlinePolicyIdentifierType
+
+	noSmithyDocumentSerde
+}
+
+func (*PolicyIdentifierMemberInlinePolicyIdentifier) isPolicyIdentifier() {}
+
+// The Amazon Resource Name (ARN) of an Amazon Web Services managed policy or a
+// customer managed policy that is attached to an IAM user, group, or role.
+// Wildcard characters are supported in the resource name portion of the ARN to
+// match multiple managed policies: use at most one * (matches any sequence of
+// characters, including none), and any number of ? (each matches exactly one
+// character).
+//
+// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+// Reference.
+//
+// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+type PolicyIdentifierMemberPolicyArn struct {
+	Value string
+
+	noSmithyDocumentSerde
+}
+
+func (*PolicyIdentifierMemberPolicyArn) isPolicyIdentifier() {}
+
+// The policy type to identify. All policies of the specified type are matched.
+type PolicyIdentifierMemberPolicyType struct {
+	Value PolicyIdentifierPolicyType
+
+	noSmithyDocumentSerde
+}
+
+func (*PolicyIdentifierMemberPolicyType) isPolicyIdentifier() {}
+
 // Contains information about a policy parameter used to customize delegated
 // permissions.
 type PolicyParameter struct {
@@ -1299,6 +1499,18 @@ type Position struct {
 	noSmithyDocumentSerde
 }
 
+// Contains the list of replacement values for a single template parameter used
+// when creating a role from a role template.
+type ReplacementValueEntry struct {
+
+	// The list of replacement values for the template parameter.
+	//
+	// This member is required.
+	Values []string
+
+	noSmithyDocumentSerde
+}
+
 // Contains the result of the simulation of a single API operation call on a
 // single resource.
 //
@@ -1418,6 +1630,12 @@ type Role struct {
 	// [Regions where data is tracked]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period
 	RoleLastUsed *RoleLastUsed
 
+	// Contains information about the role template that this role was created from.
+	// This member is present only for roles created with [AcquireRole].
+	//
+	// [AcquireRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_AcquireRole.html
+	SourceRoleTemplate *SourceRoleTemplate
+
 	// A list of tags that are attached to the role. For more information about
 	// tagging, see [Tagging IAM resources]in the IAM User Guide.
 	//
@@ -1529,6 +1747,118 @@ type RoleLastUsed struct {
 
 	// The name of the Amazon Web Services Region in which the role was last used.
 	Region *string
+
+	noSmithyDocumentSerde
+}
+
+// Contains information about a version of an IAM role template, including the
+// configuration that is used to create roles with [AcquireRole]. This structure is returned as
+// a response element by the [GetRoleTemplateVersion]operation.
+//
+// [GetRoleTemplateVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetRoleTemplateVersion.html
+// [AcquireRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_AcquireRole.html
+type RoleTemplateVersion struct {
+
+	// The trust policy template that grants an entity permission to assume roles that
+	// you create from this template.
+	AssumeRolePolicyDocumentTemplate *string
+
+	// The date and time, in [ISO 8601 date-time format], when the role template version was created.
+	//
+	// [ISO 8601 date-time format]: http://www.iso.org/iso/iso8601
+	CreateTimestamp *time.Time
+
+	// The minor version that the service uses by default when you create a role from
+	// this template without specifying a minor version.
+	DefaultMinorVersion *int32
+
+	// The description of the role template.
+	Description *string
+
+	// Specifies whether the role template is enabled. When a template is disabled,
+	// you cannot create roles from it.
+	Enabled bool
+
+	// A list of inline policy templates that the service embeds in roles that you
+	// create from this template.
+	InlinePolicyTemplates []InlinePolicy
+
+	// The major version number of the role template.
+	MajorVersion *int32
+
+	// Indicates that the role template is managed by an Amazon Web Services service.
+	ManagedByType ManagedByTypeType
+
+	// The identifier of the Amazon Web Services service that manages the role
+	// template.
+	ManagedByValue *string
+
+	// A list of the ARNs of the managed policies that the service attaches to roles
+	// that you create from this template.
+	ManagedPolicyArns []string
+
+	// The maximum session duration (in seconds) for roles that are created from this
+	// template.
+	MaxSessionDuration *int32
+
+	// The minor version number of this role template version.
+	MinorVersion *int32
+
+	// A list of the parameters that are defined for this role template version. You
+	// supply values for these parameters when you create a role with [AcquireRole].
+	//
+	// [AcquireRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_AcquireRole.html
+	ParametersDefinition []ParameterDefinition
+
+	// The ARN of the policy that sets the permissions boundary for roles that you
+	// create from this template.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+	PermissionBoundaryArn *string
+
+	// The pattern that is used to generate the description of a role that is created
+	// from this template.
+	RoleDescriptionPattern *string
+
+	// The pattern that is used to generate the name of a role that is created from
+	// this template. The pattern can include @{parameter} placeholders that are
+	// replaced with the values you supply in the ReplacementValues parameter of [AcquireRole].
+	//
+	// [AcquireRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_AcquireRole.html
+	RoleNamePattern *string
+
+	// The pattern that is used to generate the path of a role that is created from
+	// this template.
+	RolePathPattern *string
+
+	// A list of tag templates that are applied to roles that are created from this
+	// template.
+	RoleTagsTemplate []TagTemplate
+
+	// The Amazon Resource Name (ARN) that identifies the role template.
+	//
+	// For more information about ARNs, see [Amazon Resource Names (ARNs)] in the Amazon Web Services General
+	// Reference.
+	//
+	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+	TemplateArn *string
+
+	// The friendly name that identifies the role template.
+	TemplateName *string
+
+	// The identifier of the role template version.
+	TemplateVersionId *string
+
+	// The date and time, in [ISO 8601 date-time format], when the role template version was last updated.
+	//
+	// [ISO 8601 date-time format]: http://www.iso.org/iso/iso8601
+	UpdateTimestamp *time.Time
+
+	// Specifies whether this specific minor version of the role template is enabled.
+	VersionEnabled bool
 
 	noSmithyDocumentSerde
 }
@@ -1773,17 +2103,18 @@ type ServiceSpecificCredential struct {
 	UserName *string
 
 	// The date and time when the service specific credential expires. This field is
-	// only present for Bedrock API keys that were created with an expiration period.
+	// only present for Bedrock API keys and CloudWatch Logs API keys that were created
+	// with an expiration period.
 	ExpirationDate *time.Time
 
-	// For Bedrock API keys, this is the public portion of the credential that
-	// includes the IAM user name and a suffix containing version and creation
-	// information.
+	// For Bedrock API keys and CloudWatch Logs API keys, this is the public portion
+	// of the credential that includes the IAM user name and a suffix containing
+	// version and creation information.
 	ServiceCredentialAlias *string
 
-	// For Bedrock API keys, this is the secret portion of the credential that should
-	// be used to authenticate API calls. This value is returned only when the
-	// credential is created.
+	// For Bedrock API keys and CloudWatch Logs API keys, this is the secret portion
+	// of the credential that should be used to authenticate API calls. This value is
+	// returned only when the credential is created.
 	ServiceCredentialSecret *string
 
 	// The generated password for the service-specific credential.
@@ -1830,12 +2161,13 @@ type ServiceSpecificCredentialMetadata struct {
 	UserName *string
 
 	// The date and time when the service specific credential expires. This field is
-	// only present for Bedrock API keys that were created with an expiration period.
+	// only present for Bedrock API keys and CloudWatch Logs API keys that were created
+	// with an expiration period.
 	ExpirationDate *time.Time
 
-	// For Bedrock API keys, this is the public portion of the credential that
-	// includes the IAM user name and a suffix containing version and creation
-	// information.
+	// For Bedrock API keys and CloudWatch Logs API keys, this is the public portion
+	// of the credential that includes the IAM user name and a suffix containing
+	// version and creation information.
 	ServiceCredentialAlias *string
 
 	// The generated user name for the service-specific credential.
@@ -1875,6 +2207,23 @@ type SigningCertificate struct {
 
 	// The date when the signing certificate was uploaded.
 	UploadDate *time.Time
+
+	noSmithyDocumentSerde
+}
+
+// Contains information about the role template that a role was created from.
+type SourceRoleTemplate struct {
+
+	// The Amazon Resource Name (ARN) of the role template that the role was created
+	// from.
+	//
+	// This member is required.
+	TemplateArn *string
+
+	// The minor version of the role template that was used to create the role.
+	//
+	// This member is required.
+	TemplateMinorVersion *int32
 
 	noSmithyDocumentSerde
 }
@@ -1997,6 +2346,24 @@ type Tag struct {
 	// . Tags with a key name of Cost Center might have values that consist of the
 	// number associated with the different cost centers in your company. Typically,
 	// many resources have tags with the same key name but with different values.
+	//
+	// This member is required.
+	Value *string
+
+	noSmithyDocumentSerde
+}
+
+// Represents a tag that is applied to roles that are created from a role
+// template. The key and value can include @{parameter} placeholders that are
+// replaced with template parameter values when the role is created.
+type TagTemplate struct {
+
+	// The key name of the tag.
+	//
+	// This member is required.
+	Key *string
+
+	// The value associated with the tag key.
 	//
 	// This member is required.
 	Value *string
@@ -2239,3 +2606,14 @@ type VirtualMFADevice struct {
 }
 
 type noSmithyDocumentSerde = smithydocument.NoSerde
+
+// UnknownUnionMember is returned when a union member is returned over the wire,
+// but has an unknown tag.
+type UnknownUnionMember struct {
+	Tag   string
+	Value []byte
+
+	noSmithyDocumentSerde
+}
+
+func (*UnknownUnionMember) isPolicyIdentifier() {}

@@ -4,11 +4,8 @@ package iam
 
 import (
 	"context"
-	"fmt"
-	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/smithy-go/middleware"
-	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Generates a set of credentials consisting of a user name and password that can
@@ -18,16 +15,24 @@ import (
 // You can have a maximum of two sets of service-specific credentials for each
 // supported service per user.
 //
-// You can create service-specific credentials for Amazon Bedrock, CodeCommit and
-// Amazon Keyspaces (for Apache Cassandra).
-//
 // You can reset the password to a new service-generated value by calling [ResetServiceSpecificCredential].
 //
-// For more information about service-specific credentials, see [Service-specific credentials for IAM users] in the IAM User
-// Guide.
+// For more information about using service-specific credentials to authenticate
+// to an Amazon Web Services service, refer to the following docs:
+//
+//   - For service-specific credentials with CodeCommit, refer to [IAM credentials for CodeCommit: Git credentials, SSH keys, and Amazon Web Services access keys]in the IAM User
+//     Guide.
+//
+//   - For service-specific credentials with Amazon Keyspaces (for Apache
+//     Cassandra), refer to [Use IAM with Amazon Keyspaces (for Apache Cassandra)]in the IAM User Guide.
+//
+//   - For services that support long-term API keys, refer to [API keys for Amazon Web Services services]in the IAM User
+//     Guide.
 //
 // [ResetServiceSpecificCredential]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ResetServiceSpecificCredential.html
-// [Service-specific credentials for IAM users]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_bedrock.html
+// [IAM credentials for CodeCommit: Git credentials, SSH keys, and Amazon Web Services access keys]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_ssh-keys.html
+// [Use IAM with Amazon Keyspaces (for Apache Cassandra)]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_keyspaces.html
+// [API keys for Amazon Web Services services]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_api_keys_for_aws_services.html
 func (c *Client) CreateServiceSpecificCredential(ctx context.Context, params *CreateServiceSpecificCredentialInput, optFns ...func(*Options)) (*CreateServiceSpecificCredentialOutput, error) {
 	if params == nil {
 		params = &CreateServiceSpecificCredentialInput{}
@@ -66,8 +71,13 @@ type CreateServiceSpecificCredentialInput struct {
 	UserName *string
 
 	// The number of days until the service specific credential expires. This field is
-	// only valid for Bedrock API keys and must be a positive integer. When not
-	// specified, the credential will not expire.
+	// only valid for services that support long-term API keys and must be a positive
+	// integer. When not specified, the credential will not expire.
+	//
+	// To see which services support long-term API keys, refer to [API keys for Amazon Web Services services] in the IAM User
+	// Guide.
+	//
+	// [API keys for Amazon Web Services services]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_api_keys_for_aws_services.html
 	CredentialAgeDays *int32
 
 	noSmithyDocumentSerde
@@ -91,9 +101,6 @@ type CreateServiceSpecificCredentialOutput struct {
 }
 
 func (c *Client) addOperationCreateServiceSpecificCredentialMiddlewares(stack *middleware.Stack, options Options) (err error) {
-	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
-		return err
-	}
 	err = stack.Serialize.Add(&awsAwsquery_serializeOpCreateServiceSpecificCredential{}, middleware.After)
 	if err != nil {
 		return err
@@ -102,19 +109,7 @@ func (c *Client) addOperationCreateServiceSpecificCredentialMiddlewares(stack *m
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "CreateServiceSpecificCredential"); err != nil {
-		return fmt.Errorf("add protocol finalizers: %v", err)
-	}
 
-	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
-		return err
-	}
-	if err = addSetLoggerMiddleware(stack, options); err != nil {
-		return err
-	}
-	if err = addClientRequestID(stack); err != nil {
-		return err
-	}
 	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
@@ -124,46 +119,13 @@ func (c *Client) addOperationCreateServiceSpecificCredentialMiddlewares(stack *m
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
-		return err
-	}
-	if err = addRawResponseToMetadata(stack); err != nil {
-		return err
-	}
-	if err = addRecordResponseTiming(stack); err != nil {
-		return err
-	}
-	if err = addSpanRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addClientUserAgent(stack, options); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = smithyhttp.AddCloseResponseBodyMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addTimeOffsetBuild(stack, c); err != nil {
-		return err
-	}
-	if err = addUserAgentRetryMode(stack, options); err != nil {
+	if err = addRecordResponseTiming(stack, options); err != nil {
 		return err
 	}
 	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateServiceSpecificCredentialValidationMiddleware(stack); err != nil {
-		return err
-	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opCreateServiceSpecificCredential(options.Region), middleware.Before); err != nil {
-		return err
-	}
-	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -178,22 +140,8 @@ func (c *Client) addOperationCreateServiceSpecificCredentialMiddlewares(stack *m
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAttempt(stack, options); err != nil {
-		return err
-	}
 	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil
-}
-
-func newServiceMetadataMiddleware_opCreateServiceSpecificCredential(region string) *awsmiddleware.RegisterServiceMetadata {
-	return &awsmiddleware.RegisterServiceMetadata{
-		Region:        region,
-		ServiceID:     ServiceID,
-		OperationName: "CreateServiceSpecificCredential",
-	}
 }
