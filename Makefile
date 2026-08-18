@@ -81,11 +81,14 @@ KOPS_CHANNELS_TAG=$(IMAGE_TAG)
 
 CGO_ENABLED=0
 export CGO_ENABLED
+# disable_grpc_modules removes the unused GCS gRPC transport and its envoy/xds proto chain from
+# cloud.google.com/go/storage. It is safe because kOps only uses the GCS HTTP JSON API.
+# It saves ~12MB.
 # grpcnotrace removes golang.org/x/net/trace from google.golang.org/grpc. It is safe because kOps
 # does not use gRPC's x/net/trace integration. In binaries with no other text/template usage, it
 # restores linker dead-code elimination disabled by x/net/trace's use of text/template and saves
 # ~21MB in the dns-controller and channels images.
-BUILDTAGS=grpcnotrace
+BUILDTAGS=disable_grpc_modules,grpcnotrace
 BUILDFLAGS=-trimpath -buildvcs=false -tags=${BUILDTAGS}
 
 
