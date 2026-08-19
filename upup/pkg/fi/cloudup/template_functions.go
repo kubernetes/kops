@@ -33,9 +33,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net"
 	"os"
 	"path"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -76,7 +78,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/util/pkg/env"
-	"k8s.io/kops/util/pkg/maps"
 	"sigs.k8s.io/yaml"
 )
 
@@ -417,7 +418,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			if cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig != nil {
 				priorities = cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig
 			} else {
-				igNames := maps.SortedKeys(tf.GetNodeInstanceGroups())
+				igNames := slices.Sorted(maps.Keys(tf.GetNodeInstanceGroups()))
 				for _, name := range igNames {
 					spec := tf.GetNodeInstanceGroups()[name]
 					if spec.Autoscale != nil {
@@ -427,7 +428,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			}
 
 			var prioritiesStr []string
-			for _, prio := range maps.SortedKeys(priorities) {
+			for _, prio := range slices.Sorted(maps.Keys(priorities)) {
 				prioritiesStr = append(prioritiesStr, fmt.Sprintf("%s:", prio))
 				for _, value := range priorities[prio] {
 					prioritiesStr = append(prioritiesStr, fmt.Sprintf("- %s", value))

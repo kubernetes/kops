@@ -19,6 +19,8 @@ package aws
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -27,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/util/pkg/maps"
 )
 
 func DeleteVPC(cloud fi.Cloud, r *resources.Resource) error {
@@ -95,9 +96,9 @@ func DescribeVPC(cloud fi.Cloud, clusterName string) (*ec2types.Vpc, error) {
 	case 0:
 		return nil, nil
 	case 1:
-		return vpcs[maps.Keys(vpcs)[0]], nil
+		return vpcs[slices.Collect(maps.Keys(vpcs))[0]], nil
 	default:
-		return nil, fmt.Errorf("found multiple VPCs for cluster %q: %v", clusterName, maps.Keys(vpcs))
+		return nil, fmt.Errorf("found multiple VPCs for cluster %q: %v", clusterName, slices.Collect(maps.Keys(vpcs)))
 	}
 }
 
