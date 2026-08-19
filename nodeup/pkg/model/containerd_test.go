@@ -21,13 +21,15 @@ import (
 	"path"
 	"path/filepath"
 	"testing"
+	"time"
 
-	"github.com/pelletier/go-toml"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/tomlwriter"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/distributions"
 )
@@ -200,19 +202,54 @@ func TestContainerdConfig(t *testing.T) {
 	}
 }
 
-func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
-	originalConfig := `version = 2
-[plugins]
-  [plugins."io.containerd.grpc.v1.cri"]
-    [plugins."io.containerd.grpc.v1.cri".containerd]
-      default_runtime_name = "runc"
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-          runtime_type = "io.containerd.runc.v2"
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-            SystemdCgroup = true
-`
+func TestContainerdConfigNRITimeouts(t *testing.T) {
+	b := &ContainerdBuilder{
+		NodeupModelContext: &NodeupModelContext{
+			NodeupConfig: &nodeup.Config{
+				ContainerdConfig: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled:                   new(true),
+						PluginRequestTimeout:      &metav1.Duration{Duration: 2 * time.Second},
+						PluginRegistrationTimeout: &metav1.Duration{Duration: 5 * time.Second},
+					},
+				},
+			},
+		},
+	}
 
+	config, err := b.buildContainerdConfig()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := `version = 3
+
+[plugins]
+
+  [plugins."io.containerd.cri.v1.runtime"]
+
+    [plugins."io.containerd.cri.v1.runtime".containerd]
+      default_runtime_name = "runc"
+
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes]
+
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc]
+          runtime_type = "io.containerd.runc.v2"
+
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc.options]
+            SystemdCgroup = true
+
+  [plugins."io.containerd.nri.v1.nri"]
+    disable = false
+    plugin_registration_timeout = "5s"
+    plugin_request_timeout = "2s"
+`
+	if config != expected {
+		t.Error(diff.FormatDiff(expected, config))
+	}
+}
+
+func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
 	expectedNewConfig := `version = 2
 
 [plugins]
@@ -240,20 +277,15 @@ func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
             SystemdCgroup = true
 `
-	config, err := toml.Load(originalConfig)
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
-	}
+	config := tomlwriter.NewTree()
+	config.SetPath([]string{"version"}, int64(2))
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "default_runtime_name"}, "runc")
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, true)
 
-	runtimesPath := []string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes"}
-	if err := appendNvidiaGPURuntimeConfig(config, runtimesPath); err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
+	appendNvidiaGPURuntimeConfig(config.Table("plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes"))
 
-	newConfig, err := config.ToTomlString()
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
+	newConfig := config.String()
 
 	if newConfig != expectedNewConfig {
 		fmt.Println(diff.FormatDiff(expectedNewConfig, newConfig))

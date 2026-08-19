@@ -2073,6 +2073,43 @@ func Test_Validate_NriConfig(t *testing.T) {
 			},
 			ExpectedErrors: []string{},
 		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled:                   new(true),
+						PluginRequestTimeout:      &metav1.Duration{Duration: 2 * time.Second},
+						PluginRegistrationTimeout: &metav1.Duration{Duration: 5 * time.Second},
+					},
+					Version: &supportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled:              new(true),
+						PluginRequestTimeout: &metav1.Duration{Duration: -1 * time.Second},
+					},
+					Version: &supportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::containerd.nri.pluginRequestTimeout"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NRI: &kops.NRIConfig{
+						Enabled:                   new(true),
+						PluginRegistrationTimeout: &metav1.Duration{},
+					},
+					Version: &supportedContainerdVersion,
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::containerd.nri.pluginRegistrationTimeout"},
+		},
 	}
 	for _, g := range grid {
 		errs := validateNriConfig(g.Input.Containerd, field.NewPath("containerd", "nri"))

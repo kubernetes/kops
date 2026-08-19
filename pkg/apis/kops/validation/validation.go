@@ -1984,6 +1984,16 @@ func validateNriConfig(containerd *kops.ContainerdConfig, fldPath *field.Path) (
 	if containerd.NRI.Enabled == nil || !fi.ValueOf(containerd.NRI.Enabled) {
 		return allErrs
 	}
+	// containerd ignores zero-valued NRI timeouts and keeps its defaults; negative values cause
+	// requests to expire immediately.
+	if containerd.NRI.PluginRequestTimeout != nil && containerd.NRI.PluginRequestTimeout.Duration <= 0 {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("pluginRequestTimeout"),
+			containerd.NRI.PluginRequestTimeout.Duration.String(), "must be a positive duration"))
+	}
+	if containerd.NRI.PluginRegistrationTimeout != nil && containerd.NRI.PluginRegistrationTimeout.Duration <= 0 {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("pluginRegistrationTimeout"),
+			containerd.NRI.PluginRegistrationTimeout.Duration.String(), "must be a positive duration"))
+	}
 	v, err := semver.Parse(*containerd.Version)
 	if err != nil {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), containerd.Version,
