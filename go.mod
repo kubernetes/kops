@@ -53,7 +53,6 @@ require (
 	github.com/gophercloud/gophercloud/v2 v2.13.0
 	github.com/hetznercloud/hcloud-go/v2 v2.47.0
 	github.com/linode/linodego/v2 v2.5.1-0.20260817185848-4007024eaf43
-	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.11
 	github.com/prometheus/client_golang v1.24.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.37

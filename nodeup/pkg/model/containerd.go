@@ -27,12 +27,12 @@ import (
 	"strings"
 
 	"github.com/blang/semver/v4"
-	"github.com/pelletier/go-toml"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
+	"k8s.io/kops/pkg/tomlwriter"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -483,17 +483,17 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderC
 func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	containerd := b.NodeupConfig.ContainerdConfig
 
-	// toml.Load("") never fails for empty input; we use it to obtain an empty tree.
-	config, _ := toml.Load("")
+	config := tomlwriter.NewTree()
 	config.SetPath([]string{"version"}, int64(3))
 
 	if containerd.NRI != nil && (containerd.NRI.Enabled == nil || fi.ValueOf(containerd.NRI.Enabled)) {
 		config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "disable"}, false)
+		// containerd expects Go duration strings such as "5s".
 		if containerd.NRI.PluginRequestTimeout != nil {
-			config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "plugin_request_timeout"}, containerd.NRI.PluginRequestTimeout)
+			config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "plugin_request_timeout"}, containerd.NRI.PluginRequestTimeout.Duration.String())
 		}
 		if containerd.NRI.PluginRegistrationTimeout != nil {
-			config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "plugin_registration_timeout"}, containerd.NRI.PluginRegistrationTimeout)
+			config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "plugin_registration_timeout"}, containerd.NRI.PluginRegistrationTimeout.Duration.String())
 		}
 	}
 	if containerd.SeLinuxEnabled {
@@ -518,15 +518,11 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	}
 
 	if b.InstallNvidiaRuntime() {
-		if err := appendNvidiaGPURuntimeConfig(config, []string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"}); err != nil {
-			return "", fmt.Errorf("appending nvidia gpu runtime to v3 containerd config: %w", err)
-		}
+		appendNvidiaGPURuntimeConfig(config.Table("plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"))
 	}
 
 	if b.InstallGVisorRuntime() {
-		if err := appendGVisorRuntimeConfig(config, []string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"}); err != nil {
-			return "", fmt.Errorf("appending gvisor runtime to v3 containerd config: %w", err)
-		}
+		appendGVisorRuntimeConfig(config.Table("plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"))
 	}
 
 	if err := applyConfigAdditions(config, containerd.ConfigAdditions); err != nil {
@@ -542,7 +538,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 // Paths are written verbatim; the user is responsible for matching the schema version of
 // the configured containerd binary (v2 vs v3).
 // Keys are applied in sorted order so output is reproducible across runs.
-func applyConfigAdditions(config *toml.Tree, additions map[string]intstr.IntOrString) error {
+func applyConfigAdditions(config *tomlwriter.Tree, additions map[string]intstr.IntOrString) error {
 	keys := make([]string, 0, len(additions))
 	for k := range additions {
 		keys = append(keys, k)
@@ -574,51 +570,17 @@ func applyConfigAdditions(config *toml.Tree, additions map[string]intstr.IntOrSt
 	return nil
 }
 
-// appendNvidiaGPURuntimeConfig adds the "nvidia" runtime entry under runtimesPath.
-func appendNvidiaGPURuntimeConfig(config *toml.Tree, runtimesPath []string) error {
-	gpuConfig, err := toml.TreeFromMap(
-		map[string]interface{}{
-			"privileged_without_host_devices": false,
-			"runtime_engine":                  "",
-			"runtime_root":                    "",
-			"runtime_type":                    "io.containerd.runc.v2",
-			"options": map[string]interface{}{
-				"SystemdCgroup": true,
-				"BinaryName":    "/usr/bin/nvidia-container-runtime",
-			},
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	// Copy runtimesPath defensively; appending into the caller's slice could alias if
-	// runtimesPath is ever a reused/hoisted prefix.
-	path := make([]string, len(runtimesPath)+1)
-	copy(path, runtimesPath)
-	path[len(runtimesPath)] = "nvidia"
-	config.SetPath(path, gpuConfig)
-
-	return nil
+func appendNvidiaGPURuntimeConfig(runtimes *tomlwriter.Tree) {
+	runtimes.SetPath([]string{"nvidia", "privileged_without_host_devices"}, false)
+	runtimes.SetPath([]string{"nvidia", "runtime_engine"}, "")
+	runtimes.SetPath([]string{"nvidia", "runtime_root"}, "")
+	runtimes.SetPath([]string{"nvidia", "runtime_type"}, "io.containerd.runc.v2")
+	runtimes.SetPath([]string{"nvidia", "options", "SystemdCgroup"}, true)
+	runtimes.SetPath([]string{"nvidia", "options", "BinaryName"}, "/usr/bin/nvidia-container-runtime")
 }
 
-// appendGVisorRuntimeConfig adds the "runsc" runtime entry under runtimesPath.
-func appendGVisorRuntimeConfig(config *toml.Tree, runtimesPath []string) error {
-	gvisorConfig, err := toml.TreeFromMap(
-		map[string]interface{}{
-			"runtime_type": "io.containerd.runsc.v1",
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	path := make([]string, len(runtimesPath)+1)
-	copy(path, runtimesPath)
-	path[len(runtimesPath)] = "runsc"
-	config.SetPath(path, gvisorConfig)
-
-	return nil
+func appendGVisorRuntimeConfig(runtimes *tomlwriter.Tree) {
+	runtimes.SetPath([]string{"runsc", "runtime_type"}, "io.containerd.runsc.v1")
 }
 
 // buildGVisorShimConfig emits /etc/containerd/runsc.toml, the shim-level
@@ -630,7 +592,7 @@ func (b *ContainerdBuilder) buildGVisorShimConfig(c *fi.NodeupModelBuilderContex
 		platform = "systrap"
 	}
 
-	shimConfig, _ := toml.Load("")
+	shimConfig := tomlwriter.NewTree()
 	shimConfig.SetPath([]string{"runsc_config", "platform"}, platform)
 
 	c.AddTask(&nodetasks.File{
@@ -646,7 +608,7 @@ func (b *ContainerdBuilder) buildGVisorShimConfig(c *fi.NodeupModelBuilderContex
 // emission in buildContainerdConfig.
 // containerd watches this directory at runtime, so no daemon reload is needed when a hosts.toml changes.
 // containerd uses host declaration order as mirror priority, so endpoints are emitted in the order
-// the user provided them rather than sorted (go-toml's Tree.String alphabetizes subtables).
+// the user provided them instead of sorting them as tomlwriter.Tree.String does.
 // Format reference: https://github.com/containerd/containerd/blob/main/docs/hosts.md
 func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) error {
 	// ConfigOverride is a complete bypass of the generated containerd config; honour
