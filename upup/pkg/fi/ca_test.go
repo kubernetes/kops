@@ -375,6 +375,60 @@ func TestAddItem(t *testing.T) {
 	}
 }
 
+func TestKeysetIsPlaceholder(t *testing.T) {
+	cert, _ := pki.ParsePEMCertificate([]byte(certData))
+	privateKey, _ := pki.ParsePEMPrivateKey([]byte(privatekeyData))
+
+	grid := []struct {
+		name   string
+		keyset *fi.Keyset
+		want   bool
+	}{
+		{
+			name:   "nil keyset",
+			keyset: nil,
+			want:   false,
+		},
+		{
+			name:   "zero-value keyset",
+			keyset: &fi.Keyset{},
+			want:   false,
+		},
+		{
+			name: "unresolved placeholder",
+			keyset: &fi.Keyset{
+				Primary: &fi.KeysetItem{Id: fi.PlaceholderKeypairID},
+			},
+			want: true,
+		},
+		{
+			name: "real keyset with matching item count coincidence",
+			keyset: &fi.Keyset{
+				Primary: &fi.KeysetItem{
+					Id:          "6952323604391556590983096308",
+					Certificate: cert,
+					PrivateKey:  privateKey,
+				},
+				Items: map[string]*fi.KeysetItem{
+					"6952323604391556590983096308": {
+						Id:          "6952323604391556590983096308",
+						Certificate: cert,
+						PrivateKey:  privateKey,
+					},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			got := g.keyset.IsPlaceholder()
+			assert.Equal(t, g.want, got)
+		})
+	}
+}
+
 func assertSerialNotInFuture(t *testing.T, id string) {
 	version, ok := big.NewInt(0).SetString(id, 10)
 	require.True(t, ok, "parses as integer")

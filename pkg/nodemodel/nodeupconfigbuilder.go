@@ -465,6 +465,19 @@ func loadCertificates(keysets map[string]*fi.Keyset, name string, config *nodeup
 	if keyset == nil {
 		return fmt.Errorf("key %q not found", name)
 	}
+	if keyset.IsPlaceholder() {
+		// The keypair has not actually been created yet (e.g. this is a preview
+		// of a not-yet-created cluster/keypair). Emit an unambiguous, obviously
+		// non-certificate placeholder rather than an empty string: an empty
+		// string here is indistinguishable from "this CA legitimately has no
+		// certificates" and, for an *existing* CA, could be silently mistaken
+		// for a real blanking of a live trust bundle.
+		config.CAs[name] = fi.PlaceholderKeypairID
+		if includeKeypairID {
+			config.KeypairIDs[name] = fi.PlaceholderKeypairID
+		}
+		return nil
+	}
 	certificates, err := keyset.ToCertificateBytes()
 	if err != nil {
 		return fmt.Errorf("failed to read %q certificates: %w", name, err)

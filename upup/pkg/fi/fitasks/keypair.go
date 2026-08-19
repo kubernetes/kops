@@ -273,6 +273,15 @@ func CreateKeyset(ctx context.Context, keystore fi.Keystore, name string, req pk
 		keyset = &fi.Keyset{
 			Items: map[string]*fi.KeysetItem{},
 		}
+	} else if req.Type == "ca" && keyset.Primary != nil && keyset.Primary.Certificate != nil {
+		// The caller believed this CA needed to be (re)created, but a direct,
+		// authoritative lookup right before mutating the keystore shows an
+		// existing, valid CA certificate. Silently reissuing it here would
+		// rotate the cluster's trust anchor out from under it. This mismatch
+		// indicates a task-planning inconsistency (e.g. the keypair task's
+		// own Find() did not see this same data) rather than a genuinely
+		// missing CA, so refuse instead of proceeding.
+		return nil, fmt.Errorf("refusing to create keypair %q: an existing CA certificate was found in the keystore; this indicates a task-planning inconsistency rather than a genuinely missing CA — aborting to avoid rotating a cluster's trust anchor", name)
 	}
 
 	if req.Serial == nil {
@@ -348,12 +357,12 @@ func parsePkixName(s string) (*pkix.Name, error) {
 func (e *Keypair) ensureResources() {
 	if e.certificates == nil {
 		e.certificates = &fi.CloudupTaskDependentResource{
-			Resource: fi.NewStringResource("<< TO BE GENERATED >>\n"),
+			Resource: fi.NewStringResource(fi.PlaceholderKeypairID + "\n"),
 			Task:     e,
 		}
 		e.keyset = &fi.Keyset{
 			Primary: &fi.KeysetItem{
-				Id: "<< TO BE GENERATED >>",
+				Id: fi.PlaceholderKeypairID,
 			},
 		}
 	}
