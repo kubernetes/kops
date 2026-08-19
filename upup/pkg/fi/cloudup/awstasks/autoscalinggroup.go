@@ -19,7 +19,9 @@ package awstasks
 import (
 	"context"
 	"fmt"
+	"maps"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 
@@ -32,7 +34,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
-	"k8s.io/kops/util/pkg/maps"
 )
 
 const (
@@ -940,7 +941,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		tf.VPCZoneIdentifier = append(tf.VPCZoneIdentifier, s.TerraformLink())
 	}
 
-	for _, k := range maps.SortedKeys(e.Tags) {
+	for _, k := range slices.Sorted(maps.Keys(e.Tags)) {
 		v := e.Tags[k]
 		tf.Tags = append(tf.Tags, &terraformASGTag{
 			Key:               new(k),

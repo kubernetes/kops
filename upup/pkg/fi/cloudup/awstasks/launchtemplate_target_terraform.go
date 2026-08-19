@@ -17,12 +17,14 @@ limitations under the License.
 package awstasks
 
 import (
+	"maps"
+	"slices"
+
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
-	"k8s.io/kops/util/pkg/maps"
 )
 
 type terraformLaunchTemplateNetworkInterface struct {
@@ -269,7 +271,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		return err
 	}
 
-	devicesKeys := maps.SortedKeys(devices)
+	devicesKeys := slices.Sorted(maps.Keys(devices))
 	for _, key := range devicesKeys {
 		terraformLaunchTemplateBlockDevice := createTerraformLaunchTemplateBlockDevice(key, devices[key])
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, terraformLaunchTemplateBlockDevice)
@@ -280,7 +282,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		return err
 	}
 
-	additionalsKeys := maps.SortedKeys(additionals)
+	additionalsKeys := slices.Sorted(maps.Keys(additionals))
 	for _, key := range additionalsKeys {
 		terraformLaunchTemplateBlockDevice := createTerraformLaunchTemplateBlockDevice(key, additionals[key])
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, terraformLaunchTemplateBlockDevice)
@@ -291,7 +293,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		return err
 	}
 
-	devicesKeys = maps.SortedKeys(devices)
+	devicesKeys = slices.Sorted(maps.Keys(devices))
 	for _, key := range devicesKeys {
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
 			VirtualName: devices[key].VirtualName,

@@ -18,9 +18,9 @@ package gcemodel
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 
-	"golang.org/x/exp/slices"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/wellknownports"
