@@ -376,20 +376,23 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	context, err := fi.NewNodeupContext(ctx, target, keyStore, &bootConfig, &nodeupConfig, taskMap)
 	if err != nil {
-		klog.Exitf("error building context: %v", err)
+		return fmt.Errorf("error building context: %w", err)
 	}
 
 	var options fi.RunTasksOptions
 	options.InitDefaults()
 
+	// Return rather than exit, so that the retry loop in cmd/nodeup gets to run:
+	// kops-configuration.service is Type=oneshot, so a bootstrap that exits here is never
+	// retried and the node never joins the cluster.
 	err = context.RunTasks(options)
 	if err != nil {
-		klog.Exitf("error running tasks: %v", err)
+		return fmt.Errorf("error running tasks: %w", err)
 	}
 
 	err = target.Finish(taskMap)
 	if err != nil {
-		klog.Exitf("error closing target: %v", err)
+		return fmt.Errorf("error closing target: %w", err)
 	}
 
 	if nodeupConfig.EnableLifecycleHook {

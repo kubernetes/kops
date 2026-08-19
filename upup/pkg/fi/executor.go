@@ -159,8 +159,8 @@ func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) 
 
 			tryAgainLaterCount := 0
 			for _, err := range errs {
-				var tryAgainLaterError TryAgainLaterError
-				if !errors.Is(err, &tryAgainLaterError) {
+				var tryAgainLater *TryAgainLaterError
+				if errors.As(err, &tryAgainLater) {
 					tryAgainLaterCount++
 				}
 			}
