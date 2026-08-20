@@ -55,7 +55,7 @@ require (
 	github.com/linode/linodego/v2 v2.5.1-0.20260817185848-4007024eaf43
 	github.com/pkg/sftp v1.13.11
 	github.com/prometheus/client_golang v1.24.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.37
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36
 	github.com/sergi/go-diff v1.4.0
 	github.com/smallstep/pkcs7 v0.2.3
 	github.com/spf13/cobra v1.10.2
@@ -266,3 +266,8 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.21.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 )
+
+// Newer versions build SRN strings with text/template, which disables linker
+// method pruning and adds ~78MB to every binary. Remove the pin once upstream
+// stops using text/template in its generated code.
+replace github.com/scaleway/scaleway-sdk-go => github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36
