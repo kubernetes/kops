@@ -57,12 +57,12 @@ func main() {
 	flag.StringVar(&target, "target", target, "Target - direct, dryrun")
 	flag.BoolVar(&installSystemdUnit, "install-systemd-unit", installSystemdUnit, "If true, will install a systemd unit instead of running directly")
 
+	flag.Set("logtostderr", "true")
+	flag.Parse()
+
 	if dryrun {
 		target = "dryrun"
 	}
-
-	flag.Set("logtostderr", "true")
-	flag.Parse()
 
 	if flagConf == "" {
 		klog.Exitf("--conf is required")
