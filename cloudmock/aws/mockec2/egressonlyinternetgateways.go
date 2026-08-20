@@ -108,17 +108,6 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(ctx context.Context, reques
 					}
 				}
 
-			case "attachment.vpc-id":
-				for _, v := range filter.Values {
-					if internetGateway.Attachments != nil {
-						for _, attachment := range internetGateway.Attachments {
-							if *attachment.VpcId == v {
-								match = true
-							}
-						}
-					}
-				}
-
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
 					match = m.hasTag(ec2types.ResourceTypeEgressOnlyInternetGateway, id, filter)
