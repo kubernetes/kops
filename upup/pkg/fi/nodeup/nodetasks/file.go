@@ -41,7 +41,11 @@ const (
 )
 
 type File struct {
-	AfterFiles      []string    `json:"afterFiles,omitempty"`
+	AfterFiles []string `json:"afterFiles,omitempty"`
+	// AfterPackages orders this file after every Package task. Set it when
+	// OnChangeExecute restarts the network: nodeup schedules tasks in parallel,
+	// so an unordered restart can land mid apt-get/dnf and fail the package task.
+	AfterPackages   bool        `json:"afterPackages,omitempty"`
 	BeforeServices  []string    `json:"beforeServices,omitempty"`
 	Contents        fi.Resource `json:"contents,omitempty"`
 	Group           *string     `json:"group,omitempty"`
@@ -98,6 +102,18 @@ func (e *File) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
 				if file.Path == f {
 					deps = append(deps, v)
 				}
+			}
+		}
+	}
+
+	// Requires every package to be installed first. For tasks whose
+	// OnChangeExecute restarts the network, nodeup's parallel scheduling
+	// otherwise lets the restart land in the middle of an apt-get or dnf
+	// transaction, which fails the package task and aborts the bootstrap.
+	if e.AfterPackages {
+		for _, v := range tasks {
+			if _, ok := v.(*Package); ok {
+				deps = append(deps, v)
 			}
 		}
 	}
