@@ -290,9 +290,8 @@ func (enum *CertificateStatus) UnmarshalJSON(data []byte) error {
 type CertificateType string
 
 const (
-	CertificateTypeLetsencryt  = CertificateType("letsencryt")
-	CertificateTypeCustom      = CertificateType("custom")
-	CertificateTypeLetsencrypt = CertificateType("letsencrypt")
+	CertificateTypeLetsencryt = CertificateType("letsencryt")
+	CertificateTypeCustom     = CertificateType("custom")
 )
 
 func (enum CertificateType) String() string {
@@ -307,7 +306,6 @@ func (enum CertificateType) Values() []CertificateType {
 	return []CertificateType{
 		"letsencryt",
 		"custom",
-		"letsencrypt",
 	}
 }
 
@@ -1485,9 +1483,6 @@ type Backend struct {
 
 	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
 	TimeoutQueue *scw.Duration `json:"timeout_queue"`
-
-	// Host: when connecting to backend servers, use this value as the HTTP Host header or TLS SNI. This allows routing to specific services on the backend server that are configured to respond to particular hostnames.
-	Host *string `json:"host"`
 }
 
 func (m *Backend) UnmarshalJSON(b []byte) error {
@@ -1816,12 +1811,6 @@ type LBType struct {
 	// Default value: unknown
 	StockStatus LBTypeStock `json:"stock_status"`
 
-	// Bandwidth: maximum bandwidth for a given Load Balancer type.
-	Bandwidth uint64 `json:"bandwidth"`
-
-	// Multicloud: ability to handle backend servers outside Scaleway for a given Load Balancer type.
-	Multicloud bool `json:"multicloud"`
-
 	// Description: load Balancer commercial offer type description.
 	Description string `json:"description"`
 
@@ -2009,9 +1998,6 @@ type CreateBackendRequest struct {
 
 	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
 	TimeoutQueue *scw.Duration `json:"timeout_queue,omitempty"`
-
-	// Host: when connecting to backend servers, use this value as the HTTP Host header or TLS SNI. This allows routing to specific services on the backend server that are configured to respond to particular hostnames.
-	Host *string `json:"host,omitempty"`
 }
 
 func (m *CreateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -2194,7 +2180,7 @@ type CreateLBRequest struct {
 	// Type: load Balancer commercial offer type. Use the Load Balancer types endpoint to retrieve a list of available offer types.
 	Type string `json:"type"`
 
-	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems (>= TLS1.2). Modern is suitable for services with clients that support TLS 1.3 and do not need backward compatibility (= TLS1.3). Old is compatible with a small number of very old clients and should be used only as a last resort (>= TLS1.0).
+	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems. Modern is suitable for services with clients that support TLS 1.3 and do not need backward compatibility. Old is compatible with a small number of very old clients and should be used only as a last resort.
 	// Default value: ssl_compatibility_level_unknown
 	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
 }
@@ -2822,9 +2808,6 @@ type ListLBsRequest struct {
 
 	// Tags: filter by tag, only Load Balancers with one or more matching tags will be returned.
 	Tags []string `json:"-"`
-
-	// LBIDs: filter by lb_ids, only Load Balancers with these IDs will be returned.
-	LBIDs []string `json:"-"`
 }
 
 // ListLBsResponse: list l bs response.
@@ -3142,9 +3125,6 @@ type UpdateBackendRequest struct {
 
 	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
 	TimeoutQueue *scw.Duration `json:"timeout_queue,omitempty"`
-
-	// Host: when connecting to backend servers, use this value as the HTTP Host header or TLS SNI. This allows routing to specific services on the backend server that are configured to respond to particular hostnames.
-	Host *string `json:"host,omitempty"`
 }
 
 func (m *UpdateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -3381,7 +3361,7 @@ type UpdateLBRequest struct {
 	// Tags: list of tags for the Load Balancer.
 	Tags []string `json:"tags"`
 
-	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems (>= TLS1.2). Modern is suitable for services with clients that support TLS 1.3 and do not need backward compatibility (= TLS1.3). Old is compatible with a small number of very old clients and should be used only as a last resort (>= TLS1.0).
+	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems. Modern is suitable for services with clients that support TLS 1.3 and don't need backward compatibility. Old is compatible with a small number of very old clients and should be used only as a last resort.
 	// Default value: ssl_compatibility_level_unknown
 	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
 }
@@ -3559,9 +3539,6 @@ type ZonedAPICreateBackendRequest struct {
 
 	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
 	TimeoutQueue *scw.Duration `json:"timeout_queue,omitempty"`
-
-	// Host: when connecting to backend servers, use this value as the HTTP Host header or TLS SNI. This allows routing to specific services on the backend server that are configured to respond to particular hostnames.
-	Host *string `json:"host,omitempty"`
 }
 
 func (m *ZonedAPICreateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -3744,7 +3721,7 @@ type ZonedAPICreateLBRequest struct {
 	// Type: load Balancer commercial offer type. Use the Load Balancer types endpoint to retrieve a list of available offer types.
 	Type string `json:"type"`
 
-	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems (>= TLS1.2). Modern is suitable for services with clients that support TLS 1.3 and do not need backward compatibility (= TLS1.3). Old is compatible with a small number of very old clients and should be used only as a last resort (>= TLS1.0).
+	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems. Modern is suitable for services with clients that support TLS 1.3 and do not need backward compatibility. Old is compatible with a small number of very old clients and should be used only as a last resort.
 	// Default value: ssl_compatibility_level_unknown
 	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
 }
@@ -4142,9 +4119,6 @@ type ZonedAPIListLBsRequest struct {
 
 	// Tags: filter by tag, only Load Balancers with one or more matching tags will be returned.
 	Tags []string `json:"-"`
-
-	// LBIDs: filter by lb_ids, only Load Balancers with these IDs will be returned.
-	LBIDs []string `json:"-"`
 }
 
 // ZonedAPIListRoutesRequest: zoned api list routes request.
@@ -4362,9 +4336,6 @@ type ZonedAPIUpdateBackendRequest struct {
 
 	// TimeoutQueue: maximum time for a request to be left pending in queue when `max_connections` is reached.
 	TimeoutQueue *scw.Duration `json:"timeout_queue,omitempty"`
-
-	// Host: when connecting to backend servers, use this value as the HTTP Host header or TLS SNI. This allows routing to specific services on the backend server that are configured to respond to particular hostnames.
-	Host *string `json:"host,omitempty"`
 }
 
 func (m *ZonedAPIUpdateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -4601,7 +4572,7 @@ type ZonedAPIUpdateLBRequest struct {
 	// Tags: list of tags for the Load Balancer.
 	Tags []string `json:"tags"`
 
-	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems (>= TLS1.2). Modern is suitable for services with clients that support TLS 1.3 and do not need backward compatibility (= TLS1.3). Old is compatible with a small number of very old clients and should be used only as a last resort (>= TLS1.0).
+	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on the client side, in an SSL/TLS offloading context. Intermediate is suitable for general-purpose servers with a variety of clients, recommended for almost all systems. Modern is suitable for services with clients that support TLS 1.3 and don't need backward compatibility. Old is compatible with a small number of very old clients and should be used only as a last resort.
 	// Default value: ssl_compatibility_level_unknown
 	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
 }
@@ -4679,7 +4650,6 @@ func (s *ZonedAPI) ListLBs(req *ZonedAPIListLBsRequest, opts ...scw.RequestOptio
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
 	parameter.AddToQuery(query, "tags", req.Tags)
-	parameter.AddToQuery(query, "lb_ids", req.LBIDs)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -5616,7 +5586,7 @@ func (s *ZonedAPI) DeleteFrontend(req *ZonedAPIDeleteFrontendRequest, opts ...sc
 	return nil
 }
 
-// ListRoutes: List all routes for a given frontend. The response is an array of routes, each one with a specified backend to direct to if a certain condition is matched (based on the value of the SNI field or HTTP Host header).
+// ListRoutes: List all routes for a given frontend. The response is an array of routes, each one  with a specified backend to direct to if a certain condition is matched (based on the value of the SNI field or HTTP Host header).
 func (s *ZonedAPI) ListRoutes(req *ZonedAPIListRoutesRequest, opts ...scw.RequestOption) (*ListRoutesResponse, error) {
 	var err error
 
@@ -6734,7 +6704,6 @@ func (s *API) ListLBs(req *ListLBsRequest, opts ...scw.RequestOption) (*ListLBsR
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
 	parameter.AddToQuery(query, "tags", req.Tags)
-	parameter.AddToQuery(query, "lb_ids", req.LBIDs)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")

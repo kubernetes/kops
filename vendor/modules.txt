@@ -987,8 +987,8 @@ github.com/sagikazarmark/locafero
 # github.com/sahilm/fuzzy v0.1.1
 ## explicit
 github.com/sahilm/fuzzy
-# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.37
-## explicit; go 1.25.0
+# github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36 => github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36
+## explicit; go 1.24.0
 github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1
 github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1
 github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1
@@ -2287,3 +2287,4 @@ sigs.k8s.io/structured-merge-diff/v6/value
 ## explicit; go 1.22
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/kyaml
+# github.com/scaleway/scaleway-sdk-go => github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36

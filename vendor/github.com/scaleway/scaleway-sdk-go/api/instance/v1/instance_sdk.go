@@ -1288,9 +1288,6 @@ type Volume struct {
 	// Name: volume name.
 	Name string `json:"name"`
 
-	// Deprecated: ExportURI: show the volume NBD export URI (deprecated, will always be empty).
-	ExportURI *string `json:"export_uri"`
-
 	// Size: volume disk size.
 	Size scw.Size `json:"size"`
 
@@ -1450,9 +1447,6 @@ type PrivateNIC struct {
 
 	// Zone: the zone in which the Private NIC is located.
 	Zone scw.Zone `json:"zone"`
-
-	// IpamIPIDs: the list of IPAM IPs associated with this private NIC.
-	IpamIPIDs []string `json:"ipam_ip_ids"`
 }
 
 // SecurityGroupSummary: security group summary.
@@ -1746,9 +1740,6 @@ type Server struct {
 
 	// EndOfService: true if the Instance type has reached end of service.
 	EndOfService bool `json:"end_of_service"`
-
-	// DNS: public DNS of the server.
-	DNS *string `json:"dns"`
 }
 
 // IP: ip.
@@ -1963,31 +1954,30 @@ type Snapshot struct {
 
 // Task: task.
 type Task struct {
-	// Deprecated: ID: unique ID of the task.
+	// ID: unique ID of the task.
 	ID string `json:"id"`
 
-	// Deprecated: Description: description of the task.
+	// Description: description of the task.
 	Description string `json:"description"`
 
-	// Deprecated: Progress: progress of the task in percent.
+	// Progress: progress of the task in percent.
 	Progress int32 `json:"progress"`
 
-	// Deprecated: StartedAt: task start date.
+	// StartedAt: task start date.
 	StartedAt *time.Time `json:"started_at"`
 
-	// Deprecated: TerminatedAt: task end date.
+	// TerminatedAt: task end date.
 	TerminatedAt *time.Time `json:"terminated_at"`
 
-	// Deprecated: Status: task status.
+	// Status: task status.
 	// Default value: pending
 	Status TaskStatus `json:"status"`
 
 	HrefFrom string `json:"href_from"`
 
-	// HrefResult: location of the resulting resource.
 	HrefResult string `json:"href_result"`
 
-	// Deprecated: Zone: zone in which the task is executed.
+	// Zone: zone in which the task is executed.
 	Zone scw.Zone `json:"zone"`
 }
 
@@ -2013,19 +2003,17 @@ type Dashboard struct {
 
 	VolumesLSSDCount uint32 `json:"volumes_l_ssd_count"`
 
+	// Deprecated
+	VolumesBSSDCount *uint32 `json:"volumes_b_ssd_count"`
+
 	VolumesLSSDTotalSize scw.Size `json:"volumes_l_ssd_total_size"`
+
+	// Deprecated
+	VolumesBSSDTotalSize *scw.Size `json:"volumes_b_ssd_total_size"`
 
 	PrivateNicsCount uint32 `json:"private_nics_count"`
 
 	PlacementGroupsCount uint32 `json:"placement_groups_count"`
-
-	VolumesScratchCount uint32 `json:"volumes_scratch_count"`
-
-	// Deprecated
-	VolumesBSSDCount *uint32 `json:"volumes_b_ssd_count"`
-
-	// Deprecated
-	VolumesBSSDTotalSize *scw.Size `json:"volumes_b_ssd_total_size"`
 }
 
 // PlacementGroupServer: placement group server.
@@ -2087,9 +2075,6 @@ type ServerType struct {
 
 	// ScratchStorageMaxSize: maximum available scratch storage.
 	ScratchStorageMaxSize *scw.Size `json:"scratch_storage_max_size"`
-
-	// ScratchStorageMaxVolumesCount: maximum supported number of scratch volumes.
-	ScratchStorageMaxVolumesCount uint32 `json:"scratch_storage_max_volumes_count"`
 
 	// BlockBandwidth: the maximum bandwidth allocated to block storage access (in bytes per second).
 	BlockBandwidth *uint64 `json:"block_bandwidth"`
@@ -4286,7 +4271,7 @@ func NewAPI(client *scw.Client) *API {
 }
 
 func (s *API) Zones() []scw.Zone {
-	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2, scw.ZonePlWaw3, scw.ZoneItMil1}
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2, scw.ZonePlWaw3}
 }
 
 // GetServerTypesAvailability: Get availability for all Instance types.
@@ -4663,7 +4648,7 @@ func (s *API) ListServerActions(req *ListServerActionsRequest, opts ...scw.Reque
 // * `poweroff`: Fully stop the Instance and release the hypervisor slot.
 // * `stop_in_place`: Stop the Instance, but keep the slot on the hypervisor.
 // * `reboot`: Stop the instance and restart it.
-// * `backup`: Create an image with all the volumes of an Instance.
+// * `backup`:  Create an image with all the volumes of an Instance.
 // * `terminate`: Delete the Instance along with its attached local volumes.
 // * `enable_routed_ip`: Migrate the Instance to the new network stack.
 //
