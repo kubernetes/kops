@@ -17,13 +17,12 @@ limitations under the License.
 package templater
 
 import (
-	"text/template"
-
 	"github.com/Masterminds/sprig/v3"
 	"github.com/blang/semver/v4"
 	"k8s.io/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/third_party/forked/text/template"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
