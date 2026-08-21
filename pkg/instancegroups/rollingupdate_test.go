@@ -1074,6 +1074,10 @@ type concurrentTest struct {
 	validationChan          chan bool
 	terminationChan         chan bool
 	detached                map[string]bool
+	// wakers tracks the delayThenWakeValidation goroutines so the test does not
+	// finish while one is still live. A t.Error from a goroutine that outlives
+	// its test panics the whole test binary rather than failing the test.
+	wakers sync.WaitGroup
 }
 
 func (c *concurrentTest) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
@@ -1156,6 +1160,7 @@ func (c *concurrentTest) TerminateInstances(ctx context.Context, input *ec2.Term
 				c.t.Error("timed out reading from terminationChan")
 			}
 			c.mutex.Lock()
+			c.wakers.Add(1)
 			go c.delayThenWakeValidation()
 		case 5, 3:
 			assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
@@ -1167,6 +1172,7 @@ func (c *concurrentTest) TerminateInstances(ctx context.Context, input *ec2.Term
 const postTerminationValidationDelay = 100 * time.Millisecond // NodeInterval plus some
 
 func (c *concurrentTest) delayThenWakeValidation() {
+	defer c.wakers.Done()
 	time.Sleep(postTerminationValidationDelay)
 	select {
 	case c.validationChan <- true:
@@ -1176,9 +1182,12 @@ func (c *concurrentTest) delayThenWakeValidation() {
 }
 
 func (c *concurrentTest) AssertComplete() {
+	c.wakers.Wait()
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	assert.Equal(c.t, 0, c.previousValidation, "last validation")
+	assert.Empty(c.t, c.terminationChan, "unconsumed termination token")
+	assert.Empty(c.t, c.validationChan, "unconsumed validation token")
 }
 
 func newConcurrentTest(t *testing.T, cloud *awsup.MockAWSCloud, numSurge int, allNeedUpdate bool) *concurrentTest {
@@ -1187,10 +1196,19 @@ func newConcurrentTest(t *testing.T, cloud *awsup.MockAWSCloud, numSurge int, al
 		t:                       t,
 		surge:                   numSurge,
 		terminationRequestsLeft: 6,
-		validationChan:          make(chan bool),
-		terminationChan:         make(chan bool),
-		detached:                map[string]bool{},
+		// Buffered: these channels are a wake-up mechanism between the Validate
+		// and TerminateInstances mocks, which do not arrive in a fixed order. On
+		// an unbuffered channel a non-blocking send lands in the default branch
+		// unless the peer is already parked in its receive, so whichever mock got
+		// there first would report a spurious "channel is full" and the other
+		// would then time out. With room for one token the handoff works in
+		// either order, and the default branch still catches a genuine
+		// double-signal.
+		validationChan:  make(chan bool, 1),
+		terminationChan: make(chan bool, 1),
+		detached:        map[string]bool{},
 	}
+	t.Cleanup(test.wakers.Wait)
 	if numSurge == 0 && allNeedUpdate {
 		test.terminationRequestsLeft = 7
 	}
