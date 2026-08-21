@@ -137,6 +137,10 @@ Each build directory contains the following hierarchy:
         ├── ip-rules.log       # ip rule list
         ├── ip-link.log        # ip -s link
         ├── netstat.log        # ss -s (socket statistics)
+        ├── bgp-protocols.log  # birdcl show protocols all (Calico only)
+        ├── bird.cfg           # confd-generated BIRD config (Calico only)
+        ├── bgp-sockets.log    # TCP sockets on port 179 (Calico only)
+        ├── bgp-conntrack.log  # conntrack entries for port 179 (Calico only)
         │
         │   # System state:
         ├── etchosts           # /etc/hosts

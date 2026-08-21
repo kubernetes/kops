@@ -250,6 +250,8 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 
 		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir, options.NodeDumpTimeout)
 
+		dumper.SetDumpBGP(cluster.Spec.Networking.Calico != nil)
+
 		// Karpenter nodes never get the cluster SSH key pair (their EC2NodeClass has no key-name
 		// field). When Karpenter is enabled, grant short-lived access via EC2 Instance Connect
 		// before connecting, using the public key matching --private-key. A no-op without the agent.
