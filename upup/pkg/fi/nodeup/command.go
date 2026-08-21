@@ -552,16 +552,19 @@ func modprobe(module string) error {
 // and used by some components to load its recommended modules.
 // TODO: Move to tasks architecture
 func loadKernelModules(context *model.NodeupModelContext, distribution distributions.Distribution) error {
+	var failed []string
 	if context.NodeupConfig.Networking.Kindnet != nil {
 		err := modprobe("nfnetlink_queue")
 		if err != nil {
 			klog.Warningf("error loading nfnetlink_queue module: %v", err)
+			failed = append(failed, "nfnetlink_queue")
 		}
 	} else {
 		err := modprobe("br_netfilter")
 		if err != nil {
 			// TODO: Return error in 1.11 (too risky for 1.10)
 			klog.Warningf("error loading br_netfilter module: %v", err)
+			failed = append(failed, "br_netfilter")
 		}
 	}
 	if distribution.ForceNftables() {
@@ -576,6 +579,23 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 		for _, mod := range []string{"nf_tables", "nf_conntrack", "ip_set"} {
 			if err := modprobe(mod); err != nil {
 				klog.Warningf("error loading %s module: %v", mod, err)
+				failed = append(failed, mod)
+			}
+		}
+		// A module that is missing rather than merely unloaded means the image
+		// never got kernel-modules-extra, which is where ip_set and br_netfilter
+		// live alongside nft_compat and the xt_* matches that iptables-nft
+		// autoloads. Without it every iptables-nft rule carrying an xt match
+		// fails and the masquerade and CNI chains are left silently empty.
+		if len(failed) > 0 {
+			if err := installKernelModulesExtra(); err != nil {
+				klog.Warningf("error installing kernel-modules-extra: %v", err)
+			} else {
+				for _, mod := range failed {
+					if err := modprobe(mod); err != nil {
+						klog.Warningf("error loading %s module after installing kernel-modules-extra: %v", mod, err)
+					}
+				}
 			}
 		}
 	} else {
@@ -591,6 +611,32 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 		}
 	}
 	// TODO: Add to /etc/modules-load.d/ ?
+	return nil
+}
+
+// installKernelModulesExtra installs the kernel-modules-extra package matching the
+// running kernel. The RHEL10 and Rocky10 images drop it from the iptables-nft
+// dependency chain, so nft_compat, the xt_* matches, ip_set and br_netfilter are
+// simply absent from a freshly booted node.
+//
+// The package is pinned to the running kernel release because an unpinned install
+// resolves to the newest build in the repo, whose modules land under a /lib/modules
+// directory we have not booted, leaving the running kernel just as empty.
+//
+// TODO: Move to tasks architecture along with loadKernelModules. It has to happen
+// here for now because the modprobes above run before any task does.
+func installKernelModulesExtra() error {
+	release, err := os.ReadFile("/proc/sys/kernel/osrelease")
+	if err != nil {
+		return fmt.Errorf("error reading kernel release: %w", err)
+	}
+
+	pkg := "kernel-modules-extra-" + strings.TrimSpace(string(release))
+	klog.Infof("Installing %s", pkg)
+	cmd := exec.Command("/usr/bin/dnf", "install", "-y", pkg)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("error installing %s (%v): %s", pkg, err, string(output))
+	}
 	return nil
 }
 
