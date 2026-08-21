@@ -122,7 +122,7 @@ spec:
         {{ if .Networking.Kindnet.BaselineAdminNetworkPolicies }}
         - --admin-network-policy={{ .Networking.Kindnet.BaselineAdminNetworkPolicies }}
         {{ end }}
-        - --dns-caching={{ WithDefaultBool .Networking.Kindnet.DNSCaching true }}
+        - --dns-caching={{ WithDefaultBool .Networking.Kindnet.DNSCaching false }}
         - --nat64={{ WithDefaultBool .Networking.Kindnet.NAT64 false }}
         - --fastpath-threshold={{ .Networking.Kindnet.FastPathThreshold }}
         {{- if .Networking.Kindnet.Masquerade }}
