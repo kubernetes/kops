@@ -57,17 +57,15 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
-	installContainerd := true
+	installContainerd := !b.usesOSContainerd()
 
 	// @check: neither flatcar nor containeros need provision containerd.service, just the containerd daemon options
 	switch b.Distribution {
 	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install containerd")
-		installContainerd = false
 		b.buildSystemdServiceOverrideFlatcar(c)
 	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install containerd")
-		installContainerd = false
 		b.buildSystemdServiceOverrideContainerOS(c)
 	}
 
@@ -473,18 +471,17 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderC
 	return nil
 }
 
-// buildContainerdConfig builds the containerd v3 schema config used for containerd >= 2.0.
+// buildContainerdConfig builds the containerd config used for containerd >= 2.0.
 // containerd 2.0 split io.containerd.grpc.v1.cri into io.containerd.cri.v1.runtime and io.containerd.cri.v1.images.
 // See https://github.com/containerd/containerd/blob/main/docs/cri/config.md
-// containerd 2.3 introduced config version 4, but 2.1 and 2.2 reject config versions above 3,
-// so we emit v3 as long as those releases are supported; 2.3+ migrates v3 on load without
-// affecting any of the fields set here.
+// Apart from ConfigAdditions, the emitted fields load identically under config versions 3
+// and 4; see containerdConfigVersion.
 // Callers must short-circuit ConfigOverride before calling this.
 func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	containerd := b.NodeupConfig.ContainerdConfig
 
 	config := tomlwriter.NewTree()
-	config.SetPath([]string{"version"}, int64(3))
+	config.SetPath([]string{"version"}, b.containerdConfigVersion())
 
 	if containerd.NRI != nil && (containerd.NRI.Enabled == nil || fi.ValueOf(containerd.NRI.Enabled)) {
 		config.SetPath([]string{"plugins", "io.containerd.nri.v1.nri", "disable"}, false)
@@ -526,17 +523,46 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	}
 
 	if err := applyConfigAdditions(config, containerd.ConfigAdditions); err != nil {
-		return "", fmt.Errorf("applying ConfigAdditions to v3 containerd config: %w", err)
+		return "", fmt.Errorf("applying ConfigAdditions to containerd config: %w", err)
 	}
 
 	return config.String(), nil
+}
+
+// usesOSContainerd reports whether kops only configures a distro-supplied containerd,
+// whose version spec.containerd.version does not identify.
+func (b *ContainerdBuilder) usesOSContainerd() bool {
+	switch b.Distribution {
+	case distributions.DistributionFlatcar, distributions.DistributionContainerOS:
+		return true
+	}
+	return false
+}
+
+// containerdConfigVersion returns the config version to declare in the generated config.toml:
+// 4 for containerd >= 2.3, otherwise 3.
+// Both bounds matter: containerd 2.1 and 2.2 reject version 4, while 2.3.0-2.3.4 refuse
+// drop-in configs (such as the NVIDIA container toolkit's) that declare a newer version
+// than the root config.
+func (b *ContainerdBuilder) containerdConfigVersion() int64 {
+	if b.usesOSContainerd() {
+		return 3
+	}
+	sv, err := semver.ParseTolerant(fi.ValueOf(b.NodeupConfig.ContainerdConfig.Version))
+	if err != nil {
+		return 3
+	}
+	if sv.GE(semver.Version{Major: 2, Minor: 3}) {
+		return 4
+	}
+	return 3
 }
 
 // applyConfigAdditions sets the user-provided ConfigAdditions on the toml tree.
 // Each key is parsed as a CSV record using '.' as the separator, so quoted dots inside
 // plugin names like `plugins."io.containerd.grpc.v1.cri".sandbox_image` survive the split.
 // Paths are written verbatim; the user is responsible for matching the schema version of
-// the configured containerd binary (v2 vs v3).
+// the configured containerd binary (v3 vs v4).
 // Keys are applied in sorted order so output is reproducible across runs.
 func applyConfigAdditions(config *tomlwriter.Tree, additions map[string]intstr.IntOrString) error {
 	keys := make([]string, 0, len(additions))

@@ -202,6 +202,38 @@ func TestContainerdConfig(t *testing.T) {
 	}
 }
 
+func TestContainerdConfigVersion(t *testing.T) {
+	grid := []struct {
+		version      *string
+		distribution distributions.Distribution
+		expected     int64
+	}{
+		{version: new("2.1.6"), distribution: distributions.DistributionUbuntu2604, expected: 3},
+		{version: new("2.2.4"), distribution: distributions.DistributionUbuntu2604, expected: 3},
+		{version: new("2.3.4"), distribution: distributions.DistributionUbuntu2604, expected: 4},
+		{version: new("2.3.4"), distribution: distributions.DistributionFlatcar, expected: 3},
+		{version: new("2.3.4"), distribution: distributions.DistributionContainerOS, expected: 3},
+		{version: nil, distribution: distributions.DistributionUbuntu2604, expected: 3},
+	}
+
+	for _, g := range grid {
+		b := &ContainerdBuilder{
+			NodeupModelContext: &NodeupModelContext{
+				NodeupConfig: &nodeup.Config{
+					ContainerdConfig: &kops.ContainerdConfig{
+						Version: g.version,
+					},
+				},
+			},
+		}
+		b.Distribution = g.distribution
+
+		if actual := b.containerdConfigVersion(); actual != g.expected {
+			t.Errorf("containerdConfigVersion for version %q on %v: got %d, expected %d", fi.ValueOf(g.version), g.distribution, actual, g.expected)
+		}
+	}
+}
+
 func TestContainerdConfigNRITimeouts(t *testing.T) {
 	b := &ContainerdBuilder{
 		NodeupModelContext: &NodeupModelContext{
