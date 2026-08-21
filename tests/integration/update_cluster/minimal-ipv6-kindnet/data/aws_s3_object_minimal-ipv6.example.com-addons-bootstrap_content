@@ -91,7 +91,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.32
     manifest: networking.kindnet/k8s-1.32.yaml
-    manifestHash: 6bb2eef717e9b77664f55e3029343bb375dba58595c5cbedbff2eaebae108e66
+    manifestHash: 20e995b07e4c5036da40d08b255fe1dae70d673e59c97e14322fa089c67a0888
     name: networking.kindnet
     needsRollingUpdate: all
     selector:
