@@ -1186,6 +1186,8 @@ func (c *concurrentTest) AssertComplete() {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	assert.Equal(c.t, 0, c.previousValidation, "last validation")
+	assert.Empty(c.t, c.terminationChan, "unconsumed termination token")
+	assert.Empty(c.t, c.validationChan, "unconsumed validation token")
 }
 
 func newConcurrentTest(t *testing.T, cloud *awsup.MockAWSCloud, numSurge int, allNeedUpdate bool) *concurrentTest {
@@ -1206,6 +1208,7 @@ func newConcurrentTest(t *testing.T, cloud *awsup.MockAWSCloud, numSurge int, al
 		terminationChan: make(chan bool, 1),
 		detached:        map[string]bool{},
 	}
+	t.Cleanup(test.wakers.Wait)
 	if numSurge == 0 && allNeedUpdate {
 		test.terminationRequestsLeft = 7
 	}
