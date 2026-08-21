@@ -52,9 +52,10 @@ func maskEC2NetUtilsUdevRules(c *fi.NodeupModelBuilderContext, dist distribution
 	}
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/etc/udev/rules.d/99-vpc-policy-routes.rules",
-		Contents: fi.NewStringResource(""),
-		Type:     nodetasks.FileType_File,
+		Path:          "/etc/udev/rules.d/99-vpc-policy-routes.rules",
+		Contents:      fi.NewStringResource(""),
+		Type:          nodetasks.FileType_File,
+		AfterPackages: true,
 		OnChangeExecute: [][]string{
 			// Reload udev rules so the empty mask file takes effect for future ENI attach events.
 			{"udevadm", "control", "--reload-rules"},
@@ -95,6 +96,7 @@ ManageForeignRoutingPolicyRules=no
 		Path:            "/usr/lib/systemd/networkd.conf.d/40-disable-manage-foreign-routes.conf",
 		Contents:        fi.NewStringResource(contents),
 		Type:            nodetasks.FileType_File,
+		AfterPackages:   true,
 		OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
 	})
 }
@@ -124,6 +126,7 @@ MACAddressPolicy=none
 		Path:            "/etc/systemd/network/99-default.link",
 		Contents:        fi.NewStringResource(contents),
 		Type:            nodetasks.FileType_File,
+		AfterPackages:   true,
 		OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
 	})
 }
@@ -173,6 +176,7 @@ Unmanaged=yes
 		Path:            "/etc/systemd/network/75-eni-secondary.network",
 		Contents:        fi.NewStringResource(contents),
 		Type:            nodetasks.FileType_File,
+		AfterPackages:   true,
 		OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
 	})
 	return nil

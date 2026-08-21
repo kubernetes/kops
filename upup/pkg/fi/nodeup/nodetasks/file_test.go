@@ -72,6 +72,18 @@ func TestFileDependencies(t *testing.T) {
 				Type:       FileType_File,
 			},
 		},
+		{
+			name: "afterPackages",
+			parent: &Package{
+				Name: "iptables",
+			},
+			child: &File{
+				AfterPackages: true,
+				Path:          childFileName,
+				Contents:      fi.NewStringResource("I depend on every package"),
+				Type:          FileType_File,
+			},
+		},
 	}
 
 	for _, g := range grid {
