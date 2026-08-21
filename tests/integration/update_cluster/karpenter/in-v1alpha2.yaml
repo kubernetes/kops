@@ -131,6 +131,21 @@ spec:
   image: ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
   role: Node
   maxSize: 20
+  # machineType is set so the generated NodePool demonstrates that instanceRequirements
+  # replaces the instance type requirement rather than being ANDed with it.
+  machineType: t2.medium
+  mixedInstancesPolicy:
+    instanceRequirements:
+      cpu:
+        min: "2"
+        max: "16"
+      memory:
+        min: "2Gi"
+        max: "64Gi"
+      excludedInstanceTypes:
+      - c3.*
+      - m3.*
+      - t2.nano
   subnets:
   - us-test-1a
 
