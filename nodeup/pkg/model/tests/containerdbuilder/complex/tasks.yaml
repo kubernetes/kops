@@ -45,7 +45,7 @@ path: /etc/containerd/config-cni.template
 type: file
 ---
 contents: |
-  version = 3
+  version = 4
 
   [plugins]
 
