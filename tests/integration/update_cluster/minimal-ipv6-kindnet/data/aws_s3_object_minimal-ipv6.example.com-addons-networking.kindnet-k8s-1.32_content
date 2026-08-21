@@ -106,7 +106,7 @@ spec:
         - /bin/kindnetd
         - --hostname-override=$(NODE_NAME)
         - --v=2
-        - --dns-caching=true
+        - --dns-caching=false
         - --nat64=false
         - --fastpath-threshold=0
         - --masquerading=false
