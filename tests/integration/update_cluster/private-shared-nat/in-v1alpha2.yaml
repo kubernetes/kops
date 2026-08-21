@@ -2,7 +2,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-12T04:13:14Z"
-  name: privatekopeio.example.com
+  name: private-shared-nat.example.com
 spec:
   api:
     loadBalancer:
@@ -12,7 +12,7 @@ spec:
   - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
-  configBase: memfs://clusters.example.com/privatekopeio.example.com
+  configBase: memfs://clusters.example.com/private-shared-nat.example.com
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -26,10 +26,10 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.32.0
-  masterPublicName: api.privatekopeio.example.com
+  masterPublicName: api.private-shared-nat.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kopeio: {}
+    kindnet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
@@ -61,7 +61,7 @@ metadata:
   creationTimestamp: "2016-12-12T04:13:15Z"
   name: master-us-test-1a
   labels:
-    kops.k8s.io/cluster: privatekopeio.example.com
+    kops.k8s.io/cluster: private-shared-nat.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
@@ -80,7 +80,7 @@ metadata:
   creationTimestamp: "2016-12-12T04:13:15Z"
   name: nodes
   labels:
-    kops.k8s.io/cluster: privatekopeio.example.com
+    kops.k8s.io/cluster: private-shared-nat.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
@@ -101,7 +101,7 @@ metadata:
   creationTimestamp: "2016-12-14T15:32:41Z"
   name: bastion
   labels:
-    kops.k8s.io/cluster: privatekopeio.example.com
+    kops.k8s.io/cluster: private-shared-nat.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404

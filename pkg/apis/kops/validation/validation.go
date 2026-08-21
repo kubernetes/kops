@@ -1262,9 +1262,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 	}
 
 	if v.Kopeio != nil {
-		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kopeio"), "Kopeio does not support IPv6"))
-		}
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("kopeio"), "support for Kopeio networking has been removed"))
 	}
 
 	// Nothing to validate for CNI
