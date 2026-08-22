@@ -550,6 +550,12 @@ func TestValidTaints(t *testing.T) {
 			},
 			expected: []string{"Duplicate value::spec.taints[1]"},
 		},
+		{
+			taints: []string{
+				"nvidia.com/gpu:ScheduleSometimes",
+			},
+			expected: []string{"Invalid value::spec.taints[0]"},
+		},
 	}
 
 	for _, g := range grid {
