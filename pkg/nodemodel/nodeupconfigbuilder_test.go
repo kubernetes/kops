@@ -17,10 +17,19 @@ limitations under the License.
 package nodemodel
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"math/big"
 	"reflect"
 	"testing"
+	"time"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestSelectControlPlaneIPs(t *testing.T) {
@@ -102,5 +111,92 @@ func TestBuildConfigServerOptionsUsesDNSNameByDefault(t *testing.T) {
 	}
 	if got, want := options.Servers, []string{"https://kops-controller.internal.cluster.k8s.local:3988/"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("Servers = %v, want %v", got, want)
+	}
+}
+
+func selfSignedTestCert(t *testing.T, commonName string) *pki.Certificate {
+	t.Helper()
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("generating test key: %v", err)
+	}
+	template := &x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: commonName},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().Add(10 * 365 * 24 * time.Hour),
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+		BasicConstraintsValid: true,
+		IsCA:                  true,
+	}
+	der, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	if err != nil {
+		t.Fatalf("creating test certificate: %v", err)
+	}
+	cert, err := x509.ParseCertificate(der)
+	if err != nil {
+		t.Fatalf("parsing test certificate: %v", err)
+	}
+	return &pki.Certificate{Certificate: cert}
+}
+
+// TestLoadCertificatesNeverEmitsBlankCAForPlaceholderKeyset is a regression test for
+// https://github.com/kubernetes/kops/issues/18680: an unresolved (not-yet-created)
+// keypair must never silently turn into an empty-string CA bundle, which is
+// indistinguishable from a real, dangerous blanking of an existing trust bundle.
+func TestLoadCertificatesNeverEmitsBlankCAForPlaceholderKeyset(t *testing.T) {
+	config := &nodeup.Config{
+		CAs:        map[string]string{},
+		KeypairIDs: map[string]string{},
+	}
+	keysets := map[string]*fi.Keyset{
+		fi.CertificateIDCA: {
+			Primary: &fi.KeysetItem{Id: fi.PlaceholderKeypairID},
+		},
+	}
+
+	if err := loadCertificates(keysets, fi.CertificateIDCA, config, true); err != nil {
+		t.Fatalf("unexpected error for a placeholder (not-yet-created) keypair: %v", err)
+	}
+
+	if got := config.CAs[fi.CertificateIDCA]; got == "" {
+		t.Errorf("CAs[%q] = %q; must not be blank for a placeholder keyset", fi.CertificateIDCA, got)
+	}
+	if got, want := config.CAs[fi.CertificateIDCA], fi.PlaceholderKeypairID; got != want {
+		t.Errorf("CAs[%q] = %q, want unambiguous placeholder %q", fi.CertificateIDCA, got, want)
+	}
+	if got, want := config.KeypairIDs[fi.CertificateIDCA], fi.PlaceholderKeypairID; got != want {
+		t.Errorf("KeypairIDs[%q] = %q, want %q", fi.CertificateIDCA, got, want)
+	}
+}
+
+// TestLoadCertificatesPreservesRealCertificate is the control case: a real,
+// resolved keyset must still round-trip its actual certificate bytes unchanged.
+func TestLoadCertificatesPreservesRealCertificate(t *testing.T) {
+	cert := selfSignedTestCert(t, "kubernetes-ca")
+
+	config := &nodeup.Config{
+		CAs:        map[string]string{},
+		KeypairIDs: map[string]string{},
+	}
+	keysets := map[string]*fi.Keyset{
+		fi.CertificateIDCA: {
+			Primary: &fi.KeysetItem{Id: "123", Certificate: cert},
+			Items: map[string]*fi.KeysetItem{
+				"123": {Id: "123", Certificate: cert},
+			},
+		},
+	}
+
+	if err := loadCertificates(keysets, fi.CertificateIDCA, config, true); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got := config.CAs[fi.CertificateIDCA]; got == "" || got == fi.PlaceholderKeypairID {
+		t.Errorf("CAs[%q] = %q, want the real certificate PEM", fi.CertificateIDCA, got)
+	}
+	if got, want := config.KeypairIDs[fi.CertificateIDCA], "123"; got != want {
+		t.Errorf("KeypairIDs[%q] = %q, want %q", fi.CertificateIDCA, got, want)
 	}
 }

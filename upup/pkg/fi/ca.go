@@ -47,6 +47,12 @@ const (
 	keysetFormatLatest = "v1alpha2"
 )
 
+// PlaceholderKeypairID is the sentinel Primary.Id used by a Keypair task's
+// Keyset() when the real certificate/key data has not yet been resolved by
+// Find() or Render() (e.g. a keypair that is only about to be created). It
+// must never be mistaken for a real keypair identifier.
+const PlaceholderKeypairID = "<< TO BE GENERATED >>"
+
 // Keyset is a parsed api.Keyset.
 type Keyset struct {
 	// LegacyFormat instructs a keypair task to convert a Legacy Keyset to the new Keyset API format.
@@ -56,6 +62,12 @@ type Keyset struct {
 	// Primary is the KeysetItem that is considered the "active" key.
 	// It is guaranteed to be non-nil, if there are any keypairs.
 	Primary *KeysetItem
+}
+
+// IsPlaceholder returns true if this Keyset is an unresolved placeholder
+// (see PlaceholderKeypairID) rather than a real result from the keystore.
+func (k *Keyset) IsPlaceholder() bool {
+	return k != nil && k.Primary != nil && k.Primary.Id == PlaceholderKeypairID && len(k.Items) == 0
 }
 
 // KeysetItem is a certificate/key pair in a Keyset.
