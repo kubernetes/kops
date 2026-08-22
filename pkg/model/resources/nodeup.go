@@ -91,7 +91,7 @@ json-field() {
 }
 {{- end }}
 
-# Retry a download until we get it. args: name, sha, urls
+# Retry a download until we get it. sha covers the uncompressed binary. args: name, sha, urls
 download-or-bust() {
   echo "== Downloading $1 with hash $2 from $3 =="
   local -r file="$1"
@@ -109,27 +109,20 @@ download-or-bust() {
 
   while true; do
     for url in "${urls[@]}"; do
+      echo "== Downloading ${url}.xz =="
 {{- if UseGCSDownload }}
       local response token
-      echo "== Downloading ${url} =="
       # Use the IP of the metadata server, to not depend on DNS this early in boot
       if ! response=$(curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 -H 'Metadata-Flavor: Google' "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token"); then
         echo "== Failed to get a service account token =="
       elif ! token=$(json-field "${response}" access_token); then
         echo "== Failed to parse the service account token =="
       # Pass the token through stdin so it does not appear in files, logs, or process arguments.
-      elif ! echo "Authorization: Bearer ${token}" | curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- "https://storage.googleapis.com/${url#gs://}"; then
-        echo "== Failed to download ${url} =="
-      elif ! validate-hash "${file}" "${hash}"; then
-        echo "== Failed to validate hash for ${url} =="
-        rm -f "${file}"
-      else
-        echo "== Downloaded ${url} with hash ${hash} =="
-        return 0
-      fi
+      elif ! echo "Authorization: Bearer ${token}" | curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- "https://storage.googleapis.com/${url#gs://}.xz"; then
+        echo "== Failed to download ${url}.xz =="
+        rm -f "${file}.xz"
 {{- else if UseBlobDownload }}
       local rest account response token
-      echo "== Downloading ${url} =="
       rest="${url#azureblob://}"
       account="${rest%%/*}"
       rest="${rest#*/}"
@@ -141,19 +134,12 @@ download-or-bust() {
         echo "== Failed to parse the managed identity token =="
       # Pass the token through stdin so it does not appear in files, logs, or process arguments.
       elif ! printf 'Authorization: Bearer %s\nx-ms-version: 2017-11-09\n' "${token}" |
-        curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- \
-          "https://${account}.blob.core.windows.net/${rest}"; then
-        echo "== Failed to download ${url} =="
-      elif ! validate-hash "${file}" "${hash}"; then
-        echo "== Failed to validate hash for ${url} =="
-        rm -f "${file}"
-      else
-        echo "== Downloaded ${url} with hash ${hash} =="
-        return 0
-      fi
+        curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- \
+          "https://${account}.blob.core.windows.net/${rest}.xz"; then
+        echo "== Failed to download ${url}.xz =="
+        rm -f "${file}.xz"
 {{- else if UseS3Download }}
       local imds_token profile creds access_key secret_key session_token
-      echo "== Downloading ${url} =="
       # Use the IP of the metadata server, to not depend on DNS this early in boot
       if ! imds_token=$(curl -s -f -X PUT --noproxy '*' --connect-timeout 2 --max-time 5 -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' "http://169.254.169.254/latest/api/token"); then
         echo "== Failed to get an IMDS token =="
@@ -165,39 +151,26 @@ download-or-bust() {
         echo "== Failed to parse the instance profile credentials =="
       # Pass credentials through stdin so they do not appear in files, logs, or process arguments.
       elif ! printf 'user "%s:%s"\nheader "x-amz-security-token: %s"\n' "${access_key}" "${secret_key}" "${session_token}" |
-        curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 \
+        curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 \
           --config - --aws-sigv4 "aws:amz:{{ S3Region }}:s3" \
-          "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}"; then
-        echo "== Failed to download ${url} =="
+          "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}.xz"; then
+        echo "== Failed to download ${url}.xz =="
+        rm -f "${file}.xz"
+{{- else }}
+      if ! curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}.xz"; then
+        echo "== Failed to download ${url}.xz =="
+        rm -f "${file}.xz"
+{{- end }}
+      elif ! xz -d "${file}.xz"; then
+        echo "== Failed to decompress ${url}.xz =="
+        rm -f "${file}" "${file}.xz"
       elif ! validate-hash "${file}" "${hash}"; then
-        echo "== Failed to validate hash for ${url} =="
+        echo "== Failed to validate decompressed hash for ${url}.xz =="
         rm -f "${file}"
       else
-        echo "== Downloaded ${url} with hash ${hash} =="
+        echo "== Downloaded ${url}.xz and validated decompressed hash ${hash} =="
         return 0
       fi
-{{- else }}
-      commands=(
-        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-      )
-      for cmd in "${commands[@]}"; do
-        echo "== Downloading ${url} using ${cmd} =="
-        if ! (${cmd} "${url}"); then
-          echo "== Failed to download ${url} using ${cmd} =="
-          continue
-        fi
-        if ! validate-hash "${file}" "${hash}"; then
-          echo "== Failed to validate hash for ${url} =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} with hash ${hash} =="
-          return 0
-        fi
-      done
-{{- end }}
     done
 
     echo "== All downloads failed; sleeping before retrying =="

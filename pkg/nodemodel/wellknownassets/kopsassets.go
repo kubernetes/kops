@@ -97,6 +97,13 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 	if err != nil {
 		return nil, err
 	}
+	// Nodes download the xz-compressed binary, so when assets are mirrored to a file
+	// repository, register it as well for `kops get assets --copy` to include it.
+	if assetsBuilder.HasFileRepository() {
+		if _, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup.xz", arch), assetsBuilder); err != nil {
+			return nil, err
+		}
+	}
 	nodeUpAsset[arch] = assets.BuildMirroredAsset(asset)
 	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, asset.DownloadURL.String())
 
