@@ -288,7 +288,6 @@ KubeletConfig:
   logLevel: 2
   nodeLabels:
     kops.k8s.io/kops-controller-pki: ""
-    node-role.kubernetes.io/api-server: ""
     node-role.kubernetes.io/control-plane: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
   podManifestPath: /etc/kubernetes/manifests
