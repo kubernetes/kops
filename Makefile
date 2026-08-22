@@ -614,6 +614,8 @@ version-dist-nodeup-amd64 version-dist-nodeup-arm64: version-dist-nodeup-%: node
 	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/$*/
 	cp -fp ${DIST}/linux/$*/nodeup ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup
 	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup.sha256
+	tools/xz.sh ${DIST}/linux/$*/nodeup ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup.xz
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup.xz ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup.xz.sha256
 
 .PHONY: dev-upload-nodeup
 dev-upload-nodeup: version-dist-nodeup

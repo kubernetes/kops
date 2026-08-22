@@ -34,14 +34,16 @@ declare -A BINARIES=(
   ["linux/arm64/nodeup"]="nodeup-linux-arm64"
 )
 
-# Binaries that only older kOps releases ship: source-path -> github-name.
+# Binaries that only some kOps releases ship: source-path -> github-name.
 # channels was dropped from releases in kOps 1.36 and protokube in kOps 1.37,
-# but the scripts still promote and validate older versions.
+# while nodeup.xz was added in kOps 1.37. The scripts still promote and validate older versions.
 declare -A OPTIONAL_BINARIES=(
   ["linux/amd64/channels"]="channels-linux-amd64"
   ["linux/arm64/channels"]="channels-linux-arm64"
   ["linux/amd64/protokube"]="protokube-linux-amd64"
   ["linux/arm64/protokube"]="protokube-linux-arm64"
+  ["linux/amd64/nodeup.xz"]="nodeup-linux-amd64.xz"
+  ["linux/arm64/nodeup.xz"]="nodeup-linux-arm64.xz"
 )
 
 # add_optional_binaries <version>: append the optional binaries that exist upstream for

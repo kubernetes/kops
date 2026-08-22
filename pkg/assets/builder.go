@@ -308,6 +308,11 @@ func (a *AssetBuilder) RemapImage(image string) string {
 	return image + "@" + digest
 }
 
+// HasFileRepository reports whether a file repository is configured for asset mirroring.
+func (a *AssetBuilder) HasFileRepository() bool {
+	return a.assetsLocation != nil && a.assetsLocation.FileRepository != nil
+}
+
 // RemapFile returns a remapped URL for the file, if AssetsLocation is defined.
 // It is returns in a FileAsset, alongside the SHA hash of the file.
 // The SHA hash is is knownHash is provided, and otherwise will be found first by

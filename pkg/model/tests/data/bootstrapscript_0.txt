@@ -46,7 +46,7 @@ function ensure-install-dir() {
   cd ${INSTALL_DIR}
 }
 
-# Retry a download until we get it. args: name, sha, urls
+# Retry a download until we get it. sha covers the uncompressed binary. args: name, sha, urls
 download-or-bust() {
   echo "== Downloading $1 with hash $2 from $3 =="
   local -r file="$1"
@@ -64,26 +64,20 @@ download-or-bust() {
 
   while true; do
     for url in "${urls[@]}"; do
-      commands=(
-        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-      )
-      for cmd in "${commands[@]}"; do
-        echo "== Downloading ${url} using ${cmd} =="
-        if ! (${cmd} "${url}"); then
-          echo "== Failed to download ${url} using ${cmd} =="
-          continue
-        fi
-        if ! validate-hash "${file}" "${hash}"; then
-          echo "== Failed to validate hash for ${url} =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} with hash ${hash} =="
-          return 0
-        fi
-      done
+      echo "== Downloading ${url}.xz =="
+      if ! curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}.xz"; then
+        echo "== Failed to download ${url}.xz =="
+        rm -f "${file}.xz"
+      elif ! xz -d "${file}.xz"; then
+        echo "== Failed to decompress ${url}.xz =="
+        rm -f "${file}" "${file}.xz"
+      elif ! validate-hash "${file}" "${hash}"; then
+        echo "== Failed to validate decompressed hash for ${url}.xz =="
+        rm -f "${file}"
+      else
+        echo "== Downloaded ${url}.xz and validated decompressed hash ${hash} =="
+        return 0
+      fi
     done
 
     echo "== All downloads failed; sleeping before retrying =="

@@ -63,7 +63,7 @@ func renderNodeUpScript(t *testing.T, script *NodeUpScript) string {
 func Test_GCSDownload(t *testing.T) {
 	// The authenticated GCS download is rendered only when the nodeup sources are gs:// URLs.
 	gcsMarker := "Authorization: Bearer"
-	standardMarker := "wget --compression=auto"
+	standardMarker := `--retry-delay 10 "${url}.xz"`
 
 	for _, tc := range []struct {
 		name      string
@@ -155,7 +155,7 @@ func TestEscapeS3Location(t *testing.T) {
 
 func Test_S3Download(t *testing.T) {
 	s3Marker := "--aws-sigv4"
-	standardMarker := "wget --compression=auto"
+	standardMarker := `--retry-delay 10 "${url}.xz"`
 
 	for _, tc := range []struct {
 		name           string
@@ -285,7 +285,7 @@ func TestEscapeAzureBlobLocation(t *testing.T) {
 
 func Test_AzureBlobDownload(t *testing.T) {
 	azureBlobMarker := "blob.core.windows.net"
-	standardMarker := "wget --compression=auto"
+	standardMarker := `--retry-delay 10 "${url}.xz"`
 
 	for _, tc := range []struct {
 		name            string
