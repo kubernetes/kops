@@ -147,6 +147,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 		if b.NetworkingIsCalico() {
 			t.Allowed = append(t.Allowed, "ipip")
+			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.BGP))
 		}
 		if b.NetworkingIsCilium() {
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.VxlanUDP))

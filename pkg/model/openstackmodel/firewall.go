@@ -518,7 +518,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.CloudupModelBuilderContext, sgM
 	}
 
 	if b.Cluster.Spec.Networking.Calico != nil {
-		tcpPorts = append(tcpPorts, 179)
+		tcpPorts = append(tcpPorts, wellknownports.BGP)
 		protocols = append(protocols, ProtocolIPEncap)
 	}
 
