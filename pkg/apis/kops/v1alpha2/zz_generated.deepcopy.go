@@ -799,6 +799,16 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.AWSBinariesLocation != nil {
+		in, out := &in.AWSBinariesLocation, &out.AWSBinariesLocation
+		*out = new(string)
+		**out = **in
+	}
+	if in.GCEBinariesLocation != nil {
+		in, out := &in.GCEBinariesLocation, &out.GCEBinariesLocation
+		*out = new(string)
+		**out = **in
+	}
 	if in.DisableSecurityGroupIngress != nil {
 		in, out := &in.DisableSecurityGroupIngress, &out.DisableSecurityGroupIngress
 		*out = new(bool)

@@ -2315,6 +2315,8 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	// INFO: in.NodeIPFamilies opted out of conversion generation
 	// INFO: in.GCEServiceAccount opted out of conversion generation
 	// INFO: in.GCEUseStartupScript opted out of conversion generation
+	// INFO: in.AWSBinariesLocation opted out of conversion generation
+	// INFO: in.GCEBinariesLocation opted out of conversion generation
 	// INFO: in.DisableSecurityGroupIngress opted out of conversion generation
 	// INFO: in.ElbSecurityGroup opted out of conversion generation
 	// INFO: in.NLBSecurityGroupMode opted out of conversion generation

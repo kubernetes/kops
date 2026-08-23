@@ -208,6 +208,18 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			}
 			out.CloudProvider.GCE.UseStartupScript = in.CloudConfig.GCEUseStartupScript
 		}
+		if in.CloudConfig.AWSBinariesLocation != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "awsBinariesLocation"), "AWS binaries location supports only AWS")
+			}
+			out.CloudProvider.AWS.BinariesLocation = in.CloudConfig.AWSBinariesLocation
+		}
+		if in.CloudConfig.GCEBinariesLocation != nil {
+			if out.CloudProvider.GCE == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "gceBinariesLocation"), "GCE binaries location supports only GCE")
+			}
+			out.CloudProvider.GCE.BinariesLocation = in.CloudConfig.GCEBinariesLocation
+		}
 		if in.CloudConfig.DisableSecurityGroupIngress != nil {
 			if out.CloudProvider.AWS == nil {
 				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "disableSecurityGroupIngress"), "disableSecurityGroupIngress supports only AWS")
@@ -477,6 +489,12 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			val := *aws.UseIPBasedNodeNames
 			out.CloudConfig.UseIPBasedNodeNames = &val
 		}
+		if aws.BinariesLocation != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.AWSBinariesLocation = aws.BinariesLocation
+		}
 		if aws.EBSCSIDriver != nil {
 			if out.CloudConfig == nil {
 				out.CloudConfig = &CloudConfiguration{}
@@ -586,6 +604,12 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 				out.CloudConfig = &CloudConfiguration{}
 			}
 			out.CloudConfig.GCEUseStartupScript = gce.UseStartupScript
+		}
+		if gce.BinariesLocation != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.GCEBinariesLocation = gce.BinariesLocation
 		}
 		if gce.PDCSIDriver != nil {
 			if out.CloudConfig == nil {
