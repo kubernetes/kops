@@ -35,6 +35,7 @@ import (
 const (
 	defaultAWSNetworkCIDR    = "172.20.0.0/16"
 	defaultAzureNetworkCIDR  = "10.0.0.0/16"
+	defaultLinodeNetworkCIDR = "10.0.0.0/16"
 	defaultNonMasqueradeCIDR = "100.64.0.0/10"
 )
 
@@ -120,6 +121,10 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 		}
 	}
 
+	if cloud.ProviderID() == kops.CloudProviderLinode && c.Spec.Networking.NetworkCIDR == "" {
+		c.Spec.Networking.NetworkCIDR = defaultLinodeNetworkCIDR
+	}
+
 	if c.Spec.Networking.NonMasqueradeCIDR == "" {
 		c.Spec.Networking.NonMasqueradeCIDR = defaultNonMasqueradeCIDR
 	}
@@ -129,9 +134,9 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 		c.Spec.API.PublicName = "api." + c.ObjectMeta.Name
 	}
 
-	// We only assign subnet CIDRs on AWS, OpenStack, and Azure.
+	// We only assign subnet CIDRs on AWS, OpenStack, Azure, and Akamai (Linode).
 	pd := cloud.ProviderID()
-	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderAzure {
+	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderAzure || pd == kops.CloudProviderLinode {
 		// TODO: Use vpcInfo
 		err := assignCIDRsToSubnets(c, cloud)
 		if err != nil {
