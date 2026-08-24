@@ -19,8 +19,39 @@ package cloudup
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
+	"k8s.io/kops/util/pkg/vfs"
 )
+
+func TestPerformAssignmentsAssignsLinodeSubnetCIDRs(t *testing.T) {
+	cluster := &kops.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "example.k8s.local"},
+		Spec: kops.ClusterSpec{
+			KubernetesVersion: "1.36.0",
+			CloudProvider:     kops.CloudProviderSpec{Linode: &kops.LinodeSpec{}},
+			Networking: kops.NetworkingSpec{Subnets: []kops.ClusterSubnetSpec{
+				{Name: "us-ord", Region: "us-ord", Zone: "us-ord", Type: kops.SubnetTypePrivate},
+				{Name: "utility-us-ord", Region: "us-ord", Zone: "us-ord", Type: kops.SubnetTypeUtility},
+			}},
+		},
+	}
+
+	if err := PerformAssignments(cluster, vfs.NewTestingVFSContext(), &linode.MockLinodeCloud{}); err != nil {
+		t.Fatalf("PerformAssignments returned error: %v", err)
+	}
+
+	if got, want := cluster.Spec.Networking.NetworkCIDR, defaultLinodeNetworkCIDR; got != want {
+		t.Fatalf("unexpected Linode network CIDR: got %q, want %q", got, want)
+	}
+	if got, want := cluster.Spec.Networking.Subnets[0].CIDR, "10.0.128.0/17"; got != want {
+		t.Fatalf("unexpected private subnet CIDR: got %q, want %q", got, want)
+	}
+	if got, want := cluster.Spec.Networking.Subnets[1].CIDR, "10.0.0.0/20"; got != want {
+		t.Fatalf("unexpected utility subnet CIDR: got %q, want %q", got, want)
+	}
+}
 
 func TestPopulateClusterSpec_Proxy(t *testing.T) {
 	_, c := buildMinimalCluster()
