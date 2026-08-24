@@ -26,6 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
 	bootstrapapi "k8s.io/kops/clusterapi/bootstrap/kops/api/v1beta1"
@@ -226,7 +227,13 @@ func main() {
 			klog.Fatalf("server verifiers not provided")
 		}
 
-		uncachedClient, err := client.New(mgr.GetConfig(), client.Options{
+		// Every /bootstrap request does one uncached single-key Node GET, and nodes
+		// retry until they join, so offered load scales with node count. Rely on API
+		// priority and fairness.
+		bootstrapConfig := rest.CopyConfig(mgr.GetConfig())
+		bootstrapConfig.QPS = -1
+
+		uncachedClient, err := client.New(bootstrapConfig, client.Options{
 			Scheme: mgr.GetScheme(),
 			Mapper: mgr.GetRESTMapper(),
 		})
