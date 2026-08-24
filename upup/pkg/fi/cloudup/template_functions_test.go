@@ -18,6 +18,7 @@ package cloudup
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -25,6 +26,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gcemock "k8s.io/kops/cloudmock/gce"
+	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/third_party/forked/text/template"
@@ -33,6 +35,33 @@ import (
 )
 
 var _ func(*TemplateFunctions, stdtemplate.FuncMap, fi.SecretStore) error = (*TemplateFunctions).AddTo
+
+func TestTemplateFunctionsKopsControllerConfigLinode(t *testing.T) {
+	cluster := &kops.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "linode.example.com"},
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				Linode: &kops.LinodeSpec{},
+			},
+			KubeProxy: &kops.KubeProxyConfig{},
+		},
+	}
+	tf := &TemplateFunctions{}
+	tf.Cluster = cluster
+
+	configJSON, err := tf.KopsControllerConfig()
+	if err != nil {
+		t.Fatalf("KopsControllerConfig() error = %v", err)
+	}
+
+	config := &kopscontrollerconfig.Options{}
+	if err := json.Unmarshal([]byte(configJSON), config); err != nil {
+		t.Fatalf("unmarshal config: %v", err)
+	}
+	if config.Server == nil || config.Server.Provider.Linode == nil {
+		t.Fatalf("Linode verifier configuration was not generated: %s", configJSON)
+	}
+}
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 	tests := []struct {
