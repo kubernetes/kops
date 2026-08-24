@@ -73,6 +73,7 @@ import (
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack/openstackcloudconfig"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -914,6 +915,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			config.Server.Provider.Azure = &azure.AzureVerifierOptions{
 				ClusterName: tf.ClusterName(),
 			}
+
+		case kops.CloudProviderLinode:
+			config.Server.Provider.Linode = &linode.LinodeVerifierOptions{}
 
 		case kops.CloudProviderMetal:
 			// Use crypto public/private keys for Metal
