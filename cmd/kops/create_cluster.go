@@ -1083,7 +1083,6 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 		if !options.IPv6 {
 			completions = append(completions,
 				"kubenet",
-				"kopeio",
 				"flannel",
 				"kube-router",
 			)

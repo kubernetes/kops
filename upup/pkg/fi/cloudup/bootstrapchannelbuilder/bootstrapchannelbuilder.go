@@ -80,7 +80,7 @@ type AddonTemplateRenderer interface {
 //
 // TODO: Some way to test/enforce this?
 //
-// TODO: Create "empty" configurations for others, so we can delete e.g. the kopeio configuration
+// TODO: Create "empty" configurations for others, so we can delete e.g. the flannel configuration
 // if we switch to kubenet?
 //
 // TODO: Create configuration object for cni providers (maybe create it but orphan it)?
@@ -945,29 +945,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				})
 				addon.BuildPrune = true
 			}
-		}
-	}
-
-	if b.Cluster.Spec.Networking.Kopeio != nil && !featureflag.UseAddonOperators.Enabled() {
-		key := "networking.kope.io"
-		useBuiltin := !b.hasExternalAddon(key)
-
-		if !useBuiltin {
-			klog.Infof("Found kopeio-networking-agent in addons; won't use builtin")
-		}
-
-		if useBuiltin {
-			location := key + "/k8s-1.12.yaml"
-			id := "k8s-1.12"
-
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     new(key),
-				Selector: networkingSelector(),
-				Manifest: new(location),
-				Id:       id,
-			})
-
-			addon.BuildPrune = true
 		}
 	}
 
