@@ -300,11 +300,19 @@ header comment of their `helm-values.yaml`. A couple of `regenerate.sh` scripts 
 output — read the script before assuming it is a plain `kustomize build`.
 
 **Vendored addons** carry the upstream URL in a comment on the first few lines of the template,
-usually with the release tag embedded in the URL. **Bump the tag in that comment when you bump the
-addon** — it is the only record of the source revision.
+usually with the release tag embedded in the URL. That header records **which upstream revision the
+manifest body was derived from**, and it is the only record of it.
 
-> **These header comments are frequently stale**, sometimes by many minor versions. Read the
-> `image:` line for the current version, not the header — then fix the header.
+The header and the shipped `image:` tag are meant to stay in agreement, because bumping a vendored
+addon means re-deriving the manifest from the new upstream release and moving the header with it.
+
+> **If the header and the image tag disagree, the manifest has drifted** — someone bumped the image
+> without re-deriving the body, so it may be missing upstream changes to RBAC, flags, probes, or
+> resource definitions. Treat that as a bug to report or fix, not as a stale comment.
+>
+> **Never resolve the disagreement by editing the header to match the image.** That asserts a
+> re-derivation that never happened and destroys the only record of what the body corresponds to.
+> Re-derive the manifest, then move the header.
 
 Some addons have **no upstream pointer at all**; infer the source from the image registry and tag.
 
@@ -317,8 +325,11 @@ Some addons have **no upstream pointer at all**; infer the source from the image
      `image.tag`. These are independent fields; both must move.
    - Pattern B/C → every `image:` line **and** every `app.kubernetes.io/version:` label.
 3. Refresh the manifest body: `./regenerate.sh`, or the `helm template` command from
-   `helm-values.yaml`, or re-download the upstream YAML and re-apply the kOps deltas by hand.
-4. Update the upstream-source URL comment at the top of the template.
+   `helm-values.yaml`, or re-download the upstream YAML at the new tag and re-apply the kOps deltas
+   by hand. Do not skip this and change only the image tag — that is what causes the drift described
+   above.
+4. Update the upstream-source URL comment at the top of the template to the tag you just derived
+   from.
 5. `./hack/update-expected.sh`, and `git rm` any orphaned golden file.
 6. `make test` (or at minimum `go test ./cmd/kops/... ./upup/pkg/fi/cloudup/...`).
 
