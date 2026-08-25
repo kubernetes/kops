@@ -42,7 +42,8 @@ endif
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
 CODEGEN_VERSION=v0.36.3
 
-KO=go run github.com/google/ko@v0.18.0
+KO_VERSION=v0.18.0
+KO=go run github.com/google/ko@$(KO_VERSION)
 
 UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
 
