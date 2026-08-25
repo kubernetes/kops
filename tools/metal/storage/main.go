@@ -26,9 +26,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore"
-	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore/fsobjectstore"
-	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/s3model"
+	"github.com/kubernetes/kops/tools/metal/storage/pkg/objectstore"
+	"github.com/kubernetes/kops/tools/metal/storage/pkg/objectstore/fsobjectstore"
+	"github.com/kubernetes/kops/tools/metal/storage/pkg/s3model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"

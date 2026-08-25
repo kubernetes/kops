@@ -1,4 +1,4 @@
-module github.com/kubernetes/kops/tools/metal/dhcp
+module github.com/kubernetes/kops/tools/metal/storage
 
 go 1.26.6
 

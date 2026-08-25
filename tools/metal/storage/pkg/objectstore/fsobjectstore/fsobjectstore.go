@@ -31,7 +31,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore"
+	"github.com/kubernetes/kops/tools/metal/storage/pkg/objectstore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
