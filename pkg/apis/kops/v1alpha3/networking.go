@@ -293,6 +293,16 @@ type KuberouterNetworkingSpec struct {
 	// controller; the service proxy and router controllers are unchanged.
 	// Default: false
 	UseNFTablesForNetpol *bool `json:"useNFTablesForNetpol,omitempty"`
+	// ExternalIPRanges are the CIDRs from which Service externalIPs are accepted.
+	// Setting this or LoadBalancerIPRanges turns on kube-router's strict external
+	// IP validation, which drops any address outside the configured ranges.
+	// Leaving both empty keeps strict validation off.
+	ExternalIPRanges []string `json:"externalIPRanges,omitempty"`
+	// LoadBalancerIPRanges are the CIDRs from which Service loadBalancerIPs are
+	// accepted. Setting this or ExternalIPRanges turns on kube-router's strict
+	// external IP validation, which drops any address outside the configured
+	// ranges. Leaving both empty keeps strict validation off.
+	LoadBalancerIPRanges []string `json:"loadBalancerIPRanges,omitempty"`
 }
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking

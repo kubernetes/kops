@@ -4738,6 +4738,16 @@ func (in *KuberouterNetworkingSpec) DeepCopyInto(out *KuberouterNetworkingSpec) 
 		*out = new(bool)
 		**out = **in
 	}
+	if in.ExternalIPRanges != nil {
+		in, out := &in.ExternalIPRanges, &out.ExternalIPRanges
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.LoadBalancerIPRanges != nil {
+		in, out := &in.LoadBalancerIPRanges, &out.LoadBalancerIPRanges
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

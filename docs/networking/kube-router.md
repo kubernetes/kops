@@ -33,3 +33,21 @@ spec:
 ```
 
 This only affects the network policy controller; the service proxy and the router controller keep their existing implementations. Upstream considers the nftables backend [experimental](https://github.com/cloudnativelabs/kube-router/blob/master/docs/nftables.md), with no benchmarks against the iptables implementation, so it is not recommended for production clusters yet.
+
+### Restricting externalIPs and loadBalancerIPs
+
+Since v2.8.0 kube-router defaults `--strict-external-ip-validation` to `true`, which makes it drop every `externalIP` and `loadBalancerIP` that falls outside an explicitly configured range. Because an unset range means "accept nothing" rather than "accept everything", kOps leaves strict validation off unless you tell it which CIDRs to trust:
+
+```yaml
+spec:
+  networking:
+    kubeRouter:
+      externalIPRanges:
+      - 192.0.2.0/24
+      loadBalancerIPRanges:
+      - 198.51.100.0/24
+```
+
+Setting either field turns strict validation on, so anything outside the ranges you list stops being programmed into IPVS and stops being advertised over BGP. Leaving both empty keeps the current behavior, where every address is accepted. Both fields take a list of CIDRs, and neither may overlap `spec.networking.serviceClusterIPRange`, since kube-router rejects those at runtime anyway.
+
+Two side effects are worth knowing about. `externalIPRanges` also feeds the network policy controller's firewall rules, which was the flag's original purpose upstream, so it does a little more than filter the service proxy. And `loadBalancerIPRanges` does **not** turn on kube-router's load balancer IPAM - that is gated separately on `--run-loadbalancer`, which kOps does not enable.

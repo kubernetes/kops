@@ -1120,7 +1120,6 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 }
 
 func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints) field.ErrorList {
-	c := &cluster.Spec
 	allErrs := field.ErrorList{}
 
 	var networkCIDRs []*net.IPNet
@@ -1286,13 +1285,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 	}
 
 	if v.KubeRouter != nil {
-		if c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "kube-router requires kubeProxy to be disabled"))
-		}
-
-		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "kube-router does not support IPv6"))
-		}
+		allErrs = append(allErrs, validateNetworkingKubeRouter(cluster, v.KubeRouter, fldPath.Child("kubeRouter"), serviceClusterIPRange)...)
 	}
 
 	if v.Romana != nil {
@@ -1495,6 +1488,73 @@ func validateNetworkingKindnet(cluster *kops.Cluster, v *kops.KindnetNetworkingS
 			}
 		}
 	}
+	return allErrs
+}
+
+func validateNetworkingKubeRouter(cluster *kops.Cluster, v *kops.KuberouterNetworkingSpec, fldPath *field.Path, serviceClusterIPRange *net.IPNet) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	c := &cluster.Spec
+	if c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "kube-router requires kubeProxy to be disabled"))
+	}
+
+	// kube-router itself has supported IPv6 since v2.0.0, but we haven't validated it
+	// against an IPv6-only kOps cluster yet, so the restriction stays for now
+	if c.IsIPv6Only() {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "kube-router does not support IPv6"))
+	}
+
+	allErrs = append(allErrs, validateKubeRouterIPRanges(v.ExternalIPRanges, fldPath.Child("externalIPRanges"), serviceClusterIPRange, c.IsIPv6Only())...)
+	allErrs = append(allErrs, validateKubeRouterIPRanges(v.LoadBalancerIPRanges, fldPath.Child("loadBalancerIPRanges"), serviceClusterIPRange, c.IsIPv6Only())...)
+
+	return allErrs
+}
+
+// validateKubeRouterIPRanges checks the CIDR lists that feed kube-router's strict external IP
+// validation. allowIPv6 tracks the cluster's single stack, so enabling IPv6-only support later
+// widens the family check rather than rewriting it.
+func validateKubeRouterIPRanges(ranges []string, fldPath *field.Path, serviceClusterIPRange *net.IPNet, allowIPv6 bool) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	for i, cidr := range ranges {
+		fieldPath := fldPath.Index(i)
+
+		// We hand kube-router the string the user wrote, but net.ParseCIDR quietly folds
+		// IPv4-mapped IPv6 like "::ffff:192.0.2.0/120" into a plain IPv4 network, so
+		// validating the normalized form would tell us nothing about what kube-router
+		// actually receives. Reject the ambiguous spelling instead of forwarding it.
+		if ip, ipNet, err := net.ParseCIDR(cidr); err == nil && strings.Contains(cidr, ":") && ip.To4() != nil {
+			detail := "IPv4-mapped IPv6 ranges are ambiguous, use plain IPv4 notation"
+			if ipNet.IP.To4() != nil {
+				detail = fmt.Sprintf("IPv4-mapped IPv6 ranges are ambiguous (did you mean %q)", ipNet.String())
+			}
+			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
+			continue
+		}
+
+		parsed, errs := parseCIDR(fieldPath, cidr)
+		allErrs = append(allErrs, errs...)
+		if parsed == nil {
+			continue
+		}
+
+		if isIPv6 := parsed.IP.To4() == nil; isIPv6 != allowIPv6 {
+			rangeFamily, clusterFamily := "IPv4", "IPv6-only"
+			if isIPv6 {
+				rangeFamily, clusterFamily = "IPv6", "IPv4"
+			}
+			allErrs = append(allErrs, field.Forbidden(fieldPath, fmt.Sprintf("%q is an %s range, but this is an %s cluster", cidr, rangeFamily, clusterFamily)))
+			continue
+		}
+
+		// kube-router drops externalIPs that land inside the service CIDR anyway, so failing
+		// here beats silently losing the whole range at runtime
+		if serviceClusterIPRange != nil && subnet.Overlap(parsed, serviceClusterIPRange) {
+			allErrs = append(allErrs, field.Forbidden(fieldPath, fmt.Sprintf("%q must not overlap serviceClusterIPRange %q", cidr, serviceClusterIPRange)))
+		}
+	}
+
 	return allErrs
 }
 
