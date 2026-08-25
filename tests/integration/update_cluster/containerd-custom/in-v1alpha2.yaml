@@ -18,8 +18,9 @@ spec:
       - https://registry-1.docker.io
       "*":
       - http://HostIP2:Port2
+    version: 2.3.4
     packages:
-      urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
+      urlAmd64: https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
   etcdClusters:
   - etcdMembers:

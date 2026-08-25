@@ -82,12 +82,60 @@ imds-get() {
 }
 {{- end }}
 
-{{- if or UseGCSDownload UseS3Download UseBlobDownload }}
+{{- if or UseGCSDownload UseS3Download UseBlobDownload UseOCIDownload }}
 
 # Extract a string field from a JSON object. args: json, field
 json-field() {
   local pattern="\"$2\"[[:space:]]*:[[:space:]]*\"([^\"]+)\""
   [[ $1 =~ $pattern ]] && printf '%s' "${BASH_REMATCH[1]}"
+}
+{{- end }}
+
+{{- if UseOCIDownload }}
+
+# Download an OCI blob, getting an anonymous pull token if required. args: file, blob, repository
+oci-download() {
+  local -r file="$1"
+  local -r blob="$2"
+  local -r repository="$3"
+  local headers challenge realm service response token
+  local -a token_args
+
+  if headers=$(curl -fsSL -D - -o "${file}" --proto '=https' --proto-redir '=https' --connect-timeout 20 --retry 6 --retry-delay 10 "${blob}"); then
+    return 0
+  fi
+
+  challenge=$(printf '%s\n' "${headers}" | tr -d '\r' | sed -n 's/^[Ww][Ww][Ww]-[Aa]uthenticate:[[:space:]]*//p' | sed -n 's/.*[Bb][Ee][Aa][Rr][Ee][Rr][[:space:]][[:space:]]*//p' | head -n 1)
+  realm=""
+  service=""
+  if [[ "${challenge}" =~ (^|,[[:space:]]*)[Rr][Ee][Aa][Ll][Mm][[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+    realm="${BASH_REMATCH[2]}"
+  fi
+  if [[ "${challenge}" =~ (^|,[[:space:]]*)[Ss][Ee][Rr][Vv][Ii][Cc][Ee][[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+    service="${BASH_REMATCH[2]}"
+  fi
+  if [[ -z "${realm}" || "${realm}" != https://* ]]; then
+    echo "== No Bearer challenge with an https realm for ${blob} =="
+    return 1
+  fi
+  echo "== Retrying ${blob} with a registry pull token =="
+
+  token_args=(--data-urlencode "scope=repository:${repository}:pull")
+  if [[ -n "${service}" ]]; then
+    token_args+=(--data-urlencode "service=${service}")
+  fi
+  # Timeouts only guard against stalls; retries are left to the outer loop.
+  response=$(curl -fsS -L --get "${token_args[@]}" --proto '=https' --proto-redir '=https' --connect-timeout 5 --max-time 10 "${realm}") || return 1
+  token=""
+  if ! token=$(json-field "${response}" token); then
+    token=$(json-field "${response}" access_token) || true
+  fi
+  if [[ -z "${token}" ]]; then
+    echo "== Failed to parse the registry pull token =="
+    return 1
+  fi
+  # Pass the token through stdin so it does not appear in files, logs, or process arguments.
+  printf 'Authorization: Bearer %s\n' "${token}" | curl -fsSL -o "${file}" -H @- --proto '=https' --proto-redir '=https' --connect-timeout 20 --retry 6 --retry-delay 10 "${blob}"
 }
 {{- end }}
 
@@ -147,6 +195,16 @@ download-or-bust() {
         curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 \
           --config - --aws-sigv4 "aws:amz:{{ S3Region }}:s3" \
           "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}"; then
+        echo "== Failed to download ${url} =="
+        rm -f "${file}.xz"
+{{- else if UseOCIDownload }}
+      local rest repository blob
+      rest="${url#oci://}"
+      repository="${rest#*/}"
+      repository="${repository%:*}"
+      # The hash is also the blob address; changing what it covers means re-staging repositories.
+      blob="https://${rest%%/*}/v2/${repository}/blobs/sha256:${hash}"
+      if ! oci-download "${file}.xz" "${blob}" "${repository}"; then
         echo "== Failed to download ${url} =="
         rm -f "${file}.xz"
 {{- else }}
@@ -376,6 +434,7 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 		"UseGCSDownload":  b.useGCSDownload,
 		"UseS3Download":   b.useS3Download,
 		"UseBlobDownload": b.useBlobDownload,
+		"UseOCIDownload":  b.useOCIDownload,
 		"S3Region":        func() string { return b.S3Region },
 	}
 
@@ -412,6 +471,10 @@ func (b *NodeUpScript) useS3Download() bool {
 // Azure Blob downloads require a managed identity on the instance.
 func (b *NodeUpScript) useBlobDownload() bool {
 	return b.CloudProvider == string(kops.CloudProviderAzure) && b.firstLocationWithScheme("azureblob://") != ""
+}
+
+func (b *NodeUpScript) useOCIDownload() bool {
+	return b.firstLocationWithScheme("oci://") != ""
 }
 
 // ResolveS3Region resolves the bucket region because SigV4 requires it but s3:// URLs omit it.

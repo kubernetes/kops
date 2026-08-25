@@ -45,6 +45,7 @@ func FindRuncAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 
 	canonicalURL := ""
 	knownHash := ""
+	version := fi.ValueOf(runc.Version)
 
 	if runc.Packages != nil {
 		if arch == architectures.ArchitectureAmd64 && runc.Packages.UrlAmd64 != nil && runc.Packages.HashAmd64 != nil {
@@ -58,7 +59,6 @@ func FindRuncAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 	}
 
 	if canonicalURL == "" {
-		version := fi.ValueOf(runc.Version)
 		if version == "" {
 			return nil, fmt.Errorf("unable to find runc version")
 		}
@@ -69,7 +69,11 @@ func FindRuncAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 		canonicalURL = u
 	}
 
-	return buildFileAsset(assetBuilder, canonicalURL, knownHash)
+	return buildFileAsset(assetBuilder, canonicalURL, knownHash, assets.FileAssetInfo{
+		Family:       "runc",
+		Version:      version,
+		Architecture: string(arch),
+	})
 }
 
 func findRuncVersionUrl(arch architectures.Architecture, version string) (string, error) {

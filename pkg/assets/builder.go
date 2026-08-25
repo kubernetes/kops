@@ -17,6 +17,7 @@ limitations under the License.
 package assets
 
 import (
+	"bytes"
 	"fmt"
 	"net/url"
 	"os"
@@ -136,6 +137,13 @@ type FileAsset struct {
 	CanonicalURL *url.URL
 	// SHAValue is the SHA hash of the FileAsset.
 	SHAValue *hashing.Hash
+}
+
+// FileAssetInfo is the metadata needed when a file is stored in an OCI registry.
+type FileAssetInfo struct {
+	Family       string
+	Version      string
+	Architecture string
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
@@ -318,6 +326,11 @@ func (a *AssetBuilder) RemapImage(image string) string {
 // The SHA hash is is knownHash is provided, and otherwise will be found first by
 // checking the canonical URL against our well-known hashes, and failing that via download.
 func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash) (*FileAsset, error) {
+	return a.RemapFileWithInfo(canonicalURL, knownHash, FileAssetInfo{})
+}
+
+// RemapFileWithInfo remaps a file while retaining its logical identity.
+func (a *AssetBuilder) RemapFileWithInfo(canonicalURL *url.URL, knownHash *hashing.Hash, info FileAssetInfo) (*FileAsset, error) {
 	if canonicalURL == nil {
 		return nil, fmt.Errorf("unable to remap a nil URL")
 	}
@@ -327,13 +340,37 @@ func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash)
 		CanonicalURL: canonicalURL,
 	}
 
+	isOCI := a.fileRepositoryScheme() == "oci"
+	if isOCI && info.Family == "" {
+		return nil, fmt.Errorf("asset family is required for OCI asset %q", canonicalURL)
+	}
+	if isOCI && knownHash == nil {
+		// OCI tags embed the hash, so resolve it before remapping the URL.
+		var err error
+		knownHash, err = a.findHash(fileAsset)
+		if err != nil {
+			findHashErr := err
+			knownHash, err = a.hashSource(canonicalURL, nil)
+			if err != nil {
+				return nil, fmt.Errorf("%w (also failed to hash the source directly: %v)", findHashErr, err)
+			}
+		}
+	}
+	if isOCI && knownHash.Algorithm != hashing.HashAlgorithmSHA256 {
+		var err error
+		knownHash, err = a.hashSource(canonicalURL, knownHash)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if a.assetsLocation != nil && a.assetsLocation.FileRepository != nil {
-		normalizedFile, err := a.remapURL(canonicalURL)
+		normalizedFile, err := a.remapURL(canonicalURL, info, knownHash)
 		if err != nil {
 			return nil, err
 		}
 
-		if canonicalURL.Host != normalizedFile.Host {
+		if isOCI || canonicalURL.Host != normalizedFile.Host {
 			fileAsset.DownloadURL = normalizedFile
 			klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
 		}
@@ -353,6 +390,37 @@ func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash)
 	a.addFileAsset(fileAsset)
 
 	return fileAsset, nil
+}
+
+func (a *AssetBuilder) hashSource(source *url.URL, expected *hashing.Hash) (*hashing.Hash, error) {
+	if a.vfsContext == nil {
+		return nil, fmt.Errorf("cannot hash OCI asset %q without a VFS context", source)
+	}
+	// Hashing requires downloading the full asset, so reuse a hash computed earlier in this process.
+	if expected == nil {
+		if cached, found := downloadedFileHashes.Load(source.String()); found {
+			return cached.(*hashing.Hash), nil
+		}
+	}
+	b, err := a.vfsContext.ReadFile(source.String())
+	if err != nil {
+		return nil, fmt.Errorf("reading OCI asset %q: %w", source, err)
+	}
+	if expected != nil {
+		actual, err := expected.Algorithm.Hash(bytes.NewReader(b))
+		if err != nil {
+			return nil, err
+		}
+		if !actual.Equal(expected) {
+			return nil, fmt.Errorf("source %q does not match declared hash %s", source, expected)
+		}
+	}
+	hash, err := hashing.HashAlgorithmSHA256.Hash(bytes.NewReader(b))
+	if err != nil {
+		return nil, err
+	}
+	downloadedFileHashes.Store(source.String(), hash)
+	return hash, nil
 }
 
 // findHash returns the hash value of a FileAsset.
@@ -444,7 +512,18 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	return nil, fmt.Errorf("cannot determine hash for %q (have you specified a valid file location?)", u)
 }
 
-func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
+func (a *AssetBuilder) fileRepositoryScheme() string {
+	if a.assetsLocation == nil || a.assetsLocation.FileRepository == nil {
+		return ""
+	}
+	u, err := url.Parse(*a.assetsLocation.FileRepository)
+	if err != nil {
+		return ""
+	}
+	return u.Scheme
+}
+
+func (a *AssetBuilder) remapURL(canonicalURL *url.URL, info FileAssetInfo, hash *hashing.Hash) (*url.URL, error) {
 	f := ""
 	if a.assetsLocation != nil {
 		f = values.StringValue(a.assetsLocation.FileRepository)
@@ -458,11 +537,43 @@ func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
 		return nil, fmt.Errorf("unable to parse assetsLocation.fileRepository %q: %v", f, err)
 	}
 
+	if fileRepo.Scheme == "oci" {
+		family := info.Family
+		tag := ociAssetTag(info, hash)
+		fileRepo.Path = path.Join("/", fileRepo.Path, family) + ":" + tag
+		return fileRepo, nil
+	}
+
 	fileRepo.Path = path.Join(fileRepo.Path, canonicalURL.Path)
 	// Escape commas, which are legal in a path but separate locations in CompactString.
 	fileRepo.RawPath = strings.ReplaceAll(fileRepo.EscapedPath(), ",", "%2C")
 
 	return fileRepo, nil
+}
+
+var invalidOCITagCharacter = regexp.MustCompile(`[^A-Za-z0-9_.-]+`)
+var meaningfulVersion = regexp.MustCompile(`[A-Za-z0-9]`)
+
+func ociAssetTag(info FileAssetInfo, hash *hashing.Hash) string {
+	version := strings.TrimPrefix(strings.TrimSpace(info.Version), "v")
+	var tag string
+	if meaningfulVersion.MatchString(version) {
+		tag = "v" + version
+	} else {
+		tag = "sha256-" + hash.Hex()
+	}
+	if info.Architecture != "" {
+		tag += "-" + info.Architecture
+	}
+	tag = strings.Trim(invalidOCITagCharacter.ReplaceAllString(tag, "-"), ".-")
+	if len(tag) <= 128 {
+		return tag
+	}
+	tag = "sha256-" + hash.Hex()
+	if info.Architecture != "" {
+		tag += "-" + info.Architecture
+	}
+	return tag
 }
 
 func NormalizeImage(a *AssetBuilder, image string) string {

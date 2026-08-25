@@ -15,9 +15,8 @@ limitations under the License.
 */
 
 // Package assetcopy copies cluster assets to a private file repository or container registry
-// (`kops get assets --copy`). It is separate from pkg/assets so that only the kops CLI links
-// the container registry client libraries; runtime binaries (kops-controller, nodeup) import
-// pkg/assets without inheriting those dependencies.
+// (`kops get assets --copy`). It is separate from pkg/assets so that runtime binaries do not
+// link the registry push client; nodeup pulls OCI assets via upup/pkg/fi's anonymous client.
 package assetcopy
 
 import (
@@ -57,6 +56,23 @@ func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, vfsC
 
 	for _, fileAsset := range fileAssets {
 		if fileAsset.DownloadURL.String() != fileAsset.CanonicalURL.String() {
+			if fileAsset.DownloadURL.Scheme == "oci" {
+				task := &copyOCIAsset{
+					source: fileAsset.CanonicalURL.String(),
+					sha256: fileAsset.SHAValue.Hex(),
+					target: fileAsset.DownloadURL.String(),
+					vfs:    vfsContext,
+				}
+				if existing, ok := tasks[task.target]; ok {
+					other, ok := existing.(*copyOCIAsset)
+					if !ok || other.sha256 != task.sha256 {
+						return fmt.Errorf("different content maps to OCI tag %s", task.target)
+					}
+					continue
+				}
+				tasks[task.target] = task
+				continue
+			}
 			copyFileTask := &CopyFile{
 				Name:       fileAsset.CanonicalURL.String(),
 				TargetFile: fileAsset.DownloadURL.String(),
