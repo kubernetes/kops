@@ -558,16 +558,22 @@ Run the narrowest gate that covers what you changed, then the broad one.
 | `tests/e2e` Go code | `make test-e2e-install` |
 | `hack/verify-terraform.sh` (`TF_TAG`) | `hack/verify-terraform.sh` (needs Docker) |
 | `hack/verify-shellcheck.sh` version/image | `hack/verify-shellcheck.sh` (needs Docker) |
-| broad gate | `make verify` (what the `pull-kops-verify` job runs) |
+| broad gate | `make quick-ci` (what the GitHub Actions `verify` job runs) |
 | broadest | `make ci` (adds `verify-gomod`, `verify-golangci-lint`, `verify-terraform`, `nodeup`, `examples`, `test`) |
 
-Two traps:
+**The two CI systems are complementary, not overlapping**, so neither one alone proves a dependency
+change is clean:
 
-- `make quick-ci` — which is what the GitHub Actions `verify` job runs — **does not include**
-  `verify-gomod`, `verify-golangci-lint`, `verify-gofmt`, `verify-hashes`, or `verify-terraform`. A
-  green GitHub Actions check does not prove those pass. Prow's `pull-kops-verify-*` jobs are the
-  real gate.
-- `hack/verify-gofumpt.sh` is wired into no `make` target at all and must be run by hand.
+| Runs only in GitHub Actions (`make quick-ci`) | Runs only in Prow presubmits |
+|---|---|
+| `verify-crds`, `verify-goimports`, `verify-versions`, `verify-misspelling`, `verify-shellcheck`, `verify-gendocs`, `verify-apimachinery`, `verify-codegen` | `verify-gomod`, `verify-golangci-lint`, `verify-hashes`, `verify-terraform`, `verify-gofmt` |
+
+Each Prow check is its own job invoking a single make target (`pull-kops-verify-gomod` runs
+`make verify-gomod`, and so on); `pull-kops-verify-generated` runs `make verify-generate`, which
+resolves to just `verify-crds`. `make ci` is the closest single local approximation to the union.
+
+One gap: `hack/verify-gofumpt.sh` is wired into no `make` target and is run by no job in either
+system. If you care about it, run it by hand.
 
 ## Commit and pull request conventions
 
