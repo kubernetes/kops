@@ -146,6 +146,7 @@ spec:
         - mountPath: /etc/kube-router
           name: kube-router-cfg
       hostNetwork: true
+      hostIPC: true
       hostPID: true
       # Inherit the host resolver: we resolve no hostnames, and cluster DNS would depend on our own service proxy
       dnsPolicy: Default
