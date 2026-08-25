@@ -189,7 +189,6 @@ generate_containerd_hashes 2.3 4
 generate_cni_hashes 0.9 0.9.1
 generate_cni_hashes 1.2 1.2.0
 generate_cni_hashes 1.3 1.3.0
-generate_cni_hashes 1.3 1.3.0
 generate_cni_hashes 1.4 1.4.1
 generate_cni_hashes 1.5 1.5.1
 generate_cni_hashes 1.6 1.6.2
