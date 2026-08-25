@@ -264,6 +264,7 @@ func TestHighAvailabilityGCE(t *testing.T) {
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
+	mockOCIFileRepository(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().
 		runTestTerraformAWS(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").

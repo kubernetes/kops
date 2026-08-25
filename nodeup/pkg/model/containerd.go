@@ -50,6 +50,8 @@ type ContainerdBuilder struct {
 
 var _ fi.NodeupModelBuilder = &ContainerdBuilder{}
 
+var runcAssetPattern = regexp.MustCompile(`(^/runc|/runc\.amd64|/runc\.arm64)$`)
+
 // Build is responsible for configuring the containerd daemon
 func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.skipInstall() {
@@ -138,7 +140,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 
 	// Add runc binary from https://github.com/opencontainers/runc
 	// https://github.com/containerd/containerd/issues/6541
-	f = b.Assets.FindMatches(regexp.MustCompile(`/runc\.(amd64|arm64)$`))
+	f = b.Assets.FindMatches(runcAssetPattern)
 	if len(f) != 1 {
 		return fmt.Errorf("error finding runc asset")
 	}

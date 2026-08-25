@@ -34,17 +34,11 @@ import (
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	defaultCNIAssetAmd64K8s_32 = "https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz"
-	defaultCNIAssetArm64K8s_32 = "https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz"
-
-	defaultCNIAssetAmd64K8s_34 = "https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-amd64-v1.7.1.tgz"
-	defaultCNIAssetArm64K8s_34 = "https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-arm64-v1.7.1.tgz"
-
-	defaultCNIAssetAmd64K8s_35 = "https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-amd64-v1.8.0.tgz"
-	defaultCNIAssetArm64K8s_35 = "https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-arm64-v1.8.0.tgz"
-
-	defaultCNIAssetAmd64K8s_36 = "https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-amd64-v1.9.1.tgz"
-	defaultCNIAssetArm64K8s_36 = "https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-arm64-v1.9.1.tgz"
+	defaultCNIVersionK8s_32 = "1.6.2"
+	defaultCNIVersionK8s_34 = "1.7.1"
+	defaultCNIVersionK8s_35 = "1.8.0"
+	defaultCNIVersionK8s_36 = "1.9.1"
+	defaultCNIAssetURL      = "https://github.com/containernetworking/plugins/releases/download/v%[1]s/cni-plugins-linux-%[2]s-v%[1]s.tgz"
 
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_ASSET_URL  = "CNI_VERSION_URL"
@@ -70,7 +64,10 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 			return nil, fmt.Errorf("unable to parse CNI plugin binaries asset hash %q: %v", cniAssetHash, err)
 		}
 
-		asset, err := assetBuilder.RemapFile(u, h)
+		asset, err := assetBuilder.RemapFileWithInfo(u, h, assets.FileAssetInfo{
+			Family:       "cni-plugins",
+			Architecture: string(arch),
+		})
 		if err != nil {
 			return nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
 		}
@@ -79,44 +76,37 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 	}
 
 	switch arch {
-	case architectures.ArchitectureAmd64:
-		switch {
-		case ig.KubernetesVersion().IsGTE("1.36"):
-			cniAssetURL = defaultCNIAssetAmd64K8s_36
-		case ig.KubernetesVersion().IsGTE("1.35"):
-			cniAssetURL = defaultCNIAssetAmd64K8s_35
-		case ig.KubernetesVersion().IsGTE("1.34"):
-			cniAssetURL = defaultCNIAssetAmd64K8s_34
-		case ig.KubernetesVersion().IsGTE("1.32"):
-			cniAssetURL = defaultCNIAssetAmd64K8s_32
-		}
-	case architectures.ArchitectureArm64:
-		switch {
-		case ig.KubernetesVersion().IsGTE("1.36"):
-			cniAssetURL = defaultCNIAssetArm64K8s_36
-		case ig.KubernetesVersion().IsGTE("1.35"):
-			cniAssetURL = defaultCNIAssetArm64K8s_35
-		case ig.KubernetesVersion().IsGTE("1.34"):
-			cniAssetURL = defaultCNIAssetArm64K8s_34
-		case ig.KubernetesVersion().IsGTE("1.32"):
-			cniAssetURL = defaultCNIAssetArm64K8s_32
-		}
+	case architectures.ArchitectureAmd64, architectures.ArchitectureArm64:
 	default:
 		return nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)
 	}
 
-	if cniAssetURL == "" {
+	var cniVersion string
+	switch {
+	case ig.KubernetesVersion().IsGTE("1.36"):
+		cniVersion = defaultCNIVersionK8s_36
+	case ig.KubernetesVersion().IsGTE("1.35"):
+		cniVersion = defaultCNIVersionK8s_35
+	case ig.KubernetesVersion().IsGTE("1.34"):
+		cniVersion = defaultCNIVersionK8s_34
+	case ig.KubernetesVersion().IsGTE("1.32"):
+		cniVersion = defaultCNIVersionK8s_32
+	default:
 		return nil, fmt.Errorf("unknown CNI plugin binaries asset: %s", arch)
-	} else {
-		klog.V(2).Infof("Adding CNI plugin binaries asset: %s", cniAssetURL)
 	}
+	cniAssetURL = fmt.Sprintf(defaultCNIAssetURL, cniVersion, arch)
+	klog.V(2).Infof("Adding CNI plugin binaries asset: %s", cniAssetURL)
 
 	u, err := url.Parse(cniAssetURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
 	}
 
-	asset, err := assetBuilder.RemapFile(u, nil)
+	asset, err := assetBuilder.RemapFileWithInfo(u, nil, assets.FileAssetInfo{
+		Family:       "cni-plugins",
+		Version:      cniVersion,
+		Architecture: string(arch),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
 	}

@@ -12,9 +12,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/amd64/nodeup.xz,https://github.com/kubernetes/kops/releases/download/v1.37.0-beta.1/nodeup-linux-amd64.xz
+NODEUP_URL_AMD64=oci://registry.example.com/optional-prefix/nodeup:v1.37.0-beta.1-amd64
 NODEUP_HASH_AMD64=a899417ddb4fa0bba91c07c8d10b10747088a1067ca3dfa83097c1720eeda9ea
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/arm64/nodeup.xz,https://github.com/kubernetes/kops/releases/download/v1.37.0-beta.1/nodeup-linux-arm64.xz
+NODEUP_URL_ARM64=oci://registry.example.com/optional-prefix/nodeup:v1.37.0-beta.1-arm64
 NODEUP_HASH_ARM64=c2e424da38473c3ee1b9309e84e4167857fe8c01ea0df0328f49f6472aebac0e
 
 export AWS_REGION=us-test-1
@@ -39,6 +39,57 @@ function ensure-install-dir() {
   cd ${INSTALL_DIR}
 }
 
+# Extract a string field from a JSON object. args: json, field
+json-field() {
+  local pattern="\"$2\"[[:space:]]*:[[:space:]]*\"([^\"]+)\""
+  [[ $1 =~ $pattern ]] && printf '%s' "${BASH_REMATCH[1]}"
+}
+
+# Download an OCI blob, getting an anonymous pull token if required. args: file, blob, repository
+oci-download() {
+  local -r file="$1"
+  local -r blob="$2"
+  local -r repository="$3"
+  local headers challenge realm service response token
+  local -a token_args
+
+  if headers=$(curl -fsSL -D - -o "${file}" --proto '=https' --proto-redir '=https' --connect-timeout 20 --retry 6 --retry-delay 10 "${blob}"); then
+    return 0
+  fi
+
+  challenge=$(printf '%s\n' "${headers}" | tr -d '\r' | sed -n 's/^[Ww][Ww][Ww]-[Aa]uthenticate:[[:space:]]*//p' | sed -n 's/.*[Bb][Ee][Aa][Rr][Ee][Rr][[:space:]][[:space:]]*//p' | head -n 1)
+  realm=""
+  service=""
+  if [[ "${challenge}" =~ (^|,[[:space:]]*)[Rr][Ee][Aa][Ll][Mm][[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+    realm="${BASH_REMATCH[2]}"
+  fi
+  if [[ "${challenge}" =~ (^|,[[:space:]]*)[Ss][Ee][Rr][Vv][Ii][Cc][Ee][[:space:]]*=[[:space:]]*\"([^\"]+)\" ]]; then
+    service="${BASH_REMATCH[2]}"
+  fi
+  if [[ -z "${realm}" || "${realm}" != https://* ]]; then
+    echo "== No Bearer challenge with an https realm for ${blob} =="
+    return 1
+  fi
+  echo "== Retrying ${blob} with a registry pull token =="
+
+  token_args=(--data-urlencode "scope=repository:${repository}:pull")
+  if [[ -n "${service}" ]]; then
+    token_args+=(--data-urlencode "service=${service}")
+  fi
+  # Timeouts only guard against stalls; retries are left to the outer loop.
+  response=$(curl -fsS -L --get "${token_args[@]}" --proto '=https' --proto-redir '=https' --connect-timeout 5 --max-time 10 "${realm}") || return 1
+  token=""
+  if ! token=$(json-field "${response}" token); then
+    token=$(json-field "${response}" access_token) || true
+  fi
+  if [[ -z "${token}" ]]; then
+    echo "== Failed to parse the registry pull token =="
+    return 1
+  fi
+  # Pass the token through stdin so it does not appear in files, logs, or process arguments.
+  printf 'Authorization: Bearer %s\n' "${token}" | curl -fsSL -o "${file}" -H @- --proto '=https' --proto-redir '=https' --connect-timeout 20 --retry 6 --retry-delay 10 "${blob}"
+}
+
 # Retry until a compressed archive is downloaded, validated, and decompressed. args: name, sha, urls
 download-or-bust() {
   echo "== Downloading $1 with hash $2 from $3 =="
@@ -51,7 +102,13 @@ download-or-bust() {
     for url in "${urls[@]}"; do
       echo "== Downloading ${url} =="
       rm -f "${file}.xz"
-      if ! curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
+      local rest repository blob
+      rest="${url#oci://}"
+      repository="${rest#*/}"
+      repository="${repository%:*}"
+      # The hash is also the blob address; changing what it covers means re-staging repositories.
+      blob="https://${rest%%/*}/v2/${repository}/blobs/sha256:${hash}"
+      if ! oci-download "${file}.xz" "${blob}" "${repository}"; then
         echo "== Failed to download ${url} =="
         rm -f "${file}.xz"
       elif ! validate-hash "${file}.xz" "${hash}"; then
@@ -123,7 +180,7 @@ ClusterName: complex.example.com
 ConfigBase: memfs://clusters.example.com/complex.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: MLZxXi2kSRFC6nrEWWf8ZdxAVYqreztMoFAfGIiYZKc=
+NodeupConfigHash: J6ldwP7dPrA6+yIm0iHNaCdRkcP1LqgZ+gbFnRLA93o=
 
 __EOF_KUBE_ENV
 

@@ -614,6 +614,13 @@ func (b *KubeletBuilder) addECRCredentialProvider(c *fi.NodeupModelBuilderContex
 			return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
 		}
 		if asset == nil {
+			assetName = "ecr-credential-provider"
+			asset, err = b.Assets.Find(assetName, assetPath)
+			if err != nil {
+				return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
+			}
+		}
+		if asset == nil {
 			return fmt.Errorf("unable to locate asset %q", assetName)
 		}
 

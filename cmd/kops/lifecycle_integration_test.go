@@ -129,6 +129,7 @@ func TestLifecycleSharedVPC(t *testing.T) {
 
 // TestLifecycleComplex runs the test on a complex cluster
 func TestLifecycleComplex(t *testing.T) {
+	mockOCIFileRepository(t)
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "complex",

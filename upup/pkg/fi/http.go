@@ -86,7 +86,6 @@ func downloadURLToWriter(ctx context.Context, desturl string, dest io.Writer, ha
 	if err != nil {
 		return nil, fmt.Errorf("Invalud URL for file %q: %v", desturl, err)
 	}
-
 	start := time.Now()
 	defer func() {
 		klog.V(2).Infof("Downloading %q took %q", desturl, time.Since(start))
@@ -114,6 +113,15 @@ func downloadURLToWriter(ctx context.Context, desturl string, dest io.Writer, ha
 		}
 		if _, err := cloudPath.WriteToWithContext(ctx, writer); err != nil {
 			return nil, fmt.Errorf("error downloading content from %q: %w", desturl, err)
+		}
+	case "oci":
+		reader, err := openOCIAsset(ctx, u, hash)
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
+		if _, err := io.Copy(writer, reader); err != nil {
+			return nil, fmt.Errorf("error downloading OCI content from %q: %w", desturl, err)
 		}
 	default:
 		reader, err := OpenURL(desturl)

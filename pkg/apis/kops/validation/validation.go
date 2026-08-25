@@ -786,6 +786,11 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 	return allErrs
 }
 
+var ociRepositoryComponent = regexp.MustCompile(`^[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*$`)
+
+// ociRegistryHost limits registry hosts to hostname, port, and IPv6-literal characters.
+var ociRegistryHost = regexp.MustCompile(`^[A-Za-z0-9._\-:\[\]]+$`)
+
 func validateFileRepository(s string, fieldPath *field.Path, cloudProvider kops.CloudProviderID) field.ErrorList {
 	allErrs := field.ErrorList{}
 
@@ -815,8 +820,25 @@ func validateFileRepository(s string, fieldPath *field.Path, cloudProvider kops.
 		if container, _, _ := strings.Cut(strings.TrimPrefix(u.Path, "/"), "/"); container == "" {
 			allErrs = append(allErrs, field.Invalid(fieldPath, s, "azureblob:// fileRepository must include a container: azureblob://<account>/<container>/<path>"))
 		}
+	case "oci":
+		if u.User != nil || u.RawQuery != "" || u.Fragment != "" {
+			allErrs = append(allErrs, field.Invalid(fieldPath, s, "OCI fileRepository cannot contain credentials, a query, or a fragment"))
+		}
+		// Reject hosts that the bootstrap script or strict go-containerregistry references cannot handle.
+		if u.Host != "" {
+			if !ociRegistryHost.MatchString(u.Host) {
+				allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("OCI registry host %q contains invalid characters", u.Host)))
+			} else if !strings.ContainsAny(u.Host, ".:") && u.Host != "localhost" {
+				allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("OCI registry host %q must include a dot or a port, such as registry.example.com or registry:5000", u.Host)))
+			}
+		}
+		for _, component := range strings.Split(strings.Trim(u.Path, "/"), "/") {
+			if component != "" && !ociRepositoryComponent.MatchString(component) {
+				allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("invalid OCI repository prefix component %q", component)))
+			}
+		}
 	default:
-		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http://, https://, gs://, s3://, or azureblob:// URL"))
+		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http://, https://, gs://, s3://, azureblob://, or oci:// URL"))
 	}
 	if u.Host == "" {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must include a host"))

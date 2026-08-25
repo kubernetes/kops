@@ -17,10 +17,13 @@ limitations under the License.
 package fi
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -217,6 +220,9 @@ func (a *AssetStore) Add(ctx context.Context, id string) error {
 	if i == -1 {
 		i = strings.Index(id, "@azureblob://")
 	}
+	if i == -1 {
+		i = strings.Index(id, "@oci://")
+	}
 	if i != -1 {
 		urls := strings.Split(id[i+1:], ",")
 		hash, err := hashing.FromString(id[:i])
@@ -250,11 +256,38 @@ func (a *AssetStore) addURLs(ctx context.Context, urls []string, hash *hashing.H
 		}
 	}
 
-	// We assume the first url is the "main" url, and download to the base of that _name_, wherever we get it from
 	primaryURL := urls[0]
-	key := path.Base(primaryURL)
+	key, assetPath, err := assetIdentity(primaryURL)
+	if err != nil {
+		return err
+	}
+	lowerURL := strings.ToLower(primaryURL)
+	return a.addFile(ctx, urls, hash, key, assetPath, strings.HasSuffix(lowerURL, ".tar.gz") || strings.HasSuffix(lowerURL, ".tgz"))
+}
+
+// assetIdentity returns the store key and asset path for a download location. OCI assets use
+// the family for both; the "/" + family path is matched by runcAssetPattern in
+// nodeup/pkg/model/containerd.go, so keep the two in sync.
+func assetIdentity(location string) (string, string, error) {
+	if !strings.HasPrefix(location, "oci://") {
+		return path.Base(location), location, nil
+	}
+	u, err := url.Parse(location)
+	if err != nil {
+		return "", "", err
+	}
+	family, err := OCIAssetFamily(u)
+	if err != nil {
+		return "", "", err
+	}
+	return family, "/" + family, nil
+}
+
+func (a *AssetStore) addFile(ctx context.Context, urls []string, hash *hashing.Hash, key, assetPath string, extractTarGzip bool) error {
+	primaryURL := urls[0]
 	localFile := path.Join(a.cacheDir, hash.String()+"_"+utils.SanitizeString(key))
 
+	var err error
 	for _, url := range urls {
 		_, err = DownloadURL(ctx, url, localFile, hash)
 		if err != nil {
@@ -267,8 +300,17 @@ func (a *AssetStore) addURLs(ctx context.Context, urls []string, hash *hashing.H
 	if err != nil {
 		return err
 	}
+	u, err := url.Parse(primaryURL)
+	if err != nil {
+		return err
+	}
+	if u.Scheme == "oci" {
+		extractTarGzip, err = isTarGzip(localFile)
+		if err != nil {
+			return err
+		}
+	}
 
-	assetPath := primaryURL
 	r := NewFileResource(localFile)
 
 	source := &Source{URL: primaryURL, Hash: hash}
@@ -282,10 +324,7 @@ func (a *AssetStore) addURLs(ctx context.Context, urls []string, hash *hashing.H
 	klog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
 	a.assets = append(a.assets, asset)
 
-	// normalize filename suffix
-	file := strings.ToLower(assetPath)
-	// pickup both tar.gz and tgz files
-	if strings.HasSuffix(file, ".tar.gz") || strings.HasSuffix(file, ".tgz") {
+	if extractTarGzip {
 		err = a.addArchive(source, localFile)
 		if err != nil {
 			return err
@@ -293,6 +332,23 @@ func (a *AssetStore) addURLs(ctx context.Context, urls []string, hash *hashing.H
 	}
 
 	return nil
+}
+
+func isTarGzip(filename string) (bool, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return false, nil
+	}
+	defer gz.Close()
+
+	_, err = tar.NewReader(gz).Next()
+	return err == nil, nil
 }
 
 func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error {

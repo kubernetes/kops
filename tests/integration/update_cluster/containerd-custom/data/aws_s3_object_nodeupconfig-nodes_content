@@ -49,14 +49,12 @@ containerdConfig:
   logLevel: info
   packages:
     hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
-    urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
+    urlAmd64: https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz
   registryMirrors:
     '*':
     - http://HostIP2:Port2
     docker.io:
     - https://registry-1.docker.io
-  runc:
-    version: 1.4.3
   sandboxImage: registry.k8s.io/pause:3.10.1
   skipInstall: true
   useECRCredentialsForMirrors: true

@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 
+	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -85,7 +86,11 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/bin/linux", string(arch), component+".tar")
 
-					asset, err := assetBuilder.RemapFile(baseURL, nil)
+					asset, err := assetBuilder.RemapFileWithInfo(baseURL, nil, assets.FileAssetInfo{
+						Family:       component,
+						Version:      versionAtEnd(cluster.Spec.KubernetesVersion),
+						Architecture: string(arch),
+					})
 					if err != nil {
 						return nil, err
 					}
@@ -111,7 +116,11 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					asset, err := assetBuilder.RemapFile(baseURL, nil)
+					asset, err := assetBuilder.RemapFileWithInfo(baseURL, nil, assets.FileAssetInfo{
+						Family:       name,
+						Version:      kopsbase.Version,
+						Architecture: string(arch),
+					})
 					if err != nil {
 						return nil, err
 					}
@@ -134,7 +143,11 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					asset, err := assetBuilder.RemapFile(baseURL, nil)
+					asset, err := assetBuilder.RemapFileWithInfo(baseURL, nil, assets.FileAssetInfo{
+						Family:       name,
+						Version:      kopsbase.Version,
+						Architecture: string(arch),
+					})
 					if err != nil {
 						return nil, err
 					}

@@ -349,7 +349,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("invalid image source URL %q: %w", image.Sources[0], err)
 		}
-		key := "SideloadImage/" + path.Base(u.Path)
+		assetName := path.Base(u.Path)
+		if u.Scheme == "oci" {
+			assetName, err = fi.OCIAssetFamily(u)
+			if err != nil {
+				return err
+			}
+		}
+		key := "SideloadImage/" + assetName
 		if _, ok := taskMap[key]; ok {
 			return fmt.Errorf("duplicate image task %q", key)
 		}

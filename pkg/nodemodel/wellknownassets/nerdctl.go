@@ -25,24 +25,28 @@ import (
 )
 
 const (
-	nerdctlAssetUrlAmd64  = "https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz"
-	nerdctlAssetUrlArm64  = "https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz"
+	nerdctlVersion = "1.7.4"
+	// Deriving the URL from nerdctlVersion keeps the URL and the OCI tag from drifting apart.
+	nerdctlAssetURL       = "https://github.com/containerd/nerdctl/releases/download/v%[1]s/nerdctl-%[1]s-linux-%[2]s.tar.gz"
 	nerdctlAssetHashAmd64 = "71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7"
 	nerdctlAssetHashArm64 = "d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d"
 )
 
 func FindNerdctlAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
-	var assetURL, assetHash string
+	var assetHash string
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		assetURL = nerdctlAssetUrlAmd64
 		assetHash = nerdctlAssetHashAmd64
 	case architectures.ArchitectureArm64:
-		assetURL = nerdctlAssetUrlArm64
 		assetHash = nerdctlAssetHashArm64
 	default:
 		return nil, fmt.Errorf("unknown arch for nerdctl binaries asset: %s", arch)
 	}
+	assetURL := fmt.Sprintf(nerdctlAssetURL, nerdctlVersion, arch)
 
-	return buildFileAsset(assetBuilder, assetURL, assetHash)
+	return buildFileAsset(assetBuilder, assetURL, assetHash, assets.FileAssetInfo{
+		Family:       "nerdctl",
+		Version:      nerdctlVersion,
+		Architecture: string(arch),
+	})
 }

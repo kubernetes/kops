@@ -21,6 +21,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops"
@@ -100,7 +101,12 @@ func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*assets.FileAs
 
 	base.Path = path.Join(base.Path, file)
 
-	asset, err := assetBuilder.RemapFile(base, nil)
+	name := strings.TrimSuffix(path.Base(file), ".xz")
+	asset, err := assetBuilder.RemapFileWithInfo(base, nil, assets.FileAssetInfo{
+		Family:       name,
+		Version:      kops.Version,
+		Architecture: path.Base(path.Dir(file)),
+	})
 	if err != nil {
 		return nil, err
 	}
