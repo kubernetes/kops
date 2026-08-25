@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/linode/linodego/v2"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 )
@@ -115,6 +116,63 @@ func TestVolumeRenderLinodeCreate(t *testing.T) {
 	}
 	if got, want := fi.ValueOf(expected.ID), 42; got != want {
 		t.Fatalf("expected task ID to be populated from create response: got %d, want %d", got, want)
+	}
+}
+
+func TestVolumeRenderLinodeCreateNormalizesLabel(t *testing.T) {
+	client := &linode.MockLinodeClient{CreateVolumeResponse: &linodego.Volume{ID: 42}}
+	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
+	expected := &Volume{
+		Name:   new("d.etcd-main.kops.linode.example.com"),
+		Region: new("us-east"),
+		SizeGB: new(20),
+	}
+
+	if err := (&Volume{}).RenderLinode(target, nil, expected, nil); err != nil {
+		t.Fatalf("RenderLinode returned error: %v", err)
+	}
+	label := client.LastCreateVolumeOpts.Label
+	if len(label) > 32 {
+		t.Fatalf("expected label to fit Linode's length limit: %q", label)
+	}
+	if strings.ContainsAny(label, ".:") {
+		t.Fatalf("expected label to contain only Linode-supported characters: %q", label)
+	}
+	want := truncate.TruncateString(linode.NormalizeLinodeLabel(fi.ValueOf(expected.Name)), truncate.TruncateStringOptions{MaxLength: 32})
+	if label != want {
+		t.Fatalf("unexpected normalized label: %q", label)
+	}
+}
+
+func TestVolumeFindNormalizesLabel(t *testing.T) {
+	name := "d.etcd-main.kops.linode.example.com"
+	label := truncate.TruncateString(linode.NormalizeLinodeLabel(name), truncate.TruncateStringOptions{MaxLength: 32})
+	client := &linode.MockLinodeClient{ListVolumesResponse: []linodego.Volume{{
+		ID:     101,
+		Label:  label,
+		Region: "us-east",
+		Size:   20,
+	}}}
+	ctx := newTestCloudupContext(t, &linode.MockLinodeCloud{Client_: client})
+	task := &Volume{Name: new(name)}
+
+	actual, err := task.Find(ctx)
+	if err != nil {
+		t.Fatalf("Find returned error: %v", err)
+	}
+	if actual == nil {
+		t.Fatalf("expected to find volume")
+	}
+	if got, want := fi.ValueOf(actual.Name), name; got != want {
+		t.Fatalf("unexpected canonical name: got %q, want %q", got, want)
+	}
+
+	expectedListOptions, err := linode.ListOptionsForLabel(label)
+	if err != nil {
+		t.Fatalf("ListOptionsForLabel returned error: %v", err)
+	}
+	if got, want := client.LastListVolumesOpts.Filter, expectedListOptions.Filter; got != want {
+		t.Fatalf("unexpected volume list filter: got %q, want %q", got, want)
 	}
 }
 

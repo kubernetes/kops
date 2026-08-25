@@ -22,6 +22,7 @@ import (
 
 	"github.com/linode/linodego/v2"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 )
@@ -49,7 +50,8 @@ func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
 	if name == "" {
 		return nil, fmt.Errorf("Volume.Name is required")
 	}
-	listOptions, err := linode.ListOptionsForLabel(name)
+	label := truncate.TruncateString(linode.NormalizeLinodeLabel(name), truncate.TruncateStringOptions{MaxLength: 32})
+	listOptions, err := linode.ListOptionsForLabel(label)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +70,7 @@ func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
 
 	actual := &Volume{
 		ID:        new(matched.ID),
-		Name:      new(matched.Label),
+		Name:      new(name),
 		Lifecycle: v.Lifecycle,
 		Region:    new(matched.Region),
 		SizeGB:    new(matched.Size),
@@ -134,8 +136,9 @@ func (*Volume) RenderLinode(t *linode.APITarget, actual, expected, changes *Volu
 	}
 
 	name := fi.ValueOf(expected.Name)
+	label := truncate.TruncateString(linode.NormalizeLinodeLabel(name), truncate.TruncateStringOptions{MaxLength: 32})
 	created, err := t.Cloud.Client().CreateVolume(context.Background(), linodego.VolumeCreateOptions{
-		Label:  name,
+		Label:  label,
 		Region: fi.ValueOf(expected.Region),
 		Size:   fi.ValueOf(expected.SizeGB),
 		Tags:   expected.Tags,
