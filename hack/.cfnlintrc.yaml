@@ -1,3 +1,0 @@
-ignore_checks:
-- W3010 # Don't hardcode AZs
-- E3030 # us-test-1a is not a valid AZ
