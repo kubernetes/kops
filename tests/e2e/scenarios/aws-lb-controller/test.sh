@@ -40,14 +40,16 @@ KUBECONFIG=$(mktemp -t kops.XXXXXXXXX)
 export KUBECONFIG
 "${KOPS}" export kubecfg --name "${CLUSTER_NAME}" --admin --kubeconfig "${KUBECONFIG}"
 
-go install github.com/onsi/ginkgo/v2/ginkgo@latest
-
 CLONE_ARGS=
 if [ -n "$LBC_VERSION" ]; then
     CLONE_ARGS="-b ${LBC_VERSION}"
 fi
 # shellcheck disable=SC2086
 git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/aws-load-balancer-controller .
+
+# Install the ginkgo CLI at the version the cloned repo builds its tests against,
+# rather than whatever is newest, so the CLI and the library cannot skew.
+go install github.com/onsi/ginkgo/v2/ginkgo
 
 ginkgo -v -p -r test/e2e/ingress -- \
     -cluster-name="${CLUSTER_NAME}" \
