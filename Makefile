@@ -171,7 +171,7 @@ verify-codegen:
 .PHONY: protobuf
 protobuf:
 	protoc --go_out=. --go_opt=paths=source_relative pkg/otel/otlptracefile/pb/file.proto
-	go run golang.org/x/tools/cmd/goimports@latest -w pkg/otel/otlptracefile/pb/file.pb.go
+	cd hack && go run golang.org/x/tools/cmd/goimports -w ${KOPS_ROOT}/pkg/otel/otlptracefile/pb/file.pb.go
 
 .PHONY: hooks
 hooks: # Install Git hooks

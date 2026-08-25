@@ -17,7 +17,7 @@ protobuf:
 	protoc --go_out=pb/ --go_opt=paths=source_relative --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
 	-I pb/ \
 	pb/jaeger/api/v2/*.proto pb/jaeger/storage/v1/*.proto
-	go run golang.org/x/tools/cmd/goimports@latest -w ./pb
+	cd ../../../hack && go run golang.org/x/tools/cmd/goimports -w ../tools/otel/traceserver/pb
 
 .PHONY: wget
 wget:
