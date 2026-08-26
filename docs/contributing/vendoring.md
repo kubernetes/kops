@@ -8,7 +8,6 @@ vendored dependencies.
 The following software must be installed prior to running the
 update commands:
 
-* [bazelisk](https://github.com/bazelbuild/bazelisk)
 * [go mod](https://github.com/golang/go/wiki/Modules)
 
 ## Adding a dependency to the vendor directory
