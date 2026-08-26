@@ -32,14 +32,16 @@ CSI_VERSION=$(kubectl get deployment -n kube-system ebs-csi-controller -o jsonpa
 TEMPDIR=$(mktemp -dt kops.XXXXXXXXX)
 cd "${TEMPDIR}"
 
-go install github.com/onsi/ginkgo/v2/ginkgo@latest
-
 CLONE_ARGS=
 if [ -n "$CSI_VERSION" ]; then
     CLONE_ARGS="-b ${CSI_VERSION}"
 fi
 # shellcheck disable=SC2086
 git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
+
+# Install the ginkgo CLI at the version the cloned repo builds its tests against,
+# rather than whatever is newest, so the CLI and the library cannot skew.
+go install github.com/onsi/ginkgo/v2/ginkgo
 
 cd tests/e2e-kubernetes/
 

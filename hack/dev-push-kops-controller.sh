@@ -26,8 +26,11 @@ fi
 
 IMAGE_TAG=$(date +%Y%m%d%H%M%S)
 
+# Keep the ko version in sync with the Makefile, which is the source of truth.
+KO_VERSION=$(grep '^KO_VERSION=' "${REPO_ROOT}/Makefile" | cut -d= -f2)
+
 # Build the controller image
-KO_DOCKER_REPO="${IMAGE_PREFIX}kops-controller" go run github.com/google/ko@v0.18.0 \
+KO_DOCKER_REPO="${IMAGE_PREFIX}kops-controller" go run "github.com/google/ko@${KO_VERSION}" \
   build --tags "${IMAGE_TAG}" --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
 
 # Update the image and bounce the pods

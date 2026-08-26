@@ -40,9 +40,10 @@ GOBIN := $(shell go env GOPATH)/bin
 endif
 
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
-CODEGEN_VERSION=v0.34.1
+CODEGEN_VERSION=v0.36.3
 
-KO=go run github.com/google/ko@v0.18.0
+KO_VERSION=v0.18.0
+KO=go run github.com/google/ko@$(KO_VERSION)
 
 UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
 
@@ -170,7 +171,7 @@ verify-codegen:
 .PHONY: protobuf
 protobuf:
 	protoc --go_out=. --go_opt=paths=source_relative pkg/otel/otlptracefile/pb/file.proto
-	go run golang.org/x/tools/cmd/goimports@latest -w pkg/otel/otlptracefile/pb/file.pb.go
+	cd hack && go run golang.org/x/tools/cmd/goimports -w ${KOPS_ROOT}/pkg/otel/otlptracefile/pb/file.pb.go
 
 .PHONY: hooks
 hooks: # Install Git hooks
