@@ -137,11 +137,13 @@ func (s *Server) buildInstanceGroupFromCAPI(ctx context.Context, capiMachine *cl
 
 	// "maxSize": 1, // Should not matter
 	// "minSize": 1, // Should not matter
-	// "image": "", // Should not matter
 	// "machineType": "", // Should not matter
 	// "subnets": // Should not matter
 	ig.Spec.Zones = []string{failureDomain}
 	ig.Spec.Role = "Node" // TODO: Support other roles?
+	// The machine image is chosen by the CAPI infrastructure provider and is not used for
+	// nodeup config generation; the placeholder avoids resolving a default from the channel.
+	ig.Spec.Image = "placeholder-image"
 
 	log.Info("built InstanceGroup from CAPI Machine", "instanceGroup", ig)
 	return ig, nil

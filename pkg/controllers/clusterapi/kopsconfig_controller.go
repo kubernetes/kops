@@ -202,6 +202,9 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context, cluster *
 	{
 		ig.SetName("placeholder-ig-name") // IG name is not used for nodeup config generation
 		ig.Spec.Role = kops.InstanceGroupRoleNode
+		// The machine image is chosen by the CAPI infrastructure provider and is not used for
+		// nodeup config generation; the placeholder avoids resolving a default from the channel.
+		ig.Spec.Image = "placeholder-image"
 
 		configBuilder.InstanceGroup = ig
 		configBuilder.InstanceGroupName = ig.Name
