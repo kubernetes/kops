@@ -7,6 +7,6 @@ spec:
   template:
     spec:
       containers:
-      - image: registry.k8s.io/cluster-api-gcp/cluster-api-gcp-controller:v1.5.0
+      - image: registry.k8s.io/cluster-api-gcp/cluster-api-gcp-controller:v1.10.0
         imagePullPolicy: IfNotPresent
         name: manager

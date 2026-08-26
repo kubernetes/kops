@@ -37,6 +37,7 @@ OVERRIDES="${OVERRIDES} --node-size=e2-standard-2" #
 OVERRIDES="${OVERRIDES} --api-server-size=e2-standard-2" #
 OVERRIDES="${OVERRIDES} --control-plane-size=e2-standard-4" #
 OVERRIDES="${OVERRIDES} --gce-service-account=default" # Use default service account because boskos permissions are limited
+OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true" # cert-manager is a prerequisite of cluster-api
 
 # Create kOps cluster
 source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
@@ -61,13 +62,6 @@ kubectl apply --server-side -f "${REPO_ROOT}/clusterapi/examples/kopscontroller.
 
 # Bounce kops-controller in case it went into backoff before the CRDs were installed
 kubectl delete pod -n kube-system -l k8s-app=kops-controller
-
-# Install cert-manager
-kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
-
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager-cainjector
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager-webhook
 
 # Install cluster-api core and cluster-api-provider-gcp
 kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api"
@@ -95,10 +89,7 @@ kubectl get gcpmachine -A -owide
 
 # CAPI currently creates some firewall rules that otherwise are not cleaned up, and block kops cluster cleanup
 function cleanup_capi_leaks() {
-  gcloud compute firewall-rules delete allow-clusterapi-k8s-local-cluster --quiet || true
-  gcloud compute firewall-rules delete allow-clusterapi-k8s-local-healthchecks --quiet || true
-
-  #gcloud compute networks subnets delete us-east4-clusterapi-k8s-local --region us-east4 --quiet
-  #gcloud compute networks delete clusterapi-k8s-local --quiet
+  gcloud compute firewall-rules delete allow-splitkcp-k8s-local-cluster --quiet || true
+  gcloud compute firewall-rules delete allow-splitkcp-k8s-local-healthchecks --quiet || true
 }
 cleanup_capi_leaks

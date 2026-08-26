@@ -11,7 +11,10 @@ spec:
         - --leader-elect
         #- --feature-gates=GKE=${EXP_CAPG_GKE:=false}
         - --feature-gates=GKE=false
-        - --metrics-bind-addr=localhost:8080
+        #- --diagnostics-address=${CAPG_DIAGNOSTICS_ADDRESS:=:8443}
+        - --diagnostics-address=:8443
+        #- --insecure-diagnostics=${CAPG_INSECURE_DIAGNOSTICS:=false}
+        - --insecure-diagnostics=false
         #- --v=${CAPG_LOGLEVEL:=0}
         - --v=0
         name: manager

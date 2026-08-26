@@ -7,19 +7,9 @@ We plug in our own bootstrap provider with the goal of enabling cluster-api node
 *Note*: the name & zone matter, we need to match the values we'll create later in the CAPI resources.
 
 ```
-go run ./cmd/kops create cluster clusterapi.k8s.local --zones us-east4-a
+go run ./cmd/kops create cluster clusterapi.k8s.local --zones us-east4-a --set=cluster.spec.certManager.enabled=true
 go run ./cmd/kops update cluster clusterapi.k8s.local --yes --admin
 go run ./cmd/kops validate cluster --wait=10m
-```
-
-# Install cert-manager
-
-```
-kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
-
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager-cainjector
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager-webhook
 ```
 
 # Install CAPI and CAPG

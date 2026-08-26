@@ -588,9 +588,10 @@ func (b *ConfigBuilder) GetFullInstanceGroup(ctx context.Context) (*kops.Instanc
 		return nil, err
 	}
 
+	// The channel only provides optional defaults, and kops-controller may be unable to read it.
 	channel, err := cloudup.ChannelForCluster(clientset.VFSContext(), fullCluster)
 	if err != nil {
-		return nil, fmt.Errorf("getting channel for cluster %q: %w", fullCluster.Name, err)
+		klog.Warningf("getting channel for cluster %q: %v", fullCluster.Name, err)
 	}
 
 	// Build full IG spec to ensure we end up with a valid IG

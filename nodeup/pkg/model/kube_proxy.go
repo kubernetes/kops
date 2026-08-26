@@ -118,10 +118,9 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	if c.Master == "" {
-		if b.IsMaster {
-			// As a special case, if this is the master, we point kube-proxy to the local IP
-			// This prevents a circular dependency where kube-proxy can't come up until DNS comes up,
-			// which would mean that DNS can't rely on API to come up
+		if b.HasAPIServer {
+			// Use the local API server to avoid a kube-proxy/DNS bootstrap cycle. Dedicated
+			// apiserver nodes also lack an /etc/hosts entry for the API internal name.
 			c.Master = "https://127.0.0.1"
 		} else {
 			c.Master = "https://" + b.APIInternalName()
