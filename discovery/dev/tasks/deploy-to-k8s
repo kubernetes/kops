@@ -35,7 +35,7 @@ VERSION=${IMAGE_TAG} GITSHA=$(git describe --always) KO_DOCKER_REPO="${IMAGE_PRE
   build --tags "${IMAGE_TAG}" --platform=linux/amd64,linux/arm64 --bare ./cmd/discovery-server/
 
 echo "Can install cert-manager with the following command:"
-echo "kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml"
+echo "kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.5/cert-manager.yaml"
 
 kubectl create namespace discovery-k8s-io --dry-run=client -o yaml | kubectl apply -f -
 
