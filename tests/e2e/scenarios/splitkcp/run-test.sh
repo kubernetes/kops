@@ -89,10 +89,7 @@ kubectl get gcpmachine -A -owide
 
 # CAPI currently creates some firewall rules that otherwise are not cleaned up, and block kops cluster cleanup
 function cleanup_capi_leaks() {
-  gcloud compute firewall-rules delete allow-clusterapi-k8s-local-cluster --quiet || true
-  gcloud compute firewall-rules delete allow-clusterapi-k8s-local-healthchecks --quiet || true
-
-  #gcloud compute networks subnets delete us-east4-clusterapi-k8s-local --region us-east4 --quiet
-  #gcloud compute networks delete clusterapi-k8s-local --quiet
+  gcloud compute firewall-rules delete allow-splitkcp-k8s-local-cluster --quiet || true
+  gcloud compute firewall-rules delete allow-splitkcp-k8s-local-healthchecks --quiet || true
 }
 cleanup_capi_leaks
