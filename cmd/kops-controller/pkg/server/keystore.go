@@ -119,7 +119,8 @@ func newKeystore(basePath string, cas []string) (*keystore, map[string]string, e
 	for name, keypairID := range keypairIDs {
 		entry, found := keystore.keys[name]
 		if !found {
-			klog.Warningf("keypair %q found in keypair IDs, not found as keypair", name)
+			// keypair-ids.yaml also includes CAs this server is not configured to serve (e.g. the etcd CAs).
+			klog.V(2).Infof("keypair %q found in keypair IDs, not loaded as a served CA", name)
 			continue
 		}
 		primary := &fi.KeysetItem{}
