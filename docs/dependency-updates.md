@@ -107,8 +107,9 @@ under `tests/e2e/scenarios/`, and small modules under `tools/`. Points to know:
 - The root module holds the `vendor/` tree and any `replace` directives.
 - `hack/go.mod` uses a Go `tool` directive block to pin the lint/codegen tooling.
 - `tests/e2e/go.mod` carries a `replace` pointing at the repo root, so it tracks local changes.
-- Some of the small `tools/` modules have **no `replace` back to the root**, so they resolve the
-  published `k8s.io/kops` from the module proxy and do not see local changes.
+- The small modules under `tools/` that import `k8s.io/kops` also carry a `replace` to the root. If
+  you add a module that imports the root, give it one too, or it will silently compile against the
+  last published release instead of this tree.
 
 ### Recipe
 
@@ -203,15 +204,15 @@ Versions pinned as literals instead, each needing a hand edit:
 
 | File | Pin |
 |---|---|
-| `Makefile` | `CODEGEN_VERSION` (see [Go modules](#go-modules)) and the `ko` version in the `KO` variable |
+| `Makefile` | `CODEGEN_VERSION` (see [Go modules](#go-modules)) and `KO_VERSION`, which the `hack/` and `discovery/` scripts read back out of the Makefile rather than repeating |
 | `hack/verify-shellcheck.sh` | `SHELLCHECK_VERSION` **and** `SHELLCHECK_IMAGE`, which carries both a tag and a digest — a comment in the file says to keep them in sync, and all three values change together |
 | `hack/verify-terraform.sh` | `TF_TAG` |
-| `hack/{verify,update}-gofumpt.sh` | a `go install mvdan.cc/gofumpt@<version>` line in each |
 | `clusterapi/gen.go` | a `go run sigs.k8s.io/controller-tools/cmd/controller-gen@<version>` line |
 | `images/mkdocs/requirements.txt` | the mkdocs Python packages — see [Miscellaneous](#miscellaneous-surfaces) |
 
-Some tool invocations use `@latest` and are therefore not reproducible. Treat these as known debt:
-do not "bump" them, and do not convert them to pins as a side effect of an unrelated change.
+Do not introduce `@latest` in a `go run` or `go install` invocation — it makes the build
+irreproducible and lets an upstream release break the repo with no local commit. Pin the version, or
+better, run the tool out of the `hack` module so there is one pin.
 
 ## GitHub Actions
 
@@ -582,9 +583,6 @@ change is clean:
 Each Prow check is its own job invoking a single make target (`pull-kops-verify-gomod` runs
 `make verify-gomod`, and so on); `pull-kops-verify-generated` runs `make verify-generate`, which
 resolves to just `verify-crds`. `make ci` is the closest single local approximation to the union.
-
-One gap: `hack/verify-gofumpt.sh` is wired into no `make` target and is run by no job in either
-system. If you care about it, run it by hand.
 
 ## Commit and pull request conventions
 
