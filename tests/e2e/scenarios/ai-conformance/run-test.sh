@@ -61,6 +61,7 @@ cp "${KOPS}" "${BIN_DIR}/kops"
 # - NVIDIA driver and runtime are managed by GPU Operator (not kOps)
 # - Cluster Autoscaler: For Cluster Autoscaling of GPU Nodes
 # - Metrics Server: For HPA support
+# - Cert Manager: For AI conformance components that need webhook certificates
 OVERRIDES="${OVERRIDES-} --networking=cilium"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.gatewayAPI.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.addons[0].manifest=https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml"
@@ -70,6 +71,7 @@ OVERRIDES="${OVERRIDES} --zones=us-east-2a,us-east-2b,us-east-2c"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.clusterAutoscaler.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.metricsServer.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.metricsServer.insecure=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
 
 kops-up
 
@@ -103,15 +105,6 @@ kubectl get nodes --show-labels
 echo "----------------------------------------------------------------"
 echo "Deploying AI Conformance Components"
 echo "----------------------------------------------------------------"
-
-# cert-manager
-echo "Installing cert-manager..."
-kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
-
-echo "Waiting for cert-manager to be ready..."
-kubectl rollout status deployment -n cert-manager cert-manager --timeout=5m
-kubectl rollout status deployment -n cert-manager cert-manager-webhook --timeout=5m
-kubectl rollout status deployment -n cert-manager cert-manager-cainjector --timeout=5m
 
 # Setup helm repos for monitoring and NVIDIA components
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia

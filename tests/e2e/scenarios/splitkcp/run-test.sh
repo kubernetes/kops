@@ -37,6 +37,7 @@ OVERRIDES="${OVERRIDES} --node-size=e2-standard-2" #
 OVERRIDES="${OVERRIDES} --api-server-size=e2-standard-2" #
 OVERRIDES="${OVERRIDES} --control-plane-size=e2-standard-4" #
 OVERRIDES="${OVERRIDES} --gce-service-account=default" # Use default service account because boskos permissions are limited
+OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true" # cert-manager is a prerequisite of cluster-api
 
 # Create kOps cluster
 source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
@@ -61,13 +62,6 @@ kubectl apply --server-side -f "${REPO_ROOT}/clusterapi/examples/kopscontroller.
 
 # Bounce kops-controller in case it went into backoff before the CRDs were installed
 kubectl delete pod -n kube-system -l k8s-app=kops-controller
-
-# Install cert-manager
-kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
-
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager-cainjector
-kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/cert-manager-webhook
 
 # Install cluster-api core and cluster-api-provider-gcp
 kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api"
