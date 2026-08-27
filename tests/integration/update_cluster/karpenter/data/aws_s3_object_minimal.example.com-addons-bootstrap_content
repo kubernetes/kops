@@ -53,7 +53,7 @@ spec:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: e99c8d21b3acdf2342a854485f596d923694a2027ae8631fed0151f2d4d9c632
+    manifestHash: 8ffe5c4d085d84ca855f43905e09c76ae4fc62c8ec3ac8c802d6cb5b644b67b2
     name: karpenter.sh
     prune:
       kinds:
