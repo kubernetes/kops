@@ -109,29 +109,35 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			kube.OIDCRequiredClaim != nil ||
 			kube.OIDCUsernameClaim != nil ||
 			kube.OIDCUsernamePrefix != nil {
-			if out.Authentication == nil {
-				out.Authentication = &kops.AuthenticationSpec{}
+			// Build the settings before publishing them. The generated conversion
+			// copies the OIDC pointer straight across, so out.Authentication.OIDC can
+			// still be the caller's struct; writing into it would mutate the input,
+			// and returning an error partway would leave it half rewritten.
+			oidc := &kops.OIDCAuthenticationSpec{
+				ClientID:       kube.OIDCClientID,
+				GroupsPrefix:   kube.OIDCGroupsPrefix,
+				IssuerURL:      kube.OIDCIssuerURL,
+				UsernameClaim:  kube.OIDCUsernameClaim,
+				UsernamePrefix: kube.OIDCUsernamePrefix,
 			}
-			if out.Authentication.OIDC == nil {
-				out.Authentication.OIDC = &kops.OIDCAuthenticationSpec{}
-			}
-
-			oidc := out.Authentication.OIDC
-			oidc.ClientID = kube.OIDCClientID
 			if kube.OIDCGroupsClaim != nil {
 				oidc.GroupsClaims = strings.Split(*kube.OIDCGroupsClaim, ",")
 			}
-			oidc.GroupsPrefix = kube.OIDCGroupsPrefix
-			oidc.IssuerURL = kube.OIDCIssuerURL
 			if kube.OIDCRequiredClaim != nil {
 				oidc.RequiredClaims = make(map[string]string, len(kube.OIDCRequiredClaim))
-				for _, claim := range kube.OIDCRequiredClaim {
-					split := strings.SplitN(claim, "=", 2)
-					oidc.RequiredClaims[split[0]] = split[1]
+				for i, claim := range kube.OIDCRequiredClaim {
+					key, value, found := strings.Cut(claim, "=")
+					if !found {
+						return field.Invalid(field.NewPath("spec", "kubeAPIServer", "oidcRequiredClaim").Index(i), claim, `must be of the form "key=value"`)
+					}
+					oidc.RequiredClaims[key] = value
 				}
 			}
-			oidc.UsernameClaim = kube.OIDCUsernameClaim
-			oidc.UsernamePrefix = kube.OIDCUsernamePrefix
+
+			if out.Authentication == nil {
+				out.Authentication = &kops.AuthenticationSpec{}
+			}
+			out.Authentication.OIDC = oidc
 		}
 	}
 	if in.LegacyNetworking != nil {
