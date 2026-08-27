@@ -480,19 +480,10 @@ The etcd-manager tag also appears in checked-in expected output under
 `pkg/apis/kops/validation/` contains **no** min/max Kubernetes version — the bounds live only in
 `apply_cluster.go`.
 
-**Adding support for a new minor** is a two-line-per-file channel change: one
-`spec.kubernetesVersions` entry and one `spec.kopsVersions` entry at the top of each list in both
-`channels/alpha` and `channels/stable`.
-
-**Dropping the oldest minor** is a large, mechanical sweep: the `apply_cluster.go` constants,
-deleting that minor's `pkg/assets/assetdata/k8s-*.yaml`, removing the per-minor branches in
-`pkg/model/components/` and both ladder arms in `pkg/nodemodel/wellknownassets/cni.go`, deleting the
-`tests/integration/{create,update}_cluster/minimal-<minor>/` trees, adding a release-notes skeleton
-under `docs/releases/`, and a `mkdocs.yml` nav line. Find the most recent such commit and mirror it:
-
-```bash
-git log --oneline --all -- upup/pkg/fi/cloudup/apply_cluster.go | head
-```
+Adding or dropping a Kubernetes minor is a release-cycle activity rather than a dependency bump, and
+is not symmetric: adding support is several independent pull requests landing over months as each
+upstream artifact appears, while dropping the oldest minor is one large sweep. Both are described in
+[Supporting a new Kubernetes version](contributing/new_kubernetes_version.md).
 
 ## OS images and AMIs
 
