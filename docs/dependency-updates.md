@@ -4,9 +4,6 @@ This guide describes how to update the third-party dependencies that kOps pins, 
 change alongside each one. It is written for an automated agent: each section names the file that
 holds the version, the files coupled to it, the regeneration command, and the verification command.
 
-Deliberately, this document names **files, not line numbers, and describes versions rather than
-quoting them** — pins move constantly. Grep for the symbol or the surrounding construct.
-
 Two mechanisms cut across almost every surface below. Read these first.
 
 ## The two cross-cutting mechanisms
