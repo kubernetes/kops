@@ -166,7 +166,6 @@ nav:
     - How to update kOps API: "contributing/api_updates.md"
     - Low level description on how kOps works: "contributing/how_it_works.md"
     - Notes on master instance sizing: "contributing/instancesizes.md"
-    - Vendoring: "contributing/vendoring.md"
     - Ports: "contributing/ports.md"
     - Cluster Addons & Manager : "contributing/addons.md"
   - Releases:
