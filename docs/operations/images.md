@@ -1,6 +1,6 @@
 # Images
 
-As of Kubernetes 1.27 the default images used by kOps are the **[official Ubuntu 22.04](#ubuntu-2204-jammy)** images.
+As of Kubernetes 1.32 the default images used by kOps are the **[official Ubuntu 24.04](#ubuntu-2404-noble)** images.
 
 You can choose a different image for an instance group by editing it with `kops edit ig nodes`.
 
@@ -13,9 +13,9 @@ For AWS, you should set the `image` field in one of the following formats:
 
 ```yaml
 image: ami-00579fbb15b954340
-image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
-image: ubuntu/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
-image: ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+image: ubuntu/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
 ```
 
 ## Security Updates
@@ -42,7 +42,7 @@ The following table provides the support status for various distros with regards
 | CoreOS                                  |          1.6 |    1.9 |       1.17 |    1.18 |
 | Debian 8                                |            - |    1.5 |       1.17 |    1.18 |
 | Debian 9                                |          1.8 |   1.10 |       1.21 |    1.23 |
-| [Debian 10](#debian-10-buster)          |         1.13 |   1.17 |       1.35 |    1.36 |
+| Debian 10                               |         1.13 |   1.17 |       1.35 |    1.36 |
 | [Debian 11](#debian-11-bullseye)        |       1.21.1 |      - |          - |       - |
 | [Debian 12](#debian-12-bookworm)        |       1.26.3 |      - |          - |       - |
 | [Debian 13](#debian-13-trixie)          |         1.34 |      - |          - |       - |
@@ -57,7 +57,7 @@ The following table provides the support status for various distros with regards
 | [Rocky 10](#rocky-10)                   |         1.35 |      - |          - |       - |
 | Ubuntu 16.04                            |          1.5 |   1.10 |       1.17 |    1.20 |
 | Ubuntu 18.04                            |         1.10 |   1.16 |       1.26 |    1.28 |
-| [Ubuntu 20.04](#ubuntu-2004-focal)      |       1.16.2 |   1.18 |       1.35 |    1.36 |
+| Ubuntu 20.04                            |       1.16.2 |   1.18 |       1.35 |    1.36 |
 | [Ubuntu 22.04](#ubuntu-2204-jammy)      |         1.23 |   1.24 |          - |       - |
 | [Ubuntu 24.04](#ubuntu-2404-noble)      |         1.29 |   1.31 |          - |       - |
 | [Ubuntu 26.04](#ubuntu-2604-resolute)   |         1.36 |      - |          - |       - |
@@ -75,42 +75,6 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=owner-alias,Values=amazon" \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-*"
-```
-
-### Debian 10 (Buster)
-
-Debian 10 is based on Kernel version **4.19** which fixes some of the bugs present in Debian 9 and effects are less visible.
-
-One notable change is the addition of `iptables` NFT, which is by default. This is not yet supported by most CNI plugins and seems to be [slower](https://youtu.be/KHMnC3kj3Js?t=771) than the legacy version. It is recommended to switch to `iptables` legacy by using the following script in `additionalUserData` for each instance group:
-
-```yaml
-additionalUserData:
-  - name: busterfix.sh
-    type: text/x-shellscript
-    content: |
-      #!/bin/sh
-      update-alternatives --set iptables /usr/sbin/iptables-legacy
-      update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-      update-alternatives --set arptables /usr/sbin/arptables-legacy
-      update-alternatives --set ebtables /usr/sbin/ebtables-legacy
-```
-
-Available images can be listed using:
-
-```bash
-# Amazon Web Services (AWS)
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 136693071363 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=debian-10-*-*"
-
-# Google Cloud Platform (GCP)
-gcloud compute images list --filter debian-10-buster- \
-  --project debian-cloud
-
-# Microsoft Azure
-az vm image list --all --output table \
-  --publisher Debian --offer debian-10 --sku 10-gen2
 ```
 
 ### Debian 11 (Bullseye)
@@ -295,28 +259,6 @@ aws ec2 describe-images --region us-east-1 --output table \
 gcloud compute images list --filter rocky-linux-10-optimized-gcp-v \
   --project rocky-linux-cloud
 
-```
-
-### Ubuntu 20.04 (Focal)
-
-Ubuntu 20.04 is based on Kernel version **5.4** which fixes all the known major Kernel bugs.
-
-Available images can be listed using:
-
-```bash
-# Amazon Web Services (AWS)
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 099720109477 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-*-*"
-
-# Google Cloud Platform (GCP)
-gcloud compute images list --filter ubuntu-2004-focal-v \
-  --project ubuntu-os-cloud
-
-# Microsoft Azure
-az vm image list --all --output table \
-  --publisher Canonical --offer 0001-com-ubuntu-server-focal --sku 20_04-lts-gen2
 ```
 
 ### Ubuntu 22.04 (Jammy)

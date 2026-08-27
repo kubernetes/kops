@@ -37,15 +37,15 @@ export NAME=k8s.example.com
 export KOPS_STATE_STORE=s3://example-state-store
 kops create cluster $NAME \
     --zones "us-east-2a,us-east-2b,us-east-2c" \
-    --master-zones "us-east-2a,us-east-2b,us-east-2c" \
+    --control-plane-zones "us-east-2a,us-east-2b,us-east-2c" \
     --networking calico \
     --topology private \
     --bastion \
     --node-count 3 \
-    --node-size m4.xlarge \
-    --kubernetes-version v1.6.6 \
-    --master-size m4.large \
-    --vpc vpc-6335dd1a \
+    --node-size m5.xlarge \
+    --kubernetes-version v1.36.4 \
+    --control-plane-size m5.large \
+    --network-id vpc-6335dd1a \
     --dry-run \
     -o yaml > $NAME.yaml
 ```
@@ -64,70 +64,202 @@ metadata:
 spec:
   api:
     loadBalancer:
+      class: Network
       type: Public
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudProvider: aws
   configBase: s3://example-state-store/k8s.example.com
   etcdClusters:
-  - etcdMembers:
-    - instanceGroup: master-us-east-2d
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2a
       name: a
-    - instanceGroup: master-us-east-2b
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2b
       name: b
-    - instanceGroup: master-us-east-2c
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2c
       name: c
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
-    - instanceGroup: master-us-east-2d
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2a
       name: a
-    - instanceGroup: master-us-east-2b
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2b
       name: b
-    - instanceGroup: master-us-east-2c
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2c
       name: c
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
     name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.6.6
-  masterPublicName: api.k8s.example.com
+  - ::/0
+  kubernetesVersion: v1.36.4
   networkCIDR: 172.20.0.0/16
-  networkID: vpc-6335dd1a
   networking:
     calico: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
+  - ::/0
   subnets:
-  - cidr: 172.20.32.0/19
-    name: us-east-2d
+  - cidr: 172.20.64.0/18
+    name: us-east-2a
     type: Private
-    zone: us-east-2d
-  - cidr: 172.20.64.0/19
+    zone: us-east-2a
+  - cidr: 172.20.128.0/18
     name: us-east-2b
     type: Private
     zone: us-east-2b
-  - cidr: 172.20.96.0/19
+  - cidr: 172.20.192.0/18
     name: us-east-2c
     type: Private
     zone: us-east-2c
-  - cidr: 172.20.0.0/22
-    name: utility-us-east-2d
+  - cidr: 172.20.0.0/21
+    name: utility-us-east-2a
     type: Utility
-    zone: us-east-2d
-  - cidr: 172.20.4.0/22
+    zone: us-east-2a
+  - cidr: 172.20.8.0/21
     name: utility-us-east-2b
     type: Utility
     zone: us-east-2b
-  - cidr: 172.20.8.0/22
+  - cidr: 172.20.16.0/21
     name: utility-us-east-2c
     type: Utility
     zone: us-east-2c
   topology:
-    bastion:
-      bastionPublicName: bastion.k8s.example.com
     dns:
-      type: Public
+      type: None
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.example.com
+  name: control-plane-us-east-2a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: m5.large
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: control-plane-us-east-2a
+  role: Master
+  subnets:
+  - us-east-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.example.com
+  name: control-plane-us-east-2b
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: m5.large
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: control-plane-us-east-2b
+  role: Master
+  subnets:
+  - us-east-2b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.example.com
+  name: control-plane-us-east-2c
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: m5.large
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: control-plane-us-east-2c
+  role: Master
+  subnets:
+  - us-east-2c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.example.com
+  name: nodes-us-east-2a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: m5.xlarge
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-us-east-2a
+  role: Node
+  subnets:
+  - us-east-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.example.com
+  name: nodes-us-east-2b
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: m5.xlarge
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-us-east-2b
+  role: Node
+  subnets:
+  - us-east-2b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: k8s.example.com
+  name: nodes-us-east-2c
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: m5.xlarge
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-us-east-2c
+  role: Node
+  subnets:
+  - us-east-2c
 
 ---
 
@@ -138,87 +270,15 @@ metadata:
     kops.k8s.io/cluster: k8s.example.com
   name: bastions
 spec:
-  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
-  machineType: t2.micro
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: t3.micro
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: bastions
   role: Bastion
   subnets:
-  - utility-us-east-2d
-  - utility-us-east-2b
-  - utility-us-east-2c
-
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  labels:
-    kops.k8s.io/cluster: k8s.example.com
-  name: master-us-east-2d
-spec:
-  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
-  machineType: m4.large
-  maxSize: 1
-  minSize: 1
-  role: Master
-  subnets:
-  - us-east-2d
-
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  labels:
-    kops.k8s.io/cluster: k8s.example.com
-  name: master-us-east-2b
-spec:
-  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
-  machineType: m4.large
-  maxSize: 1
-  minSize: 1
-  role: Master
-  subnets:
-  - us-east-2b
-
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  labels:
-    kops.k8s.io/cluster: k8s.example.com
-  name: master-us-east-2c
-spec:
-  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
-  machineType: m4.large
-  maxSize: 1
-  minSize: 1
-  role: Master
-  subnets:
-  - us-east-2c
-
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  labels:
-    kops.k8s.io/cluster: k8s.example.com
-  name: nodes
-spec:
-  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
-  machineType: m4.xlarge
-  maxSize: 3
-  minSize: 3
-  role: Node
-  subnets:
-  - us-east-2d
+  - us-east-2a
   - us-east-2b
   - us-east-2c
 ```
@@ -240,8 +300,8 @@ spec:
   cloudLabels:
     team: example
     project: ion
-  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
-  machineType: m4.10xlarge
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
+  machineType: m5.12xlarge
   maxSize: 42
   minSize: 42
   maxPrice: "0.35"
@@ -250,7 +310,7 @@ spec:
   - us-east-2c
 ```
 
-This configuration will create an autoscale group that will include 42 m4.10xlarge nodes running as spot instances with custom labels.
+This configuration will create an autoscale group that will include 42 m5.12xlarge nodes running as spot instances with custom labels.
 
 To create the cluster execute:
 

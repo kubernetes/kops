@@ -89,7 +89,7 @@ spec:
     legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.17.2
+  kubernetesVersion: 1.36.2
   masterPublicName: api.simple.k8s.local
   networking:
     kubenet: {}
@@ -106,7 +106,7 @@ spec:
       type: Public
 ```
 
-Edit `kubernetesVersion`, changing it to `1.17.7` for example.
+Edit `kubernetesVersion`, changing it to `1.36.4` for example.
 
 
 Apply the changes to the cloud infrastructure using `kops update cluster` and `kops update cluster --yes`:
@@ -117,7 +117,7 @@ Will create resources:
   	Network             	name:default id:default
   	Tags                	[simple-k8s-local-k8s-io-role-master]
   	Preemptible         	false
-  	BootDiskImage       	cos-cloud/cos-stable-57-9202-64-0
+  	BootDiskImage       	ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
   	BootDiskSizeGB      	64
   	BootDiskType        	pd-standard
   	CanIPForward        	true
@@ -129,7 +129,7 @@ Will create resources:
   	Network             	name:default id:default
   	Tags                	[simple-k8s-local-k8s-io-role-node]
   	Preemptible         	false
-  	BootDiskImage       	debian-cloud/debian-9-stretch-v20170918
+  	BootDiskImage       	ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
   	BootDiskSizeGB      	128
   	BootDiskType        	pd-standard
   	CanIPForward        	true
@@ -159,10 +159,10 @@ Restart the instances with `kops rolling-update cluster --yes`.
 ```
 > kubectl get nodes -owide
 NAME                        STATUS    AGE       VERSION   EXTERNAL-IP     OS-IMAGE                             KERNEL-VERSION
-master-us-central1-a-8fcc   Ready     26m       v1.17.7   35.194.56.129   Container-Optimized OS from Google   4.4.35+
-nodes-9cml                  Ready     16m       v1.17.7   35.193.12.73    Ubuntu 16.04.3 LTS                   4.10.0-35-generic
-nodes-km98                  Ready     10m       v1.17.7   35.194.25.144   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
-nodes-wbb2                  Ready     2m        v1.17.7   35.188.177.16   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
+master-us-central1-a-8fcc   Ready     26m       v1.36.4   35.194.56.129   Ubuntu 24.04.3 LTS                   6.8.0-51-generic
+nodes-9cml                  Ready     16m       v1.36.4   35.193.12.73    Ubuntu 24.04.3 LTS                   6.8.0-51-generic
+nodes-km98                  Ready     10m       v1.36.4   35.194.25.144   Ubuntu 24.04.3 LTS                   6.8.0-51-generic
+nodes-wbb2                  Ready     2m        v1.36.4   35.188.177.16   Ubuntu 24.04.3 LTS                   6.8.0-51-generic
 ```
 
 <!-- TODO: Do we drain, validate and then restart -->

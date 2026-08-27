@@ -87,7 +87,7 @@ spec:
     legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.7.2
+  kubernetesVersion: 1.36.4
   masterPublicName: api.simple.k8s.local
   networking:
     kubenet: {}
@@ -214,9 +214,9 @@ Example of creating a high availability multi-zonal cluster, with both the contr
 
 ```
 kops create cluster \
---master-zones=us-central1-a,us-central1-b,us-central1-c \
+--control-plane-zones=us-central1-a,us-central1-b,us-central1-c \
 --zones=us-central1-a,us-central1-b,us-central1-c \
---node-count=2
+--node-count=2 \
 ${CLUSTER_NAME}
 ```
 

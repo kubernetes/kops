@@ -205,7 +205,7 @@ Instance groups with a mixedInstancesPolicy can be generated with the `kops tool
 The instance-selector accepts user supplied resource parameters like vcpus, memory, and much more to dynamically select instance types that match your criteria.
 
 ```bash
-kops toolbox instance-selector --vcpus 4 --flexible --usage-class spot --instance-group-name spotgroup
+kops toolbox instance-selector spotgroup --vcpus 4 --flexible --usage-class spot
 ```
 
 ```yaml
@@ -216,7 +216,7 @@ metadata:
     kops.k8s.io/cluster: spot.k8s.local
   name: spotgroup
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: c3.xlarge
   maxSize: 15
   minSize: 2

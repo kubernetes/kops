@@ -268,11 +268,11 @@ Let's first create our cluster ensuring a multi-master setup with 3 masters in a
 ```bash
 kops create cluster \
 --cloud=aws \
---master-zones=us-east-1a,us-east-1b,us-east-1c \
+--control-plane-zones=us-east-1a,us-east-1b,us-east-1c \
 --zones=us-east-1a,us-east-1b,us-east-1c \
 --node-count=2 \
 --node-size=t2.micro \
---master-size=t2.micro \
+--control-plane-size=t2.micro \
 ${NAME}
 ```
 
@@ -281,8 +281,8 @@ A few things to note here:
 - The environment variable ${NAME} was previously exported with our cluster name: mycluster01.kopsclustertest.example.org.
 - "--cloud=aws": As kOps grows and begin to support more clouds, we need to tell the command to use the specific cloud we want for our deployment. In this case: amazon web services (aws).
 - For true HA at the master level, we need to pick a region with at least 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e.
-- The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce that we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters).
-- We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
+- The "--control-plane-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce that we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters).
+- We are including the arguments "--node-size" and "--control-plane-size" to specify the "instance types" for both our masters and worker nodes.
 - Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DON'T USE t2.micro on real production systems. Start with "t2.medium" as a minimum realistic/workable machine type.
 
 With those points clarified, let's deploy our cluster:
@@ -693,7 +693,7 @@ metadata:
     kops.k8s.io/cluster: mycluster01.kopsclustertest.example.org
   name: nodes
 spec:
-  image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: t2.micro
   maxSize: 2
   minSize: 2
@@ -714,7 +714,7 @@ metadata:
     kops.k8s.io/cluster: mycluster01.kopsclustertest.example.org
   name: nodes
 spec:
-  image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: t2.micro
   maxSize: 3
   minSize: 3
@@ -787,7 +787,7 @@ You can see how your cluster scaled up to 3 nodes.
 **SCALING RECOMMENDATIONS:**
 
 - Always think ahead. If you want to ensure to have the capability to scale-up to all available zones in the region, ensure to add them to the "--zones=" argument when using the "kops create cluster" command. Example: --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1e. That will make things simpler later.
-- For the masters, always consider "odd" numbers starting from 3. Like many other cluster, odd numbers starting from "3" are the proper way to create a fully redundant multi-master solution. In the specific case of "kOps", you add masters by adding zones to the "--master-zones" argument on "kops create command".
+- For the masters, always consider "odd" numbers starting from 3. Like many other cluster, odd numbers starting from "3" are the proper way to create a fully redundant multi-master solution. In the specific case of "kOps", you add masters by adding zones to the "--control-plane-zones" argument on "kops create command".
 
 ## DELETING OUR CLUSTER AND CHECKING OUR DNS SUBDOMAIN:
 

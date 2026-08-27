@@ -81,7 +81,7 @@ When cross-subnet mode is enabled in kOps 1.19+, it is equivalent to either:
   networking:
     calico:
       awsSrcDstCheck: Disable
-      IPIPMode: CrossSubnet
+      ipipMode: CrossSubnet
 ```
 or
 ```yaml

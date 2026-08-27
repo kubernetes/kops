@@ -703,7 +703,7 @@ spec:
     - name: GOMEMLIMIT
       value: "2750MiB"
     - name: GOGC
-      value: 50
+      value: "50"
 ```
 
 ## externalDns
@@ -1124,10 +1124,10 @@ spec:
   - before:
     - some_service.service
     requires:
-    - docker.service
+    - containerd.service
     execContainer:
       image: kopeio/nvidia-bootstrap:1.6
-      # these are added as -e to the docker environment
+      # these are set as environment variables in the container
       environment:
         AWS_REGION: eu-west-1
         SOME_VAR: SOME_VALUE
@@ -1300,19 +1300,9 @@ spec:
     manageStorageClasses: false
 ```
 
-## containerRuntime
-{{ kops_feature_table(kops_added_default='1.18', k8s_min='1.11') }}
-
-As of Kubernetes 1.20, the default [container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes) is containerd. Previously, the default container runtime was Docker.
-
-Docker can still be used as container runtime with Kubernetes 1.20+,  but be aware that Kubernetes is [deprecating](https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker) support for it and will be removed in Kubernetes 1.22.
-
-```yaml
-spec:
-  containerRuntime: containerd
-```
-
 ## containerd
+
+containerd is the only supported [container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes). The `containerRuntime` and `docker` fields were removed: Kubernetes dropped the dockershim in 1.24, and setting `containerRuntime: docker` is now rejected by validation.
 
 ### Configuration
 
@@ -1322,7 +1312,7 @@ Overriding the configuration of containerd has to be done with care as the defau
 ```yaml
 spec:
   containerd:
-    version: 1.4.4
+    version: 2.3.4
     logLevel: info
     configOverride: ""
 ```
@@ -1448,7 +1438,7 @@ spec:
       #!/bin/sh
       cat > /usr/local/share/ca-certificates/mycert.crt <<EOF
       -----BEGIN CERTIFICATE-----
-snip
+      ...snip...
       -----END CERTIFICATE-----
       EOF
       update-ca-certificates
@@ -1530,27 +1520,16 @@ which would end up in a drop-in file on all masters and nodes of the cluster.
 As of Kubernetes 1.20, kOps will default the cgroup driver of the kubelet and the container runtime to use systemd as the default cgroup driver
 as opposed to cgroup fs.
 
-It is important to ensure that the kubelet and the container runtime are using the same cgroup driver. Below are examples showing
-how to set the cgroup driver for kubelet and the container runtime.
+It is important to ensure that the kubelet and the container runtime are using the same cgroup driver.
+containerd follows the kubelet's cgroup driver, so setting `cgroupDriver` on the kubelet is enough;
+there is no separate runtime setting to change.
 
-
-Setting kubelet to use cgroupfs
+Setting kubelet to use cgroupfs:
 ```yaml
 spec:
   kubelet:
     cgroupDriver: cgroupfs
 ```
-
-Setting Docker to use cgroupfs
-```yaml
-spec:
-  docker:
-    execOpt:
-      - native.cgroupdriver=cgroupfs
-```
-
-In the case of containerd, the cgroup-driver is dependent on the cgroup driver of kubelet. To use cgroupfs, just update the
-cgroupDriver of kubelet to use cgroupfs.
 
 ## NTP
 

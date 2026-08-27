@@ -58,13 +58,13 @@ Let's first create our cluster ensuring a multi-master setup with 3 masters in a
 ```bash
 kops create cluster \
 --cloud=aws \
---master-zones=us-east-1a,us-east-1b,us-east-1c \
+--control-plane-zones=us-east-1a,us-east-1b,us-east-1c \
 --zones=us-east-1a,us-east-1b,us-east-1c \
 --node-count=2 \
 --topology private \
 --networking kindnet \
 --node-size=t3.micro \
---master-size=t3.micro \
+--control-plane-size=t3.micro \
 ${NAME}
 ```
 
@@ -73,9 +73,9 @@ A few things to note here:
 - The environment variable ${NAME} was previously exported with our cluster name: privatekopscluster.k8s.local.
 - "--cloud=aws": As kOps grows and begin to support more clouds, we need to tell the command to use the specific cloud we want for our deployment. In this case: amazon web services (aws).
 - For true HA (high availability) at the master level, we need to pick a region with 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e. We used "us-east-1a,us-east-1b,us-east-1c" for our masters.
-- The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters). Again, real "HA" on Kubernetes control plane requires 3 masters.
+- The "--control-plane-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters). Again, real "HA" on Kubernetes control plane requires 3 masters.
 - The "--topology private" argument will ensure that all our instances will have private IP's and no public IP's from amazon.
-- We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
+- We are including the arguments "--node-size" and "--control-plane-size" to specify the "instance types" for both our masters and worker nodes.
 - Because we are just doing a simple LAB, we are using "t3.micro" machines. Please DON'T USE t3.micro on real production systems. Start with "t3.medium" as a minimum realistic/workable machine type.
 - And finally, the "--networking kindnet" argument. With the private networking model, we need to tell kOps which networking subsystem to use. More information about kOps supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kindnet".
 
@@ -148,7 +148,7 @@ kind: InstanceGroup
 metadata:
   name: bastions
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: t3.micro
   maxSize: 1
   minSize: 1
@@ -327,7 +327,7 @@ metadata:
     kops.k8s.io/cluster: privatekopscluster.k8s.local
   name: bastions
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: t3.micro
   maxSize: 3
   minSize: 3
