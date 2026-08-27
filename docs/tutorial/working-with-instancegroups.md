@@ -88,7 +88,7 @@ metadata:
     kops.k8s.io/cluster: simple.k8s.local
   name: nodes-us-central1-a
 spec:
-  image: cos-cloud/cos-stable-57-9202-64-0
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
   machineType: n1-standard-2
   maxSize: 2
   minSize: 2
@@ -140,20 +140,20 @@ nodes-us-central1-a-z2cz    Ready     1s       v1.7.2
 
 That was a fairly simple change, because we didn't have to reboot the nodes. Most changes though do
 require rolling your instances - this is actually a deliberate design decision, in that we are aiming
-for immutable nodes.  An example is changing your image.  We're using `cos-stable`, which is Google's
-Container OS.  Let's try Debian Stretch instead.
+for immutable nodes.  An example is changing your image.  We're using Ubuntu 24.04, which is the kOps
+default on GCE.  Let's try Debian 12 instead.
 
 If you run `gcloud compute images list` to list the images available to you in GCE, you should see
-a debian-9 image:
+a debian-12 image:
 
 ```
 > gcloud compute images list
 ...
-debian-9-stretch-v20170918                        debian-cloud             debian-9                              READY
+debian-12-bookworm-v20260610                      debian-cloud             debian-12                             READY
 ...
 ```
 
-So now we'll do the same `kops edit ig nodes`, except this time change the image to `debian-cloud/debian-9-stretch-v20170918`:
+So now we'll do the same `kops edit ig nodes`, except this time change the image to `debian-cloud/debian-12-bookworm-v20260610`:
 
 Now `kops update cluster` will show that you're going to create a new [GCE Instance Template](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates),
 and that the Managed Instance Group is going to use it:
@@ -164,7 +164,7 @@ Will create resources:
   	Network             	name:default id:default
   	Tags                	[simple-k8s-local-k8s-io-role-node]
   	Preemptible         	false
-  	BootDiskImage       	debian-cloud/debian-9-stretch-v20170918
+  	BootDiskImage       	debian-cloud/debian-12-bookworm-v20260610
   	BootDiskSizeGB      	128
   	BootDiskType        	pd-standard
   	CanIPForward        	true
@@ -177,7 +177,7 @@ Will modify resources:
   	InstanceTemplate    	 id:nodes-us-central1-a-simple-k8s-local-1507043948 -> name:nodes-us-central1-a-simple-k8s-local
 ```
 
-Note that the `BootDiskImage` is indeed set to the debian 9 image you requested.
+Note that the `BootDiskImage` is indeed set to the debian 12 image you requested.
 
 `kops update cluster --yes` will now apply the change, but if you were to run `kubectl get nodes` you would see
 that the instances had not yet been reconfigured. There's a hint at the bottom:
@@ -203,7 +203,7 @@ An example spec looks like this:
 metadata:
   name: nodes-us-west-2a
 spec:
-  image: ssm:/aws/service/canonical/ubuntu/server/18.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+  image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
   machineType: t3.medium
   maxSize: 1
   minSize: 1
@@ -304,7 +304,7 @@ metadata:
 spec:
   cloudLabels:
     role: compute
-  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: m4.large
   ...
   volumes:
@@ -332,7 +332,7 @@ metadata:
 spec:
   cloudLabels:
     role: compute
-  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: m4.large
   ...
   volumeMounts:
@@ -359,7 +359,7 @@ metadata:
 spec:
   cloudLabels:
     role: compute
-  image: coreos.com/CoreOS-stable-1855.4.0-hvm
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: c5d.large
   ...
   volumeMounts:
@@ -451,7 +451,7 @@ metadata:
 spec:
   cloudLabels:
     role: compute
-  image: coreos.com/CoreOS-stable-1911.4.0-hvm
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: m4.large
   maxSize: 50
   minSize: 10
@@ -516,7 +516,7 @@ So the procedure is:
 
 ## Adding Taints or Labels to an Instance Group
 
-If you're running Kubernetes 1.6.0 or later, you can also control taints in the InstanceGroup.
+You can also control taints in the InstanceGroup.
 The taints property takes a list of strings. The following example would add two taints to an IG,
 using the same `edit` -> `update` -> `rolling-update` process as above.
 
@@ -526,7 +526,7 @@ Additionally, `nodeLabels` can be added to an IG in order to take advantage of P
 metadata:
   name: nodes-us-east-1a
 spec:
-  machineType: m3.medium
+  machineType: m5.large
   maxSize: 3
   minSize: 3
   role: Node
@@ -537,19 +537,19 @@ spec:
     spot: "false"
 ```
 
-## Resizing the master
+## Resizing the control plane
 
 (This procedure should be pretty familiar by now!)
 
-Your master instance group will probably be called `master-us-west-1c` or something similar.
+Your control plane instance group will probably be called `control-plane-us-west-1c` or something similar.
 
-`kops edit ig master-us-west-1c`
+`kops edit ig control-plane-us-west-1c`
 
 Add or set the machineType:
 
 ```YAML
 spec:
-  machineType: m3.large
+  machineType: m5.xlarge
 ```
 
 * Preview changes: `kops update cluster <clustername>`

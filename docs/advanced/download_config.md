@@ -10,26 +10,26 @@ Let us say you create your cluster with the following configuration options:
 export KOPS_STATE_STORE=s3://k8s-us-west
 export CLOUD=aws
 export ZONE="us-west-1a"
-export MASTER_ZONES="us-west-1a"
+export CONTROL_PLANE_ZONES="us-west-1a"
 export NAME=k8s.example.com
-export K8S_VERSION=1.6.4
+export K8S_VERSION=1.36.4
 export NETWORKCIDR="10.240.0.0/16"
-export MASTER_SIZE="m3.large"
-export WORKER_SIZE="m4.large"
+export CONTROL_PLANE_SIZE="m5.large"
+export WORKER_SIZE="m5.large"
 ```
 Next you call the kOps command to create the cluster in your terminal:
 
 ```shell
-kops create cluster $NAME              \
-   --cloud=$CLOUD                      \
-   --zones="$ZONE"                     \
-   --kubernetes-version=$K8S_VERSION   \
-   --master-zones="$MASTER_ZONES"      \
-   --node-count=3                      \
-   --node-size="$WORKER_SIZE"          \
-   --master-size="$MASTER_SIZE"        \
-   --network-cidr=${NETWORKCIDR}       \
-   --dns-zone=ZVO7KL181S5AP            \
+kops create cluster $NAME                             \
+   --cloud=$CLOUD                                     \
+   --zones="$ZONE"                                    \
+   --kubernetes-version=$K8S_VERSION                  \
+   --control-plane-zones="$CONTROL_PLANE_ZONES"       \
+   --control-plane-size="$CONTROL_PLANE_SIZE"         \
+   --node-count=3                                     \
+   --node-size="$WORKER_SIZE"                         \
+   --network-cidr=${NETWORKCIDR}                      \
+   --dns-zone=ZVO7KL181S5AP                           \
    --ssh-public-key=$HOME/.ssh/lab_no_password.pub
 ```
 

@@ -138,7 +138,7 @@ Let's first create our cluster ensuring a multi-master setup with 3 masters in a
 
 ```bash
 kops create cluster \
---master-zones=us-east-1a,us-east-1b,us-east-1c \
+--control-plane-zones=us-east-1a,us-east-1b,us-east-1c \
 --zones=us-east-1a,us-east-1b,us-east-1c \
 --node-count=2 \
 --image ami-32705b49 \
@@ -149,7 +149,7 @@ A few things to note here:
 
 - The environment variable ${NAME} was previously exported with our cluster name: coreosbasedkopscluster.k8s.local.
 - For true HA at the master level, we need to pick a region with at least 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e.
-- The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce that we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters).
+- The "--control-plane-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce that we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters).
 - The "--image ami-32705b49" KOPS argument will enforce the usage or our desired image: CoreOS Stable 1409.8.0. You can use here any of the aforementioned formats: "ami-32705b49" or "595879546273/CoreOS-stable-1409.8.0-hvm". KOPS will understand both ways to indicate the AMI we want to use here.
 
 With those points clarified, let's deploy our cluster:
@@ -192,7 +192,7 @@ Before continuing, let's note something interesting here: Can you see your maste
 If you don't want KOPS to auto-select the instance type, you can use the following arguments in order to enforce the instance types for both masters and nodes:
 
 - Specify the node size: --node-size=m4.large
-- Specify the master size: --master-size=m4.large
+- Specify the master size: --control-plane-size=m4.large
 
 But, before doing that, always ensure the instance types are available on your desired AZ.
 

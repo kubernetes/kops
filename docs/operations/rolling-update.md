@@ -67,7 +67,7 @@ Rolling update will then terminate the instance. Unless the instance had been de
 this will cause the cloud provider to create a new instance with the current specification.
 
 Rolling update then waits for 15 seconds to allow the Kubernetes APIserver to notice the termination.
-The amount of time to wait may be changed with the `--bastion-interval`, `--master-interval`, and/or
+The amount of time to wait may be changed with the `--bastion-interval`, `--control-plane-interval`, and/or
 `--node-interval` flags.
 
 Unless the `--cloudonly` flag was given, rolling update then waits until the cluster validates

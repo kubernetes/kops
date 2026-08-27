@@ -38,7 +38,7 @@ The file passed as `--values` must contain the variables referenced in the templ
 ```yaml
 # File values.yaml
 clusterName: eu1
-kubernetesVersion: 1.7.1
+kubernetesVersion: 1.36.4
 dnsZone: k8s.example.com
 awsRegion: eu-west-1
 ```

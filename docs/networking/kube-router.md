@@ -28,7 +28,7 @@ By default, kube-router enforces `NetworkPolicy` objects with iptables and ipset
 ```yaml
 spec:
   networking:
-    kubeRouter:
+    kuberouter:
       useNFTablesForNetpol: true
 ```
 

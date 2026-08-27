@@ -12,8 +12,7 @@ kOps will add `kops.k8s.io/gpu="1"` as node selector as well as the following ta
 
 ```yaml
   taints:
-  - effect: NoSchedule
-    key: nvidia.com/gpu
+  - nvidia.com/gpu:NoSchedule
 ```
 
 The taint will prevent you from accidentially scheduling workloads on GPU Nodes.
@@ -40,7 +39,7 @@ metadata:
     kops.k8s.io/cluster: <cluster name>
   name: gpu-nodes
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   nodeLabels:
     kops.k8s.io/instancegroup: gpu-nodes
   machineType: g4dn.xlarge
@@ -63,7 +62,7 @@ metadata:
     kops.k8s.io/cluster: <cluster name>
   name: gpu-nodes
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   nodeLabels:
     kops.k8s.io/instancegroup: gpu-nodes
   machineType: g4dn.xlarge

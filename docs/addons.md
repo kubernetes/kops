@@ -81,7 +81,7 @@ spec:
     balanceSimilarNodeGroups: false
     emitPerNodegroupMetrics: false
     awsUseStaticInstanceList: false
-    scaleDownUtilizationThreshold: 0.5
+    scaleDownUtilizationThreshold: "0.5"
     skipNodesWithCustomControllerPods: true
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true

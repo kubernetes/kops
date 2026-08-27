@@ -27,7 +27,7 @@ More details on this script are located [here.](https://github.com/Homebrew/brew
 
 Example usage:
 ```bash
-brew bump-formula-pr kops --version=1.20.2
+brew bump-formula-pr kops --version=1.36.2
 ```
 
 * Update the URL variable to the tar.gz of the new release source code

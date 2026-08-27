@@ -19,7 +19,7 @@ metadata:
     kops.k8s.io/cluster: <cluster name>
   name: apiserver-eu-central-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201026
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
   machineType: t3.small
   maxSize: 3
   minSize: 3

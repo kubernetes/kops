@@ -68,7 +68,7 @@ kubetest2 kops \
   --cloud-provider=aws \
   --cluster-name=my.testcluster.com \
   --kops-binary-path=${KOPS_ROOT}/.build/dist/$(go env GOOS)/$(go env GOARCH)/kops \
-  --kubernetes-version=v1.20.2 \
+  --kubernetes-version=v1.36.4 \
   --test=kops \
   -- \
   --test-package-version=v1.20.2 \
@@ -92,7 +92,7 @@ kubetest2 kops \
   --cluster-name=my.testcluster.com \
   --create-args="--networking calico" \
   --kops-binary-path=${KOPS_ROOT}/.build/dist/$(go env GOOS)/$(go env GOARCH)/kops \
-  --kubernetes-version=v1.20.2 \
+  --kubernetes-version=v1.36.4 \
   --test=kops \
   --
   -- \
@@ -104,7 +104,7 @@ kubetest2 kops \
 If you don't specify any additional flags, the kOps deployer Go module will create a kubernetes cluster using the following defaults.
 
 ```shell
-kops create cluster --name my.testcluster.com --admin-access <Client Public IP> --cloud aws --kubernetes-version v1.20.2 --master-count 1 --master-volume-size 48 --node-count 4 --node-volume-size 48 --set cluster.spec.nodePortAccess=0.0.0.0/0 --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub --yes --zones <Random Zone> --master-size c5.large --networking calico
+kops create cluster --name my.testcluster.com --admin-access <Client Public IP> --cloud aws --kubernetes-version v1.36.4 --control-plane-count 1 --control-plane-volume-size 48 --node-count 4 --node-volume-size 48 --set cluster.spec.nodePortAccess=0.0.0.0/0 --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub --yes --zones <Random Zone> --control-plane-size c5.large --networking calico
 ```
 
 For the `--zones` flag, the kOps deployer will select a random zone based on the `--cloud-provider` flag, for `aws` the full list of AWS zones can be found [here](https://github.com/kubernetes/kops/blob/master/tests/e2e/kubetest2-kops/aws/zones.go) and for `gce` the full list of GCE zones can be found [here](https://github.com/kubernetes/kops/blob/master/tests/e2e/kubetest2-kops/gce/zones.go).
@@ -118,7 +118,7 @@ kubetest2 kops \
   --cloud-provider=aws \
   --cluster-name=my.testcluster.com \
   --kops-binary-path=${KOPS_ROOT}/.build/dist/$(go env GOOS)/$(go env GOARCH)/kops \
-  --kubernetes-version=v1.20.2 \
+  --kubernetes-version=v1.36.4 \
   --template-path=my.testcluster.com.yaml \
   --test=kops \
   -- \
