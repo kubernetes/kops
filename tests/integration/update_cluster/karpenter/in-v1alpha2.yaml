@@ -132,7 +132,7 @@ spec:
   role: Node
   maxSize: 20
   # machineType is set so the generated NodePool demonstrates that instanceRequirements
-  # replaces the instance type requirement rather than being ANDed with it.
+  # is combined with the instance type requirement.
   machineType: t2.medium
   mixedInstancesPolicy:
     instanceRequirements:
@@ -148,4 +148,3 @@ spec:
       - t2.nano
   subnets:
   - us-test-1a
-

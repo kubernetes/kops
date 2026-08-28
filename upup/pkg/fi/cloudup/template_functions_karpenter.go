@@ -518,14 +518,15 @@ func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup) []kar
 		instanceRequirements = ig.Spec.MixedInstancesPolicy.InstanceRequirements
 	}
 
-	if instanceRequirements != nil {
-		requirements = append(requirements, karpenterInstanceRequirements(instanceRequirements)...)
-	} else if instanceTypes := karpenterInstanceTypes(ig); len(instanceTypes) != 0 {
+	if instanceTypes := karpenterInstanceTypes(ig); len(instanceTypes) != 0 {
 		requirements = append(requirements, karpenterRequirement{
 			Key:      karpenterInstanceTypeLabel,
 			Operator: "In",
 			Values:   instanceTypes,
 		})
+	}
+	if instanceRequirements != nil {
+		requirements = append(requirements, karpenterInstanceRequirements(instanceRequirements)...)
 	}
 
 	requirements = append(requirements, karpenterRequirement{

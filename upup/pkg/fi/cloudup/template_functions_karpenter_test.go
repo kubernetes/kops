@@ -270,6 +270,7 @@ func TestKarpenterRequirements(t *testing.T) {
 			},
 			expected: []karpenterRequirement{
 				osRequirement,
+				{Key: "node.kubernetes.io/instance-type", Operator: "In", Values: []string{"t3.medium"}},
 				{Key: "karpenter.k8s.aws/instance-cpu", Operator: "Gte", Values: []string{"2"}},
 				{Key: "karpenter.k8s.aws/instance-cpu", Operator: "Lte", Values: []string{"16"}},
 				onDemand,
@@ -292,9 +293,7 @@ func TestKarpenterRequirements(t *testing.T) {
 			},
 		},
 		{
-			// instanceRequirements describes a capacity envelope, so an instance type
-			// requirement would defeat it by pinning the pool to spec.machineType.
-			desc: "instanceRequirements suppress the instance type list",
+			desc: "instanceRequirements combine with the instance type list",
 			spec: kops.InstanceGroupSpec{
 				MachineType: "t3.medium",
 				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
@@ -306,6 +305,7 @@ func TestKarpenterRequirements(t *testing.T) {
 			},
 			expected: []karpenterRequirement{
 				osRequirement,
+				{Key: "node.kubernetes.io/instance-type", Operator: "In", Values: []string{"m6i.large", "t3.medium"}},
 				{Key: "karpenter.k8s.aws/instance-cpu", Operator: "Gte", Values: []string{"2"}},
 				onDemand,
 			},

@@ -410,9 +410,33 @@ func TestKarpenterMixedInstancesPolicyValidation(t *testing.T) {
 			desc:        "GPU and non-GPU instance list",
 			machineType: "g4dn.xlarge",
 			spec: &kops.MixedInstancesPolicySpec{
-				Instances: []string{"m5.large"},
+				Instances:            []string{"m5.large"},
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
 			},
 			expected: []string{"Forbidden::spec.mixedInstancesPolicy.instances[0]"},
+		},
+		{
+			desc: "instance requirements do not suppress instance validation",
+			spec: &kops.MixedInstancesPolicySpec{
+				Instances:            []string{"t2.invalidType"},
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instances[0]"},
+		},
+		{
+			desc:        "comma-separated machine types",
+			machineType: "m5.large,m5.xlarge",
+			spec: &kops.MixedInstancesPolicySpec{
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+		},
+		{
+			desc: "GPU and non-GPU instance list without machine type",
+			spec: &kops.MixedInstancesPolicySpec{
+				Instances:            []string{"g4dn.xlarge", "m5.large"},
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+			expected: []string{"Forbidden::spec.mixedInstancesPolicy.instances[1]"},
 		},
 	}
 

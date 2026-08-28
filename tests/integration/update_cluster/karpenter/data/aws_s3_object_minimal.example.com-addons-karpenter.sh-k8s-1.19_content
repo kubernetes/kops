@@ -3212,6 +3212,10 @@ spec:
         operator: In
         values:
         - linux
+      - key: node.kubernetes.io/instance-type
+        operator: In
+        values:
+        - t2.medium
       - key: karpenter.k8s.aws/instance-cpu
         operator: Gte
         values:
