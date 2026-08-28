@@ -23,6 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -229,6 +230,192 @@ func TestKarpenterCapacityTypes(t *testing.T) {
 			actual := karpenterCapacityTypes(g.ig)
 			if !reflect.DeepEqual(actual, g.expected) {
 				t.Errorf("expected %#v, got %#v", g.expected, actual)
+			}
+		})
+	}
+}
+
+func TestKarpenterRequirements(t *testing.T) {
+	osRequirement := karpenterRequirement{Key: "kubernetes.io/os", Operator: "In", Values: []string{"linux"}}
+	onDemand := karpenterRequirement{Key: "karpenter.sh/capacity-type", Operator: "In", Values: []string{"on-demand"}}
+	quantity := func(s string) *resource.Quantity {
+		q := resource.MustParse(s)
+		return &q
+	}
+
+	grid := []struct {
+		desc        string
+		spec        kops.InstanceGroupSpec
+		expected    []karpenterRequirement
+		expectError bool
+	}{
+		{
+			// Regression guard: without instanceRequirements the output must not move.
+			desc: "no instanceRequirements keeps the instance type list",
+			spec: kops.InstanceGroupSpec{MachineType: "t3.medium"},
+			expected: []karpenterRequirement{
+				osRequirement,
+				{Key: "node.kubernetes.io/instance-type", Operator: "In", Values: []string{"t3.medium"}},
+				onDemand,
+			},
+		},
+		{
+			desc: "cpu bounds",
+			spec: kops.InstanceGroupSpec{
+				MachineType: "t3.medium",
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					InstanceRequirements: &kops.InstanceRequirementsSpec{
+						CPU: &kops.MinMaxSpec{Min: quantity("2"), Max: quantity("16")},
+					},
+				},
+			},
+			expected: []karpenterRequirement{
+				osRequirement,
+				{Key: "karpenter.k8s.aws/instance-cpu", Operator: "Gte", Values: []string{"2"}},
+				{Key: "karpenter.k8s.aws/instance-cpu", Operator: "Lte", Values: []string{"16"}},
+				onDemand,
+			},
+		},
+		{
+			desc: "memory bounds",
+			spec: kops.InstanceGroupSpec{
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					InstanceRequirements: &kops.InstanceRequirementsSpec{
+						Memory: &kops.MinMaxSpec{Min: quantity("2Gi"), Max: quantity("64Gi")},
+					},
+				},
+			},
+			expected: []karpenterRequirement{
+				osRequirement,
+				{Key: "karpenter.k8s.aws/instance-memory", Operator: "Gte", Values: []string{"2048"}},
+				{Key: "karpenter.k8s.aws/instance-memory", Operator: "Lte", Values: []string{"65536"}},
+				onDemand,
+			},
+		},
+		{
+			// instanceRequirements describes a capacity envelope, so an instance type
+			// requirement would defeat it by pinning the pool to spec.machineType.
+			desc: "instanceRequirements suppress the instance type list",
+			spec: kops.InstanceGroupSpec{
+				MachineType: "t3.medium",
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					Instances: []string{"m6i.large"},
+					InstanceRequirements: &kops.InstanceRequirementsSpec{
+						CPU: &kops.MinMaxSpec{Min: quantity("2")},
+					},
+				},
+			},
+			expected: []karpenterRequirement{
+				osRequirement,
+				{Key: "karpenter.k8s.aws/instance-cpu", Operator: "Gte", Values: []string{"2"}},
+				onDemand,
+			},
+		},
+		{
+			desc: "excluded instance types and families",
+			spec: kops.InstanceGroupSpec{
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					InstanceRequirements: &kops.InstanceRequirementsSpec{
+						ExcludedInstanceTypes: []string{"m3.*", "t2.nano", "c3.*", "t2.micro"},
+					},
+				},
+			},
+			expected: []karpenterRequirement{
+				osRequirement,
+				{Key: "karpenter.k8s.aws/instance-family", Operator: "NotIn", Values: []string{"c3", "m3"}},
+				{Key: "node.kubernetes.io/instance-type", Operator: "NotIn", Values: []string{"t2.micro", "t2.nano"}},
+				onDemand,
+			},
+		},
+		{
+			desc: "unsupported wildcard is rejected",
+			spec: kops.InstanceGroupSpec{
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					InstanceRequirements: &kops.InstanceRequirementsSpec{
+						ExcludedInstanceTypes: []string{"m5.*large"},
+					},
+				},
+			},
+			expectError: true,
+		},
+		{
+			desc: "negative quantity is rejected",
+			spec: kops.InstanceGroupSpec{
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					InstanceRequirements: &kops.InstanceRequirementsSpec{
+						CPU: &kops.MinMaxSpec{Min: quantity("-1")},
+					},
+				},
+			},
+			expectError: true,
+		},
+		{
+			desc: "overflowing quantity is rejected",
+			spec: kops.InstanceGroupSpec{
+				MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
+					InstanceRequirements: &kops.InstanceRequirementsSpec{
+						CPU: &kops.MinMaxSpec{Max: quantity("5000000000")},
+					},
+				},
+			},
+			expectError: true,
+		},
+	}
+
+	tf := &TemplateFunctions{}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			actual, err := tf.karpenterRequirements(&kops.InstanceGroup{Spec: g.spec})
+			if g.expectError {
+				if err == nil {
+					t.Fatalf("expected an error, got %#v", actual)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if diff := cmp.Diff(g.expected, actual); diff != "" {
+				t.Errorf("unexpected requirements, diff=%v", diff)
+			}
+		})
+	}
+}
+
+func TestKarpenterQuantityConversion(t *testing.T) {
+	grid := []struct {
+		desc        string
+		quantity    string
+		convert     func(*resource.Quantity) (int64, error)
+		expected    int64
+		expectError bool
+	}{
+		{desc: "cpu whole number", quantity: "4", convert: quantityToCount, expected: 4},
+		{desc: "cpu fractional is rejected", quantity: "500m", convert: quantityToCount, expectError: true},
+		// Binary suffixes are exact; decimal ones are not, so the rounding direction matters.
+		{desc: "2Gi rounds to 2048", quantity: "2Gi", convert: quantityToMiBRoundUp, expected: 2048},
+		{desc: "2G rounds up to 1908", quantity: "2G", convert: quantityToMiBRoundUp, expected: 1908},
+		{desc: "2G rounds down to 1907", quantity: "2G", convert: quantityToMiBRoundDown, expected: 1907},
+		{desc: "64Gi rounds to 65536", quantity: "64Gi", convert: quantityToMiBRoundDown, expected: 65536},
+		{desc: "1000Mi is exact", quantity: "1000Mi", convert: quantityToMiBRoundUp, expected: 1000},
+		{desc: "negative memory is rejected", quantity: "-1Gi", convert: quantityToMiBRoundUp, expectError: true},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			q := resource.MustParse(g.quantity)
+			actual, err := g.convert(&q)
+			if g.expectError {
+				if err == nil {
+					t.Fatalf("expected an error, got %d", actual)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if actual != g.expected {
+				t.Errorf("expected %d, got %d", g.expected, actual)
 			}
 		})
 	}
