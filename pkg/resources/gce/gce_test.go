@@ -17,9 +17,13 @@ limitations under the License.
 package gce
 
 import (
+	"context"
+	"reflect"
+	"sort"
 	"testing"
 
 	compute "google.golang.org/api/compute/v1"
+	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/pkg/resources"
 )
 
@@ -174,5 +178,164 @@ func TestContainsOnlyListedIGMs(t *testing.T) {
 				t.Fatalf("containsOnlyListedIGMs() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// routeInserter is implemented by the mock compute client; the production RouteClient
+// does not create routes, so tests assert to this interface to seed them.
+type routeInserter interface {
+	Insert(project string, route *compute.Route) (*compute.Operation, error)
+}
+
+func trackerKeys(trackers []*resources.Resource) []string {
+	var keys []string
+	for _, t := range trackers {
+		keys = append(keys, t.Type+":"+t.ID)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// TestListFirewallRulesLoadBalancer verifies that we find all the resources of a Service
+// LoadBalancer with externalTrafficPolicy: Local, whose health check is named for the load
+// balancer rather than the cluster.
+func TestListFirewallRulesLoadBalancer(t *testing.T) {
+	ctx := context.TODO()
+
+	const (
+		project     = "testproject"
+		region      = "us-test1"
+		clusterName = "cluster.example.com"
+		lbName      = "a1b2c3d4e5f67890a1b2c3d4e5f67890"
+	)
+
+	c := gcemock.InstallMockGCECloud(region, project)
+
+	network := "https://www.googleapis.com/compute/v1/projects/" + project + "/global/networks/cluster-example-com"
+	nodeTags := []string{"cluster-example-com-k8s-io-role-node"}
+
+	for _, firewall := range []*compute.Firewall{
+		{Name: "k8s-fw-" + lbName, Network: network, TargetTags: nodeTags},
+		{Name: "k8s-" + lbName + "-http-hc", Network: network, TargetTags: nodeTags},
+		{Name: "k8s-fw-ffffffffffffffffffffffffffffffff", Network: network, TargetTags: []string{"other-example-com-k8s-io-role-node"}},
+	} {
+		if _, err := c.Compute().Firewalls().Insert(project, firewall); err != nil {
+			t.Fatalf("error creating firewall %q: %v", firewall.Name, err)
+		}
+	}
+
+	if _, err := c.Compute().ForwardingRules().Insert(ctx, project, region, &compute.ForwardingRule{
+		Name:   lbName,
+		Target: "https://www.googleapis.com/compute/v1/projects/" + project + "/regions/" + region + "/targetPools/" + lbName,
+	}); err != nil {
+		t.Fatalf("error creating forwarding rule: %v", err)
+	}
+
+	if _, err := c.Compute().TargetPools().Insert(project, region, &compute.TargetPool{
+		Name:         lbName,
+		HealthChecks: []string{"https://www.googleapis.com/compute/v1/projects/" + project + "/global/httpHealthChecks/" + lbName},
+	}); err != nil {
+		t.Fatalf("error creating target pool: %v", err)
+	}
+
+	if _, err := c.Compute().HTTPHealthChecks().Insert(project, &compute.HttpHealthCheck{Name: lbName}); err != nil {
+		t.Fatalf("error creating http health check: %v", err)
+	}
+
+	d := &clusterDiscoveryGCE{
+		cloud:       c,
+		gceCloud:    c,
+		clusterName: clusterName,
+	}
+
+	trackers, err := d.listFirewallRules()
+	if err != nil {
+		t.Fatalf("error listing firewall rules: %v", err)
+	}
+
+	want := []string{
+		"FirewallRule:k8s-" + lbName + "-http-hc",
+		"FirewallRule:k8s-fw-" + lbName,
+		"ForwardingRule:" + lbName,
+		"HTTP HealthCheck:" + lbName,
+		"TargetPool:" + lbName,
+	}
+	sort.Strings(want)
+	if got := trackerKeys(trackers); !reflect.DeepEqual(got, want) {
+		t.Errorf("listFirewallRules() got %v, want %v", got, want)
+	}
+}
+
+// TestListRoutesBlockedOnInstanceGroupManagers verifies that we delete routes only after the
+// managed instance groups, which would otherwise recreate a control-plane instance that
+// recreates the routes.
+func TestListRoutesBlockedOnInstanceGroupManagers(t *testing.T) {
+	ctx := context.TODO()
+
+	const (
+		project     = "testproject"
+		region      = "us-test1"
+		zone        = "us-test1-a"
+		clusterName = "cluster.example.com"
+	)
+
+	c := gcemock.InstallMockGCECloud(region, project)
+
+	routes, ok := c.Compute().Routes().(routeInserter)
+	if !ok {
+		t.Fatalf("mock route client does not implement Insert")
+	}
+	for _, route := range []*compute.Route{
+		{
+			Name:            "cluster-example-com-51a343e2-c285-4e73-b933-18a6ea44c3e4",
+			NextHopInstance: "https://www.googleapis.com/compute/v1/projects/" + project + "/zones/" + zone + "/instances/nodes-abcd",
+		},
+		{
+			Name:            "other-example-com-51a343e2-c285-4e73-b933-18a6ea44c3e4",
+			NextHopInstance: "https://www.googleapis.com/compute/v1/projects/" + project + "/zones/" + zone + "/instances/nodes-abcd",
+		},
+	} {
+		if _, err := routes.Insert(project, route); err != nil {
+			t.Fatalf("error creating route %q: %v", route.Name, err)
+		}
+	}
+
+	resourceMap := map[string]*resources.Resource{
+		"Instance:" + zone + "/nodes-abcd": {
+			Name: "nodes-abcd",
+			ID:   zone + "/nodes-abcd",
+			Type: typeInstance,
+		},
+		"InstanceGroupManager:" + zone + "/a-nodes-" + zone: {
+			Name: "a-nodes-" + zone,
+			ID:   zone + "/a-nodes-" + zone,
+			Type: typeInstanceGroupManager,
+		},
+	}
+
+	d := &clusterDiscoveryGCE{
+		cloud:       c,
+		gceCloud:    c,
+		clusterName: clusterName,
+	}
+
+	trackers, err := d.listRoutes(ctx, resourceMap)
+	if err != nil {
+		t.Fatalf("error listing routes: %v", err)
+	}
+
+	want := []string{"Route:cluster-example-com-51a343e2-c285-4e73-b933-18a6ea44c3e4"}
+	if got := trackerKeys(trackers); !reflect.DeepEqual(got, want) {
+		t.Fatalf("listRoutes() got %v, want %v", got, want)
+	}
+
+	wantBlocked := []string{
+		"Instance:" + zone + "/nodes-abcd",
+		"InstanceGroupManager:" + zone + "/a-nodes-" + zone,
+	}
+	got := append([]string{}, trackers[0].Blocked...)
+	sort.Strings(got)
+	if !reflect.DeepEqual(got, wantBlocked) {
+		t.Errorf("route Blocked got %v, want %v", got, wantBlocked)
 	}
 }
