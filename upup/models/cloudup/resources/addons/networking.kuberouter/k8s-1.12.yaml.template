@@ -1,4 +1,4 @@
-# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.1.0/daemonset/kubeadm-kuberouter.yaml
+# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.11.1/daemonset/generic-kuberouter-all-features.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,7 +10,7 @@ metadata:
 data:
   cni-conf.json: |
     {
-       "cniVersion":"0.3.0",
+       "cniVersion":"1.0.0",
        "name":"mynet",
        "plugins":[
           {
@@ -60,12 +60,19 @@ spec:
           level: s0
 {{ end }}
       serviceAccountName: kube-router
-      serviceAccount: kube-router
       containers:
       - name: kube-router
         image: docker.io/cloudnativelabs/kube-router:v2.11.1
         args:
-        - --strict-external-ip-validation=false
+        # Strict validation default-denies every externalIP and loadBalancerIP when no ranges are set,
+        # so we only turn it on once the user has given us something to accept
+        - --strict-external-ip-validation={{ if or .Networking.KubeRouter.ExternalIPRanges .Networking.KubeRouter.LoadBalancerIPRanges }}true{{ else }}false{{ end }}
+        {{ if .Networking.KubeRouter.ExternalIPRanges -}}
+        - --service-external-ip-range={{ range $i, $cidr := .Networking.KubeRouter.ExternalIPRanges }}{{ if $i }},{{ end }}{{ $cidr }}{{ end }}
+        {{ end -}}
+        {{ if .Networking.KubeRouter.LoadBalancerIPRanges -}}
+        - --loadbalancer-ip-range={{ range $i, $cidr := .Networking.KubeRouter.LoadBalancerIPRanges }}{{ if $i }},{{ end }}{{ $cidr }}{{ end }}
+        {{ end -}}
         - --run-router=true
         - --run-firewall=true
         - --run-service-proxy=true
@@ -89,12 +96,19 @@ spec:
               fieldPath: metadata.name
         - name: KUBE_ROUTER_CNI_CONF_FILE
           value: /etc/cni/net.d/10-kuberouter.conflist
+        # Cache sync can take up to --cache-sync-timeout (default 1m), so gate liveness behind a startup probe
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 20244
+          periodSeconds: 5
+          failureThreshold: 30
         livenessProbe:
           httpGet:
             path: /healthz
             port: 20244
-          initialDelaySeconds: 10
           periodSeconds: 3
+          failureThreshold: 3
         resources:
           requests:
             cpu: 250m
@@ -140,7 +154,12 @@ spec:
         - mountPath: /etc/kube-router
           name: kube-router-cfg
       hostNetwork: true
+      hostIPC: true
       hostPID: true
+      # Inherit the host resolver: we resolve no hostnames, and cluster DNS would depend on our own service proxy
+      dnsPolicy: Default
+      nodeSelector:
+        kubernetes.io/os: linux
       tolerations:
       - operator: Exists
       volumes:
@@ -156,6 +175,8 @@ spec:
       - name: kubeconfig
         hostPath:
           path: /var/lib/kube-router/kubeconfig
+          # Without an explicit type, kubelet creates a directory here when the kubeconfig is missing
+          type: File
       - name: xtables-lock
         hostPath:
           path: /run/xtables.lock
@@ -186,7 +207,6 @@ rules:
       - pods
       - services
       - nodes
-      - endpoints
     verbs:
       - list
       - get
@@ -198,14 +218,6 @@ rules:
     verbs:
       - list
       - get
-      - watch
-  - apiGroups:
-    - extensions
-    resources:
-      - networkpolicies
-    verbs:
-      - get
-      - list
       - watch
   - apiGroups:
       - "coordination.k8s.io"

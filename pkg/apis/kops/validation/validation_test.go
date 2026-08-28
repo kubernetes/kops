@@ -2117,6 +2117,237 @@ func Test_Validate_NriConfig(t *testing.T) {
 	}
 }
 
+func TestValidateNetworkingKubeRouter(t *testing.T) {
+	_, serviceClusterIPRange, err := net.ParseCIDR("100.64.0.0/13")
+	if err != nil {
+		t.Fatalf("parsing serviceClusterIPRange: %v", err)
+	}
+
+	// Detail is asserted on every case, so this doubles as a record of what the user
+	// actually reads back from kops create/replace/update cluster.
+	grid := []struct {
+		Description   string
+		KubeProxy     *kops.KubeProxyConfig
+		NonMasquerade string
+		KubeRouter    kops.KuberouterNetworkingSpec
+		Expected      []*field.Error
+	}{
+		{
+			Description: "no ranges configured",
+			KubeRouter:  kops.KuberouterNetworkingSpec{},
+		},
+		{
+			Description: "valid external and loadBalancer ranges",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges:     []string{"192.0.2.0/24", "203.0.113.0/24"},
+				LoadBalancerIPRanges: []string{"198.51.100.0/24"},
+			},
+		},
+		{
+			Description: "unparseable external range",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"not-a-cidr"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeInvalid,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+				Detail: "Could not be parsed as a CIDR",
+			}},
+		},
+		{
+			Description: "octet above 255",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"192.0.300.0/24"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeInvalid,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+				Detail: "Could not be parsed as a CIDR",
+			}},
+		},
+		{
+			Description: "prefix length above 32 on an IPv4 range",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				LoadBalancerIPRanges: []string{"192.0.2.0/64"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeInvalid,
+				Field:  "spec.networking.kubeRouter.loadBalancerIPRanges[0]",
+				Detail: "Could not be parsed as a CIDR",
+			}},
+		},
+		{
+			// net.ParseCIDR folds this into plain 192.0.2.0/24, but we forward the string
+			// verbatim to kube-router, so we reject rather than silently accept it
+			Description: "IPv4-mapped IPv6 range",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"::ffff:192.0.2.0/120"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeInvalid,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+				Detail: `IPv4-mapped IPv6 ranges are ambiguous (did you mean "192.0.2.0/24")`,
+			}},
+		},
+		{
+			Description: "IPv4-mapped IPv6 range with an IPv6-scale prefix",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"::ffff:192.0.2.0/24"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeInvalid,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+				Detail: "IPv4-mapped IPv6 ranges are ambiguous, use plain IPv4 notation",
+			}},
+		},
+		{
+			// Genuine IPv6 that merely spells its low bits in dotted quad, so it is a
+			// family mismatch rather than the ambiguous mapped notation above
+			Description: "IPv6 range with an embedded IPv4 suffix",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"2001:db8::192.0.2.0/64"},
+			},
+			Expected: []*field.Error{
+				{
+					Type:   field.ErrorTypeInvalid,
+					Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+					Detail: `Network contains bits outside prefix (did you mean "2001:db8::/64")`,
+				},
+				{
+					Type:   field.ErrorTypeForbidden,
+					Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+					Detail: `"2001:db8::192.0.2.0/64" is an IPv6 range, but this is an IPv4 cluster`,
+				},
+			},
+		},
+		{
+			Description: "bare IP without a prefix length",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				LoadBalancerIPRanges: []string{"192.0.2.1"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeInvalid,
+				Field:  "spec.networking.kubeRouter.loadBalancerIPRanges[0]",
+				Detail: `Could not be parsed as a CIDR (did you mean "192.0.2.1/32")`,
+			}},
+		},
+		{
+			Description: "host bits set outside the prefix",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"192.0.2.1/24"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeInvalid,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+				Detail: `Network contains bits outside prefix (did you mean "192.0.2.0/24")`,
+			}},
+		},
+		{
+			Description: "external range overlapping serviceClusterIPRange",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"100.64.1.0/24"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeForbidden,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+				Detail: `"100.64.1.0/24" must not overlap serviceClusterIPRange "100.64.0.0/13"`,
+			}},
+		},
+		{
+			Description: "loadBalancer range overlapping serviceClusterIPRange",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				LoadBalancerIPRanges: []string{"100.64.0.0/16"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeForbidden,
+				Field:  "spec.networking.kubeRouter.loadBalancerIPRanges[0]",
+				Detail: `"100.64.0.0/16" must not overlap serviceClusterIPRange "100.64.0.0/13"`,
+			}},
+		},
+		{
+			Description: "IPv6 range on an IPv4 cluster",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"2001:db8::/64"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeForbidden,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+				Detail: `"2001:db8::/64" is an IPv6 range, but this is an IPv4 cluster`,
+			}},
+		},
+		{
+			Description: "only the second range is bad",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"192.0.2.0/24", "100.64.2.0/24"},
+			},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeForbidden,
+				Field:  "spec.networking.kubeRouter.externalIPRanges[1]",
+				Detail: `"100.64.2.0/24" must not overlap serviceClusterIPRange "100.64.0.0/13"`,
+			}},
+		},
+		{
+			Description: "kube-proxy left enabled",
+			KubeProxy:   &kops.KubeProxyConfig{Enabled: new(true)},
+			KubeRouter:  kops.KuberouterNetworkingSpec{},
+			// The doubled "spec" is pre-existing: this error anchors at the path root and
+			// then re-adds "spec". Cilium's equivalent check has the same quirk.
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeForbidden,
+				Field:  "spec.spec.kubeProxy.enabled",
+				Detail: "kube-router requires kubeProxy to be disabled",
+			}},
+		},
+		{
+			Description:   "IPv6-only cluster is still rejected",
+			NonMasquerade: "::/0",
+			KubeRouter:    kops.KuberouterNetworkingSpec{},
+			Expected: []*field.Error{{
+				Type:   field.ErrorTypeForbidden,
+				Field:  "spec.networking.kubeRouter",
+				Detail: "kube-router does not support IPv6",
+			}},
+		},
+		{
+			Description:   "IPv4 range on an IPv6-only cluster",
+			NonMasquerade: "::/0",
+			KubeRouter: kops.KuberouterNetworkingSpec{
+				ExternalIPRanges: []string{"192.0.2.0/24"},
+			},
+			Expected: []*field.Error{
+				{
+					Type:   field.ErrorTypeForbidden,
+					Field:  "spec.networking.kubeRouter",
+					Detail: "kube-router does not support IPv6",
+				},
+				{
+					Type:   field.ErrorTypeForbidden,
+					Field:  "spec.networking.kubeRouter.externalIPRanges[0]",
+					Detail: `"192.0.2.0/24" is an IPv4 range, but this is an IPv6-only cluster`,
+				},
+			},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.Description, func(t *testing.T) {
+			cluster := &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubeProxy: g.KubeProxy,
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: g.NonMasquerade,
+					},
+				},
+			}
+			// Matches how validateNetworking calls us, which matters because the
+			// kubeProxy error is anchored at the path root rather than at fldPath
+			fldPath := field.NewPath("spec", "networking").Child("kubeRouter")
+			errs := validateNetworkingKubeRouter(cluster, &g.KubeRouter, fldPath, serviceClusterIPRange)
+			testFieldErrors(t, errs, g.Expected)
+		})
+	}
+}
+
 func newLinodeClusterForNetworkingValidation(networking kops.NetworkingSpec) *kops.Cluster {
 	return &kops.Cluster{
 		Spec: kops.ClusterSpec{
