@@ -93,6 +93,7 @@ require (
 	k8s.io/mount-utils v0.36.3
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
 	sigs.k8s.io/controller-runtime v0.24.1
+	sigs.k8s.io/randfill v1.0.0
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -264,7 +265,6 @@ require (
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.21.1 // indirect
-	sigs.k8s.io/randfill v1.0.0 // indirect
 )
 
 // Newer versions build SRN strings with text/template, which disables linker
