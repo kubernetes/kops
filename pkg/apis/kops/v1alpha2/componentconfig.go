@@ -998,6 +998,12 @@ type CloudConfiguration struct {
 	// GCEUseStartupScript specifies enables using startup-script instead of user-data metadata.
 	// +k8s:conversion-gen=false
 	GCEUseStartupScript *bool `json:"gceUseStartupScript,omitempty"`
+	// AWSBinariesLocation is the location of the AWS cloud provider binaries.
+	// +k8s:conversion-gen=false
+	AWSBinariesLocation *string `json:"awsBinariesLocation,omitempty"`
+	// GCEBinariesLocation is the location of the GCE cloud provider binaries.
+	// +k8s:conversion-gen=false
+	GCEBinariesLocation *string `json:"gceBinariesLocation,omitempty"`
 	// DisableSecurityGroupIngress disables the Cloud Controller Manager's creation
 	// of an AWS Security Group for each load balancer provisioned for a Service (AWS only).
 	// +k8s:conversion-gen=false

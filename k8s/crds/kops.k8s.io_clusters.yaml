@@ -371,6 +371,10 @@ spec:
               cloudConfig:
                 description: CloudConfiguration defines the cloud provider configuration
                 properties:
+                  awsBinariesLocation:
+                    description: AWSBinariesLocation is the location of the AWS cloud
+                      provider binaries.
+                    type: string
                   awsEBSCSIDriver:
                     description: AWSEBSCSIDriver is the config for the AWS EBS CSI
                       driver
@@ -468,6 +472,10 @@ spec:
                       ElbSecurityGroup specifies an existing AWS Security group for the Cloud Controller
                       Manager to assign to each ELB provisioned for a Service, instead of creating
                       one per ELB (AWS only).
+                    type: string
+                  gceBinariesLocation:
+                    description: GCEBinariesLocation is the location of the GCE cloud
+                      provider binaries.
                     type: string
                   gceServiceAccount:
                     description: GCEServiceAccount specifies the service account with
