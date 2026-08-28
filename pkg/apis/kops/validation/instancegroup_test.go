@@ -17,10 +17,12 @@ limitations under the License.
 package validation
 
 import (
+	"strings"
 	"testing"
 
 	"k8s.io/kops/pkg/nodeidentity/aws"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -264,6 +266,7 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			CloudProvider: kops.CloudProviderSpec{
 				AWS: &kops.AWSSpec{},
 			},
+			Karpenter: &kops.KarpenterConfig{Enabled: true},
 		},
 	}
 	gceCluster := &kops.Cluster{
@@ -271,6 +274,7 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			CloudProvider: kops.CloudProviderSpec{
 				GCE: &kops.GCESpec{},
 			},
+			Karpenter: &kops.KarpenterConfig{Enabled: true},
 		},
 	}
 
@@ -318,6 +322,17 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			role:     kops.InstanceGroupRoleAPIServer,
 			image:    "ami-0123456789abcdef0",
 			expected: []string{"Forbidden::spec.role"},
+		},
+		{
+			desc: "addon disabled",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+				},
+			},
+			role:     kops.InstanceGroupRoleNode,
+			image:    "ami-0123456789abcdef0",
+			expected: []string{"Forbidden::spec.manager"},
 		},
 		{
 			desc:     "url image",
@@ -466,6 +481,138 @@ func TestValidateKarpenterStaticCapacity(t *testing.T) {
 					Image:   "my-image",
 					MinSize: g.minSize,
 					MaxSize: g.maxSize,
+				},
+			}
+
+			errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
+			testErrors(t, g.desc, errs, g.expected)
+		})
+	}
+}
+
+func TestValidateKarpenterInstanceRequirements(t *testing.T) {
+	quantity := func(s string) *resource.Quantity {
+		q := resource.MustParse(s)
+		return &q
+	}
+
+	grid := []struct {
+		desc                  string
+		cpu                   *kops.MinMaxSpec
+		memory                *kops.MinMaxSpec
+		excludedInstanceTypes []string
+		expected              []string
+	}{
+		{
+			desc:                  "valid requirements",
+			cpu:                   &kops.MinMaxSpec{Min: quantity("2"), Max: quantity("16")},
+			memory:                &kops.MinMaxSpec{Min: quantity("1"), Max: quantity("64Gi")},
+			excludedInstanceTypes: []string{"m3.*", "t2.nano"},
+		},
+		{
+			desc:     "fractional cpu",
+			cpu:      &kops.MinMaxSpec{Min: quantity("500m")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.cpu.min"},
+		},
+		{
+			desc:     "negative cpu",
+			cpu:      &kops.MinMaxSpec{Max: quantity("-1")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.cpu.max"},
+		},
+		{
+			desc:     "cpu exceeds Karpenter range",
+			cpu:      &kops.MinMaxSpec{Max: quantity("5000000000")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.cpu.max"},
+		},
+		{
+			desc:     "cpu maximum is zero",
+			cpu:      &kops.MinMaxSpec{Max: quantity("0")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.cpu.max"},
+		},
+		{
+			desc:     "cpu minimum exceeds maximum",
+			cpu:      &kops.MinMaxSpec{Min: quantity("4"), Max: quantity("2")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.cpu.max"},
+		},
+		{
+			desc:     "negative minimum",
+			memory:   &kops.MinMaxSpec{Min: quantity("-1")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.memory.min"},
+		},
+		{
+			desc:     "negative maximum",
+			memory:   &kops.MinMaxSpec{Max: quantity("-1")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.memory.max"},
+		},
+		{
+			desc:     "memory minimum exceeds Karpenter range",
+			memory:   &kops.MinMaxSpec{Min: quantity("2147483648Mi")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.memory.min"},
+		},
+		{
+			desc:     "memory maximum exceeds Karpenter range",
+			memory:   &kops.MinMaxSpec{Max: quantity("2147483648Mi")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.memory.max"},
+		},
+		{
+			desc:     "memory overflow",
+			memory:   &kops.MinMaxSpec{Max: quantity("1e30")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.memory.max"},
+		},
+		{
+			desc:     "memory maximum rounds to zero",
+			memory:   &kops.MinMaxSpec{Max: quantity("1")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.memory.max"},
+		},
+		{
+			desc:     "memory range inverted by rounding",
+			memory:   &kops.MinMaxSpec{Min: quantity("2G"), Max: quantity("2G")},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.memory.max"},
+		},
+		{
+			desc:                  "unsupported excluded instance wildcard",
+			excludedInstanceTypes: []string{"m5.*large"},
+			expected:              []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.excludedInstanceTypes[0]"},
+		},
+		{
+			desc:                  "comma-separated excluded instance types",
+			excludedInstanceTypes: []string{"m5.large,c5.large"},
+			expected:              []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.excludedInstanceTypes[0]"},
+		},
+		{
+			desc:                  "excluded instance type with slash",
+			excludedInstanceTypes: []string{"not/an-instance-type"},
+			expected:              []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.excludedInstanceTypes[0]"},
+		},
+		{
+			desc:                  "overlong excluded instance family",
+			excludedInstanceTypes: []string{strings.Repeat("a", 64) + ".*"},
+			expected:              []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.excludedInstanceTypes[0]"},
+		},
+		{
+			desc:                  "empty excluded instance type",
+			excludedInstanceTypes: []string{" "},
+			expected:              []string{"Invalid value::spec.mixedInstancesPolicy.instanceRequirements.excludedInstanceTypes[0]"},
+		},
+	}
+
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
+			Karpenter: &kops.KarpenterConfig{Enabled: true},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Manager = kops.InstanceManagerKarpenter
+			ig.Spec.MixedInstancesPolicy = &kops.MixedInstancesPolicySpec{
+				InstanceRequirements: &kops.InstanceRequirementsSpec{
+					CPU:                   g.cpu,
+					Memory:                g.memory,
+					ExcludedInstanceTypes: g.excludedInstanceTypes,
 				},
 			}
 
