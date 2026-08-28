@@ -103,7 +103,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -229,7 +229,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -388,7 +388,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -492,7 +492,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -546,7 +546,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -715,7 +715,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -764,7 +764,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -1644,6 +1644,18 @@ spec:
                   pattern: ^.*
                   x-kubernetes-int-or-string: true
                 type: array
+              logActionRateLimit:
+                description: |-
+                  LogActionRateLimit sets the rate of hitting a Log action. The value must be in the format "N/unit",
+                  where N is a number and unit is one of: second, minute, hour, or day. For example: "10/second" or "100/hour".
+                pattern: ^[1-9]\d{0,3}/(?:second|minute|hour|day)$
+                type: string
+              logActionRateLimitBurst:
+                description: LogActionRateLimitBurst sets the rate limit burst of
+                  hitting a Log action when LogActionRateLimit is enabled.
+                maximum: 9999
+                minimum: 0
+                type: integer
               logDebugFilenameRegex:
                 description: |-
                   LogDebugFilenameRegex controls which source code files have their Debug log output included in the logs.
@@ -1655,8 +1667,17 @@ spec:
                   none to disable file logging. [Default: /var/log/calico/felix.log]'
                 type: string
               logPrefix:
-                description: 'LogPrefix is the log prefix that Felix uses when rendering
-                  LOG rules. [Default: calico-packet]'
+                description: |-
+                  LogPrefix is the log prefix that Felix uses when rendering LOG rules. It is possible to use the following specifiers
+                  to include extra information in the log prefix.
+                  - %t: Tier name.
+                  - %k: Kind (short names).
+                  - %n: Policy or profile name.
+                  - %p: Policy or profile name (namespace/name for namespaced kinds or just name for non namespaced kinds).
+                  Calico includes ": " characters at the end of the generated log prefix.
+                  Note that iptables shows up to 29 characters for the log prefix and nftables up to 127 characters. Extra characters are truncated.
+                  [Default: calico-packet]
+                pattern: '^([a-zA-Z0-9%: /_-])*$'
                 type: string
               logSeverityFile:
                 description: 'LogSeverityFile is the log severity above which logs
@@ -2035,7 +2056,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2414,7 +2435,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2457,7 +2478,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2527,7 +2548,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2609,7 +2630,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2659,7 +2680,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2709,7 +2730,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2786,7 +2807,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2829,7 +2850,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3034,7 +3055,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3405,7 +3426,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3448,7 +3469,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3829,7 +3850,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -4082,7 +4103,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -4455,7 +4476,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -7178,7 +7199,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.31.3
+        image: docker.io/calico/node:v3.31.6
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -7252,7 +7273,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.31.3
+        image: docker.io/calico/cni:v3.31.6
         imagePullPolicy: IfNotPresent
         name: upgrade-ipam
         securityContext:
@@ -7287,7 +7308,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.31.3
+        image: docker.io/calico/cni:v3.31.6
         imagePullPolicy: IfNotPresent
         name: install-cni
         securityContext:
@@ -7301,7 +7322,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.31.3
+        image: docker.io/calico/node:v3.31.6
         imagePullPolicy: IfNotPresent
         name: ebpf-bootstrap
         securityContext:
@@ -7431,7 +7452,7 @@ spec:
           value: node,loadbalancer
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.31.3
+        image: docker.io/calico/kube-controllers:v3.31.6
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
