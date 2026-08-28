@@ -293,30 +293,9 @@ func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstances
 	var errs field.ErrorList
 
 	if ig.Spec.Manager == kops.InstanceManagerKarpenter {
-		var hasGPU *bool
-		validateGPU := func(fld *field.Path, instanceTypes string) {
-			for _, instanceType := range strings.Split(instanceTypes, ",") {
-				instanceType = strings.TrimSpace(instanceType)
-				if instanceType == "" {
-					continue
-				}
-				machineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(instanceType))
-				if err != nil {
-					continue
-				}
-				if hasGPU == nil {
-					hasGPU = new(machineTypeInfo.GPU)
-				} else if machineTypeInfo.GPU != *hasGPU {
-					errs = append(errs, field.Forbidden(fld, "Cannot mix GPU and non-GPU machine types in the same Instance Group"))
-				}
-			}
-		}
-		validateGPU(field.NewPath("spec", "machineType"), ig.Spec.MachineType)
-
 		for i, instanceTypes := range spec.Instances {
 			fld := path.Child("instances").Index(i)
 			errs = append(errs, awsValidateInstanceTypeAndImage(fld, path.Child("image"), instanceTypes, ig.Spec.Image, cloud)...)
-			validateGPU(fld, instanceTypes)
 		}
 	} else {
 		mainMachineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(ig.Spec.MachineType))

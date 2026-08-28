@@ -106,6 +106,9 @@ This generates the appropriate `karpenter.k8s.aws/instance-cpu` and `karpenter.k
 When `instanceRequirements` is set, neither `spec.machineType` nor `spec.mixedInstancesPolicy.instances` is required.
 If either field is set, its instance types further restrict the generated `NodePool`.
 
+Karpenter NodePools can include both GPU and non-GPU instance types.
+When using kOps-managed NVIDIA support, use a dedicated GPU-only InstanceGroup because kOps applies GPU labels and taints to the entire NodePool.
+
 ## Karpenter-managed InstanceGroups
 {{ kops_feature_table(kops_added_default='1.36') }}
 
