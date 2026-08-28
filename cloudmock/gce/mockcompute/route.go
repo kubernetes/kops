@@ -18,6 +18,7 @@ package mockcompute
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	compute "google.golang.org/api/compute/v1"
@@ -48,6 +49,19 @@ func (c *routeClient) All() map[string]interface{} {
 		}
 	}
 	return m
+}
+
+func (c *routeClient) Insert(project string, route *compute.Route) (*compute.Operation, error) {
+	c.Lock()
+	defer c.Unlock()
+	routes, ok := c.routes[project]
+	if !ok {
+		routes = map[string]*compute.Route{}
+		c.routes[project] = routes
+	}
+	route.SelfLink = fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/routes/%s", project, route.Name)
+	routes[route.Name] = route
+	return doneOperation(), nil
 }
 
 func (c *routeClient) Delete(project, name string) (*compute.Operation, error) {

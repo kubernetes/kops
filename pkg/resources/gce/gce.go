@@ -480,6 +480,10 @@ func (d *clusterDiscoveryGCE) listForwardingRules() ([]*resources.Resource, erro
 			resourceTracker.Blocks = append(resourceTracker.Blocks, typeAddress+":"+gce.LastComponent(fr.IPAddress))
 		}
 
+		if fr.BackendService != "" {
+			resourceTracker.Blocks = append(resourceTracker.Blocks, typeBackendService+":"+gce.LastComponent(fr.BackendService))
+		}
+
 		klog.V(4).Infof("Found resource: %s", fr.SelfLink)
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -629,7 +633,10 @@ nextFirewallRule:
 				// l4 level healthchecks
 
 				healthCheckName := gce.LastComponent(healthCheckLink)
-				if !strings.HasPrefix(healthCheckName, "k8s-") || !strings.Contains(healthCheckLink, "/httpHealthChecks/") {
+				// The health check is named k8s-<clusterid>-node when it is the health check shared
+				// by all services, but is named for the load balancer itself when the service sets
+				// externalTrafficPolicy: Local.
+				if (!strings.HasPrefix(healthCheckName, "k8s-") && healthCheckName != forwardingRuleName) || !strings.Contains(healthCheckLink, "/httpHealthChecks/") {
 					klog.Warningf("found non-k8s healthcheck %q in targetPool %q, assuming firewallRule %q is not a k8s rule", healthCheckLink, targetPoolName, firewallRule.Name)
 					continue nextFirewallRule
 				}
@@ -658,8 +665,10 @@ nextFirewallRule:
 			resourceTrackers = append(resourceTrackers, k8sResources...)
 		}
 
-		// find the objects if this is a Kubernetes node health check
-		if strings.HasPrefix(firewallRule.Name, "k8s-") && strings.HasSuffix(firewallRule.Name, "-node-http-hc") {
+		// find the objects if this is a Kubernetes health check.  The rule is named
+		// k8s-<clusterid>-node-http-hc for the health check shared by all services, and
+		// k8s-<loadbalancer>-http-hc for a service with externalTrafficPolicy: Local.
+		if strings.HasPrefix(firewallRule.Name, "k8s-") && strings.HasSuffix(firewallRule.Name, "-http-hc") {
 			// TODO: Check port matches http health check (always 10256?)
 			// TODO: Check description - looks like '{"kubernetes.io/cluster-id":"cb2e931dec561053"}'
 
@@ -723,9 +732,13 @@ func (d *clusterDiscoveryGCE) listRoutes(ctx context.Context, resourceMap map[st
 	var resourceTrackers []*resources.Resource
 
 	instancesToDelete := make(map[string]*resources.Resource)
+	migsToDelete := make(map[string]*resources.Resource)
 	for _, resource := range resourceMap {
-		if resource.Type == typeInstance {
+		switch resource.Type {
+		case typeInstance:
 			instancesToDelete[resource.ID] = resource
+		case typeInstanceGroupManager:
+			migsToDelete[resource.ID] = resource
 		}
 	}
 
@@ -772,9 +785,13 @@ func (d *clusterDiscoveryGCE) listRoutes(ctx context.Context, resourceMap map[st
 			}
 
 			// To avoid race conditions where the control-plane re-adds the routes, we delete routes
-			// only after we have deleted all the instances.
+			// only after we have deleted all the instances, and the managed instance groups that
+			// would otherwise recreate a control-plane instance.
 			for _, instance := range instancesToDelete {
 				resourceTracker.Blocked = append(resourceTracker.Blocked, typeInstance+":"+instance.ID)
+			}
+			for _, mig := range migsToDelete {
+				resourceTracker.Blocked = append(resourceTracker.Blocked, typeInstanceGroupManager+":"+mig.ID)
 			}
 
 			klog.V(4).Infof("Found resource: %s", r.SelfLink)
@@ -1091,7 +1108,7 @@ func (d *clusterDiscoveryGCE) listBackendServices() ([]*resources.Resource, erro
 	var bs []*resources.Resource
 	for _, svc := range svcs {
 		if containsOnlyListedIGMs(svc, igms) {
-			bs = append(bs, &resources.Resource{
+			resourceTracker := &resources.Resource{
 				Name: svc.Name,
 				ID:   svc.Name,
 				Type: typeBackendService,
@@ -1107,7 +1124,23 @@ func (d *clusterDiscoveryGCE) listBackendServices() ([]*resources.Resource, erro
 					return c.WaitForOp(op)
 				},
 				Obj: svc,
-			})
+			}
+
+			for _, hc := range svc.HealthChecks {
+				resourceTracker.Blocks = append(resourceTracker.Blocks, typeHealthcheck+":"+gce.LastComponent(hc))
+			}
+
+			// GCE refuses to delete an InstanceGroupManager while a BackendService still refers to
+			// its instance group; deleting them in the other order costs a full retry interval.
+			for _, be := range svc.Backends {
+				for _, igm := range igms {
+					if igm.Type == typeInstanceGroupManager && strings.HasSuffix(be.Group, "/"+igm.Name) {
+						resourceTracker.Blocks = append(resourceTracker.Blocks, typeInstanceGroupManager+":"+igm.ID)
+					}
+				}
+			}
+
+			bs = append(bs, resourceTracker)
 		}
 	}
 
