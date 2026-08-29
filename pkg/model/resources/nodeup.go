@@ -91,7 +91,7 @@ json-field() {
 }
 {{- end }}
 
-# Retry a download until we get it. sha covers the uncompressed binary. args: name, sha, urls
+# Retry until a compressed archive is downloaded, validated, and decompressed. args: name, sha, urls
 download-or-bust() {
   echo "== Downloading $1 with hash $2 from $3 =="
   local -r file="$1"
@@ -99,17 +99,10 @@ download-or-bust() {
   local -a urls
   IFS=, read -r -a urls <<< "$3"
 
-  if [[ -f "${file}" ]]; then
-    if ! validate-hash "${file}" "${hash}"; then
-      rm -f "${file}"
-    else
-      return 0
-    fi
-  fi
-
   while true; do
     for url in "${urls[@]}"; do
-      echo "== Downloading ${url}.xz =="
+      echo "== Downloading ${url} =="
+      rm -f "${file}.xz"
 {{- if UseGCSDownload }}
       local response token
       # Use the IP of the metadata server, to not depend on DNS this early in boot
@@ -118,8 +111,8 @@ download-or-bust() {
       elif ! token=$(json-field "${response}" access_token); then
         echo "== Failed to parse the service account token =="
       # Pass the token through stdin so it does not appear in files, logs, or process arguments.
-      elif ! echo "Authorization: Bearer ${token}" | curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- "https://storage.googleapis.com/${url#gs://}.xz"; then
-        echo "== Failed to download ${url}.xz =="
+      elif ! echo "Authorization: Bearer ${token}" | curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- "https://storage.googleapis.com/${url#gs://}"; then
+        echo "== Failed to download ${url} =="
         rm -f "${file}.xz"
 {{- else if UseBlobDownload }}
       local rest account response token
@@ -135,8 +128,8 @@ download-or-bust() {
       # Pass the token through stdin so it does not appear in files, logs, or process arguments.
       elif ! printf 'Authorization: Bearer %s\nx-ms-version: 2017-11-09\n' "${token}" |
         curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- \
-          "https://${account}.blob.core.windows.net/${rest}.xz"; then
-        echo "== Failed to download ${url}.xz =="
+          "https://${account}.blob.core.windows.net/${rest}"; then
+        echo "== Failed to download ${url} =="
         rm -f "${file}.xz"
 {{- else if UseS3Download }}
       local imds_token profile creds access_key secret_key session_token
@@ -153,22 +146,25 @@ download-or-bust() {
       elif ! printf 'user "%s:%s"\nheader "x-amz-security-token: %s"\n' "${access_key}" "${secret_key}" "${session_token}" |
         curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 \
           --config - --aws-sigv4 "aws:amz:{{ S3Region }}:s3" \
-          "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}.xz"; then
-        echo "== Failed to download ${url}.xz =="
+          "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}"; then
+        echo "== Failed to download ${url} =="
         rm -f "${file}.xz"
 {{- else }}
-      if ! curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}.xz"; then
-        echo "== Failed to download ${url}.xz =="
+      if ! curl -f -Lo "${file}.xz" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
+        echo "== Failed to download ${url} =="
         rm -f "${file}.xz"
 {{- end }}
-      elif ! xz -d "${file}.xz"; then
-        echo "== Failed to decompress ${url}.xz =="
+      elif ! validate-hash "${file}.xz" "${hash}"; then
+        echo "== Failed to validate compressed hash for ${url} =="
+        rm -f "${file}.xz"
+      elif ! xz -df "${file}.xz"; then
+        echo "== Failed to decompress ${url} =="
         rm -f "${file}" "${file}.xz"
-      elif ! validate-hash "${file}" "${hash}"; then
-        echo "== Failed to validate decompressed hash for ${url}.xz =="
+      elif ! chmod +x "${file}"; then
+        echo "== Failed to make ${file} executable =="
         rm -f "${file}"
       else
-        echo "== Downloaded ${url}.xz and validated decompressed hash ${hash} =="
+        echo "== Downloaded ${url}, validated hash ${hash} and decompressed =="
         return 0
       fi
     done
@@ -208,8 +204,6 @@ function download-release() {
 
   cd ${INSTALL_DIR}/bin
   download-or-bust nodeup "${NODEUP_HASH}" "${NODEUP_URL}"
-
-  chmod +x nodeup
 
   echo "== Running nodeup =="
   # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
