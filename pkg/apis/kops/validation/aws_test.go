@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -30,6 +31,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
+
+type emptyInstanceTypeRejectingCloud struct {
+	awsup.AWSCloud
+}
+
+func (c *emptyInstanceTypeRejectingCloud) DescribeInstanceType(instanceType string) (*ec2types.InstanceTypeInfo, error) {
+	if instanceType == "" {
+		return nil, errors.New("instance type is empty")
+	}
+	return c.AWSCloud.DescribeInstanceType(instanceType)
+}
 
 func TestAWSValidateEBSCSIDriver(t *testing.T) {
 	grid := []struct {
@@ -357,6 +369,89 @@ func TestMixedInstancePolicies(t *testing.T) {
 		errs := awsValidateInstanceGroup(ig, cloud)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func TestKarpenterMixedInstancesPolicyValidation(t *testing.T) {
+	baseCloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockEC2 := &mockec2.MockEC2{}
+	baseCloud.MockEC2 = mockEC2
+	mockEC2.Images = append(mockEC2.Images, &ec2types.Image{
+		ImageId:      aws.String("ami-073c8c0760395aab8"),
+		Architecture: ec2types.ArchitectureValuesX8664,
+	})
+	cloud := &emptyInstanceTypeRejectingCloud{AWSCloud: baseCloud}
+
+	grid := []struct {
+		desc        string
+		machineType string
+		spec        *kops.MixedInstancesPolicySpec
+		expected    []string
+	}{
+		{
+			desc: "instance requirements",
+			spec: &kops.MixedInstancesPolicySpec{
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+		},
+		{
+			desc: "capacity types",
+			spec: &kops.MixedInstancesPolicySpec{
+				OnDemandAboveBase: new(int64(50)),
+			},
+		},
+		{
+			desc: "instance list",
+			spec: &kops.MixedInstancesPolicySpec{
+				Instances: []string{"m5.large"},
+			},
+		},
+		{
+			desc:        "heterogeneous instance list with machine type",
+			machineType: "g4dn.xlarge",
+			spec: &kops.MixedInstancesPolicySpec{
+				Instances:            []string{"m5.large"},
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+		},
+		{
+			desc: "instance requirements do not suppress instance validation",
+			spec: &kops.MixedInstancesPolicySpec{
+				Instances:            []string{"t2.invalidType"},
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+			expected: []string{"Invalid value::spec.mixedInstancesPolicy.instances[0]"},
+		},
+		{
+			desc:        "comma-separated machine types",
+			machineType: "m5.large,m5.xlarge",
+			spec: &kops.MixedInstancesPolicySpec{
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+		},
+		{
+			desc: "heterogeneous instance list without machine type",
+			spec: &kops.MixedInstancesPolicySpec{
+				Instances:            []string{"g4dn.xlarge", "m5.large"},
+				InstanceRequirements: &kops.InstanceRequirementsSpec{},
+			},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Manager:              kops.InstanceManagerKarpenter,
+					Image:                "ami-073c8c0760395aab8",
+					MachineType:          g.machineType,
+					MixedInstancesPolicy: g.spec,
+				},
+			}
+
+			errs := awsValidateInstanceGroup(ig, cloud)
+			testErrors(t, g.desc, errs, g.expected)
+		})
 	}
 }
 

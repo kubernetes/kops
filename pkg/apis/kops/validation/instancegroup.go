@@ -18,12 +18,16 @@ package validation
 
 import (
 	"fmt"
+	"math"
+	"regexp"
 	"strings"
 
 	"k8s.io/kops/pkg/nodeidentity/aws"
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"k8s.io/apimachinery/pkg/api/resource"
+	contentvalidation "k8s.io/apimachinery/pkg/api/validate/content"
 	apivalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -330,6 +334,9 @@ func validateKarpenterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster
 	if cluster.GetCloudProvider() != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups are only supported on AWS"))
 	}
+	if cluster.Spec.Karpenter == nil || !cluster.Spec.Karpenter.Enabled {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups require cluster.spec.karpenter.enabled"))
+	}
 	if !g.Spec.Role.HasNode() {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Karpenter InstanceGroups must have role Node"))
 	}
@@ -338,7 +345,117 @@ func validateKarpenterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster
 	}
 	allErrs = append(allErrs, validateKarpenterAMISelectorImage(g.Spec.Image, field.NewPath("spec", "image"))...)
 	allErrs = append(allErrs, validateKarpenterStaticCapacity(g, cluster)...)
+	allErrs = append(allErrs, validateKarpenterInstanceRequirements(g)...)
 	return allErrs
+}
+
+func validateKarpenterInstanceRequirements(g *kops.InstanceGroup) field.ErrorList {
+	if g.Spec.MixedInstancesPolicy == nil || g.Spec.MixedInstancesPolicy.InstanceRequirements == nil {
+		return nil
+	}
+
+	requirements := g.Spec.MixedInstancesPolicy.InstanceRequirements
+	requirementsPath := field.NewPath("spec", "mixedInstancesPolicy", "instanceRequirements")
+	var allErrs field.ErrorList
+
+	if requirements.CPU != nil {
+		minValue, errs := validateKarpenterCPURequirement(requirements.CPU.Min, requirementsPath.Child("cpu", "min"))
+		allErrs = append(allErrs, errs...)
+		maxValue, errs := validateKarpenterCPURequirement(requirements.CPU.Max, requirementsPath.Child("cpu", "max"))
+		allErrs = append(allErrs, errs...)
+		allErrs = append(allErrs, validateKarpenterRequirementRange(minValue, maxValue, requirements.CPU.Max, requirementsPath.Child("cpu", "max"))...)
+	}
+
+	if requirements.Memory != nil {
+		minValue, errs := validateKarpenterMemoryRequirement(requirements.Memory.Min, requirementsPath.Child("memory", "min"), true)
+		allErrs = append(allErrs, errs...)
+		maxValue, errs := validateKarpenterMemoryRequirement(requirements.Memory.Max, requirementsPath.Child("memory", "max"), false)
+		allErrs = append(allErrs, errs...)
+		allErrs = append(allErrs, validateKarpenterRequirementRange(minValue, maxValue, requirements.Memory.Max, requirementsPath.Child("memory", "max"))...)
+	}
+
+	for i, configuredEntry := range requirements.ExcludedInstanceTypes {
+		entryPath := requirementsPath.Child("excludedInstanceTypes").Index(i)
+		entry := strings.TrimSpace(configuredEntry)
+		if entry == "" {
+			allErrs = append(allErrs, field.Invalid(entryPath, configuredEntry, "must not be empty"))
+			continue
+		}
+
+		value := entry
+		if match := karpenterExcludedInstanceFamily.FindStringSubmatch(entry); match != nil {
+			value = match[1]
+		} else if strings.Contains(entry, "*") {
+			allErrs = append(allErrs, field.Invalid(
+				entryPath,
+				configuredEntry,
+				"only an instance type or a \"<family>.*\" family wildcard can be expressed as a NodePool requirement",
+			))
+			continue
+		}
+		for _, msg := range contentvalidation.IsLabelValue(value) {
+			allErrs = append(allErrs, field.Invalid(entryPath, configuredEntry, msg))
+		}
+	}
+	return allErrs
+}
+
+var karpenterExcludedInstanceFamily = regexp.MustCompile(`^([a-z0-9][a-z0-9-]*)\.\*$`)
+
+func validateKarpenterCPURequirement(quantity *resource.Quantity, fldPath *field.Path) (*int64, field.ErrorList) {
+	if quantity == nil {
+		return nil, nil
+	}
+	if quantity.Sign() < 0 {
+		return nil, field.ErrorList{field.Invalid(fldPath, quantity, "must not be negative")}
+	}
+	value, ok := quantity.AsInt64()
+	if !ok {
+		return nil, field.ErrorList{field.Invalid(fldPath, quantity, "must be a whole number")}
+	}
+	if value > math.MaxInt32 {
+		return nil, field.ErrorList{field.Invalid(fldPath, quantity, "is too large")}
+	}
+	return &value, nil
+}
+
+func validateKarpenterMemoryRequirement(quantity *resource.Quantity, fldPath *field.Path, roundUp bool) (*int64, field.ErrorList) {
+	if quantity == nil {
+		return nil, nil
+	}
+	if quantity.Sign() < 0 {
+		return nil, field.ErrorList{field.Invalid(fldPath, quantity, "must not be negative")}
+	}
+
+	const mib = int64(1024 * 1024)
+	maxBytes := int64(math.MaxInt32) * mib
+	if !roundUp {
+		maxBytes += mib - 1
+	}
+	maxQuantity := resource.NewQuantity(maxBytes, resource.DecimalSI)
+	if quantity.Cmp(*maxQuantity) > 0 {
+		return nil, field.ErrorList{field.Invalid(fldPath, quantity, "is too large")}
+	}
+
+	bytes := quantity.Value()
+	value := bytes / mib
+	if roundUp && bytes%mib != 0 {
+		value++
+	}
+	return &value, nil
+}
+
+func validateKarpenterRequirementRange(minValue, maxValue *int64, maxQuantity *resource.Quantity, maxPath *field.Path) field.ErrorList {
+	if maxValue == nil {
+		return nil
+	}
+	if *maxValue == 0 {
+		return field.ErrorList{field.Invalid(maxPath, maxQuantity, "must resolve to a positive value")}
+	}
+	if minValue != nil && *minValue > *maxValue {
+		return field.ErrorList{field.Invalid(maxPath, maxQuantity, "must be greater than or equal to min")}
+	}
+	return nil
 }
 
 func validateKarpenterStaticCapacity(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {

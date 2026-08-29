@@ -292,30 +292,36 @@ func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.Ins
 func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup, cloud awsup.AWSCloud) field.ErrorList {
 	var errs field.ErrorList
 
-	mainMachineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(ig.Spec.MachineType))
-	if err != nil {
-		errs = append(errs, field.Invalid(field.NewPath("spec", "machineType"), ig.Spec.MachineType, fmt.Sprintf("machine type specified is invalid: %q", ig.Spec.MachineType)))
-		return errs
-	}
-
-	hasGPU := mainMachineTypeInfo.GPU
-
-	// @step: check the instance types are valid
-	for i, instanceTypes := range spec.Instances {
-		fld := path.Child("instances").Index(i)
-		errs = append(errs, awsValidateInstanceTypeAndImage(path.Child("instances").Index(i), path.Child("image"), instanceTypes, ig.Spec.Image, cloud)...)
-
-		for _, instanceType := range strings.Split(instanceTypes, ",") {
-			machineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(instanceType))
-			if err != nil {
-				errs = append(errs, field.Invalid(field.NewPath("spec", "machineType"), ig.Spec.MachineType, fmt.Sprintf("machine type specified is invalid: %q", ig.Spec.MachineType)))
-				return errs
-			}
-			if machineTypeInfo.GPU != hasGPU {
-				errs = append(errs, field.Forbidden(fld, "Cannot mix GPU and non-GPU machine types in the same Instance Group"))
-			}
+	if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+		for i, instanceTypes := range spec.Instances {
+			fld := path.Child("instances").Index(i)
+			errs = append(errs, awsValidateInstanceTypeAndImage(fld, path.Child("image"), instanceTypes, ig.Spec.Image, cloud)...)
+		}
+	} else {
+		mainMachineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(ig.Spec.MachineType))
+		if err != nil {
+			errs = append(errs, field.Invalid(field.NewPath("spec", "machineType"), ig.Spec.MachineType, fmt.Sprintf("machine type specified is invalid: %q", ig.Spec.MachineType)))
+			return errs
 		}
 
+		hasGPU := mainMachineTypeInfo.GPU
+
+		// @step: check the instance types are valid
+		for i, instanceTypes := range spec.Instances {
+			fld := path.Child("instances").Index(i)
+			errs = append(errs, awsValidateInstanceTypeAndImage(path.Child("instances").Index(i), path.Child("image"), instanceTypes, ig.Spec.Image, cloud)...)
+
+			for _, instanceType := range strings.Split(instanceTypes, ",") {
+				machineTypeInfo, err := awsup.GetMachineTypeInfo(cloud, ec2types.InstanceType(instanceType))
+				if err != nil {
+					errs = append(errs, field.Invalid(field.NewPath("spec", "machineType"), ig.Spec.MachineType, fmt.Sprintf("machine type specified is invalid: %q", ig.Spec.MachineType)))
+					return errs
+				}
+				if machineTypeInfo.GPU != hasGPU {
+					errs = append(errs, field.Forbidden(fld, "Cannot mix GPU and non-GPU machine types in the same Instance Group"))
+				}
+			}
+		}
 	}
 
 	if spec.OnDemandBase != nil {

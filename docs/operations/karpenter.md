@@ -81,7 +81,7 @@ Supported image selector forms are:
 {{ kops_feature_table(kops_added_default='1.37') }}
 
 By default, the generated `NodePool` requires one of the instance types listed in `spec.machineType` and `spec.mixedInstancesPolicy.instances`.
-To let Karpenter choose from any instance type within a capacity range instead, set `spec.mixedInstancesPolicy.instanceRequirements`:
+To let Karpenter choose instance types based on a capacity range, set `spec.mixedInstancesPolicy.instanceRequirements`:
 
 ```yaml
 spec:
@@ -103,7 +103,11 @@ spec:
 This generates the appropriate `karpenter.k8s.aws/instance-cpu` and `karpenter.k8s.aws/instance-memory` requirements on the `NodePool`.
 `excludedInstanceTypes` entries are mapped to `NotIn` requirements: a `<family>.*` wildcard excludes an instance family, and a bare instance type excludes that type.
 
-When `instanceRequirements` is set, kOps omits the instance type requirement, and `spec.machineType` and `spec.mixedInstancesPolicy.instances` no longer restrict the NodePool.
+When `instanceRequirements` is set, neither `spec.machineType` nor `spec.mixedInstancesPolicy.instances` is required.
+If either field is set, its instance types further restrict the generated `NodePool`.
+
+Karpenter NodePools can include both GPU and non-GPU instance types.
+When using kOps-managed NVIDIA support, use a dedicated GPU-only InstanceGroup because kOps applies GPU labels and taints to the entire NodePool.
 
 ## Karpenter-managed InstanceGroups
 {{ kops_feature_table(kops_added_default='1.36') }}
