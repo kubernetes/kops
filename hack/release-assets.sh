@@ -30,24 +30,24 @@ declare -A BINARIES=(
   ["linux/amd64/kops"]="kops-linux-amd64"
   ["linux/arm64/kops"]="kops-linux-arm64"
   ["windows/amd64/kops.exe"]="kops-windows-amd64"
-  ["linux/amd64/nodeup"]="nodeup-linux-amd64"
-  ["linux/arm64/nodeup"]="nodeup-linux-arm64"
 )
 
 # Binaries that only some kOps releases ship: source-path -> github-name.
-# channels was dropped from releases in kOps 1.36 and protokube in kOps 1.37,
-# while nodeup.xz was added in kOps 1.37. The scripts still promote and validate older versions.
+# channels was dropped from releases in kOps 1.36, protokube in kOps 1.37, and
+# uncompressed nodeup after kOps 1.37.0-beta.1. nodeup.xz was added in that release.
 declare -A OPTIONAL_BINARIES=(
   ["linux/amd64/channels"]="channels-linux-amd64"
   ["linux/arm64/channels"]="channels-linux-arm64"
   ["linux/amd64/protokube"]="protokube-linux-amd64"
   ["linux/arm64/protokube"]="protokube-linux-arm64"
+  ["linux/amd64/nodeup"]="nodeup-linux-amd64"
+  ["linux/arm64/nodeup"]="nodeup-linux-arm64"
   ["linux/amd64/nodeup.xz"]="nodeup-linux-amd64.xz"
   ["linux/arm64/nodeup.xz"]="nodeup-linux-arm64.xz"
 )
 
 # add_optional_binaries <version>: append the optional binaries that exist upstream for
-# the given version to BINARIES, so releases that ship them keep full coverage.
+# the given version to BINARIES, so releases keep full coverage without version-specific logic.
 # Only a confirmed 404 counts as absent; any other probe outcome fails the script,
 # so a transient error cannot silently drop an artifact from promotion or validation.
 add_optional_binaries() {
