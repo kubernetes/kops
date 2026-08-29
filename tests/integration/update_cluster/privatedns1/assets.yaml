@@ -56,14 +56,14 @@ images:
   download: registry.k8s.io/etcd:v3.6.12
 - canonical: registry.k8s.io/etcd:v3.7.0
   download: registry.k8s.io/etcd:v3.7.0
-- canonical: registry.k8s.io/kops/channels:1.34.0-beta.1
-  download: registry.k8s.io/kops/channels:1.34.0-beta.1
-- canonical: registry.k8s.io/kops/dns-controller:1.34.0-beta.1
-  download: registry.k8s.io/kops/dns-controller:1.34.0-beta.1
-- canonical: registry.k8s.io/kops/kops-controller:1.34.0-beta.1
-  download: registry.k8s.io/kops/kops-controller:1.34.0-beta.1
-- canonical: registry.k8s.io/kops/kube-apiserver-healthcheck:1.34.0-beta.1
-  download: registry.k8s.io/kops/kube-apiserver-healthcheck:1.34.0-beta.1
+- canonical: registry.k8s.io/kops/channels:1.37.0-beta.1
+  download: registry.k8s.io/kops/channels:1.37.0-beta.1
+- canonical: registry.k8s.io/kops/dns-controller:1.37.0-beta.1
+  download: registry.k8s.io/kops/dns-controller:1.37.0-beta.1
+- canonical: registry.k8s.io/kops/kops-controller:1.37.0-beta.1
+  download: registry.k8s.io/kops/kops-controller:1.37.0-beta.1
+- canonical: registry.k8s.io/kops/kube-apiserver-healthcheck:1.37.0-beta.1
+  download: registry.k8s.io/kops/kube-apiserver-healthcheck:1.37.0-beta.1
 - canonical: registry.k8s.io/kube-apiserver:v1.34.0
   download: registry.k8s.io/kube-apiserver:v1.34.0
 - canonical: registry.k8s.io/kube-controller-manager:v1.34.0

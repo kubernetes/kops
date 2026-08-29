@@ -12,10 +12,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/nodeup-linux-amd64
-NODEUP_HASH_AMD64=c86e072f622b91546b7b3f3cb1a0f8a131e48b966ad018a0ac1520ceedf37725
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/nodeup-linux-arm64
-NODEUP_HASH_ARM64=64a9a9510538a449e85d05e13e3cd98b80377d68a673447c26821d40f00f0075
+NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.37.0-beta.1/nodeup-linux-amd64
+NODEUP_HASH_AMD64=97bfa5495516526ce669d05f955b4805df328a6f020d9a231a2e6417a677d37b
+NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.37.0-beta.1/nodeup-linux-arm64
+NODEUP_HASH_ARM64=b26c8a8840baaf4e8d10fd2ac2e6035a303ac34887c50f6b1a54f548b64ad0be
 
 export AWS_REGION=us-test-1
 

@@ -5,7 +5,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: bc6d3ec51739764572058d2ed42a1dfe3c1393b1ea1512265cba75c2fee9e9aa
+    manifestHash: 8dfe43b255716b72d1ba80d982d23c9f79688877b74dd2819f2f6479191ad3cb
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -73,7 +73,7 @@ spec:
       k8s-addon: dns-controller.addons.k8s.io
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: 1f03e6fe731b71612a5e87f74d7a2cb3841eb9d189e2f896dcd7055874f79d6a
+    manifestHash: 2ab6b2ab2a5a5c08690a8fdc228ed549c859eade97426962621d3224b97c2e5d
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io

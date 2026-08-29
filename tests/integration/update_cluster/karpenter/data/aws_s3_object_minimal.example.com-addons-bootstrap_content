@@ -5,7 +5,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: b2d0af953f7c53295604ec39ce83b24e6d670fa996596e75b0a31fb635b8965f
+    manifestHash: f51b4f8a4991eeea47463498b075726365b1892522a6f8b99f974d6cdd8b9f40
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -29,7 +29,7 @@ spec:
       k8s-addon: limit-range.addons.k8s.io
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 6091fb9864f64cb9d0dd4c79df6116806caebdd0364ecd6aa45e1e5e750bccfa
+    manifestHash: faf32da7f14f49d160068bc2c9f18d09a2907c63b86f096aa1faeff60dadf051
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -53,7 +53,7 @@ spec:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: 36d11e7c340786eece11f12c35a5f4c8f7764cc2f84f6cc51b81a43967c2c4c2
+    manifestHash: dad51fdbd92d5c48922a07c2034e3c21e6ceb05c340a6c292a8404b8d4355530
     name: karpenter.sh
     prune:
       kinds:
