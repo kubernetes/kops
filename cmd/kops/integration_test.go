@@ -45,9 +45,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
-// updateClusterTestBase is added automatically to the srcDir on all
-// tests using runTest, including runTestTerraformAWS, runTestTerraformGCE
-const updateClusterTestBase = "../../tests/integration/update_cluster/"
+const (
+	// updateClusterTestBase is added automatically to the srcDir on all
+	// tests using runTest, including runTestTerraformAWS, runTestTerraformGCE.
+	updateClusterTestBase = "../../tests/integration/update_cluster/"
+
+	// integrationTestKopsVersion must remain pinned to a published release whose nodeup artifacts
+	// are permanently available. Every integration runner that renders release assets must use it.
+	integrationTestKopsVersion = "1.37.0-beta.1"
+)
 
 type integrationTest struct {
 	clusterName        string
@@ -923,7 +929,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 	h.SetupMockAWS()
 
 	i.runTest(t, ctx, h, "", "", nil)
@@ -936,7 +942,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 	h.SetupMockAWS()
 	phaseName := string(phase)
 	if phaseName == "" {
@@ -954,7 +960,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 	h.SetupMockGCE()
 
 	i.runTest(t, ctx, h, "", "", nil)
@@ -970,7 +976,7 @@ func (i *integrationTest) runTestTerraformAzure(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 	h.SetupMockAzure(i.clusterName)
 
 	var stdout bytes.Buffer
@@ -1047,7 +1053,7 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 
 	i.runTest(t, ctx, h, "", "", nil)
 }
@@ -1065,7 +1071,7 @@ func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 
 	i.runTest(t, ctx, h, "", "", nil)
 }
