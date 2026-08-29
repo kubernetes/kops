@@ -376,7 +376,7 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 	cloud := h.SetupMockAWS()
 
 	var beforeIds []string
@@ -408,7 +408,7 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 	cloud := testutils.SetupMockOpenstack()
 
 	var beforeIds []string
@@ -461,7 +461,7 @@ func runLifecycleTestGCE(o *LifecycleTestOptions) {
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.34.0-beta.1")
+	h.MockKopsVersion(integrationTestKopsVersion)
 
 	cloud := h.SetupMockGCE()
 
