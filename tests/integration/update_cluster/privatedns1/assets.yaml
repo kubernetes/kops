@@ -5,12 +5,12 @@ files:
 - canonical: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/arm64/ecr-credential-provider-linux-arm64
   download: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/arm64/ecr-credential-provider-linux-arm64
   sha: 1980e3a038cb16da48a137743b31fb81de6c0b59fa06c206c2bc20ce0a52f849
-- canonical: https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/amd64/nodeup
-  download: https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/amd64/nodeup
-  sha: c86e072f622b91546b7b3f3cb1a0f8a131e48b966ad018a0ac1520ceedf37725
-- canonical: https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/arm64/nodeup
-  download: https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/arm64/nodeup
-  sha: 64a9a9510538a449e85d05e13e3cd98b80377d68a673447c26821d40f00f0075
+- canonical: https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/amd64/nodeup.xz
+  download: https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/amd64/nodeup.xz
+  sha: a899417ddb4fa0bba91c07c8d10b10747088a1067ca3dfa83097c1720eeda9ea
+- canonical: https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/arm64/nodeup.xz
+  download: https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/arm64/nodeup.xz
+  sha: c2e424da38473c3ee1b9309e84e4167857fe8c01ea0df0328f49f6472aebac0e
 - canonical: https://dl.k8s.io/release/v1.34.0/bin/linux/amd64/kubectl
   download: https://dl.k8s.io/release/v1.34.0/bin/linux/amd64/kubectl
   sha: cfda68cba5848bc3b6c6135ae2f20ba2c78de20059f68789c090166d6abc3e2c

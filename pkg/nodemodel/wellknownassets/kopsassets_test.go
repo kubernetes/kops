@@ -100,17 +100,17 @@ func Test_BuildMirroredAsset(t *testing.T) {
 		expected []string
 	}{
 		{
-			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/amd64/nodeup",
+			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/amd64/nodeup.xz",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/" + kops.Version + "/linux/amd64/nodeup",
-				"https://github.com/kubernetes/kops/releases/download/v" + kops.Version + "/nodeup-linux-amd64",
+				"https://artifacts.k8s.io/binaries/kops/" + kops.Version + "/linux/amd64/nodeup.xz",
+				"https://github.com/kubernetes/kops/releases/download/v" + kops.Version + "/nodeup-linux-amd64.xz",
 			},
 		},
 		{
-			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/arm64/nodeup",
+			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/arm64/nodeup.xz",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/" + kops.Version + "/linux/arm64/nodeup",
-				"https://github.com/kubernetes/kops/releases/download/v" + kops.Version + "/nodeup-linux-arm64",
+				"https://artifacts.k8s.io/binaries/kops/" + kops.Version + "/linux/arm64/nodeup.xz",
+				"https://github.com/kubernetes/kops/releases/download/v" + kops.Version + "/nodeup-linux-arm64.xz",
 			},
 		},
 	}
@@ -146,9 +146,9 @@ func TestNodeUpAssetRegistersWithEveryAssetBuilder(t *testing.T) {
 	var requests atomic.Int64
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		for arch, hash := range hashes {
-			if r.URL.Path == fmt.Sprintf("/kops/%s/linux/%s/nodeup.sha256", kops.Version, arch) {
+			if r.URL.Path == fmt.Sprintf("/kops/%s/linux/%s/nodeup.xz.sha256", kops.Version, arch) {
 				requests.Add(1)
-				fmt.Fprintf(w, "%s  nodeup\n", hash)
+				fmt.Fprintf(w, "%s  nodeup.xz\n", hash)
 				return
 			}
 		}
@@ -176,7 +176,7 @@ func TestNodeUpAssetRegistersWithEveryAssetBuilder(t *testing.T) {
 				if err != nil {
 					t.Fatalf("NodeUpAsset(%s) error: %v", arch, err)
 				}
-				expectedLocation := fmt.Sprintf("%s/kops/%s/linux/%s/nodeup", server.URL, kops.Version, arch)
+				expectedLocation := fmt.Sprintf("%s/kops/%s/linux/%s/nodeup.xz", server.URL, kops.Version, arch)
 				if !reflect.DeepEqual(asset.Locations, []string{expectedLocation}) {
 					t.Errorf("unexpected nodeup locations for %s: %v", arch, asset.Locations)
 				}
@@ -190,8 +190,8 @@ func TestNodeUpAssetRegistersWithEveryAssetBuilder(t *testing.T) {
 				registered = append(registered, fileAsset.CanonicalURL.String())
 			}
 			expected := []string{
-				fmt.Sprintf("%s/kops/%s/linux/amd64/nodeup", server.URL, kops.Version),
-				fmt.Sprintf("%s/kops/%s/linux/arm64/nodeup", server.URL, kops.Version),
+				fmt.Sprintf("%s/kops/%s/linux/amd64/nodeup.xz", server.URL, kops.Version),
+				fmt.Sprintf("%s/kops/%s/linux/arm64/nodeup.xz", server.URL, kops.Version),
 			}
 			if !reflect.DeepEqual(registered, expected) {
 				t.Errorf("unexpected registered file assets:\nActual: %v\nExpect: %v", registered, expected)
