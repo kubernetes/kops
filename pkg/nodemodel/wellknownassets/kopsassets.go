@@ -34,9 +34,6 @@ const (
 
 var kopsBaseURL *url.URL
 
-// nodeUpAsset caches the nodeup binary download url/hash
-var nodeUpAsset map[architectures.Architecture]*assets.MirroredAsset
-
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseURL() (*url.URL, error) {
 	// returning cached value
@@ -82,32 +79,16 @@ func copyBaseURL(base *url.URL) (*url.URL, error) {
 	return u, nil
 }
 
-// NodeUpAsset returns the asset for where nodeup should be downloaded
+// NodeUpAsset returns nodeup after registering it with assetsBuilder. The result is not cached
+// because its locations depend on the builder's repository mapping. Hashes are cached separately.
 func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.MirroredAsset, error) {
-	if nodeUpAsset == nil {
-		nodeUpAsset = make(map[architectures.Architecture]*assets.MirroredAsset)
-	}
-	if nodeUpAsset[arch] != nil {
-		// Avoid repeated logging
-		klog.V(8).Infof("Using cached nodeup location for %s: %v", arch, nodeUpAsset[arch].Locations)
-		return nodeUpAsset[arch], nil
-	}
-
-	asset, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
+	asset, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup.xz", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
-	// Nodes download the xz-compressed binary, so when assets are mirrored to a file
-	// repository, register it as well for `kops get assets --copy` to include it.
-	if assetsBuilder.HasFileRepository() {
-		if _, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup.xz", arch), assetsBuilder); err != nil {
-			return nil, err
-		}
-	}
-	nodeUpAsset[arch] = assets.BuildMirroredAsset(asset)
 	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, asset.DownloadURL.String())
 
-	return nodeUpAsset[arch], nil
+	return assets.BuildMirroredAsset(asset), nil
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images

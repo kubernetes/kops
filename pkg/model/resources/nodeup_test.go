@@ -17,11 +17,16 @@ limitations under the License.
 package resources
 
 import (
+	"context"
+	"crypto/sha256"
+	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
@@ -57,13 +62,18 @@ func renderNodeUpScript(t *testing.T, script *NodeUpScript) string {
 		t.Fatalf("rendering nodeup script: %v", err)
 	}
 	verifyShellSyntax(t, rendered)
+	for _, appendedSuffix := range []string{`${url}.xz`, `${url#gs://}.xz`, `${url#s3://}.xz`, `${rest}.xz`} {
+		if strings.Contains(rendered, appendedSuffix) {
+			t.Errorf("rendered script appends an xz suffix to an asset URL: %s", appendedSuffix)
+		}
+	}
 	return rendered
 }
 
 func Test_GCSDownload(t *testing.T) {
 	// The authenticated GCS download is rendered only when the nodeup sources are gs:// URLs.
 	gcsMarker := "Authorization: Bearer"
-	standardMarker := `--retry-delay 10 "${url}.xz"`
+	standardMarker := `--retry-delay 10 "${url}"`
 
 	for _, tc := range []struct {
 		name      string
@@ -72,12 +82,12 @@ func Test_GCSDownload(t *testing.T) {
 	}{
 		{
 			name:      "gs source",
-			location:  "gs://artifact-bucket/kops/1.34.0/linux/amd64/nodeup",
+			location:  "gs://artifact-bucket/kops/1.37.0/linux/amd64/nodeup.xz",
 			expectGCS: true,
 		},
 		{
 			name:      "default https source",
-			location:  "https://artifacts.k8s.io/binaries/kops/1.34.0/linux/amd64/nodeup",
+			location:  "https://artifacts.k8s.io/binaries/kops/1.37.0/linux/amd64/nodeup.xz",
 			expectGCS: false,
 		},
 	} {
@@ -106,32 +116,32 @@ func TestEscapeS3Location(t *testing.T) {
 	}{
 		{
 			name:     "plain path",
-			location: "s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup",
-			expected: "s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup",
+			location: "s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup.xz",
+			expected: "s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup.xz",
 		},
 		{
 			name:     "plus sign",
-			location: "s3://artifact-bucket/kops/1.37.0+abcdef/linux/amd64/nodeup",
-			expected: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+			location: "s3://artifact-bucket/kops/1.37.0+abcdef/linux/amd64/nodeup.xz",
+			expected: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
 		},
 		{
 			name:     "existing escape",
-			location: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
-			expected: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+			location: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
+			expected: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
 		},
 		{
 			name:     "reserved and unicode characters",
-			location: "s3://artifact-bucket/space here/100%25/%3F%23/雪,nodeup",
-			expected: "s3://artifact-bucket/space%20here/100%25/%3F%23/%E9%9B%AA%2Cnodeup",
+			location: "s3://artifact-bucket/space here/100%25/%3F%23/雪,nodeup.xz",
+			expected: "s3://artifact-bucket/space%20here/100%25/%3F%23/%E9%9B%AA%2Cnodeup.xz",
 		},
 		{
 			name:     "path separators",
-			location: "s3://artifact-bucket/a//b/nodeup",
-			expected: "s3://artifact-bucket/a//b/nodeup",
+			location: "s3://artifact-bucket/a//b/nodeup.xz",
+			expected: "s3://artifact-bucket/a//b/nodeup.xz",
 		},
 		{
 			name:      "invalid escape",
-			location:  "s3://artifact-bucket/100%/nodeup",
+			location:  "s3://artifact-bucket/100%/nodeup.xz",
 			expectErr: true,
 		},
 	} {
@@ -155,7 +165,7 @@ func TestEscapeS3Location(t *testing.T) {
 
 func Test_S3Download(t *testing.T) {
 	s3Marker := "--aws-sigv4"
-	standardMarker := `--retry-delay 10 "${url}.xz"`
+	standardMarker := `--retry-delay 10 "${url}"`
 
 	for _, tc := range []struct {
 		name           string
@@ -167,20 +177,20 @@ func Test_S3Download(t *testing.T) {
 		{
 			name:           "s3 source",
 			cloudProvider:  "aws",
-			location:       "s3://artifact-bucket/kops/1.34.0+abcdef/linux/amd64/nodeup",
-			expectedSource: "NODEUP_URL_AMD64=s3://artifact-bucket/kops/1.34.0%2Babcdef/linux/amd64/nodeup",
+			location:       "s3://artifact-bucket/kops/1.37.0+abcdef/linux/amd64/nodeup.xz",
+			expectedSource: "NODEUP_URL_AMD64=s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
 			expectS3:       true,
 		},
 		{
 			name:          "default https source",
 			cloudProvider: "aws",
-			location:      "https://artifacts.k8s.io/binaries/kops/1.34.0/linux/amd64/nodeup",
+			location:      "https://artifacts.k8s.io/binaries/kops/1.37.0/linux/amd64/nodeup.xz",
 			expectS3:      false,
 		},
 		{
 			name:          "s3 source on another cloud provider",
 			cloudProvider: "hetzner",
-			location:      "s3://artifact-bucket/kops/1.34.0/linux/amd64/nodeup",
+			location:      "s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup.xz",
 			expectS3:      false,
 		},
 	} {
@@ -216,18 +226,18 @@ func TestEscapeAzureBlobLocation(t *testing.T) {
 	}{
 		{
 			name:     "plain path",
-			location: "azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup",
-			expected: "azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup",
+			location: "azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup.xz",
+			expected: "azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup.xz",
 		},
 		{
 			name:     "plus sign",
-			location: "azureblob://exampleaccount/assets/kops/1.37.0+abcdef/linux/amd64/nodeup",
-			expected: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+			location: "azureblob://exampleaccount/assets/kops/1.37.0+abcdef/linux/amd64/nodeup.xz",
+			expected: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
 		},
 		{
 			name:     "existing escape",
-			location: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
-			expected: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+			location: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
+			expected: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
 		},
 		{
 			name:      "missing account",
@@ -285,7 +295,7 @@ func TestEscapeAzureBlobLocation(t *testing.T) {
 
 func Test_AzureBlobDownload(t *testing.T) {
 	azureBlobMarker := "blob.core.windows.net"
-	standardMarker := `--retry-delay 10 "${url}.xz"`
+	standardMarker := `--retry-delay 10 "${url}"`
 
 	for _, tc := range []struct {
 		name            string
@@ -297,20 +307,20 @@ func Test_AzureBlobDownload(t *testing.T) {
 		{
 			name:            "azureblob source",
 			cloudProvider:   "azure",
-			location:        "azureblob://exampleaccount/assets/kops/1.34.0+abcdef/linux/amd64/nodeup",
-			expectedSource:  "NODEUP_URL_AMD64=azureblob://exampleaccount/assets/kops/1.34.0%2Babcdef/linux/amd64/nodeup",
+			location:        "azureblob://exampleaccount/assets/kops/1.37.0+abcdef/linux/amd64/nodeup.xz",
+			expectedSource:  "NODEUP_URL_AMD64=azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup.xz",
 			expectAzureBlob: true,
 		},
 		{
 			name:            "default https source",
 			cloudProvider:   "azure",
-			location:        "https://artifacts.k8s.io/binaries/kops/1.34.0/linux/amd64/nodeup",
+			location:        "https://artifacts.k8s.io/binaries/kops/1.37.0/linux/amd64/nodeup.xz",
 			expectAzureBlob: false,
 		},
 		{
 			name:            "azureblob source on another cloud provider",
 			cloudProvider:   "hetzner",
-			location:        "azureblob://exampleaccount/assets/kops/1.34.0/linux/amd64/nodeup",
+			location:        "azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup.xz",
 			expectAzureBlob: false,
 		},
 	} {
@@ -336,7 +346,7 @@ func Test_AzureBlobDownload(t *testing.T) {
 func Test_AzureBlobDownloadRequiresPublicCloud(t *testing.T) {
 	script := &NodeUpScript{
 		CloudProvider: "azure",
-		NodeUpAssets:  singleNodeUpAsset("azureblob://exampleaccount/assets/kops/1.34.0/linux/amd64/nodeup"),
+		NodeUpAssets:  singleNodeUpAsset("azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup.xz"),
 	}
 
 	// Environment names are case-insensitive, and AzureCloud is the CLI name of the public cloud.
@@ -356,10 +366,181 @@ func Test_AzureBlobDownloadRequiresPublicCloud(t *testing.T) {
 func Test_S3DownloadRequiresRegion(t *testing.T) {
 	script := &NodeUpScript{
 		CloudProvider: "aws",
-		NodeUpAssets:  singleNodeUpAsset("s3://artifact-bucket/kops/1.34.0/linux/amd64/nodeup"),
+		NodeUpAssets:  singleNodeUpAsset("s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup.xz"),
 	}
 	if _, err := script.Build(); err == nil {
 		t.Errorf("expected an error building an s3:// nodeup script without a resolved region")
+	}
+}
+
+func TestDownloadOrBustUsesTransientArchive(t *testing.T) {
+	requireNodeUpDownloadCommands(t)
+	downloadFunctions := renderNodeUpDownloadFunctions(t)
+
+	sourceDir := t.TempDir()
+	workDir := t.TempDir()
+	archive, hash := buildNodeUpArchive(t, "nodeup contents")
+	sourcePath := filepath.Join(sourceDir, "nodeup.xz")
+	if err := os.WriteFile(sourcePath, archive, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	sourceURL := (&url.URL{Scheme: "file", Path: sourcePath}).String()
+
+	runNodeUpDownload(t, downloadFunctions, workDir, hash, sourceURL)
+	assertInstalledNodeUp(t, workDir, "nodeup contents")
+
+	if err := os.WriteFile(filepath.Join(workDir, "nodeup"), []byte("corrupt"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	runNodeUpDownload(t, downloadFunctions, workDir, hash, sourceURL)
+	assertInstalledNodeUp(t, workDir, "nodeup contents")
+}
+
+func TestDownloadOrBustValidatesBeforeDecompression(t *testing.T) {
+	xz := requireNodeUpDownloadCommands(t)
+	downloadFunctions := renderNodeUpDownloadFunctions(t)
+
+	sourceDir := t.TempDir()
+	workDir := t.TempDir()
+	badPath := filepath.Join(sourceDir, "bad.xz")
+	if err := os.WriteFile(badPath, []byte("not the expected archive"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	archive, hash := buildNodeUpArchive(t, "nodeup contents")
+	goodPath := filepath.Join(sourceDir, "good.xz")
+	if err := os.WriteFile(goodPath, archive, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	fakeBin := t.TempDir()
+	xzLog := filepath.Join(t.TempDir(), "xz.log")
+	xzWrapper := filepath.Join(fakeBin, "xz")
+	wrapper := fmt.Sprintf("#!/bin/sh\nprintf 'xz\\n' >> %q\nexec %q \"$@\"\n", xzLog, xz)
+	if err := os.WriteFile(xzWrapper, []byte(wrapper), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(xzWrapper, 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	urls := strings.Join([]string{
+		(&url.URL{Scheme: "file", Path: badPath}).String(),
+		(&url.URL{Scheme: "file", Path: goodPath}).String(),
+	}, ",")
+	runNodeUpDownloadWithEnv(t, downloadFunctions, workDir, hash, urls, "PATH="+fakeBin+":"+os.Getenv("PATH"))
+	assertInstalledNodeUp(t, workDir, "nodeup contents")
+
+	logData, err := os.ReadFile(xzLog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Count(string(logData), "xz\n"); got != 1 {
+		t.Errorf("decompression attempts = %d, want 1", got)
+	}
+}
+
+func renderNodeUpDownloadFunctions(t *testing.T) string {
+	t.Helper()
+	rendered := renderNodeUpScript(t, &NodeUpScript{
+		NodeUpAssets: singleNodeUpAsset("file:///nodeup.xz"),
+	})
+	start := strings.Index(rendered, "download-or-bust() {")
+	end := strings.Index(rendered, "function download-release() {")
+	if start == -1 || end == -1 || start >= end {
+		t.Fatal("download functions not found in rendered nodeup script")
+	}
+	return rendered[start:end]
+}
+
+func buildNodeUpArchive(t *testing.T, contents string) ([]byte, string) {
+	t.Helper()
+	xz := requireNodeUpDownloadCommands(t)
+	cmd := exec.Command(xz, "-6", "-T1", "-c")
+	cmd.Stdin = strings.NewReader(contents)
+	archive, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("creating xz archive: %v", err)
+	}
+	hash := sha256.Sum256(archive)
+	return archive, fmt.Sprintf("%x", hash)
+}
+
+func requireNodeUpDownloadCommands(t *testing.T) string {
+	t.Helper()
+	for _, command := range []string{"bash", "curl", "xz"} {
+		path, err := exec.LookPath(command)
+		if err != nil {
+			t.Skipf("%s not found in PATH", command)
+		}
+		if command == "xz" {
+			return path
+		}
+	}
+	panic("unreachable")
+}
+
+func runNodeUpDownload(t *testing.T, functions, workDir, hash, urls string) {
+	t.Helper()
+	runNodeUpDownloadWithEnv(t, functions, workDir, hash, urls)
+}
+
+func runNodeUpDownloadWithEnv(t *testing.T, functions, workDir, hash, urls string, env ...string) {
+	t.Helper()
+	script := "#!/bin/bash\nset -o errexit\nset -o nounset\nset -o pipefail\n\n" + functions + `
+cd "$1"
+download-or-bust nodeup "$2" "$3"
+`
+	scriptPath := filepath.Join(t.TempDir(), "nodeup-download.sh")
+	if err := os.WriteFile(scriptPath, []byte(script), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(scriptPath, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, scriptPath, workDir, hash, urls)
+	cmd.Env = environmentWith(env...)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("running nodeup download functions: %v\n%s", err, output)
+	}
+}
+
+func environmentWith(overrides ...string) []string {
+	env := os.Environ()
+	for _, override := range overrides {
+		key, _, _ := strings.Cut(override, "=")
+		filtered := env[:0]
+		for _, entry := range env {
+			entryKey, _, _ := strings.Cut(entry, "=")
+			if entryKey != key {
+				filtered = append(filtered, entry)
+			}
+		}
+		env = filtered
+	}
+	return append(env, overrides...)
+}
+
+func assertInstalledNodeUp(t *testing.T, workDir, contents string) {
+	t.Helper()
+	nodeup, err := os.ReadFile(filepath.Join(workDir, "nodeup"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := string(nodeup); got != contents {
+		t.Errorf("installed nodeup = %q, want %q", got, contents)
+	}
+	info, err := os.Stat(filepath.Join(workDir, "nodeup"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode()&0o111 == 0 {
+		t.Errorf("installed nodeup is not executable")
+	}
+	if _, err := os.Stat(filepath.Join(workDir, "nodeup.xz")); !os.IsNotExist(err) {
+		t.Errorf("compressed archive was not removed")
 	}
 }
 

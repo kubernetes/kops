@@ -38,6 +38,11 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+// downloadedFileHashes caches hashes read from checksum files, keyed by resolved URL so
+// canonical and mirrored assets do not share entries. Commands can create multiple
+// AssetBuilders, but each builder must still remap and register its own assets.
+var downloadedFileHashes sync.Map // resolved URL -> *hashing.Hash
+
 // ImageDigestResolver looks up the manifest digest for an image, returning it in the form
 // "sha256:...".
 type ImageDigestResolver func(image string) (string, error)
@@ -308,11 +313,6 @@ func (a *AssetBuilder) RemapImage(image string) string {
 	return image + "@" + digest
 }
 
-// HasFileRepository reports whether a file repository is configured for asset mirroring.
-func (a *AssetBuilder) HasFileRepository() bool {
-	return a.assetsLocation != nil && a.assetsLocation.FileRepository != nil
-}
-
 // RemapFile returns a remapped URL for the file, if AssetsLocation is defined.
 // It is returns in a FileAsset, alongside the SHA hash of the file.
 // The SHA hash is is knownHash is provided, and otherwise will be found first by
@@ -386,6 +386,11 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		return knownHash, nil
 	}
 
+	if cachedHash, found := downloadedFileHashes.Load(u.String()); found {
+		klog.V(8).Infof("using cached hash for %q", u)
+		return cachedHash.(*hashing.Hash), nil
+	}
+
 	klog.V(2).Infof("asset %q is not well-known, downloading hash", file.CanonicalURL)
 
 	// We now prefer sha256 hashes
@@ -418,7 +423,14 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 					klog.Infof("Hash file was empty %q", hashURL)
 					continue
 				}
-				return hashing.FromString(fields[0])
+				hash, err := hashing.FromString(fields[0])
+				if err != nil {
+					return nil, err
+				}
+
+				downloadedFileHashes.Store(u.String(), hash)
+
+				return hash, nil
 			}
 			if ext == ".sha256" {
 				klog.V(2).Infof("Unable to read new sha256 hash file (is this an older/unsupported kubernetes release?)")

@@ -104,7 +104,6 @@ KOPS_VERSION=$(kops version --short)
 KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_VERSION}/"
 
 echo "KOPS_BASE_URL=${KOPS_BASE_URL}"
-echo "NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup"
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
@@ -118,7 +117,7 @@ kops delete cluster \
 echo ==========
 echo "Creating cluster ${CLUSTER_NAME}"
 
-kops_command="NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup KOPS_BASE_URL=${KOPS_BASE_URL} kops create cluster --name $CLUSTER_NAME --state $KOPS_STATE_STORE --node-count $NODE_COUNT --zones $NODE_ZONES --master-zones $MASTER_ZONES --node-size $NODE_SIZE --master-size $MASTER_SIZE -v $VERBOSITY --image $IMAGE --channel alpha --topology $TOPOLOGY --networking $NETWORKING"
+kops_command="KOPS_BASE_URL=${KOPS_BASE_URL} kops create cluster --name $CLUSTER_NAME --state $KOPS_STATE_STORE --node-count $NODE_COUNT --zones $NODE_ZONES --master-zones $MASTER_ZONES --node-size $NODE_SIZE --master-size $MASTER_SIZE -v $VERBOSITY --image $IMAGE --channel alpha --topology $TOPOLOGY --networking $NETWORKING"
 
 if [[ $TOPOLOGY == "private" ]]; then
   kops_command+=" --bastion='true'"
