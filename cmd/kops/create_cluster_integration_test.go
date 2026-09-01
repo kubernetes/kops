@@ -124,6 +124,12 @@ func TestCreateClusterMinimalGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-gce-dns-none", "v1alpha2")
 }
 
+// TestCreateClusterGCEIPv6 runs kops create cluster minimal-gce-ipv6.example.com --cloud gce --zones us-test1-a --networking kindnet --ipv6
+// It guards against the IP-alias assignment path rewriting the IPv6-only cluster back to IPv4.
+func TestCreateClusterGCEIPv6(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-gce-ipv6", "v1alpha2")
+}
+
 // TestCreateClusterHAGCE runs kops create cluster ha-gce.example.com --cloud gce --zones us-test1-a,us-test1-b,us-test1-c --master-zones us-test1-a,us-test1-b,us-test1-c
 func TestCreateClusterHAGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_gce", "v1alpha2")

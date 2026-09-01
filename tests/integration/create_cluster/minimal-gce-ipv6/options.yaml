@@ -1,0 +1,8 @@
+ClusterName: minimal-gce-ipv6.example.com
+Zones:
+- us-test1-a
+CloudProvider: gce
+Networking: kindnet
+Project: testproject
+KubernetesVersion: v1.32.0
+IPv6: true
