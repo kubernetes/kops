@@ -184,12 +184,22 @@ type InstanceCreateOptions struct {
 	DiskEncryption      InstanceDiskEncryption               `json:"disk_encryption,omitzero"`
 	PlacementGroup      *InstanceCreatePlacementGroupOptions `json:"placement_group,omitzero"`
 
+	// LinodeInstanceInterfaces are the Linode Interfaces (including
+	// RDMA VPC interfaces) to create the new instance with.
+	// Conflicts with Interfaces and LinodeInterfaces.
+	// NOTE: RDMA VPC interfaces may not currently be available to all users.
+	LinodeInstanceInterfaces []LinodeInstanceInterfaceCreateOptions `json:"-"`
+
 	// Linode Interfaces to create the new instance with.
-	// Conflicts with Interfaces.
+	// Conflicts with Interfaces and LinodeInstanceInterfaces.
+	//
+	// Deprecated: Use LinodeInstanceInterfaces instead. LinodeInstanceInterfaces
+	// additionally allows specifying RDMA VPC interfaces.
+	// LinodeInterfaces is retained for backwards compatibility.
 	LinodeInterfaces []LinodeInterfaceCreateOptions `json:"-"`
 
 	// Legacy (config) Interfaces to create the new instance with.
-	// Conflicts with LinodeInterfaces.
+	// Conflicts with LinodeInterfaces and LinodeInstanceInterfaces.
 	Interfaces []InstanceConfigInterfaceCreateOptions `json:"-"`
 
 	// Creation fields that need to be set explicitly false, "", or 0 use pointers
@@ -223,8 +233,8 @@ type InstanceUpdateOptions struct {
 }
 
 // MarshalJSON contains logic necessary to populate the `interfaces` field of
-// InstanceCreateOptions depending on whether Interfaces or LinodeInterfaces
-// is specified.
+// InstanceCreateOptions depending on whether Interfaces, LinodeInterfaces,
+// or LinodeInstanceInterfaces is specified.
 func (i InstanceCreateOptions) MarshalJSON() ([]byte, error) {
 	type Mask InstanceCreateOptions
 
@@ -241,12 +251,24 @@ func (i InstanceCreateOptions) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("fields Interfaces and LinodeInterfaces cannot be specified together")
 	}
 
+	if i.Interfaces != nil && i.LinodeInstanceInterfaces != nil {
+		return nil, fmt.Errorf("fields Interfaces and LinodeInstanceInterfaces cannot be specified together")
+	}
+
+	if i.LinodeInterfaces != nil && i.LinodeInstanceInterfaces != nil {
+		return nil, fmt.Errorf("fields LinodeInterfaces and LinodeInstanceInterfaces cannot be specified together")
+	}
+
 	if i.Interfaces != nil {
 		resultData.Interfaces = i.Interfaces
 	}
 
 	if i.LinodeInterfaces != nil {
 		resultData.Interfaces = i.LinodeInterfaces
+	}
+
+	if i.LinodeInstanceInterfaces != nil {
+		resultData.Interfaces = i.LinodeInstanceInterfaces
 	}
 
 	return json.Marshal(resultData)

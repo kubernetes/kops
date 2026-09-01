@@ -5,6 +5,10 @@
 - Root package files implement the public API client; `k8s/` is a separate helper module for LKE Kubernetes client behavior; `test/` is a separate module for unit and integration tests and replaces both local modules.
 - API resource files follow a flat root pattern (`instances.go`, `volumes.go`, etc.) and usually pair public types with `Client` methods that call helpers in `request_helpers.go`.
 
+## Maintaining This File
+- When making changes that invalidate or alter facts documented in this file, update `AGENTS.md` in the same change.
+- When reviewing changes, flag anything that may invalidate or alter facts documented in this file if `AGENTS.md` was not updated in the same change.
+
 ## Commands
 - Full CI-like local check: `make test` runs build, lint, unit tests, and fixture-backed integration tests; it can be slow because `test-int` uses a 5h timeout.
 - Faster focused default: run `go test ./...` at the repo root for root-module unit coverage only, then run focused tests in `test/` or `k8s/` as needed.
