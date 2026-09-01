@@ -86,11 +86,11 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/kubernetes/kubernetes/blob/418ae605ec1b788d43bff7ac44af66d8b669b833/test/e2e/network/networking.go#L135
 		skipRegex += "|should.check.kube-proxy.urls"
 
-		if k8sVersion.Minor < 38 {
+		if k8sVersion.Minor < 39 {
 			// Cilium SNATs the client source IP to a pod IP instead of preserving it, so it fails the
 			// externalTrafficPolicy=Local for type=NodePort test. This test passes on every other CNI,
 			// so it stays gated to Cilium.
-			// < 38 so we look at this again
+			// < 39 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
 		}
 	} else if networking.KubeRouter != nil {
@@ -108,8 +108,8 @@ func (t *Tester) setSkipRegexFlag() error {
 	// vxlan.calico on Azure) and the masquerade rewrites the source to the node's tunnel address.
 	// Calico preserves the source IP only on AWS, where kOps disables the source/dest check and
 	// routes pod traffic natively. amazon-vpc and kindnet preserve it and keep running the test.
-	// < 38 so we look at this again
-	if k8sVersion.Minor < 38 &&
+	// < 39 so we look at this again
+	if k8sVersion.Minor < 39 &&
 		(networking.Cilium != nil || networking.Flannel != nil || networking.KubeRouter != nil ||
 			(networking.Calico != nil && (cluster.Spec.LegacyCloudProvider == "gce" || cluster.Spec.LegacyCloudProvider == "azure"))) {
 		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
