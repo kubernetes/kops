@@ -196,6 +196,14 @@ func TestMinimalGCEPrivate(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCEIPv6 runs tests on a minimal IPv6 GCE configuration with private topology.
+// The subnets are dual-stack (GCE does not yet support IPv6-only subnets in kOps),
+// but pods and services are IPv6-only.
+func TestMinimalGCEIPv6(t *testing.T) {
+	newIntegrationTest("minimal-gce-ipv6.example.com", "minimal_gce_ipv6").
+		runTestTerraformGCE(t)
+}
+
 // TestMinimalGCEInternalLoadBalancer runs tests on a minimal GCE configuration with an internal load balancer.
 func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
