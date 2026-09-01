@@ -31,6 +31,15 @@ import (
 
 // UsesIPAliases checks if the cluster uses IP aliases for network connectivity
 func UsesIPAliases(c *kops.Cluster) bool {
+	// IP alias ranges are IPv4 secondary ranges; on an IPv6-only cluster
+	// pods and services get IPv6 addresses (from the node's IPv6 allocation),
+	// so IP aliases are not used. Without this, the IP-alias assignment path
+	// would overwrite the IPv6 NonMasqueradeCIDR (e.g. ::/0) with IPv4 CIDRs,
+	// silently turning the cluster back into an IPv4 cluster.
+	if c.Spec.IsIPv6Only() {
+		return false
+	}
+
 	// "GCP" networking mode is called "ip-alias" or "vpc-native" on GKE.
 	if c.Spec.Networking.GCP != nil {
 		return true

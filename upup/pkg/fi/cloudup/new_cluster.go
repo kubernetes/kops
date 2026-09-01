@@ -1029,7 +1029,9 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			default:
 				// Use only the main subnet for control-plane nodes
 				subnet := subnets[0]
-				if opt.IPv6 && opt.Topology == api.TopologyPrivate {
+				// On AWS, IPv6 private clusters place the control plane in dual-stack
+				// subnets; on other clouds no dual-stack subnets are created.
+				if opt.IPv6 && opt.Topology == api.TopologyPrivate && cloudProvider == api.CloudProviderAWS {
 					g.Spec.Subnets = append(g.Spec.Subnets, "dualstack-"+subnet.Name)
 				} else {
 					g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
@@ -1422,7 +1424,15 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			}
 		}
 
-		if opt.IPv6 {
+		// On AWS, IPv6 clusters place the control plane in additional dual-stack subnets.
+		// On GCE the (single) subnet itself becomes dual-stack, so we don't add subnets there.
+		addDualStackSubnets := opt.IPv6
+		switch cluster.GetCloudProvider() {
+		case api.CloudProviderGCE:
+			addDualStackSubnets = false
+		}
+
+		if addDualStackSubnets {
 			var dualStackSubnets []api.ClusterSubnetSpec
 
 			for _, s := range cluster.Spec.Networking.Subnets {
@@ -1505,12 +1515,17 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	if opt.IPv6 {
 		cluster.Spec.Networking.NonMasqueradeCIDR = "::/0"
 		cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
-		if cluster.GetCloudProvider() == api.CloudProviderAWS {
+		switch cluster.GetCloudProvider() {
+		case api.CloudProviderAWS:
 			for i := range cluster.Spec.Networking.Subnets {
 				cluster.Spec.Networking.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
 			}
-		} else {
-			klog.Errorf("IPv6 support is available only on AWS")
+		case api.CloudProviderGCE:
+			// The subnets are created as dual-stack (IPV4_IPV6) and GCE assigns
+			// the IPv6 ranges, so there is nothing to allocate here.
+			klog.Warningf("IPv6 support on GCE is experimental")
+		default:
+			klog.Errorf("IPv6 support is available only on AWS and GCE")
 		}
 	}
 

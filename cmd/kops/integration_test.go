@@ -196,6 +196,14 @@ func TestMinimalGCEPrivate(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCEIPv6Kindnet runs tests on a minimal IPv6 GCE configuration with kindnet.
+// The subnet remains dual-stack (with an assigned IPv4 CIDR), but pods and services
+// are IPv6-only: no IPv4 secondary ranges or alias ranges are created.
+func TestMinimalGCEIPv6Kindnet(t *testing.T) {
+	newIntegrationTest("minimal-gce-ipv6-kindnet.example.com", "minimal_gce_ipv6_kindnet").
+		runTestTerraformGCE(t)
+}
+
 // TestMinimalGCEInternalLoadBalancer runs tests on a minimal GCE configuration with an internal load balancer.
 func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
