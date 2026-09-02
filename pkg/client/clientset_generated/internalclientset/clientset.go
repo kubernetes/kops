@@ -31,7 +31,7 @@ import (
 )
 
 type Interface interface {
-	Discovery() discovery.DiscoveryInterface
+	Discovery() discovery.DiscoveryInterfaces
 	Kops() kopsinternalversion.KopsInterface
 	KopsV1alpha2() kopsv1alpha2.KopsV1alpha2Interface
 	KopsV1alpha3() kopsv1alpha3.KopsV1alpha3Interface
@@ -61,7 +61,7 @@ func (c *Clientset) KopsV1alpha3() kopsv1alpha3.KopsV1alpha3Interface {
 }
 
 // Discovery retrieves the DiscoveryClient
-func (c *Clientset) Discovery() discovery.DiscoveryInterface {
+func (c *Clientset) Discovery() discovery.DiscoveryInterfaces {
 	if c == nil {
 		return nil
 	}
