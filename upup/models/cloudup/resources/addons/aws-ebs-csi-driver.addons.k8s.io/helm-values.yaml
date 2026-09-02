@@ -9,8 +9,10 @@ image:
 controller:
   enableMetrics: true
   logLevel: 5
+  # The volume-modifier-for-k8s sidecar this would enable is only published to
+  # public.ecr.aws, and only with an -eksbuild suffix, so kOps does not ship it.
   volumeModificationFeature:
-    enabled: true
+    enabled: false
   topologySpreadConstraints:
     - maxSkew: 1
       topologyKey: "topology.kubernetes.io/zone"
@@ -83,8 +85,6 @@ sidecars:
         memory: 40Mi
       limits:
         memory: 256Mi
-  volumemodifier:
-    logLevel: 5
 
 node:
   enableWindows: false

@@ -489,26 +489,6 @@ spec:
       targetPort: 3306
   type: ClusterIP
 ---
-# Source: aws-ebs-csi-driver/templates/metrics.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: "ebs-csi-controller-volumemodifier"
-  namespace: "kube-system"
-  labels:
-    app: "ebs-csi-controller-volumemodifier"
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "3307"
-spec:
-  selector:
-    app: "ebs-csi-controller"
-  ports:
-    - name: metrics
-      port: 3307
-      targetPort: 3307
-  type: ClusterIP
----
 # Source: aws-ebs-csi-driver/templates/node.yaml
 kind: DaemonSet
 apiVersion: apps/v1
