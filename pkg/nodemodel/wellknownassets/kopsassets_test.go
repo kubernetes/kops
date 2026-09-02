@@ -17,10 +17,13 @@ limitations under the License.
 package wellknownassets
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -202,5 +205,60 @@ func TestNodeUpAssetRegistersWithEveryAssetBuilder(t *testing.T) {
 	// Each architecture's checksum is downloaded once across both builders.
 	if actual := requests.Load(); actual != int64(len(hashes)) {
 		t.Errorf("expected %d checksum requests, got %d", len(hashes), actual)
+	}
+}
+
+func TestNodeUpAssetOCIStagesCompressedArtifact(t *testing.T) {
+	originalVersion := kops.Version
+	originalBaseURL := kopsBaseURL
+	t.Cleanup(func() {
+		kops.Version = originalVersion
+		kopsBaseURL = originalBaseURL
+	})
+
+	baseDir := filepath.Join(t.TempDir(), "v1.37.0")
+	assetDir := filepath.Join(baseDir, "linux", "amd64")
+	if err := os.MkdirAll(assetDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	compressed := []byte("nodeup xz bytes")
+	compressedHash, err := hashing.HashAlgorithmSHA256.Hash(bytes.NewReader(compressed))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, data := range map[string][]byte{"nodeup.xz": compressed, "nodeup.xz.sha256": []byte(compressedHash.Hex())} {
+		if err := os.WriteFile(filepath.Join(assetDir, name), data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	t.Setenv("KOPS_BASE_URL", (&url.URL{Scheme: "file", Path: baseDir}).String())
+	kopsBaseURL = nil
+	fileRepository := "oci://registry.example.com/optional-prefix"
+	builder := assets.NewAssetBuilder(vfs.NewVFSContext(), &kopsapi.AssetsSpec{FileRepository: &fileRepository}, true)
+	asset, err := NodeUpAsset(builder, architectures.ArchitectureAmd64)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !asset.Hash.Equal(compressedHash) {
+		t.Errorf("compressed hash = %s, want %s", asset.Hash, compressedHash)
+	}
+	if len(asset.Locations) != 1 || asset.Locations[0] != "oci://registry.example.com/optional-prefix/nodeup:v1.37.0-amd64" {
+		t.Errorf("locations = %v", asset.Locations)
+	}
+	fileAssets := builder.FileAssets()
+	if len(fileAssets) != 1 {
+		t.Fatalf("file assets = %d, want 1", len(fileAssets))
+	}
+	fileAsset := fileAssets[0]
+	if got := filepath.Base(fileAsset.CanonicalURL.Path); got != "nodeup.xz" {
+		t.Errorf("staged source = %q, want nodeup.xz", got)
+	}
+	if !fileAsset.SHAValue.Equal(compressedHash) {
+		t.Errorf("staged hash = %s, want %s", fileAsset.SHAValue, compressedHash)
+	}
+	if got := fileAsset.DownloadURL.String(); got != "oci://registry.example.com/optional-prefix/nodeup:v1.37.0-amd64" {
+		t.Errorf("staged target = %q", got)
 	}
 }

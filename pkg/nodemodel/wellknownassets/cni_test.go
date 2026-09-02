@@ -59,6 +59,28 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	}
 }
 
+func TestFindCNIAssetsUsesSelectedVersionInOCIReference(t *testing.T) {
+	t.Setenv(ENV_VAR_CNI_ASSET_URL, "")
+	t.Setenv(ENV_VAR_CNI_ASSET_HASH, "")
+	repository := "oci://registry.example.com/prefix"
+	cluster := &api.Cluster{Spec: api.ClusterSpec{
+		KubernetesVersion: "v1.36.0",
+		Assets:            &api.AssetsSpec{FileRepository: &repository},
+	}}
+	igModel, err := kopsmodel.ForInstanceGroup(cluster, &api.InstanceGroup{})
+	if err != nil {
+		t.Fatalf("building instance group model: %v", err)
+	}
+	asset, err := FindCNIAssets(igModel, assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false), architectures.ArchitectureAmd64)
+	if err != nil {
+		t.Fatalf("FindCNIAssets() error = %v", err)
+	}
+	want := "oci://registry.example.com/prefix/cni-plugins:v1.9.1-amd64"
+	if got := asset.DownloadURL.String(); got != want {
+		t.Fatalf("DownloadURL = %q, want %q", got, want)
+	}
+}
+
 func Test_FindCNIAssetFromDefaults134(t *testing.T) {
 	desiredCNIVersionURL := "https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-amd64-v1.7.1.tgz"
 	desiredCNIVersionHash := "sha256:1a28a0506bfe5bcdc981caf1a49eeab7e72da8321f1119b7be85f22621013098"

@@ -35,6 +35,8 @@ spec:
 
 To configure a local file repository, set `assets.fileRepository` in the cluster spec.
 
+#### HTTP or HTTPS
+
 ```yaml
 spec:
   assets:
@@ -44,6 +46,8 @@ spec:
 For an `http://` or `https://` repository, nodes must be able to read without credentials.
 The repository can be public or allow access through network connectivity, such as a
 particular cloud endpoint.
+
+#### Google Cloud Storage
 
 {{ kops_feature_table(kops_added_default='1.37') }}
 
@@ -56,6 +60,8 @@ spec:
   assets:
     fileRepository: gs://example-bucket/files
 ```
+
+#### Amazon S3
 
 {{ kops_feature_table(kops_added_default='1.37') }}
 
@@ -71,6 +77,8 @@ spec:
     fileRepository: s3://example-bucket/files
 ```
 
+#### Azure Blob Storage
+
 {{ kops_feature_table(kops_added_default='1.37') }}
 
 On Azure, the repository can also be an `azureblob://<account>/<container>/<prefix>` URL.
@@ -85,20 +93,42 @@ spec:
     fileRepository: azureblob://exampleaccount/assets/files
 ```
 
+#### OCI registry
+
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+An OCI file repository URL contains a registry and an optional repository prefix:
+
+```yaml
+spec:
+  assets:
+    fileRepository: oci://registry.example.com/optional-prefix
+```
+
+kOps stores each asset family at
+`<registry>/<optional-prefix>/<asset-family>:<tag>`. For example, containerd 2.2.4 for `amd64` is
+stored as `registry.example.com/optional-prefix/containerd:v2.2.4-amd64`.
+
+Tags contain the asset version and, for architecture-specific files, the architecture. They do not
+include `linux`. If no meaningful version is available, kOps derives a deterministic tag from the
+file SHA-256. The OCI blob contains the exact source file, and its SHA-256 is also the integrity
+value passed to nodes.
+
+Nodes download blobs by digest without reading tags or manifests, so the repositories must allow
+anonymous pulls, including the standard OCI Distribution Bearer token flow. Staging uses the
+operator's local container-registry credentials and requires HTTPS registry and token endpoints.
+Stage assets before updating the cluster. Staging is a no-op if a tag already contains the expected
+blobs and fails if the tag contains different content. These checks are best-effort, not atomic:
+do not run multiple staging processes that publish different content for the same tags.
+
 ## Copying assets into repositories
 
 {{ kops_feature_table(kops_added_default='1.22') }}
 
-You can copy assets into their repositories either by running `kops get assets --copy` or through an external process.
-
-When running `kops get assets --copy`, kOps copies assets into their respective repositories if
-they do not already exist there.
-
-For file assets, kOps only supports copying to a repository that is an S3 bucket, a GCS bucket,
-or an Azure Blob Storage container.
-An S3 bucket must be configured with a prefix of `s3://` or using the [regional naming conventions of S3](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
-A GCS bucket must be configured with a prefix of `https://storage.googleapis.com/` or `gs://`.
-An Azure Blob Storage container must be configured with a prefix of `azureblob://`.
+Run `kops get assets --copy` before updating the cluster, or stage the assets with an external
+process. The command copies assets that are not already present and supports the S3, GCS, Azure
+Blob Storage, and OCI repository forms described above. It also supports GCS URLs beginning with
+`https://storage.googleapis.com/`; other HTTP or HTTPS repositories require external staging.
 
 ## Listing assets
 

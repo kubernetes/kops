@@ -560,3 +560,101 @@ func verifyShellSyntax(t *testing.T, script string) {
 		t.Errorf("rendered script is not valid bash: %v\n%s", err, output)
 	}
 }
+
+func TestNodeUpBootstrapOCI(t *testing.T) {
+	hash := hashing.MustFromString("833723369ad345a88dd85d61b1e77336d56e61b864557ded71b92b6e34158e6a")
+	script := &NodeUpScript{
+		NodeUpAssets: map[architectures.Architecture]*assets.MirroredAsset{
+			architectures.ArchitectureAmd64: {
+				Locations: []string{"oci://registry.example.com/prefix/nodeup:v1.2.3-amd64"},
+				Hash:      hash,
+			},
+		},
+	}
+	rendered := renderNodeUpScript(t, script)
+	jsonStart := strings.Index(rendered, "json-field() {")
+	if jsonStart == -1 {
+		t.Fatal("rendered bootstrap script does not contain json-field()")
+	}
+	jsonEnd := strings.Index(rendered[jsonStart:], "\n}\n\n")
+	if jsonEnd == -1 {
+		t.Fatal("rendered bootstrap script does not contain the end of json-field()")
+	}
+	jsonField := rendered[jsonStart : jsonStart+jsonEnd+2]
+	ociStart := strings.Index(rendered, "oci-download() {")
+	if ociStart == -1 {
+		t.Fatal("rendered bootstrap script does not contain oci-download()")
+	}
+	ociEnd := strings.Index(rendered[ociStart:], "\n}\n\n")
+	if ociEnd == -1 {
+		t.Fatal("rendered bootstrap script does not contain the end of oci-download()")
+	}
+	ociDownload := rendered[ociStart : ociStart+ociEnd+2]
+	start := strings.Index(rendered, "download-or-bust() {")
+	if start == -1 {
+		t.Fatal("rendered bootstrap script does not contain download-or-bust()")
+	}
+	end := strings.Index(rendered[start:], "\n}\n\nvalidate-hash() {")
+	if end == -1 {
+		t.Fatal("rendered bootstrap script does not contain the end of download-or-bust()")
+	}
+	download := rendered[start : start+end+2]
+
+	testScript := `#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+curl() {
+  local has_stdin_header=false has_get=false has_redirect=false
+  local arg last
+  for arg in "$@"; do
+    last="${arg}"
+    [[ "${arg}" == "@-" ]] && has_stdin_header=true
+    [[ "${arg}" == "--get" ]] && has_get=true
+    [[ "${arg}" == *L* && "${arg}" == -* ]] && has_redirect=true
+  done
+  if [[ "${has_get}" == true ]]; then
+    [[ " $* " == *" --connect-timeout 5 "* ]] || return 1
+    [[ " $* " == *" --max-time 10 "* ]] || return 1
+    [[ " $* " != *" --retry "* ]] || return 1
+    [[ "${last}" == "https://auth.example.com/token?audience=assets,public" ]] || return 1
+    echo '{"token":"pull-token"}'
+  elif [[ "${has_stdin_header}" == true ]]; then
+    [[ "${has_redirect}" == true ]] || return 1
+    [[ "$(cat -)" == "Authorization: Bearer pull-token" ]] || return 1
+    [[ " $* " == *" -H @- "* ]] || return 1
+    [[ " $* " == *" --proto =https "* ]] || return 1
+    [[ " $* " == *" --proto-redir =https "* ]] || return 1
+    [[ " $* " == *" -o ${archive} "* ]] || return 1
+    [[ "${last}" == "https://registry.example.com/v2/prefix/nodeup/blobs/sha256:833723369ad345a88dd85d61b1e77336d56e61b864557ded71b92b6e34158e6a" ]] || return 1
+    printf 'redirected bytes' > "${archive}"
+  else
+    printf 'WWW-Authenticate: Basic realm="separate"\r\nWWW-Authenticate: bEaReR ReAlM = "https://auth.example.com/token?audience=assets,public", SeRvIcE= "registry", Basic realm="legacy"\r\n'
+    return 22
+  fi
+}
+validate-hash() {
+  return 0
+}
+xz() {
+  cp "$2" "${2%.xz}"
+  rm -f "$2"
+}
+` + jsonField + `
+` + ociDownload + `
+` + download + `
+
+archive="${1}.xz"
+download-or-bust "${1}" "833723369ad345a88dd85d61b1e77336d56e61b864557ded71b92b6e34158e6a" "oci://registry.example.com/prefix/nodeup:v1.2.3-amd64"
+[[ "$(cat "${1}")" == "redirected bytes" ]]
+`
+	filename := filepath.Join(t.TempDir(), "test-oci-redirect.sh")
+	if err := os.WriteFile(filename, []byte(testScript), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	output := filepath.Join(t.TempDir(), "nodeup")
+	if b, err := exec.Command("bash", filename, output).CombinedOutput(); err != nil {
+		t.Fatalf("redirect test failed: %v\n%s", err, b)
+	}
+}

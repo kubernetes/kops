@@ -26,27 +26,29 @@ import (
 )
 
 const (
-	crictlAssetUrlAmd64 = "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz"
-	crictlAssetUrlArm64 = "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz"
+	crictlVersion = "1.29.0"
+	// Deriving the URL from crictlVersion keeps the URL and the OCI tag from drifting apart.
+	crictlAssetURL = "https://github.com/kubernetes-sigs/cri-tools/releases/download/v%[1]s/crictl-v%[1]s-linux-%[2]s.tar.gz"
 )
 
 func FindCrictlAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
-	var assetURL string
 	switch arch {
-	case architectures.ArchitectureAmd64:
-		assetURL = crictlAssetUrlAmd64
-	case architectures.ArchitectureArm64:
-		assetURL = crictlAssetUrlArm64
+	case architectures.ArchitectureAmd64, architectures.ArchitectureArm64:
 	default:
 		return nil, fmt.Errorf("unknown arch for crictl binaries asset: %s", arch)
 	}
+	assetURL := fmt.Sprintf(crictlAssetURL, crictlVersion, arch)
 
 	u, err := url.Parse(assetURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse crictl binaries asset URL %q: %v", assetURL, err)
 	}
 
-	asset, err := assetBuilder.RemapFile(u, nil)
+	asset, err := assetBuilder.RemapFileWithInfo(u, nil, assets.FileAssetInfo{
+		Family:       "crictl",
+		Version:      crictlVersion,
+		Architecture: string(arch),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to remap crictl binaries asset: %v", err)
 	}

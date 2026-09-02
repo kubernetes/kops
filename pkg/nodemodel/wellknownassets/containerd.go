@@ -42,6 +42,7 @@ func FindContainerdAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuild
 
 	canonicalURL := ""
 	knownHash := ""
+	version := fi.ValueOf(containerd.Version)
 
 	if containerd.Packages != nil {
 		if arch == architectures.ArchitectureAmd64 && containerd.Packages.UrlAmd64 != nil && containerd.Packages.HashAmd64 != nil {
@@ -55,7 +56,6 @@ func FindContainerdAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuild
 	}
 
 	if canonicalURL == "" {
-		version := fi.ValueOf(containerd.Version)
 		if version == "" {
 			return nil, fmt.Errorf("unable to find containerd version")
 		}
@@ -67,7 +67,11 @@ func FindContainerdAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuild
 		canonicalURL = assetURL.String()
 	}
 
-	return buildFileAsset(assetBuilder, canonicalURL, knownHash)
+	return buildFileAsset(assetBuilder, canonicalURL, knownHash, assets.FileAssetInfo{
+		Family:       "containerd",
+		Version:      version,
+		Architecture: string(arch),
+	})
 }
 
 func findContainerdVersionUrl(arch architectures.Architecture, version string) (*url.URL, error) {
@@ -92,7 +96,7 @@ func findContainerdVersionUrl(arch architectures.Architecture, version string) (
 	return url.Parse(u)
 }
 
-func buildFileAsset(assetBuilder *assets.AssetBuilder, canonicalURL string, knownHashString string) (*assets.FileAsset, error) {
+func buildFileAsset(assetBuilder *assets.AssetBuilder, canonicalURL string, knownHashString string, info assets.FileAssetInfo) (*assets.FileAsset, error) {
 	u, err := url.Parse(canonicalURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse asset URL %q: %w", canonicalURL, err)
@@ -107,7 +111,7 @@ func buildFileAsset(assetBuilder *assets.AssetBuilder, canonicalURL string, know
 		knownHash = h
 	}
 
-	asset, err := assetBuilder.RemapFile(u, knownHash)
+	asset, err := assetBuilder.RemapFileWithInfo(u, knownHash, info)
 	if err != nil {
 		return nil, fmt.Errorf("unable to remap asset: %w", err)
 	}

@@ -2013,6 +2013,59 @@ func Test_Validate_ContainerdVersion(t *testing.T) {
 	}
 }
 
+func Test_Validate_ContainerdPackagesRequireVersion(t *testing.T) {
+	url := "https://example.com/custom.tar.gz"
+	hash := "833723369ad345a88dd85d61b1e77336d56e61b864557ded71b92b6e34158e6a"
+	version := "2.3.4"
+	runcVersion := "1.4.3"
+	grid := []struct {
+		name           string
+		containerd     kops.ContainerdConfig
+		expectedErrors []string
+	}{
+		{
+			name: "containerd packages without version",
+			containerd: kops.ContainerdConfig{
+				Packages: &kops.PackagesConfig{UrlAmd64: &url, HashAmd64: &hash},
+			},
+			expectedErrors: []string{"Required value::containerd.version"},
+		},
+		{
+			name: "containerd packages with version",
+			containerd: kops.ContainerdConfig{
+				Version:  &version,
+				Packages: &kops.PackagesConfig{UrlAmd64: &url, HashAmd64: &hash},
+			},
+		},
+		{
+			name: "runc packages without version",
+			containerd: kops.ContainerdConfig{
+				Version: &version,
+				Runc: &kops.Runc{
+					Packages: &kops.PackagesConfig{UrlArm64: &url, HashArm64: &hash},
+				},
+			},
+			expectedErrors: []string{"Required value::containerd.runc.version"},
+		},
+		{
+			name: "runc packages with version",
+			containerd: kops.ContainerdConfig{
+				Version: &version,
+				Runc: &kops.Runc{
+					Version:  &runcVersion,
+					Packages: &kops.PackagesConfig{UrlArm64: &url, HashArm64: &hash},
+				},
+			},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			errs := validateContainerdConfig(&kops.Cluster{}, &g.containerd, field.NewPath("containerd"), true)
+			testErrors(t, g.name, errs, g.expectedErrors)
+		})
+	}
+}
+
 func Test_Validate_NriConfig(t *testing.T) {
 	unsupportedContainerdVersion := "1.6.0"
 	supportedContainerdVersion := "1.7.0"
@@ -2651,6 +2704,35 @@ func TestValidateFileRepository(t *testing.T) {
 		},
 		{
 			Input:          "https://",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{Input: "oci://registry.example.com"},
+		{Input: "oci://registry.example.com/optional-prefix"},
+		{Input: "oci://registry.example.com/prefix__name/assets--team"},
+		{Input: "oci://localhost:5000/team/assets"},
+		{Input: "oci://registry:5000/prefix"},
+		{
+			Input:          "oci://registry/prefix",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Input:          "oci://registry$(reboot).example.com/prefix",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Input:          "oci://registry.example.com/Uppercase",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Input:          "oci://registry.example.com/-prefix",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Input:          "oci://registry.example.com/prefix..name",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Input:          "oci://registry.example.com/prefix?query=true",
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},
 	}

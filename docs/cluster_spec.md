@@ -1490,6 +1490,51 @@ spec:
     containerProxy: proxy.example.com
 ```
 
+### fileRepository
+
+The file repository provides alternative download locations for static files used by kOps and
+Kubernetes. It supports HTTP, HTTPS, Google Cloud Storage, Amazon S3, Azure Blob Storage, and OCI
+registries. See [Using local asset repositories](operations/asset-repository.md#configuring-a-local-file-repository)
+for configuration, access, and staging instructions.
+
+#### HTTP and HTTPS
+
+HTTP and HTTPS repositories are supported on every cloud provider. Nodes must be able to read the
+files without credentials, and the files must be copied to the repository by an external process.
+See the [HTTP and HTTPS configuration](operations/asset-repository.md#http-or-https) for details.
+
+#### Google Cloud Storage
+
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+On GCE, `fileRepository` can use a `gs://` URL. See the
+[Google Cloud Storage configuration](operations/asset-repository.md#google-cloud-storage) for access
+and staging requirements.
+
+#### Amazon S3
+
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+On AWS, `fileRepository` can use an `s3://` URL. See the
+[Amazon S3 configuration](operations/asset-repository.md#amazon-s3) for access and staging
+requirements.
+
+#### Azure Blob Storage
+
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+On Azure, `fileRepository` can use an `azureblob://` URL. See the
+[Azure Blob Storage configuration](operations/asset-repository.md#azure-blob-storage) for access and
+staging requirements.
+
+#### OCI registries
+
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+OCI file repositories use an `oci://` URL containing a registry and an optional repository prefix.
+See the [OCI registry configuration](operations/asset-repository.md#oci-registry) for repository
+layout, authentication, and staging requirements.
+
 ## sysctlParameters
 {{ kops_feature_table(kops_added_default='1.17') }}
 

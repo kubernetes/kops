@@ -472,3 +472,87 @@ func TestFindHashDoesNotCacheFailures(t *testing.T) {
 		t.Errorf("expected 1 successful checksum request, got %d", actual)
 	}
 }
+
+func TestRemapFileToOCI(t *testing.T) {
+	const digest = "833723369ad345a88dd85d61b1e77336d56e61b864557ded71b92b6e34158e6a"
+	hash := hashing.MustFromString(digest)
+	canonical := mustParseURL(t, "https://example.com/containerd.tar.gz")
+
+	for _, test := range []struct {
+		name       string
+		repository string
+		info       FileAssetInfo
+		want       string
+	}{
+		{
+			name:       "versioned with prefix",
+			repository: "oci://registry.example.com/optional-prefix",
+			info:       FileAssetInfo{Family: "containerd", Version: "v2.2.4", Architecture: "amd64"},
+			want:       "oci://registry.example.com/optional-prefix/containerd:v2.2.4-amd64",
+		},
+		{
+			name:       "digest fallback without prefix",
+			repository: "oci://registry.example.com",
+			info:       FileAssetInfo{Family: "containerd", Architecture: "amd64"},
+			want:       "oci://registry.example.com/containerd:sha256-" + digest + "-amd64",
+		},
+		{
+			name:       "valid repository separators in family",
+			repository: "oci://registry.example.com/team",
+			info:       FileAssetInfo{Family: "credential__provider", Version: "v1.2.3"},
+			want:       "oci://registry.example.com/team/credential__provider:v1.2.3",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			builder := NewAssetBuilder(nil, &kops.AssetsSpec{FileRepository: &test.repository}, false)
+			asset, err := builder.RemapFileWithInfo(canonical, hash, test.info)
+			if err != nil {
+				t.Fatalf("RemapFileWithInfo() error = %v", err)
+			}
+			if got := asset.DownloadURL.String(); got != test.want {
+				t.Fatalf("RemapFileWithInfo() = %q, want %q", got, test.want)
+			}
+			if strings.Contains(asset.DownloadURL.String(), "linux") {
+				t.Fatalf("OCI reference unexpectedly contains linux: %q", asset.DownloadURL)
+			}
+			if got := BuildMirroredAsset(asset).CompactString(); got != digest+"@"+test.want {
+				t.Fatalf("CompactString() = %q", got)
+			}
+		})
+	}
+}
+
+func TestRemapFileToOCIUsesExactSourceSHA256(t *testing.T) {
+	content := []byte("source bytes")
+	file := filepath.Join(t.TempDir(), "asset")
+	if err := os.WriteFile(file, content, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	canonical := mustParseURL(t, "file://"+file)
+	sha1Hash, err := hashing.HashAlgorithmSHA1.Hash(strings.NewReader(string(content)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository := "oci://registry.example.com/prefix"
+	builder := NewAssetBuilder(vfs.Context, &kops.AssetsSpec{FileRepository: &repository}, false)
+	asset, err := builder.RemapFileWithInfo(canonical, sha1Hash, FileAssetInfo{Family: "asset"})
+	if err != nil {
+		t.Fatalf("RemapFileWithInfo() error = %v", err)
+	}
+	want, err := hashing.HashAlgorithmSHA256.Hash(strings.NewReader(string(content)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !asset.SHAValue.Equal(want) {
+		t.Fatalf("SHAValue = %s, want %s", asset.SHAValue, want)
+	}
+}
+
+func mustParseURL(t *testing.T, value string) *url.URL {
+	t.Helper()
+	u, err := url.Parse(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return u
+}
