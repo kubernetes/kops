@@ -41,14 +41,7 @@ spec:
       tolerations:
         - operator: Exists
       containers:
-      # Do not upgrade past v0.1.45 until kOps sets a providerID on DigitalOcean nodes.
-      # kOps names these nodes after their private IP and leaves providerID empty, so the
-      # cloud-node-controller has to resolve them by name. v0.1.45 matches a droplet by name
-      # or by any of its addresses. Later releases moved to InstancesV2, which needs a
-      # providerID, and the name fallback that v0.1.62 restored asks the DigitalOcean API for
-      # droplets named after the node, so an IP-named node matches nothing. Nodes then keep the
-      # node.cloudprovider.kubernetes.io/uninitialized taint and the cluster never validates.
-      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.45
+      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.69
         name: digitalocean-cloud-controller-manager
         command:
           - "/bin/digitalocean-cloud-controller-manager"
