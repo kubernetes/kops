@@ -74,17 +74,17 @@ images:
   download: registry.k8s.io/kube-scheduler:v1.34.0
 - canonical: registry.k8s.io/pause:3.10.1
   download: registry.k8s.io/pause:3.10.1
-- canonical: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.58.0
-  download: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.58.0
-- canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.36.1
-  download: registry.k8s.io/provider-aws/cloud-controller-manager:v1.36.1
-- canonical: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
-  download: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
-- canonical: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
-  download: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
-- canonical: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
-  download: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
-- canonical: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
-  download: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
-- canonical: registry.k8s.io/sig-storage/livenessprobe:v2.18.0
-  download: registry.k8s.io/sig-storage/livenessprobe:v2.18.0
+- canonical: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.65.0
+  download: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.65.0
+- canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.0
+  download: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.0
+- canonical: registry.k8s.io/sig-storage/csi-attacher:v4.12.0
+  download: registry.k8s.io/sig-storage/csi-attacher:v4.12.0
+- canonical: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.17.0
+  download: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.17.0
+- canonical: registry.k8s.io/sig-storage/csi-provisioner:v6.3.0
+  download: registry.k8s.io/sig-storage/csi-provisioner:v6.3.0
+- canonical: registry.k8s.io/sig-storage/csi-resizer:v2.2.1
+  download: registry.k8s.io/sig-storage/csi-resizer:v2.2.1
+- canonical: registry.k8s.io/sig-storage/livenessprobe:v2.19.0
+  download: registry.k8s.io/sig-storage/livenessprobe:v2.19.0

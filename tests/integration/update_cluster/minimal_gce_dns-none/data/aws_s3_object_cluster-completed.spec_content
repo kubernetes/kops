@@ -17,7 +17,7 @@ spec:
     gcpPDCSIDriver:
       defaultStorageClassName: balanced-csi
       enabled: true
-      version: v1.22.1
+      version: v1.26.0
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-example-com-k8s-io-role-node
@@ -28,7 +28,7 @@ spec:
     clusterName: minimal-gce-example-com
     controllers:
     - '*'
-    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v35.0.0
+    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v36.2.4
     leaderElection:
       leaderElect: true
   cloudProvider: gce

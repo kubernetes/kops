@@ -98,13 +98,13 @@ spec:
       role.kubernetes.io/networking: "1"
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: d1cc4ed1dd00a8eb83ce0316ce4207cffe45769c87996c6005438cb244ac5515
+    manifestHash: 6ec2818f4104d71579ef11b967d87fadce314b445a2296927dd05f85bf5339d2
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 8c068b025aa469ed4fbe48e723d2b64d5925794d28ea855ab70ffab1a66df241
+    manifestHash: b5ca580417b5a20ccc8730c0a7d9deeeaa59741c0d21ea48319f3e63022dee35
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
