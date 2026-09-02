@@ -41,7 +41,7 @@ spec:
       tolerations:
         - operator: Exists
       containers:
-      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.45
+      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.69
         name: digitalocean-cloud-controller-manager
         command:
           - "/bin/digitalocean-cloud-controller-manager"
