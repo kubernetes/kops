@@ -114,7 +114,7 @@ ClusterName: privatekindnet.example.com
 ConfigBase: memfs://clusters.example.com/privatekindnet.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: O+tMrm+bqZj0UFT3xH99+EpgdM5DIcBv2b97n5lvLUw=
+NodeupConfigHash: 45NFy2zH7o9ekkK1AQEnNwXHpGpLoxvC+bv8YGCc3yU=
 
 __EOF_KUBE_ENV
 

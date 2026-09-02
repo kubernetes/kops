@@ -91,13 +91,13 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 90d859efe72e0399b512534f3845ba604490f32ef7307f3d6e79e592f9e02a63
+    manifestHash: 498d746918f2d5e55d846b377056ef56e8ce4275c3e68efe21eb9d32268415ce
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 5dceae8dafb42ec661c772a2731b4a2177baf8325132661da6ecd224cf1c8306
+    manifestHash: 8271103892109434d50911c295806294a115cfd716690abd96c5dbc71234f074
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io

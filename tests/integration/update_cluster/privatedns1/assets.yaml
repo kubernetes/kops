@@ -1,10 +1,10 @@
 files:
-- canonical: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/amd64/ecr-credential-provider-linux-amd64
-  download: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/amd64/ecr-credential-provider-linux-amd64
-  sha: 7644623e4ec9ad443ab352a8a5800a5180ee28741288be805286ba72bb8e7164
-- canonical: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/arm64/ecr-credential-provider-linux-arm64
-  download: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/arm64/ecr-credential-provider-linux-arm64
-  sha: 1980e3a038cb16da48a137743b31fb81de6c0b59fa06c206c2bc20ce0a52f849
+- canonical: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.37.0/linux/amd64/ecr-credential-provider-linux-amd64
+  download: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.37.0/linux/amd64/ecr-credential-provider-linux-amd64
+  sha: 842e0fd8159f5ed8df2f38e6521e1e4f0a1ee80cf1e1ac119bbf20bf9c20681c
+- canonical: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.37.0/linux/arm64/ecr-credential-provider-linux-arm64
+  download: https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.37.0/linux/arm64/ecr-credential-provider-linux-arm64
+  sha: dd4748d167b0167cd4a66779dbbe4964e17a29a076aaa3d2b63cfc36ae84b52c
 - canonical: https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/amd64/nodeup.xz
   download: https://artifacts.k8s.io/binaries/kops/1.37.0-beta.1/linux/amd64/nodeup.xz
   sha: a899417ddb4fa0bba91c07c8d10b10747088a1067ca3dfa83097c1720eeda9ea
@@ -74,17 +74,17 @@ images:
   download: registry.k8s.io/kube-scheduler:v1.34.0
 - canonical: registry.k8s.io/pause:3.10.1
   download: registry.k8s.io/pause:3.10.1
-- canonical: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.58.0
-  download: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.58.0
-- canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.36.1
-  download: registry.k8s.io/provider-aws/cloud-controller-manager:v1.36.1
-- canonical: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
-  download: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
-- canonical: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
-  download: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
-- canonical: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
-  download: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
-- canonical: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
-  download: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
-- canonical: registry.k8s.io/sig-storage/livenessprobe:v2.18.0
-  download: registry.k8s.io/sig-storage/livenessprobe:v2.18.0
+- canonical: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.65.0
+  download: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.65.0
+- canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.0
+  download: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.0
+- canonical: registry.k8s.io/sig-storage/csi-attacher:v4.12.0
+  download: registry.k8s.io/sig-storage/csi-attacher:v4.12.0
+- canonical: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.17.0
+  download: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.17.0
+- canonical: registry.k8s.io/sig-storage/csi-provisioner:v6.3.0
+  download: registry.k8s.io/sig-storage/csi-provisioner:v6.3.0
+- canonical: registry.k8s.io/sig-storage/csi-resizer:v2.2.1
+  download: registry.k8s.io/sig-storage/csi-resizer:v2.2.1
+- canonical: registry.k8s.io/sig-storage/livenessprobe:v2.19.0
+  download: registry.k8s.io/sig-storage/livenessprobe:v2.19.0
