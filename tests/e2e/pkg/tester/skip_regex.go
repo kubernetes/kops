@@ -117,6 +117,9 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
 		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod"
+		// The metrics grabber scrapes one kube-controller-manager pod picked by name, so with
+		// several control planes it usually misses the leader and reads an empty metric set.
+		skipRegex += "|\\[sig-storage\\].Volume.metrics"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "azure" {
