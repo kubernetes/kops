@@ -1,6 +1,6 @@
 module github.com/kubernetes/kops/tools/metal/storage
 
-go 1.26.6
+go 1.26.8
 
 require (
 	google.golang.org/grpc v1.66.0
