@@ -39,7 +39,7 @@ func NewAuthenticator() (bootstrap.Authenticator, error) {
 }
 
 func (o *doAuthenticator) CreateToken(body []byte) (string, error) {
-	dropletID, err := getMetadataDropletID()
+	dropletID, err := GetDropletID()
 	if err != nil {
 		return "", fmt.Errorf("unable to fetch droplet id: %w", err)
 	}
@@ -50,7 +50,8 @@ const (
 	dropletIDMetadataURL = "http://169.254.169.254/metadata/v1/id"
 )
 
-func getMetadataDropletID() (string, error) {
+// GetDropletID returns the droplet ID from the metadata service.
+func GetDropletID() (string, error) {
 	return getMetadata(dropletIDMetadataURL)
 }
 

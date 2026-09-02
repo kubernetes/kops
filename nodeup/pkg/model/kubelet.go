@@ -46,6 +46,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do/dometadata"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
 	kubeletv1 "k8s.io/kubelet/config/v1"
@@ -131,6 +132,14 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 				return fmt.Errorf("error querying Azure instance metadata: %v", err)
 			}
 			providerID = "azure://" + metadata.ResourceID
+		} else if b.CloudProvider() == kops.CloudProviderDO {
+			// The DO CCM resolves nodes by provider ID; its name-based fallback does not match
+			// our IP-based node names.
+			dropletID, err := dometadata.GetDropletID()
+			if err != nil {
+				return fmt.Errorf("error querying DigitalOcean droplet ID: %w", err)
+			}
+			providerID = "digitalocean://" + dropletID
 		}
 
 		t, err := b.buildKubeletComponentConfig(kubeletConfig, providerID)
