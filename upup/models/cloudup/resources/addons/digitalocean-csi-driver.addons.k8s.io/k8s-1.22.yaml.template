@@ -1,4 +1,4 @@
-# https://github.com/digitalocean/csi-digitalocean/tree/v4.16.0/deploy/kubernetes/releases/csi-digitalocean-v4.16.0
+# https://github.com/digitalocean/csi-digitalocean/tree/v4.18.0/deploy/kubernetes/releases/csi-digitalocean-v4.18.0
 # Copyright 2023 DigitalOcean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -1090,7 +1090,7 @@ spec:
       serviceAccount: csi-do-controller-sa
       containers:
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v6.1.0
+          image: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--default-fstype=ext4"
@@ -1103,7 +1103,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v4.10.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
@@ -1117,7 +1117,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.4.0
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
@@ -1129,7 +1129,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v2.0.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=30s"
@@ -1144,7 +1144,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:v4.16.0
+          image: digitalocean/do-csi-plugin:v4.18.0
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--token=$(DIGITALOCEAN_ACCESS_TOKEN)"
@@ -1377,7 +1377,7 @@ spec:
               mountPath: /etc/udev/rules.d/
       containers:
         - name: csi-node-driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.15.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
@@ -1397,7 +1397,7 @@ spec:
             - name: registration-dir
               mountPath: /registration/
         - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:v4.16.0
+          image: digitalocean/do-csi-plugin:v4.18.0
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--url=$(DIGITALOCEAN_API_URL)"
@@ -1515,7 +1515,7 @@ spec:
       serviceAccountName: snapshot-controller
       containers:
         - name: snapshot-controller
-          image: registry.k8s.io/sig-storage/snapshot-controller:v8.4.0
+          image: registry.k8s.io/sig-storage/snapshot-controller:v8.5.0
           args:
             - "--v=5"
           imagePullPolicy: IfNotPresent
