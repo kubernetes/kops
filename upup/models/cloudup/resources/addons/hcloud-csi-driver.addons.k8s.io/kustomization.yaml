@@ -8,7 +8,7 @@ kind: Kustomization
 helmCharts:
   - name: hcloud-csi
     repo: https://charts.hetzner.cloud
-    version: "2.20.2"
+    version: "2.22.2"
     releaseName: hcloud-csi
     namespace: kube-system
     valuesFile: helm-values.yaml
