@@ -1,6 +1,6 @@
 module k8s.io/kops/tests/e2e
 
-go 1.26.6
+go 1.26.8
 
 replace k8s.io/kops => ../../.
 
@@ -313,7 +313,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297 // indirect
+	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa // indirect
 	golang.org/x/mod v0.40.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect

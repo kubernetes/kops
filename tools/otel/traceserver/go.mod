@@ -1,6 +1,6 @@
 module k8s.io/kops/tools/otel/traceserver
 
-go 1.26.6
+go 1.26.8
 
 replace k8s.io/kops => ../../..
 
@@ -79,7 +79,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.45.0 // indirect
 	go.opentelemetry.io/otel/trace v1.45.0 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297 // indirect
+	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
