@@ -5,29 +5,29 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: ebs-csi-controller
-  namespace: kube-system
+  namespace: "kube-system"
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 spec:
   selector:
     matchLabels:
       app: ebs-csi-controller
-      app.kubernetes.io/name: aws-ebs-csi-driver
-      app.kubernetes.io/instance: aws-ebs-csi-driver
+      app.kubernetes.io/name: "aws-ebs-csi-driver"
+      app.kubernetes.io/instance: "aws-ebs-csi-driver"
   maxUnavailable: 1
 ---
 # Source: aws-ebs-csi-driver/templates/serviceaccount-csi-controller.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ebs-csi-controller-sa
-  namespace: kube-system
+  name: "ebs-csi-controller-sa"
+  namespace: "kube-system"
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 automountServiceAccountToken: true
@@ -36,11 +36,11 @@ automountServiceAccountToken: true
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ebs-csi-node-sa
-  namespace: kube-system
+  name: "ebs-csi-node-sa"
+  namespace: "kube-system"
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 automountServiceAccountToken: true
@@ -51,8 +51,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-external-attacher-role
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 # Do not modify the rules below manually, see `make update-sidecar-dependencies`
@@ -78,8 +78,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-csi-node-role
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 rules:
@@ -102,8 +102,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-external-provisioner-role
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 # Do not modify the rules below manually, see `make update-sidecar-dependencies`
@@ -126,11 +126,12 @@ rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["list", "watch", "create", "update", "patch"]
-  # The "watch" and "update" verbs for volumesnapshots are optional but recommended.
-  # They enable finalizer-based protection to prevent snapshots from being deleted
-  # during provisioning. Without these permissions, the provisioner will still function
-  # but snapshot protection will be unavailable. This makes the provisioner backwards
-  # compatible with older RBAC configurations.
+  # The "watch", "update", and "list" verbs for volumesnapshots are optional but
+  # recommended. They enable finalizer-based protection to prevent snapshots from
+  # being deleted during provisioning, and allow periodic sweeps to clean up
+  # orphaned finalizers. Without these permissions, the provisioner will still
+  # function but snapshot protection will be unavailable. This makes the
+  # provisioner backwards compatible with older RBAC configurations.
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshots"]
     verbs: ["get", "list", "watch", "update"]
@@ -162,8 +163,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-external-resizer-role
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 # Do not modify the rules below manually, see `make update-sidecar-dependencies`
@@ -200,8 +201,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-external-snapshotter-role
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 # Do not modify the rules below manually, see `make update-sidecar-dependencies`
@@ -243,14 +244,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-csi-attacher-binding
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
-    name: ebs-csi-controller-sa
-    namespace: kube-system
+    name: "ebs-csi-controller-sa"
+    namespace: "kube-system"
 roleRef:
   kind: ClusterRole
   name: ebs-external-attacher-role
@@ -262,14 +263,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-csi-node-getter-binding
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
-    name: ebs-csi-node-sa
-    namespace: kube-system
+    name: "ebs-csi-node-sa"
+    namespace: "kube-system"
 roleRef:
   kind: ClusterRole
   name: ebs-csi-node-role
@@ -281,14 +282,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-csi-provisioner-binding
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
-    name: ebs-csi-controller-sa
-    namespace: kube-system
+    name: "ebs-csi-controller-sa"
+    namespace: "kube-system"
 roleRef:
   kind: ClusterRole
   name: ebs-external-provisioner-role
@@ -300,14 +301,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-csi-resizer-binding
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
-    name: ebs-csi-controller-sa
-    namespace: kube-system
+    name: "ebs-csi-controller-sa"
+    namespace: "kube-system"
 roleRef:
   kind: ClusterRole
   name: ebs-external-resizer-role
@@ -319,14 +320,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-csi-snapshotter-binding
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 subjects:
   - kind: ServiceAccount
-    name: ebs-csi-controller-sa
-    namespace: kube-system
+    name: "ebs-csi-controller-sa"
+    namespace: "kube-system"
 roleRef:
   kind: ClusterRole
   name: ebs-external-snapshotter-role
@@ -336,11 +337,11 @@ roleRef:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  namespace: kube-system
+  namespace: "kube-system"
   name: ebs-csi-leases-role
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 rules:
@@ -353,16 +354,16 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ebs-csi-leases-rolebinding
-  namespace: kube-system
+  namespace: "kube-system"
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 subjects:
 - kind: ServiceAccount
-  name: ebs-csi-controller-sa
-  namespace: kube-system
+  name: "ebs-csi-controller-sa"
+  namespace: "kube-system"
 roleRef:
   kind: Role
   name: ebs-csi-leases-role
@@ -372,16 +373,16 @@ roleRef:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ebs-csi-controller
-  namespace: kube-system
+  name: "ebs-csi-controller"
+  namespace: "kube-system"
   labels:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3301"
 spec:
   selector:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   ports:
     - name: metrics
       port: 3301
@@ -392,16 +393,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ebs-csi-controller-provisioner
-  namespace: kube-system
+  name: "ebs-csi-controller-provisioner"
+  namespace: "kube-system"
   labels:
-    app: ebs-csi-controller-provisioner
+    app: "ebs-csi-controller-provisioner"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3302"
 spec:
   selector:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   ports:
     - name: metrics
       port: 3302
@@ -412,16 +413,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ebs-csi-controller-attacher
-  namespace: kube-system
+  name: "ebs-csi-controller-attacher"
+  namespace: "kube-system"
   labels:
-    app: ebs-csi-controller-attacher
+    app: "ebs-csi-controller-attacher"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3303"
 spec:
   selector:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   ports:
     - name: metrics
       port: 3303
@@ -432,16 +433,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ebs-csi-controller-resizer
-  namespace: kube-system
+  name: "ebs-csi-controller-resizer"
+  namespace: "kube-system"
   labels:
-    app: ebs-csi-controller-resizer
+    app: "ebs-csi-controller-resizer"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3304"
 spec:
   selector:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   ports:
     - name: metrics
       port: 3304
@@ -452,16 +453,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ebs-csi-controller-liveness-probe
-  namespace: kube-system
+  name: "ebs-csi-controller-liveness-probe"
+  namespace: "kube-system"
   labels:
-    app: ebs-csi-controller-liveness-probe
+    app: "ebs-csi-controller-liveness-probe"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3305"
 spec:
   selector:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   ports:
     - name: metrics
       port: 3305
@@ -472,16 +473,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ebs-csi-controller-snapshotter
-  namespace: kube-system
+  name: "ebs-csi-controller-snapshotter"
+  namespace: "kube-system"
   labels:
-    app: ebs-csi-controller-snapshotter
+    app: "ebs-csi-controller-snapshotter"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3306"
 spec:
   selector:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   ports:
     - name: metrics
       port: 3306
@@ -492,16 +493,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ebs-csi-controller-volumemodifier
-  namespace: kube-system
+  name: "ebs-csi-controller-volumemodifier"
+  namespace: "kube-system"
   labels:
-    app: ebs-csi-controller-volumemodifier
+    app: "ebs-csi-controller-volumemodifier"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3307"
 spec:
   selector:
-    app: ebs-csi-controller
+    app: "ebs-csi-controller"
   ports:
     - name: metrics
       port: 3307
@@ -512,20 +513,20 @@ spec:
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
-  name: ebs-csi-node
-  namespace: kube-system
+  name: "ebs-csi-node"
+  namespace: "kube-system"
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: ebs-csi-node
-      app.kubernetes.io/name: aws-ebs-csi-driver
-      app.kubernetes.io/instance: aws-ebs-csi-driver
+      app: "ebs-csi-node"
+      app.kubernetes.io/name: "aws-ebs-csi-driver"
+      app.kubernetes.io/instance: "aws-ebs-csi-driver"
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 10%
@@ -533,9 +534,9 @@ spec:
   template:
     metadata:
       labels:
-        app: ebs-csi-node
-        app.kubernetes.io/name: aws-ebs-csi-driver
-        app.kubernetes.io/instance: aws-ebs-csi-driver
+        app: "ebs-csi-node"
+        app.kubernetes.io/name: "aws-ebs-csi-driver"
+        app.kubernetes.io/instance: "aws-ebs-csi-driver"
         app.kubernetes.io/version: {{ .Version }}
         app.kubernetes.io/component: csi-driver
       annotations:
@@ -568,9 +569,9 @@ spec:
                 - a1.4xlarge
       nodeSelector:
         kubernetes.io/os: linux
-      serviceAccountName: ebs-csi-node-sa
+      serviceAccountName: "ebs-csi-node-sa"
       terminationGracePeriodSeconds: 30
-      priorityClassName: system-node-critical
+      priorityClassName: "system-node-critical"
       tolerations:
         - operator: Exists
       hostNetwork: {{ .HostNetwork }}
@@ -582,16 +583,16 @@ spec:
       containers:
         - name: ebs-plugin
           image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: "IfNotPresent"
           args:
             - node
             - --endpoint=$(CSI_ENDPOINT)
-            - --csi-mount-point-prefix=/var/lib/kubelet/plugins/kubernetes.io/csi/ebs.csi.aws.com/
+            - "--csi-mount-point-prefix=/var/lib/kubelet/plugins/kubernetes.io/csi/ebs.csi.aws.com/"
             {{- if .VolumeAttachLimit }}
             - --volume-attach-limit={{ .VolumeAttachLimit }}
             {{- end }}
-            - --logging-format=text
-            - --v=5
+            - "--logging-format=text"
+            - "--v=5"
           env:
             {{- if IsIPv6Only }}
             - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
@@ -607,7 +608,7 @@ spec:
                   fieldPath: spec.nodeName
           volumeMounts:
             - name: kubelet-dir
-              mountPath: /var/lib/kubelet
+              mountPath: "/var/lib/kubelet"
               mountPropagation: "Bidirectional"
             - name: plugin-dir
               mountPath: /csi
@@ -653,18 +654,18 @@ spec:
                 command: ["/bin/aws-ebs-csi-driver", "pre-stop-hook"]
           terminationMessagePolicy: FallbackToLogsOnError
         - name: node-driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
-          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.17.0
+          imagePullPolicy: "IfNotPresent"
           args:
             - --csi-address=$(ADDRESS)
             - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
             - --http-endpoint=0.0.0.0:9809
-            - --v=5
+            - "--v=5"
           env:
             - name: ADDRESS
               value: /csi/csi.sock
             - name: DRIVER_REG_SOCK_PATH
-              value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
+              value: "/var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock"
           ports:
             - name: healthz-ndr
               containerPort: 9809
@@ -681,7 +682,7 @@ spec:
             - name: registration-dir
               mountPath: /registration
             - name: probe-dir
-              mountPath: /var/lib/kubelet/plugins/ebs.csi.aws.com/
+              mountPath: "/var/lib/kubelet/plugins/ebs.csi.aws.com/"
           resources:
             limits:
               memory: 256Mi
@@ -693,8 +694,8 @@ spec:
             readOnlyRootFilesystem: true
           terminationMessagePolicy: FallbackToLogsOnError
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.18.0
-          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.19.0
+          imagePullPolicy: "IfNotPresent"
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
@@ -713,15 +714,15 @@ spec:
       volumes:
         - name: kubelet-dir
           hostPath:
-            path: /var/lib/kubelet
+            path: "/var/lib/kubelet"
             type: Directory
         - name: plugin-dir
           hostPath:
-            path: /var/lib/kubelet/plugins/ebs.csi.aws.com/
+            path: "/var/lib/kubelet/plugins/ebs.csi.aws.com/"
             type: DirectoryOrCreate
         - name: registration-dir
           hostPath:
-            path: /var/lib/kubelet/plugins_registry/
+            path: "/var/lib/kubelet/plugins_registry/"
             type: Directory
         - name: device-dir
           hostPath:
@@ -746,10 +747,10 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: ebs-csi-controller
-  namespace: kube-system
+  namespace: "kube-system"
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 spec:
@@ -762,14 +763,14 @@ spec:
   selector:
     matchLabels:
       app: ebs-csi-controller
-      app.kubernetes.io/name: aws-ebs-csi-driver
-      app.kubernetes.io/instance: aws-ebs-csi-driver
+      app.kubernetes.io/name: "aws-ebs-csi-driver"
+      app.kubernetes.io/instance: "aws-ebs-csi-driver"
   template:
     metadata:
       labels:
         app: ebs-csi-controller
-        app.kubernetes.io/name: aws-ebs-csi-driver
-        app.kubernetes.io/instance: aws-ebs-csi-driver
+        app.kubernetes.io/name: "aws-ebs-csi-driver"
+        app.kubernetes.io/instance: "aws-ebs-csi-driver"
         app.kubernetes.io/version: {{ .Version }}
         app.kubernetes.io/component: csi-driver
       annotations:
@@ -779,8 +780,8 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
-      serviceAccountName: ebs-csi-controller-sa
-      priorityClassName: system-cluster-critical
+      serviceAccountName: "ebs-csi-controller-sa"
+      priorityClassName: "system-cluster-critical"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -867,7 +868,7 @@ spec:
       containers:
         - name: ebs-plugin
           image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: "IfNotPresent"
           args:
             - controller
             - --endpoint=$(CSI_ENDPOINT)
@@ -875,8 +876,8 @@ spec:
             - "--extra-tags={{ CloudLabels }}"
             - --http-endpoint=0.0.0.0:3301
             - --batching=true
-            - --logging-format=text
-            - --v=5
+            - "--logging-format=text"
+            - "--v=5"
           env:
             {{- if IsIPv6Only }}
             - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
@@ -893,14 +894,14 @@ spec:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: aws-secret
-                  key: key_id
+                  name: "aws-secret"
+                  key: "key_id"
                   optional: true
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: aws-secret
-                  key: access_key
+                  name: "aws-secret"
+                  key: "access_key"
                   optional: true
             - name: AWS_EC2_ENDPOINT
               valueFrom:
@@ -953,16 +954,16 @@ spec:
               type: RuntimeDefault
           terminationMessagePolicy: FallbackToLogsOnError
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
-          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/sig-storage/csi-provisioner:v6.3.0
+          imagePullPolicy: "IfNotPresent"
           args:
             - --timeout=60s
             - --csi-address=$(ADDRESS)
-            - --v=5
+            - "--v=5"
             - --feature-gates=Topology=true
             - --extra-create-metadata
             - --leader-election=true
-            - --default-fstype=ext4
+            - "--default-fstype=ext4"
             - --kube-api-qps={{ or .KubeAPIQPS "20" }}
             - --kube-api-burst={{ or .KubeAPIBurst "100" }}
             - --worker-threads=100
@@ -994,12 +995,12 @@ spec:
               type: RuntimeDefault
           terminationMessagePolicy: FallbackToLogsOnError
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
-          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.12.0
+          imagePullPolicy: "IfNotPresent"
           args:
             - --timeout=6m
             - --csi-address=$(ADDRESS)
-            - --v=5
+            - "--v=5"
             - --leader-election=true
             - --kube-api-qps=20
             - --kube-api-burst=100
@@ -1031,12 +1032,12 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
-          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.6.0
+          imagePullPolicy: "IfNotPresent"
           args:
             - --csi-address=$(ADDRESS)
             - --leader-election=true
-            - --v=5
+            - "--v=5"
             - --extra-create-metadata
             - --kube-api-qps=20
             - --kube-api-burst=100
@@ -1067,13 +1068,13 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
         {{ end }}
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
-          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/sig-storage/csi-resizer:v2.2.1
+          imagePullPolicy: "IfNotPresent"
           args:
             - --timeout=60s
             - --extra-modify-metadata
             - --csi-address=$(ADDRESS)
-            - --v=5
+            - "--v=5"
             - --handle-volume-inuse-error=false
             - --leader-election=true
             - --kube-api-qps=20
@@ -1107,8 +1108,8 @@ spec:
               type: RuntimeDefault
           terminationMessagePolicy: FallbackToLogsOnError
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.18.0
-          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.19.0
+          imagePullPolicy: "IfNotPresent"
           args:
             - --csi-address=/csi/csi.sock
             - --probe-timeout=60s
@@ -1140,8 +1141,8 @@ kind: CSIDriver
 metadata:
   name: ebs.csi.aws.com
   labels:
-    app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/instance: aws-ebs-csi-driver
+    app.kubernetes.io/name: "aws-ebs-csi-driver"
+    app.kubernetes.io/instance: "aws-ebs-csi-driver"
     app.kubernetes.io/version: {{ .Version }}
     app.kubernetes.io/component: csi-driver
 spec:
