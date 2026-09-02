@@ -8,3 +8,7 @@ files:
   sha256: 7644623e4ec9ad443ab352a8a5800a5180ee28741288be805286ba72bb8e7164
 - name: v1.31.7/linux/arm64/ecr-credential-provider-linux-arm64
   sha256: 1980e3a038cb16da48a137743b31fb81de6c0b59fa06c206c2bc20ce0a52f849
+- name: v1.37.0/linux/amd64/ecr-credential-provider-linux-amd64
+  sha256: 842e0fd8159f5ed8df2f38e6521e1e4f0a1ee80cf1e1ac119bbf20bf9c20681c
+- name: v1.37.0/linux/arm64/ecr-credential-provider-linux-arm64
+  sha256: dd4748d167b0167cd4a66779dbbe4964e17a29a076aaa3d2b63cfc36ae84b52c
