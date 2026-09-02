@@ -17,6 +17,8 @@ go get -u github.com/linode/linodego/v2
 
 See [godoc](https://godoc.org/github.com/linode/linodego/v2) for a complete reference.
 
+For guidance on waiting for asynchronous API operations, see [Event and Status Polling](docs/event_and_status_polling.md).
+
 The API generally follows the naming patterns prescribed in the [OpenAPIv3 document for Linode APIv4](https://techdocs.akamai.com/linode-api/reference/api).
 
 Deviations in naming have been made to avoid using "Linode" and "Instance" redundantly or inconsistently.
