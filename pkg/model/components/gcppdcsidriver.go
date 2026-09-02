@@ -44,7 +44,7 @@ func (b *GCPPDCSIDriverOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		gce.PDCSIDriver.DefaultStorageClassName = new("balanced-csi")
 	}
 	if gce.PDCSIDriver.Version == nil {
-		gce.PDCSIDriver.Version = new("v1.22.1")
+		gce.PDCSIDriver.Version = new("v1.26.0")
 	}
 
 	return nil
