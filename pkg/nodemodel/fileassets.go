@@ -90,7 +90,7 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 		case kops.CloudProviderAWS:
 			binaryLocation := ig.RawClusterSpec().CloudProvider.AWS.BinariesLocation
 			if binaryLocation == nil {
-				binaryLocation = new("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7")
+				binaryLocation = new("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.37.0")
 			}
 
 			u, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))

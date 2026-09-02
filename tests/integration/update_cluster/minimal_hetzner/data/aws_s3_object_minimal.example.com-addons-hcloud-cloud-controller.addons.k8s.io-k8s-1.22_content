@@ -145,7 +145,7 @@ spec:
             secretKeyRef:
               key: token
               name: hcloud
-        image: hetznercloud/hcloud-cloud-controller-manager:v1.31.0
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.36.0
         name: hcloud-cloud-controller-manager
         ports:
         - containerPort: 8233
@@ -154,8 +154,20 @@ spec:
           requests:
             cpu: 100m
             memory: 50Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
       dnsPolicy: Default
       priorityClassName: system-cluster-critical
+      securityContext:
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: hcloud-cloud-controller-manager
       tolerations:
       - effect: NoSchedule

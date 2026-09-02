@@ -69,7 +69,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 	}
 
 	if eccm.Image == "" {
-		eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.36.1"
+		eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.0"
 	}
 
 	return nil

@@ -615,6 +615,7 @@ spec:
         - "--supports-dynamic-throughput-provisioning=hyperdisk-balanced,hyperdisk-throughput,hyperdisk-ml"
         - --enable-data-cache
         - --run-node-service=false
+        - --enable-multitenancy=false
         env: []
         image: registry.k8s.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:{{ .CloudProvider.GCE.PDCSIDriver.Version }}
         name: gce-pd-driver
@@ -685,9 +686,12 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /var/lib/kubelet
+        - mountPath: /var/lib/kubelet/plugins/kubernetes.io/csi
           mountPropagation: Bidirectional
-          name: kubelet-dir
+          name: kubelet-plugin-dir
+        - mountPath: /var/lib/kubelet/pods
+          mountPropagation: Bidirectional
+          name: kubelet-pods
         - mountPath: /csi
           name: plugin-dir
         - mountPath: /dev
@@ -717,9 +721,12 @@ spec:
           type: Directory
         name: registration-dir
       - hostPath:
-          path: /var/lib/kubelet
-          type: Directory
-        name: kubelet-dir
+          path: /var/lib/kubelet/pods
+        name: kubelet-pods
+      - hostPath:
+          path: /var/lib/kubelet/plugins/kubernetes.io/csi
+          type: DirectoryOrCreate
+        name: kubelet-plugin-dir
       - hostPath:
           path: /var/lib/kubelet/plugins/pd.csi.storage.gke.io/
           type: DirectoryOrCreate

@@ -41,19 +41,19 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 384e6427b17d9d92cee587c4197a44631f2ac33e8aacb97a714598763c64111c
+    manifestHash: c265d7f97c7376db25a222b8b48dc090d10d724d96ad82b805a7ff3b87b4a257
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 6fd4a33abd86c7a2f982ad5c9542b8a8ac67d3a534e352021343c4e49d0b2c71
+    manifestHash: f05c4cbc145dfe881126a357acdfcec335657ad39dfef0f57a0ecc6af7089f4b
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: ff295f55402ae65a7032ae38768278fcf71da798ed1839f55ca04c737dfe5401
+    manifestHash: f2d30b1f34ee68197d1fe4087179e819edb1368aaf263d368613581b740cbb2c
     name: karpenter.sh
     prune:
       kinds:

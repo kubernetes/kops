@@ -41,13 +41,13 @@ spec:
       k8s-addon: storage-gce.addons.k8s.io
   - id: k8s-1.23
     manifest: gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: f665cd14ea0e37a79af2c75e497ac27d82ccbeeb632139436a19d086e57b78e9
+    manifestHash: 35372f47c7831328a151cbc90c209e43f4a7d4a370c41d1d25db005a5c5c7948
     name: gcp-pd-csi-driver.addons.k8s.io
     selector:
       k8s-addon: gcp-pd-csi-driver.addons.k8s.io
   - id: k8s-1.23
     manifest: gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: b504568a4eb5a9fa4d51b51409b1e68147414abee24171586424a255d30d8952
+    manifestHash: 7ab6aec009b04b6de4a6297004fab3756a920506f67c47154c8830b187658955
     name: gcp-cloud-controller.addons.k8s.io
     prune:
       kinds:
