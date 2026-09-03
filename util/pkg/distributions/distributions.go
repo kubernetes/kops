@@ -62,7 +62,7 @@ var (
 	DistributionFedora42        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora42", version: 42}
 	DistributionFedora43        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora43", version: 43}
 	DistributionFedora44        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora44", version: 44}
-	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
+	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux", id: "amzn", version: 2023}
 
 	// Immutable distros
 	DistributionFlatcar     = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
@@ -82,6 +82,11 @@ func (d *Distribution) IsDebian() bool {
 // IsUbuntu returns true if this distribution is Ubuntu (but not debian)
 func (d *Distribution) IsUbuntu() bool {
 	return d.project == "ubuntu"
+}
+
+// IsAmazonLinux returns true if this distribution is Amazon Linux
+func (d *Distribution) IsAmazonLinux() bool {
+	return d.project == "amazonlinux"
 }
 
 // IsRHELFamily returns true if this distribution uses rpm packages and generally follows rhel package names
@@ -104,6 +109,8 @@ func (d *Distribution) HasDNF() bool {
 		return d.version >= 8
 	case "fedora":
 		return d.version >= 22
+	case "amazonlinux":
+		return true
 	default:
 		klog.Warningf("unknown project for HasDNF (%q), assuming does support dnf", d.project)
 		return true
@@ -124,7 +131,7 @@ func (d *Distribution) DefaultUsers() ([]string, error) {
 		return []string{"ubuntu", "root"}, nil
 	case "centos":
 		return []string{"centos"}, nil
-	case "rhel", "amazonlinux2023":
+	case "rhel", "amazonlinux":
 		return []string{"ec2-user"}, nil
 	case "rocky":
 		return []string{"rocky"}, nil
