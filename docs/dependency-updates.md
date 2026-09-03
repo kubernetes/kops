@@ -1,8 +1,12 @@
 # Updating Third-Party Dependencies
 
-This guide describes how to update the third-party dependencies that kOps pins, and what else must
-change alongside each one. It is written for an automated agent: each section names the file that
-holds the version, the files coupled to it, the regeneration command, and the verification command.
+A reference for every place kOps pins a third-party version. Each section names the file that holds
+the version, the files coupled to it, the regeneration command, and the verification command.
+
+The contributor-facing companion,
+[updating dependencies](contributing/updating-dependencies.md), covers the surrounding workflow —
+how to structure the commits, what to say about the change, and the mistakes that have cost pull
+requests before.
 
 Two mechanisms cut across almost every surface below. Read these first.
 
@@ -179,7 +183,7 @@ stdlib package taken at a specific Go version (see its `README.md`).
 
 **Do not combine a Go toolchain bump with a general dependency refresh.** The toolchain bump must
 stay independently cherry-pickable to every open release branch — see
-[Known failure modes](#known-failure-modes).
+[updating dependencies](contributing/updating-dependencies.md#things-that-have-gone-wrong-before).
 
 ## Build and lint tooling
 
@@ -364,7 +368,7 @@ High-coverage cases include `many-addons`, `many-addons-ccm*`, `minimal-aws`, `p
 - **Controllers that talk to a cloud API often need a matching IAM policy change.** Compare the
   upstream `iam_policy.json` against `pkg/model/iam/iam_builder.go` when bumping the AWS load
   balancer controller, a CSI driver, or Karpenter — see
-  [Known failure modes](#known-failure-modes).
+  [updating dependencies](contributing/updating-dependencies.md#things-that-have-gone-wrong-before).
 
 ### kOps-owned addons — never bump these by hand
 
@@ -571,107 +575,3 @@ change is clean:
 Each Prow check is its own job invoking a single make target (`pull-kops-verify-gomod` runs
 `make verify-gomod`, and so on); `pull-kops-verify-generated` runs `make verify-generate`, which
 resolves to just `verify-crds`. `make ci` is the closest single local approximation to the union.
-
-## Commit and pull request conventions
-
-### Commits
-
-- **One dependency concern per PR.** Dependency bumps are kept separate from feature work.
-- **kOps merges with merge commits, not squash.** Your individual commit messages land verbatim on
-  `master`, so they matter.
-- **Split the bump from the regeneration.** The established shape is two commits: the hand-written
-  change, then the generated churn in a commit named after the command that produced it. All three
-  spellings appear in recent history: `./hack/update-expected.sh`, `hack/update-expected.sh`,
-  `test: hack/update-expected`. Other regeneration commits are titled `make gomod` or
-  `./hack/generate-asset-hashes.sh`.
-- **Titles are free-form.** Despite `AGENTS.md` citing conventional commits, most dependency PR
-  titles carry no prefix at all. Three styles are all normal:
-
-  | Style | Shape |
-  |---|---|
-  | Bare imperative (most common) | `Update <Thing> to <version>`, `Upgrade <Thing> to <version>`, `Update dependencies` |
-  | `<component>: <imperative>` | `aws: Update EBS CSI driver to <version>`, `etcd-manager: upgrade to <version>`, `deps: bump containerd to <version> to address vulnerabilities` |
-  | Conventional commits | `chore(networking): bump <thing> to <version>`, `chore(channels): ...`, `chore: upgrade <thing> to <version>` |
-
-  Match the surrounding history for the file you are editing rather than imposing a format.
-
-### Pull request body
-
-`.github/PULL_REQUEST_TEMPLATE/pull_request_template.md` has **no `release-note` block** and no
-`/kind` section — only "What this PR does / why we need it", "Which issue(s) this PR fixes", and
-"Special notes for your reviewer". A `release-note` block appears **only** on cherry-pick PRs,
-injected by `cherry_pick_pull.sh`, and is left empty for dependency picks. Release notes are
-hand-written later in `docs/releases/`.
-
-Many maintainer bump PRs have a nearly empty body, but the ones that get reviewed fastest state
-**the upstream release link and the concrete reason** — the upstream changelog entry, the API that
-changed, and the user-visible symptom it fixes. A vague "bump for CVEs" PR with no named advisory
-gets no traction; name the CVE or the upstream issue.
-
-### Labels, review, and CI
-
-**Do not hand-apply labels.** Every label on these PRs is bot-applied: `cncf-cla`, `size/*`,
-`area/*` by path, and `lgtm`/`approved` by prow. Dependabot gets `ok-to-test` from
-`.github/dependabot.yml`; a first-time human contributor needs a Kubernetes org member to type
-`/ok-to-test` before presubmits run at all.
-
-Approvers are listed in the root `OWNERS`. Roughly 45 sub-directory `OWNERS` files exist, so a
-provider-scoped bump can be approved by that directory's approvers.
-
-Presubmits that most often fail on a dependency change:
-
-| Job | Why it fails | Fix |
-|---|---|---|
-| `pull-kops-test` | Golden fixtures under `tests/integration/` and `upup/pkg/fi/cloudup/tests/bootstrapchannelbuilder/` embed the image tag | `./hack/update-expected.sh` |
-| `pull-kops-verify-gomod` | `go.mod` was edited without regenerating `vendor/` and tidying the nested modules | `make gomod` — a bare `go get` is never enough |
-| `pull-kops-verify-generated` | codegen output is stale | `make apimachinery` / `make crds` |
-| e2e jobs | usually flakes; maintainers `/override` rather than block | `/retest`, or `/test <job>` for path-triggered optional jobs |
-
-Some e2e jobs are path-triggered and optional (the load balancer controller, Karpenter, kube-router,
-and several Azure scenarios among them); a bump touching those components should request them
-explicitly with `/test <job>`.
-
-Pushing new commits after an `/lgtm` automatically removes the label and resets review.
-
-### Cherry-picking
-
-Dependency updates are cherry-picked heavily — roughly a quarter of them target a release branch.
-Policy is `docs/contributing/proposing-a-cherry-pick.md`; the mechanism is `cherry_pick_pull.sh`
-from kubernetes/kubernetes, producing `Automated cherry pick of #NNNNN: <original title>`.
-
-| Usually cherry-picked | Usually not |
-|---|---|
-| Go toolchain bumps (to **every** open branch — security patches) | routine `chore(channels)` alpha bumps |
-| Vulnerability fixes, sometimes authored straight on the branch | dependabot GitHub Actions bumps |
-| etcd / etcd-manager / containerd bumps | generic `Update dependencies` |
-| Addon bumps that fix a real bug | addon version bumps with no bug attached |
-
-Golden files differ between `master` and release branches, so a cherry-pick frequently needs
-`./hack/update-expected.sh` re-run against the branch rather than a clean `git cherry-pick`.
-
-### Attribution
-
-Maintainers note AI assistance in the **PR body**, not in a commit trailer — for example
-`Assisted by Claude Opus`. Commit trailers in use are only `Co-authored-by:`.
-
-## Known failure modes
-
-Real examples, each of which cost a PR:
-
-1. **A CNI bump that fails the e2e apply must be fixed, not retested.** PR #17266 (Cilium) failed a
-   server-side-apply typed-patch on `.spec.template.spec.volumes`, was retested repeatedly, went
-   `lifecycle/rotten`, and was closed after seven months in favour of a fresh PR.
-2. **LBC, CSI, and Karpenter bumps usually need a matching IAM policy change.** PR #18003 burned ten
-   e2e retries before a maintainer identified the real cause: the upstream `iam_policy.json` had
-   changed and `pkg/model/iam/iam_builder.go` needed the same update. PR #18220 shows the complete
-   shape — the version, `iam_builder.go`, the `pkg/model/iam/tests/iam_builder_master_*.json`
-   goldens, and the integration goldens.
-3. **Do not combine a Go toolchain bump with a dependency refresh.** PR #18057 was rejected for
-   exactly this and replaced by a narrower PR, because the toolchain bump has to be cherry-pickable
-   to every open release branch on its own.
-4. **A mangled template gets the lgtm revoked.** PR #17833 failed `pull-kops-test` because the
-   regenerated `.yaml.template` was malformed. Read the regenerated diff before pushing.
-5. **Never hand-edit golden fixtures.** A commit exists purely to stop a developer's kubeconfig
-   leaking into the goldens. Always go through `./hack/update-expected.sh`.
-6. **Stalled bumps rot.** `k8s-triage-robot` marks a PR stale after 90 days and rotten 30 days
-   later. Finish or close.

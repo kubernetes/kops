@@ -164,6 +164,7 @@ nav:
     - Documentation Guidelines: "contributing/documentation.md"
     - Hack Directory: "contributing/hack.md"
     - How to update kOps API: "contributing/api_updates.md"
+    - Updating dependencies: "contributing/updating-dependencies.md"
     - Low level description on how kOps works: "contributing/how_it_works.md"
     - Notes on master instance sizing: "contributing/instancesizes.md"
     - Ports: "contributing/ports.md"
