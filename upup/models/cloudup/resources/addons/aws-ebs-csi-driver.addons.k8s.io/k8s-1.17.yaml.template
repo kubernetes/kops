@@ -594,7 +594,7 @@ spec:
               mountPath: /csi
             - name: device-dir
               mountPath: /dev
-{{ if KopsFeatureEnabled "SELinuxMount" }}
+{{ if UseSELinuxMount }}
             - name: etc-selinux
               mountPath: /etc/selinux
             - name: sys-fs
@@ -708,7 +708,7 @@ spec:
           hostPath:
             path: /dev
             type: Directory
-{{ if KopsFeatureEnabled "SELinuxMount" }}
+{{ if UseSELinuxMount }}
         - name: etc-selinux
           hostPath:
             path: /etc/selinux
@@ -1133,7 +1133,7 @@ spec:
 {{ end }}
   # Disabled because the field is immutable and kOps doesn't have a way to delete and recreate the resource
   # fsGroupPolicy: File
-{{ if KopsFeatureEnabled "SELinuxMount" }}
+{{ if UseSELinuxMount }}
   seLinuxMount: true
 {{ end }}
 {{ end }}

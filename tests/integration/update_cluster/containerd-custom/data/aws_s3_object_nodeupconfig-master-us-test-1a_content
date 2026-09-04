@@ -313,6 +313,7 @@ containerdConfig:
   runc:
     version: 1.4.3
   sandboxImage: registry.k8s.io/pause:3.10.1
+  selinuxEnabled: true
   skipInstall: true
   useECRCredentialsForMirrors: true
   version: 2.3.4

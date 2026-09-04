@@ -13,6 +13,7 @@ spec:
   containerd:
     useECRCredentialsForMirrors: true
     skipInstall: true
+    selinuxEnabled: true
     registryMirrors:
       docker.io:
       - https://registry-1.docker.io

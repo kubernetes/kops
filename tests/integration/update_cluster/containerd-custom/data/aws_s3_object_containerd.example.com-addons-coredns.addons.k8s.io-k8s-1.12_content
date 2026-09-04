@@ -173,6 +173,9 @@ spec:
             drop:
             - all
           readOnlyRootFilesystem: true
+          seLinuxOptions:
+            level: s0
+            type: spc_t
         volumeMounts:
         - mountPath: /etc/coredns
           name: config-volume

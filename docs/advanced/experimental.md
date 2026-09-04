@@ -18,3 +18,4 @@ The following experimental features are currently available:
 * `+EtcdEventsHTTP` - Enables HTTP (non-TLS) for the events etcd cluster, matching GCE scale test patterns
 * `+APIServerNodes` - Enables support for dedicated API server nodes
 * `+ExperimentalRoles` - Not fully implemented. Enable support for dedicated Etcd, Scheduler, CloudControllerManager and KubeControllerManager nodes. 
+* `-SELinuxMount` - Disables CSI driver SELinux mount support (`CSIDriver.spec.seLinuxMount` and its host mounts) for clusters that set `spec.containerd.selinuxEnabled: true`. Enabled by default.

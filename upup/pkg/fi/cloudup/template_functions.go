@@ -477,6 +477,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["IsKubernetesLT"] = tf.IsKubernetesLT
 
 	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
+	dest["UseSELinuxMount"] = tf.UseSELinuxMount
 	dest["KopsVersion"] = func() string { return kopsroot.Version }
 	dest["KopsVersionImageTag"] = kopsroot.KopsVersionImageTag
 	dest["KopsVersionForLabel"] = func() string {
@@ -1328,4 +1329,25 @@ func (tf *TemplateFunctions) kopsFeatureEnabled(featureName string) (bool, error
 		return false, err
 	}
 	return f.Enabled(), nil
+}
+
+// UseSELinuxMount reports whether CSI drivers should be configured with SELinux mount
+// support (CSIDriver.spec.seLinuxMount and the host mounts it requires). This requires
+// both the SELinuxMount feature flag (a plain kill switch, defaulting to true) and the
+// cluster explicitly enabling SELinux via spec.containerd.selinuxEnabled - without the
+// latter, adding the extra hostPath volumes would just pollute driver pods on clusters
+// that don't use SELinux. Note that this only looks at the cluster-level containerd
+// config; a per-InstanceGroup override cannot drive these cluster-scoped addon
+// manifests.
+//
+// This is safe to enable regardless of Kubernetes version: on clusters where
+// CSIDriver.spec.seLinuxMount isn't recognized or is still pre-GA, volumes just keep
+// being relabeled the old (recursive) way instead of mounted with the SELinux
+// context, so there's no functional regression either way.
+func (tf *TemplateFunctions) UseSELinuxMount() bool {
+	if !featureflag.SELinuxMount.Enabled() {
+		return false
+	}
+	containerd := tf.Cluster.Spec.Containerd
+	return containerd != nil && containerd.SeLinuxEnabled
 }

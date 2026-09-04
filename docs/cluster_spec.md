@@ -1317,6 +1317,20 @@ spec:
     configOverride: ""
 ```
 
+### SELinux
+
+Setting `spec.containerd.selinuxEnabled: true` enables SELinux support in containerd (`enable_selinux` in its config) and applies the `spc_t` SELinux context to kOps-managed system pods that need it (via the channels manifest decoration and `kubemanifest.AddHostPathSELinuxContext`).
+
+It also enables `CSIDriver.spec.seLinuxMount: true`, and the extra host mounts it needs (`/etc/selinux`, and on some drivers `/sys/fs/selinux`), on the AWS EBS and GCP PD CSI driver addons. This lets the kubelet mount eligible volumes with `-o context` instead of recursively relabeling every file on the volume, which speeds up pod startup for large volumes on SELinux-enforcing nodes. This is additionally gated by the `SELinuxMount` feature flag (on by default; set `KOPS_FEATURE_FLAGS=-SELinuxMount` to disable it as an escape hatch).
+
+```yaml
+spec:
+  containerd:
+    selinuxEnabled: true
+```
+
+Note: `selinuxEnabled` can also be set per-InstanceGroup, but the CSI driver addons are cluster-scoped, so only the cluster-level `spec.containerd.selinuxEnabled` value affects them.
+
 ### Custom Packages
 
 kOps uses the `.tar.gz` packages for installing containerd on any supported OS. This makes it easy to use a custom build or pre-release packages, by specifying its URL and sha256:
