@@ -704,7 +704,7 @@ spec:
           name: udev-socket
         - mountPath: /sys
           name: sys
-{{ if KopsFeatureEnabled "SELinuxMount" }}
+{{ if UseSELinuxMount }}
         - name: etc-selinux
           mountPath: /etc/selinux
 {{ end }}
@@ -751,7 +751,7 @@ spec:
           path: /sys
           type: Directory
         name: sys
-{{ if KopsFeatureEnabled "SELinuxMount" }}
+{{ if UseSELinuxMount }}
       - name: etc-selinux
         hostPath:
           path: /etc/selinux
@@ -765,6 +765,6 @@ metadata:
 spec:
   attachRequired: true
   podInfoOnMount: false
-{{ if KopsFeatureEnabled "SELinuxMount" }}
+{{ if UseSELinuxMount }}
   seLinuxMount: true
 {{ end }}

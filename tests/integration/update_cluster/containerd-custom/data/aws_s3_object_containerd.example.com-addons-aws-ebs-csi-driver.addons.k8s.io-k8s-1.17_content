@@ -812,6 +812,10 @@ spec:
           name: plugin-dir
         - mountPath: /dev
           name: device-dir
+        - mountPath: /etc/selinux
+          name: etc-selinux
+        - mountPath: /sys/fs
+          name: sys-fs
       - args:
         - --csi-address=$(ADDRESS)
         - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
@@ -900,6 +904,14 @@ spec:
           path: /dev
           type: Directory
         name: device-dir
+      - hostPath:
+          path: /etc/selinux
+          type: DirectoryOrCreate
+        name: etc-selinux
+      - hostPath:
+          path: /sys/fs
+          type: Directory
+        name: sys-fs
       - emptyDir: {}
         name: probe-dir
   updateStrategy:
@@ -1258,3 +1270,4 @@ metadata:
 spec:
   attachRequired: true
   podInfoOnMount: false
+  seLinuxMount: true

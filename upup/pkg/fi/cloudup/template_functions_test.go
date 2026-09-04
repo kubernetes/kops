@@ -351,6 +351,63 @@ func TestKopsFeatureEnabled(t *testing.T) {
 	}
 }
 
+func TestUseSELinuxMount(t *testing.T) {
+	// Restore the default (enabled) once done; the flag state is process-global.
+	defer featureflag.ParseFlags("+SELinuxMount")
+
+	tests := []struct {
+		name           string
+		featureFlags   string
+		selinuxEnabled bool
+		expected       bool
+	}{
+		{
+			name:           "flag enabled, containerd selinux disabled",
+			featureFlags:   "+SELinuxMount",
+			selinuxEnabled: false,
+			expected:       false,
+		},
+		{
+			name:           "flag enabled, containerd selinux enabled",
+			featureFlags:   "+SELinuxMount",
+			selinuxEnabled: true,
+			expected:       true,
+		},
+		{
+			name:           "flag disabled, containerd selinux enabled",
+			featureFlags:   "-SELinuxMount",
+			selinuxEnabled: true,
+			expected:       false,
+		},
+		{
+			name:           "flag disabled, containerd selinux disabled",
+			featureFlags:   "-SELinuxMount",
+			selinuxEnabled: false,
+			expected:       false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featureflag.ParseFlags(tc.featureFlags)
+
+			tf := &TemplateFunctions{}
+			tf.Cluster = &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "1.32.0",
+					Containerd: &kops.ContainerdConfig{
+						SeLinuxEnabled: tc.selinuxEnabled,
+					},
+				},
+			}
+
+			if actual := tf.UseSELinuxMount(); actual != tc.expected {
+				t.Errorf("UseSELinuxMount() = %t, want %t", actual, tc.expected)
+			}
+		})
+	}
+}
+
 func TestHasHighlyAvailableControlPlane(t *testing.T) {
 	tests := []struct {
 		name              string

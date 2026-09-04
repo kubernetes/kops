@@ -68,6 +68,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           runAsUser: 10011
+          seLinuxOptions:
+            level: s0
+            type: spc_t
         volumeMounts:
         - mountPath: /etc/kubernetes/kops-controller/config/
           name: kops-controller-config

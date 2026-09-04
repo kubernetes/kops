@@ -52,6 +52,10 @@ spec:
       hostNetwork: true
       nodeSelector: null
       priorityClassName: system-cluster-critical
+      securityContext:
+        seLinuxOptions:
+          level: s0
+          type: spc_t
       serviceAccountName: aws-cloud-controller-manager
       tolerations:
       - operator: Exists
