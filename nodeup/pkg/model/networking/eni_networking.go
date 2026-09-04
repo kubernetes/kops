@@ -45,9 +45,9 @@ import (
 // services, disable the timers, remove the drop-in files that add pod IPs as /32
 // addresses, and restart systemd-networkd to flush the stale address assignments.
 //
-// AL2023 only.
+// Amazon Linux only.
 func maskEC2NetUtilsUdevRules(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
-	if dist != distributions.DistributionAmazonLinux2023 {
+	if !dist.IsAmazonLinux() {
 		return
 	}
 
@@ -78,11 +78,11 @@ func maskEC2NetUtilsUdevRules(c *fi.NodeupModelBuilderContext, dist distribution
 
 // disableManageForeignRoutes configures systemd-networkd to not remove foreign routes/rules
 // added by CNI. Without this, systemd-networkd may unexpectedly delete IP rules and routes.
-// AL2023, Ubuntu 22.04+, and Debian 12+.
+// Amazon Linux, Ubuntu 22.04+, and Debian 12+.
 func disableManageForeignRoutes(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
 	if !((dist.IsUbuntu() && dist.Version() >= 22.04) ||
 		(dist.IsDebian() && dist.Version() >= 12) ||
-		dist == distributions.DistributionAmazonLinux2023) {
+		dist.IsAmazonLinux()) {
 		return
 	}
 
@@ -103,14 +103,14 @@ ManageForeignRoutingPolicyRules=no
 
 // setMACAddressPolicyNone prevents systemd-networkd from assigning predictable MAC-based
 // names to ENIs, which can interfere with CNI interface management.
-// AL2023, Ubuntu 22.04+, and Debian 12+.
+// Amazon Linux, Ubuntu 22.04+, and Debian 12+.
 // ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/2103
 // ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/2839
 // ref: https://github.com/kubernetes/kops/issues/16255
 func setMACAddressPolicyNone(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
 	if !((dist.IsUbuntu() && dist.Version() >= 22.04) ||
 		(dist.IsDebian() && dist.Version() >= 12) ||
-		dist == distributions.DistributionAmazonLinux2023) {
+		dist.IsAmazonLinux()) {
 		return
 	}
 
@@ -150,7 +150,7 @@ MACAddressPolicy=none
 // "80-ec2.network". systemd-networkd uses the first file that agrees with an interface. Thus,
 // if the primary network interface has a per-interface file, systemd-networkd uses that file.
 func markSecondaryENIsUnmanaged(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) error {
-	if !(dist == distributions.DistributionAmazonLinux2023 ||
+	if !(dist.IsAmazonLinux() ||
 		(dist.IsDebian() && dist.Version() >= 12)) {
 		return nil
 	}

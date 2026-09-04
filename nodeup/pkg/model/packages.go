@@ -52,8 +52,8 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// RHEL 10+ doesn't support iptables anymore
 		// Note: keep the iptables/nftables logic in sync with ForceNftables
 		switch b.Distribution {
-		case distributions.DistributionAmazonLinux2023:
-			// install iptables-nft in al2023 (NOT the iptables-legacy!)
+		case distributions.DistributionAmazonLinux2023, distributions.DistributionAmazonLinux2027:
+			// install iptables-nft in Amazon Linux (NOT the iptables-legacy!)
 			c.AddTask(&nodetasks.Package{Name: "iptables-nft"})
 		case distributions.DistributionRhel8, distributions.DistributionRhel9,
 			distributions.DistributionRocky8:
