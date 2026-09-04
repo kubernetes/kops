@@ -63,6 +63,7 @@ var (
 	DistributionFedora43        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora43", version: 43}
 	DistributionFedora44        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora44", version: 44}
 	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux", id: "amzn", version: 2023}
+	DistributionAmazonLinux2027 = Distribution{packageFormat: "rpm", project: "amazonlinux", id: "amzn", version: 2027}
 
 	// Immutable distros
 	DistributionFlatcar     = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
@@ -172,7 +173,7 @@ func (d *Distribution) ForceNftables() bool {
 
 	// These distros have working iptables or iptables-nft
 	switch *d {
-	case DistributionAmazonLinux2023:
+	case DistributionAmazonLinux2023, DistributionAmazonLinux2027:
 		return false
 	case DistributionRhel8, DistributionRhel9:
 		return false
