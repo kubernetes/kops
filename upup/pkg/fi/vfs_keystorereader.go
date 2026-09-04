@@ -55,24 +55,20 @@ func (c *VFSKeystoreReader) buildPrivateKeyPoolPath(name string) vfs.Path {
 	return c.basedir.Join("private", name)
 }
 
-func (c *VFSKeystoreReader) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
+func (c *VFSKeystoreReader) parseKeysetYaml(data []byte) (*kops.Keyset, error) {
 	defaultReadVersion := v1alpha2.SchemeGroupVersion.WithKind("Keyset")
 
-	object, gvk, err := kopscodecs.Decode(data, &defaultReadVersion)
+	object, _, err := kopscodecs.Decode(data, &defaultReadVersion)
 	if err != nil {
-		return nil, false, fmt.Errorf("error parsing keyset: %v", err)
+		return nil, fmt.Errorf("error parsing keyset: %v", err)
 	}
 
 	keyset, ok := object.(*kops.Keyset)
 	if !ok {
-		return nil, false, fmt.Errorf("object was not a keyset, was a %T", object)
+		return nil, fmt.Errorf("object was not a keyset, was a %T", object)
 	}
 
-	if gvk == nil {
-		return nil, false, fmt.Errorf("object did not have GroupVersionKind: %q", keyset.Name)
-	}
-
-	return keyset, gvk.Version != keysetFormatLatest, nil
+	return keyset, nil
 }
 
 // loadKeyset loads a Keyset from the path.
@@ -88,7 +84,7 @@ func (c *VFSKeystoreReader) loadKeyset(ctx context.Context, p vfs.Path) (*Keyset
 		return nil, fmt.Errorf("unable to read bundle %q: %v", p, err)
 	}
 
-	o, legacyFormat, err := c.parseKeysetYaml(data)
+	o, err := c.parseKeysetYaml(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing bundle %q: %v", p, err)
 	}
@@ -98,7 +94,6 @@ func (c *VFSKeystoreReader) loadKeyset(ctx context.Context, p vfs.Path) (*Keyset
 		return nil, fmt.Errorf("error mapping bundle %q: %v", p, err)
 	}
 
-	keyset.LegacyFormat = legacyFormat
 	return keyset, nil
 }
 

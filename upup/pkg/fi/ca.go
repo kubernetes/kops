@@ -43,15 +43,9 @@ const (
 	SecretNameSSHPrimary = "admin"
 )
 
-const (
-	keysetFormatLatest = "v1alpha2"
-)
-
 // Keyset is a parsed api.Keyset.
 type Keyset struct {
-	// LegacyFormat instructs a keypair task to convert a Legacy Keyset to the new Keyset API format.
-	LegacyFormat bool
-	Items        map[string]*KeysetItem
+	Items map[string]*KeysetItem
 
 	// Primary is the KeysetItem that is considered the "active" key.
 	// It is guaranteed to be non-nil, if there are any keypairs.
