@@ -157,3 +157,52 @@ spec:
 		}
 	}
 }
+
+func TestVFSKeystoreReaderFindKeyset(t *testing.T) {
+	ctx := context.Background()
+
+	for _, test := range []struct {
+		name       string
+		keysetID   string
+		legacyName string
+	}{
+		{name: "kubernetes CA", keysetID: CertificateIDCA, legacyName: "ca"},
+		{name: "service account", keysetID: "service-account", legacyName: "master"},
+	} {
+		t.Run("does not fall back to the legacy "+test.name+" keyset name", func(t *testing.T) {
+			vfs.Context.ResetMemfsContext(true)
+			basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+			if err != nil {
+				t.Fatalf("building VFS path: %v", err)
+			}
+			if err := basePath.Join("private", test.legacyName, "keyset.yaml").WriteFile(ctx, strings.NewReader("invalid"), nil); err != nil {
+				t.Fatalf("writing legacy keyset: %v", err)
+			}
+
+			keyStore := NewVFSKeystoreReader(basePath)
+			keyset, err := keyStore.FindKeyset(ctx, test.keysetID)
+			if err != nil {
+				t.Fatalf("finding keyset: %v", err)
+			}
+			if keyset != nil {
+				t.Fatalf("expected no keyset, got %v", keyset)
+			}
+		})
+	}
+
+	t.Run("does not swallow a keyset read error", func(t *testing.T) {
+		vfs.Context.ResetMemfsContext(true)
+		basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+		if err != nil {
+			t.Fatalf("building VFS path: %v", err)
+		}
+		if err := basePath.Join("private", CertificateIDCA, "keyset.yaml").WriteFile(ctx, strings.NewReader("invalid"), nil); err != nil {
+			t.Fatalf("writing invalid keyset: %v", err)
+		}
+
+		keyStore := NewVFSKeystoreReader(basePath)
+		if _, err := keyStore.FindKeyset(ctx, CertificateIDCA); err == nil {
+			t.Fatal("expected keyset read error, got nil")
+		}
+	})
+}

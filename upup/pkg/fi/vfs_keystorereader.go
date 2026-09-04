@@ -102,13 +102,6 @@ func (c *VFSKeystoreReader) loadKeyset(ctx context.Context, p vfs.Path) (*Keyset
 	return keyset, nil
 }
 
-var legacyKeysetMappings = map[string]string{
-	// The strange name is because kOps prior to 1.19 used the api-server TLS key for this.
-	"service-account": "master",
-	// Renamed in kOps 1.22
-	"kubernetes-ca": "ca",
-}
-
 // FindPrimaryKeypair implements pki.Keystore
 func (c *VFSKeystoreReader) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	keyset, err := c.FindKeyset(ctx, name)
@@ -129,20 +122,6 @@ func (c *VFSKeystoreReader) FindPrimaryKeypair(ctx context.Context, name string)
 }
 
 func (c *VFSKeystoreReader) FindKeyset(ctx context.Context, id string) (*Keyset, error) {
-	keys, err := c.findPrivateKeyset(ctx, id)
-	if keys == nil || os.IsNotExist(err) {
-		if legacyId := legacyKeysetMappings[id]; legacyId != "" {
-			keys, err = c.findPrivateKeyset(ctx, legacyId)
-			if keys != nil {
-				keys.LegacyFormat = true
-			}
-		}
-	}
-
-	return keys, err
-}
-
-func (c *VFSKeystoreReader) findPrivateKeyset(ctx context.Context, id string) (*Keyset, error) {
 	var keys *Keyset
 	var err error
 	if id == CertificateIDCA {
