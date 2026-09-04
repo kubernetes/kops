@@ -62,7 +62,7 @@ var _ fi.NodeupModelBuilder = &KubeSchedulerBuilder{}
 
 // Build is responsible for building the manifest for the kube-scheduler
 func (b *KubeSchedulerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.IsMaster && !b.BootConfig.InstanceGroupRole.HasScheduler() {
 		return nil
 	}
 

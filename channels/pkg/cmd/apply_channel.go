@@ -48,7 +48,7 @@ type ApplyChannelOptions struct {
 	Interval time.Duration
 	NodeName string
 
-	// Comma delimited label,value pairs to add to the node. Eg "kops.k8s.io/cloud-controller-manager,foo=bar"
+	// Comma delimited label,value pairs to add to the node. Eg "node-role.kops.k8s.io/cloud-controller-manager,foo=bar"
 	NodeLabels map[string]string
 }
 

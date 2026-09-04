@@ -279,16 +279,41 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 
 	controlPlaneGroupCount := 0
 	nodeGroupCount := 0
+	apiServerGroupCount := 0
+	etcdGroupCount := 0
+	kcmGroupCount := 0
+	schedulerGroupCount := 0
+	splitRoleCount := 0
 	for _, g := range groups {
 		if g.IsControlPlane() {
 			controlPlaneGroupCount++
-		} else {
+		}
+		if g.Spec.Role.HasNode() {
 			nodeGroupCount++
+		}
+		if g.RunsAPIServer() {
+			apiServerGroupCount++
+		}
+		if g.RunsEtcd() {
+			etcdGroupCount++
+		}
+		if g.RunsKubeControllerManager() {
+			kcmGroupCount++
+		}
+		if g.RunsScheduler() {
+			schedulerGroupCount++
+		}
+		if g.IsEtcdOnly() || g.IsSchedulerOnly() || g.IsKubeControllerManagerOnly() {
+			splitRoleCount++
 		}
 	}
 
-	if controlPlaneGroupCount == 0 {
-		return fmt.Errorf("must configure at least one ControlPlane InstanceGroup")
+	if controlPlaneGroupCount > 0 && splitRoleCount > 0 {
+		return fmt.Errorf("cannot have both ControlPlane/Master InstanceGroups and split control plane InstanceGroups (Etcd, KubeControllerManager, Scheduler)")
+	}
+
+	if controlPlaneGroupCount == 0 && (apiServerGroupCount == 0 || etcdGroupCount == 0 || kcmGroupCount == 0 || schedulerGroupCount == 0) {
+		return fmt.Errorf("must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubeControllerManager, and Scheduler InstanceGroups")
 	}
 
 	if nodeGroupCount == 0 {
