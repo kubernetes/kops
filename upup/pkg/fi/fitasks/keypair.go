@@ -45,8 +45,6 @@ type Keypair struct {
 	Issuer string `json:"issuer"`
 	// Type the type of certificate i.e. CA, server, client etc
 	Type string `json:"type"`
-	// LegacyFormat is whether the keypair is stored in a legacy format.
-	LegacyFormat bool `json:"oldFormat"`
 
 	certificates *fi.CloudupTaskDependentResource
 	keyset       *fi.Keyset
@@ -103,7 +101,6 @@ func (e *Keypair) Find(c *fi.CloudupContext) (*Keypair, error) {
 		Subject:        pki.PkixNameToString(&cert.Subject),
 		Issuer:         pki.PkixNameToString(&cert.Certificate.Issuer),
 		Type:           pki.BuildTypeDescription(cert.Certificate),
-		LegacyFormat:   keyset.LegacyFormat,
 	}
 
 	actual.Signer = &Keypair{Subject: pki.PkixNameToString(&cert.Certificate.Issuer)}
@@ -153,7 +150,7 @@ func (_ *Keypair) CheckChanges(a, e, changes *Keypair) error {
 
 func (_ *Keypair) ShouldCreate(a, e, changes *Keypair) (bool, error) {
 	// Don't reissue a CA just because the Subject or AlternateNames changed
-	if a != nil && e.Type == "ca" && changes.Type == "" && !a.LegacyFormat {
+	if a != nil && e.Type == "ca" && changes.Type == "" {
 		e.Subject = a.Subject
 		return false, nil
 	}
@@ -169,7 +166,6 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 		return fi.RequiredField("Name")
 	}
 
-	changeStoredFormat := false
 	createCertificate := false
 	if a == nil {
 		createCertificate = true
@@ -188,8 +184,6 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 		} else if changes.Type != "" {
 			createCertificate = true
 			klog.Infof("creating certificate %q as Type has changed (actual=%v, expected=%v)", name, a.Type, e.Type)
-		} else if a.LegacyFormat {
-			changeStoredFormat = true
 		} else {
 			klog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
 		}
@@ -240,26 +234,6 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 
 	// TODO: Check correct subject / flags
 
-	if changeStoredFormat {
-		// We fetch and reinsert the same keypair, forcing an update to our preferred format
-		// TODO: We're assuming that we want to save in the preferred format
-		keyset, err := c.T.Keystore.FindKeyset(ctx, name)
-		if err != nil {
-			return err
-		}
-		if keyset == nil {
-			return fmt.Errorf("keyset %q not found", name)
-		}
-
-		keyset.LegacyFormat = false
-		err = c.T.Keystore.StoreKeyset(ctx, name, keyset)
-		if err != nil {
-			return err
-		}
-
-		klog.Infof("updated Keypair %q to new format", name)
-	}
-
 	return nil
 
 }
@@ -307,7 +281,6 @@ func CreateKeyset(ctx context.Context, keystore fi.Keystore, name string, req pk
 		PrivateKey:  privateKey,
 	}
 
-	keyset.LegacyFormat = false
 	keyset.Items[ki.Id] = ki
 	keyset.Primary = ki
 
