@@ -54,6 +54,10 @@ type LinodeClient interface {
 	CreateVPCSubnet(ctx context.Context, opts linodego.VPCSubnetCreateOptions, vpcID int) (*linodego.VPCSubnet, error)
 	UpdateVPCSubnet(ctx context.Context, vpcID int, subnetID int, opts linodego.VPCSubnetUpdateOptions) (*linodego.VPCSubnet, error)
 	DeleteVPCSubnet(ctx context.Context, vpcID int, subnetID int) error
+	ListFirewalls(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Firewall, error)
+	CreateFirewall(ctx context.Context, opts linodego.FirewallCreateOptions) (*linodego.Firewall, error)
+	UpdateFirewall(ctx context.Context, firewallID int, opts linodego.FirewallUpdateOptions) (*linodego.Firewall, error)
+	UpdateFirewallRules(ctx context.Context, firewallID int, rules linodego.FirewallRulesUpdateOptions) (*linodego.FirewallRules, error)
 	ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error)
 	CreateInstance(ctx context.Context, opts linodego.InstanceCreateOptions) (*linodego.Instance, error)
 	UpdateInstance(ctx context.Context, instanceID int, opts linodego.InstanceUpdateOptions) (*linodego.Instance, error)

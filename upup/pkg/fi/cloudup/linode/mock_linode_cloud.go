@@ -141,6 +141,28 @@ type MockLinodeClient struct {
 	DeletedVPCSubnetVPCIDs []int
 	DeletedVPCSubnetIDs    []int
 
+	ListFirewallsResponse []linodego.Firewall
+	ListFirewallsError    error
+	ListFirewallsCalls    int
+	LastListFirewallsOpts *linodego.ListOptions
+
+	CreateFirewallResponse *linodego.Firewall
+	CreateFirewallError    error
+	CreateFirewallCalls    int
+	LastCreateFirewallOpts linodego.FirewallCreateOptions
+
+	UpdateFirewallResponse *linodego.Firewall
+	UpdateFirewallError    error
+	UpdateFirewallCalls    int
+	UpdatedFirewallIDs     []int
+	LastUpdateFirewallOpts linodego.FirewallUpdateOptions
+
+	UpdateFirewallRulesResponse *linodego.FirewallRules
+	UpdateFirewallRulesError    error
+	UpdateFirewallRulesCalls    int
+	UpdatedFirewallRulesIDs     []int
+	LastUpdateFirewallRulesOpts linodego.FirewallRulesUpdateOptions
+
 	CreateInstanceResponse *linodego.Instance
 	CreateInstanceError    error
 	CreateInstanceCalls    int
@@ -301,6 +323,53 @@ func (c *MockLinodeClient) DeleteVPCSubnet(ctx context.Context, vpcID int, subne
 	c.DeletedVPCSubnetIDs = append(c.DeletedVPCSubnetIDs, subnetID)
 	c.DeletedVPCSubnetVPCIDs = append(c.DeletedVPCSubnetVPCIDs, vpcID)
 	return c.DeleteVPCSubnetError
+}
+
+func (c *MockLinodeClient) ListFirewalls(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Firewall, error) {
+	c.ListFirewallsCalls++
+	c.LastListFirewallsOpts = opts
+	if c.ListFirewallsError != nil {
+		return nil, c.ListFirewallsError
+	}
+	return c.ListFirewallsResponse, nil
+}
+
+func (c *MockLinodeClient) CreateFirewall(ctx context.Context, opts linodego.FirewallCreateOptions) (*linodego.Firewall, error) {
+	c.CreateFirewallCalls++
+	c.LastCreateFirewallOpts = opts
+	if c.CreateFirewallError != nil {
+		return nil, c.CreateFirewallError
+	}
+	if c.CreateFirewallResponse == nil {
+		return &linodego.Firewall{}, nil
+	}
+	return c.CreateFirewallResponse, nil
+}
+
+func (c *MockLinodeClient) UpdateFirewall(ctx context.Context, firewallID int, opts linodego.FirewallUpdateOptions) (*linodego.Firewall, error) {
+	c.UpdateFirewallCalls++
+	c.UpdatedFirewallIDs = append(c.UpdatedFirewallIDs, firewallID)
+	c.LastUpdateFirewallOpts = opts
+	if c.UpdateFirewallError != nil {
+		return nil, c.UpdateFirewallError
+	}
+	if c.UpdateFirewallResponse == nil {
+		return &linodego.Firewall{}, nil
+	}
+	return c.UpdateFirewallResponse, nil
+}
+
+func (c *MockLinodeClient) UpdateFirewallRules(ctx context.Context, firewallID int, opts linodego.FirewallRulesUpdateOptions) (*linodego.FirewallRules, error) {
+	c.UpdateFirewallRulesCalls++
+	c.UpdatedFirewallRulesIDs = append(c.UpdatedFirewallRulesIDs, firewallID)
+	c.LastUpdateFirewallRulesOpts = opts
+	if c.UpdateFirewallRulesError != nil {
+		return nil, c.UpdateFirewallRulesError
+	}
+	if c.UpdateFirewallRulesResponse == nil {
+		return &linodego.FirewallRules{}, nil
+	}
+	return c.UpdateFirewallRulesResponse, nil
 }
 
 func (c *MockLinodeClient) ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error) {
