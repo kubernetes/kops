@@ -35,6 +35,7 @@ The following table provides the support status for various distros with regards
 | --------------------------------------- | -----------: | -----: | ---------: | ------: |
 | Amazon Linux 2                          |         1.10 |   1.18 |       1.35 |    1.36 |
 | [Amazon Linux 2023](#amazon-linux-2023) |         1.27 |      - |          - |       - |
+| [Amazon Linux 2027](#amazon-linux-2027) |         1.37 |      - |          - |       - |
 | CentOS 7                                |            - |    1.5 |       1.21 |    1.23 |
 | CentOS 8                                |         1.15 |      - |       1.21 |    1.23 |
 | CentOS Stream 9                         |         1.35 |      - |          - |       - |
@@ -75,6 +76,21 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=owner-alias,Values=amazon" \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-*"
+```
+
+### Amazon Linux 2027
+
+Amazon Linux 2027 uses Kernel version 7.1. More information is available in the [AWS Documentation](https://docs.aws.amazon.com/linux/al2027/ug/). Only the standard AMI is supported, the [minimal AMI](https://docs.aws.amazon.com/linux/al2027/ug/AMI-minimal-and-standard-differences.html) is not supported.
+
+Amazon Linux 2027 is in public preview. AWS does not recommend it for production workloads and will deprecate the preview AMIs when it becomes generally available. Support in kOps is experimental until then.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --filters "Name=owner-alias,Values=amazon" \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=al2027-preview-ami-2*-kernel-7.1-*"
 ```
 
 ### Debian 11 (Bullseye)
