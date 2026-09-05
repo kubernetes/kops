@@ -27,6 +27,7 @@ import (
 func UnsetInstancegroupFields(fields []string, instanceGroup *api.InstanceGroup) error {
 	for _, field := range fields {
 		key := strings.TrimPrefix(field, "instancegroup.")
+		key = api.InternalPathForInstanceGroupField(key)
 
 		if err := reflectutils.Unset(instanceGroup, key); err != nil {
 			return err
