@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 
 	"cloud.google.com/go/storage"
@@ -49,7 +50,11 @@ type MockGCECloud struct {
 	cloudResourceManagerClient *cloudresourcemanager.Service
 }
 
-var _ gce.GCECloud = &MockGCECloud{}
+var (
+	_ gce.GCECloud                               = &MockGCECloud{}
+	_ cloudinstances.GroupFailureReporter        = &MockGCECloud{}
+	_ cloudinstances.GroupInstanceStatusReporter = &MockGCECloud{}
+)
 
 // InstallMockGCECloud registers a MockGCECloud implementation for the specified region & project
 func InstallMockGCECloud(region string, project string) *MockGCECloud {
@@ -66,6 +71,12 @@ func InstallMockGCECloud(region string, project string) *MockGCECloud {
 	return c
 }
 
+// ComputeClient exposes the mock compute client so tests can install canned
+// responses that are not reachable through the gce.ComputeClient interface.
+func (c *MockGCECloud) ComputeClient() *mockcompute.MockClient {
+	return c.computeClient
+}
+
 func (c *MockGCECloud) AllResources() map[string]interface{} {
 	return c.computeClient.AllResources()
 }
@@ -73,6 +84,14 @@ func (c *MockGCECloud) AllResources() map[string]interface{} {
 // GetCloudGroups is not implemented yet
 func (c *MockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return gce.GetCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+}
+
+func (c *MockGCECloud) GetGroupFailures(ctx context.Context, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.GroupFailure, error) {
+	return gce.GetGroupFailures(ctx, c, group)
+}
+
+func (c *MockGCECloud) GetGroupInstanceStatuses(ctx context.Context, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.GroupInstanceStatus, error) {
+	return gce.GetGroupInstanceStatuses(ctx, c, group)
 }
 
 // Zones is not implemented yet

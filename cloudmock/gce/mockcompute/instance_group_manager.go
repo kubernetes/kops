@@ -31,6 +31,8 @@ type instanceGroupManagerClient struct {
 	instanceGroupManagers map[string]map[string]map[string]*compute.InstanceGroupManager
 	// managedInstances are managedInstances keyed by project, zone, and name.
 	managedInstances map[string]map[string]map[string]*compute.ManagedInstance
+	// igmErrors are canned ListErrors responses keyed by project, zone, and name.
+	igmErrors map[string]map[string]map[string][]*compute.InstanceManagedByIgmError
 	// instanceClient is the client for instances.
 	instanceClient gce.InstanceClient
 	sync.Mutex
@@ -42,6 +44,7 @@ func newInstanceGroupManagerClient(instanceClient gce.InstanceClient) *instanceG
 	return &instanceGroupManagerClient{
 		instanceGroupManagers: map[string]map[string]map[string]*compute.InstanceGroupManager{},
 		managedInstances:      map[string]map[string]map[string]*compute.ManagedInstance{},
+		igmErrors:             map[string]map[string]map[string][]*compute.InstanceManagedByIgmError{},
 		instanceClient:        instanceClient,
 	}
 }
@@ -172,6 +175,49 @@ func (c *instanceGroupManagerClient) ListManagedInstances(ctx context.Context, p
 		l = append(l, instance)
 	}
 	return l, nil
+}
+
+func (c *instanceGroupManagerClient) ListErrors(ctx context.Context, project, zone, name string) ([]*compute.InstanceManagedByIgmError, error) {
+	c.Lock()
+	defer c.Unlock()
+	return c.igmErrors[project][zone][name], nil
+}
+
+// SetErrors installs the canned ListErrors response for one managed instance
+// group, so tests can drive the provisioning-failure reporting path.
+func (c *instanceGroupManagerClient) SetErrors(project, zone, name string, errs []*compute.InstanceManagedByIgmError) {
+	c.Lock()
+	defer c.Unlock()
+	zones, ok := c.igmErrors[project]
+	if !ok {
+		zones = map[string]map[string][]*compute.InstanceManagedByIgmError{}
+		c.igmErrors[project] = zones
+	}
+	names, ok := zones[zone]
+	if !ok {
+		names = map[string][]*compute.InstanceManagedByIgmError{}
+		zones[zone] = names
+	}
+	names[name] = errs
+}
+
+// SetManagedInstance installs the managed instance the group reports for name,
+// including one that has no backing compute instance because creation keeps
+// failing.
+func (c *instanceGroupManagerClient) SetManagedInstance(project, zone, name string, mi *compute.ManagedInstance) {
+	c.Lock()
+	defer c.Unlock()
+	zones, ok := c.managedInstances[project]
+	if !ok {
+		zones = map[string]map[string]*compute.ManagedInstance{}
+		c.managedInstances[project] = zones
+	}
+	names, ok := zones[zone]
+	if !ok {
+		names = map[string]*compute.ManagedInstance{}
+		zones[zone] = names
+	}
+	names[name] = mi
 }
 
 func (c *instanceGroupManagerClient) RecreateInstances(project, zone, name, id string) (*compute.Operation, error) {
