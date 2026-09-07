@@ -181,12 +181,34 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 		}
 	}
 
+	warnUnmatched := false
+
 	nodeList, err := v.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("error listing nodes: %v", err)
+		// The API server is commonly unreachable because the control plane
+		// instances never launched. Node-level validation is impossible, but the
+		// cloud provider can still say why the instance groups are short, so
+		// report that instead of only an opaque dial error.
+		validation.addError(&ValidationError{
+			Kind:    "apiserver",
+			Name:    v.cluster.Name,
+			Message: fmt.Sprintf("error listing nodes: %v", err),
+		})
+
+		cloudGroups, groupsErr := v.cloud.GetCloudGroups(v.cluster, v.allInstanceGroups, warnUnmatched, nil)
+		if groupsErr != nil {
+			return nil, fmt.Errorf("error listing nodes: %w (and error listing cloud groups: %w)", err, groupsErr)
+		}
+		failureReporter, _ := v.cloud.(cloudinstances.GroupFailureReporter)
+		for _, cloudGroup := range cloudGroups {
+			if cloudGroup.InstanceGroup == nil || !v.filterInstanceGroups(cloudGroup.InstanceGroup) {
+				continue
+			}
+			validation.validateGroupSize(ctx, cloudGroup, failureReporter)
+		}
+		return validation, nil
 	}
 
-	warnUnmatched := false
 	cloudGroups, err := v.cloud.GetCloudGroups(v.cluster, v.allInstanceGroups, warnUnmatched, nodeList.Items)
 	if err != nil {
 		return nil, err
