@@ -21,8 +21,10 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"slices"
 	"sort"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
@@ -228,7 +230,9 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 		}
 	}
 
-	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.allInstanceGroups, v.filterInstanceGroups, toleratedNodes)
+	failureReporter, _ := v.cloud.(cloudinstances.GroupFailureReporter)
+
+	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(ctx, cloudGroups, v.allInstanceGroups, v.filterInstanceGroups, toleratedNodes, failureReporter)
 
 	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filterPodsForValidation, toleratedNodes); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
@@ -344,7 +348,63 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 	return nil
 }
 
-func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup, shouldValidateInstanceGroup func(ig *kops.InstanceGroup) bool, toleratedNodes map[string]bool) ([]v1.Node, map[string]*kops.InstanceGroup) {
+// reportGroupFailures queries the cloud provider for provisioning errors on
+// a group that's short on instances and appends them as validation failures.
+// failureReporter may be nil if the cloud does not support this capability.
+func (v *ValidationCluster) reportGroupFailures(ctx context.Context, failureReporter cloudinstances.GroupFailureReporter, cloudGroup *cloudinstances.CloudInstanceGroup) {
+	if failureReporter == nil || cloudGroup.InstanceGroup == nil {
+		return
+	}
+	failures, err := failureReporter.GetGroupFailures(ctx, cloudGroup)
+	if err != nil {
+		klog.Warningf("error getting cloud provider errors for InstanceGroup %q: %v", cloudGroup.InstanceGroup.Name, err)
+		return
+	}
+	for _, e := range failures {
+		message := fmt.Sprintf("cloud provider error %s: %s", e.Code, e.Message)
+		if e.Instance != "" {
+			message = fmt.Sprintf("cloud provider error %s for instance %s: %s", e.Code, e.Instance, e.Message)
+		}
+		switch {
+		case e.Count > 1 && !e.LastSeen.IsZero():
+			message = fmt.Sprintf("%s (observed %d times, most recent %s)", message, e.Count, e.LastSeen.Format(time.RFC3339))
+		case e.Count > 1:
+			message = fmt.Sprintf("%s (observed %d times)", message, e.Count)
+		}
+		v.addError(&ValidationError{
+			Kind:          "InstanceGroup",
+			Name:          cloudGroup.InstanceGroup.Name,
+			Message:       message,
+			InstanceGroup: cloudGroup.InstanceGroup,
+		})
+	}
+}
+
+// validateGroupSize reports a group that has fewer instances than its target
+// size, along with any provisioning errors the cloud provider attributes to it.
+func (v *ValidationCluster) validateGroupSize(ctx context.Context, cloudGroup *cloudinstances.CloudInstanceGroup, failureReporter cloudinstances.GroupFailureReporter) {
+	numNodes := 0
+	for _, m := range slices.Concat(cloudGroup.Ready, cloudGroup.NeedUpdate) {
+		if m.Status != cloudinstances.CloudInstanceStatusDetached {
+			numNodes++
+		}
+	}
+	if numNodes >= cloudGroup.TargetSize {
+		return
+	}
+	v.addError(&ValidationError{
+		Kind: "InstanceGroup",
+		Name: cloudGroup.InstanceGroup.Name,
+		Message: fmt.Sprintf("InstanceGroup %q did not have enough nodes %d vs %d",
+			cloudGroup.InstanceGroup.Name,
+			numNodes,
+			cloudGroup.TargetSize),
+		InstanceGroup: cloudGroup.InstanceGroup,
+	})
+	v.reportGroupFailures(ctx, failureReporter, cloudGroup)
+}
+
+func (v *ValidationCluster) validateNodes(ctx context.Context, cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup, shouldValidateInstanceGroup func(ig *kops.InstanceGroup) bool, toleratedNodes map[string]bool, failureReporter cloudinstances.GroupFailureReporter) ([]v1.Node, map[string]*kops.InstanceGroup) {
 	var readyNodes []v1.Node
 	groupsSeen := map[string]bool{}
 	nodeInstanceGroupMapping := map[string]*kops.InstanceGroup{}
@@ -359,23 +419,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 		allMembers = append(allMembers, cloudGroup.NeedUpdate...)
 
 		groupsSeen[cloudGroup.InstanceGroup.Name] = true
-		numNodes := 0
-		for _, m := range allMembers {
-			if m.Status != cloudinstances.CloudInstanceStatusDetached {
-				numNodes++
-			}
-		}
-		if numNodes < cloudGroup.TargetSize {
-			v.addError(&ValidationError{
-				Kind: "InstanceGroup",
-				Name: cloudGroup.InstanceGroup.Name,
-				Message: fmt.Sprintf("InstanceGroup %q did not have enough nodes %d vs %d",
-					cloudGroup.InstanceGroup.Name,
-					numNodes,
-					cloudGroup.TargetSize),
-				InstanceGroup: cloudGroup.InstanceGroup,
-			})
-		}
+		v.validateGroupSize(ctx, cloudGroup, failureReporter)
 
 		for _, member := range allMembers {
 			node := member.Node
