@@ -16,7 +16,11 @@ limitations under the License.
 
 package cloudinstances
 
-import v1 "k8s.io/api/core/v1"
+import (
+	"time"
+
+	v1 "k8s.io/api/core/v1"
+)
 
 // CloudInstanceStatusDetached means the instance needs update and has been detached.
 const CloudInstanceStatusDetached = "Detached"
@@ -52,4 +56,7 @@ type CloudInstance struct {
 	ExternalIP string
 	// State indicates if the instance has joined the cluster and if it needs any updates.
 	State State
+	// CreationTimestamp is when the cloud provider accepted the request to create
+	// the instance. Used as a watermark when surfacing cloud-side provisioning errors.
+	CreationTimestamp time.Time
 }
