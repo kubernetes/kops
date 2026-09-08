@@ -21,7 +21,7 @@ steps:
       - dns-controller-push
       - kube-apiserver-healthcheck-push
       - discovery-server-push
-  # Push the artifacts
+  # Build & push the binaries
   - name: "mirror.gcr.io/library/golang:1.26.8-trixie"
     id: artifacts
     entrypoint: make
@@ -33,7 +33,9 @@ steps:
       - DOCKER_REGISTRY=$_DOCKER_REGISTRY
       - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
       - GCS_LOCATION=$_GCS_LOCATION
-      - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
+      - FASTLY_SERVICE_NAME=$_FASTLY_SERVICE_NAME
+    secretEnv:
+      - FASTLY_API_TOKEN
     args:
       - gcs-upload-and-tag
   # Build cloudbuild artifacts (for attestation)
@@ -59,8 +61,14 @@ substitutions:
   _PULL_BASE_REF: "dev"
   _DOCKER_REGISTRY: "gcr.io"
   _DOCKER_IMAGE_PREFIX: "k8s-staging-kops/"
-  _GCS_LOCATION: "gs://k8s-staging-kops/kops/releases/"
+  _GCS_LOCATION: "gs://k8s-staging-kops/"
+  _FASTLY_SERVICE_NAME: dl.k8s.io
 artifacts:
   objects:
     location: "$_GCS_LOCATION/$_GIT_TAG/cloudbuild/"
     paths: ["cloudbuild/*"]
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/fastly-purge-token/versions/latest
+      env: FASTLY_API_TOKEN

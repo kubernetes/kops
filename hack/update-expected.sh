@@ -43,5 +43,8 @@ unset DIGITALOCEAN_ACCESS_TOKEN
 # Avoid reading a developer's default kubeconfig while regenerating golden files.
 export KUBECONFIG=/dev/null
 
+VERSION=$(tools/get_version.sh | awk '$1 == "VERSION" {print $2}' | sed -E 's/^v//; s/-[0-9]+-g[0-9a-f]+(-dirty)?$//')
+GITSHA=$(git describe --always)
+
 # Run the tests in "autofix mode"
-HACK_UPDATE_EXPECTED_IN_PLACE=1 go test "${PKG}" "${RUN_FILTER[@]}" -count=1
+HACK_UPDATE_EXPECTED_IN_PLACE=1 go test -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" "${PKG}" "${RUN_FILTER[@]}" -count=1

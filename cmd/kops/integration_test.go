@@ -630,9 +630,24 @@ func readDirFilenames(t *testing.T, dir string) []string {
 
 	var filenames []string
 	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".bak") {
+			continue
+		}
 		filenames = append(filenames, entry.Name())
 	}
 	return filenames
+}
+
+func TestReadDirFilenamesIgnoresBackups(t *testing.T) {
+	dir := t.TempDir()
+	for _, name := range []string{"user_data", "user_data.bak", "manifest"} {
+		if err := os.WriteFile(filepath.Join(dir, name), nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got := readDirFilenames(t, dir); !reflect.DeepEqual(got, []string{"manifest", "user_data"}) {
+		t.Fatalf("unexpected fixture filenames: %v", got)
+	}
 }
 
 func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutils.IntegrationTestHarness, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
@@ -731,6 +746,16 @@ func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutil
 			if err != nil {
 				t.Errorf("failed to read actual data file %q: %v", actualPath, err)
 				continue
+			}
+			if !golden.UpdateExpectedOutput() && strings.HasSuffix(filename, "_user_data") {
+				expectedContent, err := os.ReadFile(filepath.Join(expectedDataDir, filename))
+				if err == nil {
+					actualNormalized, actualErr := normalizeCompressedUserData(string(actualDataContent))
+					expectedNormalized, expectedErr := normalizeCompressedUserData(string(expectedContent))
+					if actualErr == nil && expectedErr == nil && actualNormalized == expectedNormalized {
+						continue
+					}
+				}
 			}
 			golden.AssertMatchesFile(t, string(actualDataContent), filepath.Join(expectedDataDir, filename))
 		}

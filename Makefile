@@ -39,6 +39,16 @@ ifeq ($(GOBIN),)
 GOBIN := $(shell go env GOPATH)/bin
 endif
 
+# We need to create latest.txt for master and latest-X.Y for release branches
+BRANCH ?= $(shell git -C $(KOPS_ROOT) rev-parse --abbrev-ref HEAD)
+ifeq ($(BRANCH),master)
+LATEST_FILE ?= latest.txt
+else ifneq (,$(filter release-1.%,$(BRANCH)))
+LATEST_FILE ?= $(patsubst release-%,latest-%.txt,$(BRANCH))
+else
+LATEST_FILE ?= latest.txt
+endif
+
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
 CODEGEN_VERSION=v0.37.0
 
@@ -57,9 +67,9 @@ unexport AZURE_CLIENT_ID AZURE_CLIENT_SECRET AZURE_SUBSCRIPTION_ID AZURE_TENANT_
 VERSION=$(shell tools/get_version.sh | grep VERSION | awk '{print $$2}')
 export VERSION
 
-IMAGE_TAG=$(shell tools/get_version.sh | grep IMAGE_TAG | awk '{print $$2}')
+TEST_VERSION=$(shell printf '%s\n' '${VERSION}' | sed -E 's/^v//; s/-[0-9]+-g[0-9a-f]+(-dirty)?$$//')
 
-KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' kops-version.go | awk '{print $$3}' | sed -e 's_"__g')
+IMAGE_TAG=$(shell tools/get_version.sh | grep IMAGE_TAG | awk '{print $$2}')
 
 # kops local location
 KOPS=${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops
@@ -179,7 +189,8 @@ hooks: # Install Git hooks
 
 .PHONY: test
 test:
-	go test -v ./...
+	mkdir -p "${ARTIFACTS}"
+	go run gotest.tools/gotestsum@v1.13.0 --format standard-verbose --junitfile "${ARTIFACTS}/junit.xml" -- -ldflags "-X k8s.io/kops.Version=${TEST_VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" ./...
 
 .PHONY: test-windows
 test-windows:
@@ -238,10 +249,15 @@ gcs-upload: gcloud version-dist
 	gcloud storage cp --cache-control="private, max-age=0, no-transform" --no-clobber --recursive ${UPLOAD}/kops/* ${GCS_LOCATION}
 
 # gcs-upload-tag runs gcs-upload to upload, then uploads a version-marker to LATEST_FILE
+# Purge the marker on upload
 .PHONY: gcs-upload-and-tag
 gcs-upload-and-tag: gcloud gcs-upload
-	echo "${GCS_URL}${VERSION}" > ${UPLOAD}/latest.txt
-	gcloud storage cp --cache-control="private, max-age=0, no-transform" ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+	echo "${VERSION}" > ${UPLOAD}/latest.txt
+	gcloud storage cp --custom-metadata="Surrogate-Key=kops-markers" --cache-control="private, max-age=0, no-transform" ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+	curl -fsSL https://github.com/fastly/cli/releases/download/v16.0.0/fastly_v16.0.0_linux-amd64.tar.gz -o /tmp/fastly_v16.0.0_linux-amd64.tar.gz && \
+	tar -xzf /tmp/fastly_v16.0.0_linux-amd64.tar.gz -C /tmp && \
+	/tmp/fastly service purge --service-name="${FASTLY_SERVICE_NAME}" \
+	  --key kops-markers --non-interactive
 
 # gcs-publish-ci is the entry point for CI testing
 .PHONY: gcs-publish-ci
@@ -249,7 +265,7 @@ gcs-publish-ci: gcloud version-dist-ci
 	@echo "== Uploading kops =="
 	gcloud storage cp --cache-control="private, max-age=0, no-transform" --no-clobber --recursive ${UPLOAD}/kops/* ${GCS_LOCATION}
 	echo "VERSION: ${VERSION}"
-	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
+	echo "${VERSION}" > ${UPLOAD}/${LATEST_FILE}
 	gcloud storage cp --cache-control="private, max-age=0, no-transform" ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs

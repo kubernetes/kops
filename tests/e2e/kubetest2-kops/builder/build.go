@@ -18,7 +18,6 @@ package builder
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -109,29 +108,18 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	// Get the full path (including subdirectory) that we uploaded to
 	// It is written by gcs-publish-ci to .build/upload/latest-ci.txt
 	latestPath := filepath.Join(b.KopsRoot, ".build", "upload", "latest-ci.txt")
-	kopsBaseURL, err := os.ReadFile(latestPath)
+	kopsVersion, err := os.ReadFile(latestPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %q: %w", latestPath, err)
 	}
-	u, err := url.Parse(strings.TrimSpace(string(kopsBaseURL)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse url %q from file %q: %w", string(kopsBaseURL), latestPath, err)
-	}
-	u.Path = strings.ReplaceAll(u.Path, "//", "/")
-	results = &BuildResults{
-		KopsBaseURL: u.String(),
+	var kopsBaseUrl string
+	if after, ok := strings.CutPrefix(b.StageLocation, "gs://"); ok {
+		kopsBaseUrl = "https://storage.googleapis.com/" + after + "/" + strings.TrimSpace(string(kopsVersion))
 	}
 
-	// Write some meta files so that other tooling can know e.g. KOPS_BASE_URL
-	metaDir := filepath.Join(b.KopsRoot, ".kubetest2")
-	if err := os.MkdirAll(metaDir, 0o755); err != nil {
-		return nil, fmt.Errorf("failed to Mkdir(%q): %w", metaDir, err)
+	results = &BuildResults{
+		KopsBaseURL: kopsBaseUrl,
 	}
-	p := filepath.Join(metaDir, "kops-base-url")
-	if err := os.WriteFile(p, []byte(results.KopsBaseURL), 0o644); err != nil {
-		return nil, fmt.Errorf("failed to WriteFile(%q): %w", p, err)
-	}
-	klog.Infof("wrote file %q with %q", p, results.KopsBaseURL)
 
 	return results, nil
 }

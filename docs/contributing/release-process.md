@@ -7,8 +7,8 @@ The kOps project is released on an as-needed basis. The process is as follows:
 We maintain a `release-1.21` branch for kOps 1.21.X, `release-1.22` for kOps 1.22.X,
 etc.
 
-`master` is where development happens.  We create new branches from master as we
-prepare for a new minor release.  As we are
+`master` is where development happens. We create new branches from master as we
+prepare for a new minor release. As we are
 preparing for a new Kubernetes release, we will try to advance the master branch
 to focus on the new functionality and cherry-pick back
 to the release branches only as needed.
@@ -27,25 +27,25 @@ The exception is the first beta release for a new minor version: it is where the
 In order to create the first beta release for a new minor version and a new release branch off of master, perform the following steps:
 
 1. Update the periodic E2E Prow jobs for the "next" kOps/Kubernetes minor version.
-   * Edit [build_jobs.py](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/build_jobs.py)
-   to add the new minor version to `k8s_versions` and `kops_versions`.
+   - Edit [build_jobs.py](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops/build_jobs.py)
+     to add the new minor version to `k8s_versions` and `kops_versions`.
      Also update the list of minor versions in `generate_versions()`, `generate_pipeline()`, and `generate_presubmits_e2e()`.
-   * Edit the [testgrid config.yaml](https://github.com/kubernetes/test-infra/blob/master/config/testgrids/kubernetes/kops/config.yaml)
-   to add the new minor version to both lists in the file, prefixed with `kops-k8s-`.
-   * Remove the oldest minor version from each of those lists.
-   * Run the `build_jobs.py` script.
+   - Edit the [testgrid config.yaml](https://github.com/kubernetes/test-infra/blob/master/config/testgrids/kubernetes/kops/config.yaml)
+     to add the new minor version to both lists in the file, prefixed with `kops-k8s-`.
+   - Remove the oldest minor version from each of those lists.
+   - Run the `build_jobs.py` script.
 2. Create a new milestone in the GitHub repo.
 3. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313)
-   to update master to use the new milestone and add an entry for the new feature branch. 
+   to update master to use the new milestone and add an entry for the new feature branch.
    Create this as a separate PR as it will require separate review.
 4. Create the .0-beta.1 release per the instructions in the following section. GitHub Actions will create the release branch when it tags the release.
 5. On the master branch, create a PR to update to the next minor version:
-   * Update `OldestSupportedKubernetesVersion` and `OldestRecommendedKubernetesVersion` in
-   [apply_cluster.go](https://github.com/kubernetes/kops/tree/master/upup/pkg/fi/cloudup/apply_cluster.go)
-   * Add a row for the new minor version to [upgrade_k8s.md](https://github.com/kubernetes/kops/tree/master/permalinks/upgrade_k8s.md)
-   * Fix any tests broken by the now-unsupported versions.
-   * Create release notes for the next minor version. The release notes should mention the
-   Kubernetes support removal and deprecation.
+   - Update `OldestSupportedKubernetesVersion` and `OldestRecommendedKubernetesVersion` in
+     [apply_cluster.go](https://github.com/kubernetes/kops/tree/master/upup/pkg/fi/cloudup/apply_cluster.go)
+   - Add a row for the new minor version to [upgrade_k8s.md](https://github.com/kubernetes/kops/tree/master/permalinks/upgrade_k8s.md)
+   - Fix any tests broken by the now-unsupported versions.
+   - Create release notes for the next minor version. The release notes should mention the
+     Kubernetes support removal and deprecation.
 6. On master, off of the branch point, create the first alpha release for the new minor release.
 
 ## Creating releases
@@ -89,11 +89,8 @@ Wait for the PR to merge.
 
 To review someone else's release commit, verify that:
 
-* A release at that point is desired. (For example, there are no unfixed blocking bugs.)
-* There is nothing in the commit besides version number updates and golden outputs.
-
-The "verify-versions" CI task will ensure that the versions have been updated in all the
-expected places.
+- A release at that point is desired. (For example, there are no unfixed blocking bugs.)
+- There is nothing in the commit besides version number updates and golden outputs.
 
 ### Wait for CI job to complete
 
@@ -106,8 +103,8 @@ It (currently) takes about 30 minutes to run.
 
 The following tools are prerequisites:
 
-* [`gcloud`](https://cloud.google.com/sdk/docs/install)
-* [`kpromo`](https://github.com/kubernetes-sigs/promo-tools)
+- [`gcloud`](https://cloud.google.com/sdk/docs/install)
+- [`kpromo`](https://github.com/kubernetes-sigs/promo-tools)
 
 Currently, we send the image and non-image artifact promotion PRs separately.
 
@@ -189,17 +186,17 @@ everything is pulling from the new locations.
 
 ### Publish to GitHub
 
-* Download release
-* Validate it
-* Add notes by pressing the "Generate release notes" button
-* Publish it
+- Download release
+- Validate it
+- Add notes by pressing the "Generate release notes" button
+- Publish it
 
 ### Release to Homebrew
 
 This step is only necessary for stable releases in the latest stable minor version.
 
-* Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
-* This should be done at the same time as the release, and we will iterate on how to improve timing of this.
+- Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
+- This should be done at the same time as the release, and we will iterate on how to improve timing of this.
 
 ### Update conformance results with CNCF
 
@@ -219,14 +216,14 @@ This step is only necessary for a first beta minor release (a ".0-beta.1").
 
 Create a PR that updates the following document:
 
-* Add a reference to the version's release notes in [mkdocs.yml](https://github.com/kubernetes/kops/tree/master/mkdocs.yml)
+- Add a reference to the version's release notes in [mkdocs.yml](https://github.com/kubernetes/kops/tree/master/mkdocs.yml)
 
 ### Update the alpha channel and/or stable channel
 
 Once we are satisfied the release is sound:
 
-* Bump the kOps recommended version in the alpha channel
+- Bump the kOps recommended version in the alpha channel
 
 Once we are satisfied the release is stable:
 
-* Bump the kOps recommended version in the stable channel
+- Bump the kOps recommended version in the stable channel
