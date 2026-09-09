@@ -724,7 +724,11 @@ func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutil
 				t.Errorf("failed to read actual data file %q: %v", actualPath, err)
 				continue
 			}
-			golden.AssertMatchesFile(t, string(actualDataContent), filepath.Join(expectedDataDir, filename))
+			if strings.HasSuffix(filename, "_user_data") {
+				assertUserDataMatchesFile(t, string(actualDataContent), filepath.Join(expectedDataDir, filename))
+			} else {
+				golden.AssertMatchesFile(t, string(actualDataContent), filepath.Join(expectedDataDir, filename))
+			}
 		}
 
 		// Read the expected files again, because golden.AssertMatchesFile may have created some.
