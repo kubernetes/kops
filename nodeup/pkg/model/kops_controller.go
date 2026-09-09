@@ -32,9 +32,16 @@ type KopsControllerBuilder struct {
 
 var _ fi.NodeupModelBuilder = &KopsControllerBuilder{}
 
+func (b *KopsControllerBuilder) runsKopsController() bool {
+	if b.IsMaster || b.HasAPIServer {
+		return true
+	}
+	return false
+}
+
 // Build is responsible for configuring keys that will be used by kops-controller (via hostPath)
 func (b *KopsControllerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster && !b.HasAPIServer {
+	if !b.runsKopsController() {
 		return nil
 	}
 

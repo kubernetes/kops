@@ -44,9 +44,16 @@ type KubeControllerManagerBuilder struct {
 
 var _ fi.NodeupModelBuilder = &KubeControllerManagerBuilder{}
 
+func (b *KubeControllerManagerBuilder) runsKCM() bool {
+	if b.IsMaster || b.BootConfig.InstanceGroupRole.HasKubeControllerManager() {
+		return true
+	}
+	return false
+}
+
 // Build is responsible for configuring the kube-controller-manager
 func (b *KubeControllerManagerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster && !b.BootConfig.InstanceGroupRole.HasKubeControllerManager() {
+	if !b.runsKCM() {
 		return nil
 	}
 

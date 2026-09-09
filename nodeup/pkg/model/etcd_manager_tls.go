@@ -30,9 +30,16 @@ type EtcdManagerTLSBuilder struct {
 
 var _ fi.NodeupModelBuilder = &EtcdManagerTLSBuilder{}
 
+func (b *EtcdManagerTLSBuilder) runsEtcd() bool {
+	if b.IsMaster || b.BootConfig.InstanceGroupRole.HasEtcd() {
+		return true
+	}
+	return false
+}
+
 // Build is responsible for TLS configuration for etcd-manager
 func (b *EtcdManagerTLSBuilder) Build(ctx *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster && !b.BootConfig.InstanceGroupRole.HasEtcd() {
+	if !b.runsEtcd() {
 		return nil
 	}
 

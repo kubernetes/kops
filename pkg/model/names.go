@@ -150,11 +150,11 @@ func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	case kops.InstanceGroupRoleAPIServer:
 		rolename = "apiservers." + b.ClusterName()
 	case kops.InstanceGroupRoleEtcd:
-		rolename = "etcd." + b.ClusterName()
+		rolename = "etcds." + b.ClusterName()
 	case kops.InstanceGroupRoleScheduler:
-		rolename = "scheduler." + b.ClusterName()
+		rolename = "schedulers." + b.ClusterName()
 	case kops.InstanceGroupRoleKubeControllerManager:
-		rolename = "kcm." + b.ClusterName()
+		rolename = "kcms." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
 		rolename = "bastions." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:

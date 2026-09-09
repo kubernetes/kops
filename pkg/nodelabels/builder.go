@@ -45,26 +45,26 @@ const (
 // This moved from the kubelet to a central controller in kubernetes 1.16
 func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (map[string]string, error) {
 	isControlPlane := false
-	isAPIServer := false
-	isNode := false
-	isEtcd := false
-	isScheduler := false
-	isKubeControllerManager := false
+	isAPIServerOnly := false
+	isNodeOnly := false
+	isEtcdOnly := false
+	isSchedulerOnly := false
+	isKubeControllerManagerOnly := false
 	switch {
 	case instanceGroup.Spec.Role.HasControlPlane():
 		isControlPlane = true
 	case instanceGroup.Spec.Role.HasAPIServer():
-		isAPIServer = true
+		isAPIServerOnly = true
 	case instanceGroup.Spec.Role.HasNode():
-		isNode = true
+		isNodeOnly = true
 	case instanceGroup.Spec.Role.HasBastion():
 		// no labels to add
 	case instanceGroup.Spec.Role.HasEtcd():
-		isEtcd = true
+		isEtcdOnly = true
 	case instanceGroup.Spec.Role.HasScheduler():
-		isScheduler = true
+		isSchedulerOnly = true
 	case instanceGroup.Spec.Role.HasKubeControllerManager():
-		isKubeControllerManager = true
+		isKubeControllerManagerOnly = true
 	default:
 		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)
 	}
@@ -83,7 +83,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 
 	nodeLabels := c.NodeLabels
 
-	if isAPIServer || isControlPlane {
+	if isAPIServerOnly || isControlPlane {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
@@ -91,34 +91,34 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// We keep the featureflag as a placeholder to change the logic;
 		// when we drop the featureflag we should just always include the label, even for
 		// full control-plane nodes.
-		if isAPIServer && featureflag.APIServerNodes.Enabled() {
+		if isAPIServerOnly && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
 			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
 
-	if isNode {
+	if isNodeOnly {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
 	}
 
-	if isEtcd {
+	if isEtcdOnly {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelEtcd] = ""
 	}
 
-	if isScheduler {
+	if isSchedulerOnly {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelScheduler] = ""
 	}
 
-	if isKubeControllerManager {
+	if isKubeControllerManagerOnly {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}

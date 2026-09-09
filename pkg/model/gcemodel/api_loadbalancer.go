@@ -202,7 +202,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	}
 	c.AddTask(backendService)
 
-	// kopsControllerBS is a backend service that targets ControlPlane or KubeControllerManager MIGs.
+	// kopsControllerBS is a backend service that targets ControlPlane or MIGs.
 	kopsControllerBS := backendService
 	if b.HasAPIServerOnlyInstanceGroups() || b.HasEtcdOnlyInstanceGroups() {
 		controlPlaneHC := &gcetasks.HealthCheck{

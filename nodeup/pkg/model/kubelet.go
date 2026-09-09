@@ -199,7 +199,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 		{
 			var kubeconfig fi.Resource
-			if b.BootConfig.InstanceGroupRole.IsControlPlaneType() {
+			if b.canSignCertificates() {
 				kubeconfig, err = b.buildControlPlaneKubeletKubeconfig(c)
 			} else {
 				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
@@ -874,7 +874,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilder
 	dir := b.PathSrvKubernetes()
 
 	var cert, key fi.Resource
-	if !b.BootConfig.InstanceGroupRole.IsControlPlaneType() {
+	if !b.canSignCertificates() {
 		var err error
 		cert, key, err = b.GetBootstrapCert(name, fi.CertificateIDCA)
 		if err != nil {

@@ -60,9 +60,16 @@ type KubeSchedulerBuilder struct {
 
 var _ fi.NodeupModelBuilder = &KubeSchedulerBuilder{}
 
+func (b *KubeSchedulerBuilder) runsScheduler() bool {
+	if b.IsMaster || b.BootConfig.InstanceGroupRole.HasScheduler() {
+		return true
+	}
+	return false
+}
+
 // Build is responsible for building the manifest for the kube-scheduler
 func (b *KubeSchedulerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster && !b.BootConfig.InstanceGroupRole.HasScheduler() {
+	if !b.runsScheduler() {
 		return nil
 	}
 
