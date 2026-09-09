@@ -64,23 +64,23 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 	for _, role := range kops.AllInstanceGroupRoles {
 		isControlPlaneType := role.IsControlPlaneType()
-		isMaster := role.HasControlPlane()
-		isAPIServer := role.HasAPIServer()
-		isEtcd := role.HasEtcd()
-		isScheduler := role.HasScheduler()
-		isKCM := role.HasKubeControllerManager()
+		hasControlPlane := role.HasControlPlane()
+		hasAPIServer := role.HasAPIServer()
+		hasEtcd := role.HasEtcd()
+		hasScheduler := role.HasScheduler()
+		hasKCM := role.HasKubeControllerManager()
 
 		images[role] = make(map[architectures.Architecture][]*nodeup.Image)
 		if kopsmodel.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			// When using a custom version, we want to preload the images over http
 			components := []string{"kube-proxy"}
-			if isMaster {
+			if hasControlPlane {
 				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
-			} else if isAPIServer {
+			} else if hasAPIServer {
 				components = append(components, "kube-apiserver")
-			} else if isScheduler {
+			} else if hasScheduler {
 				components = append(components, "kube-scheduler")
-			} else if isKCM {
+			} else if hasKCM {
 				components = append(components, "kube-controller-manager")
 			}
 
@@ -131,7 +131,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 					images[role][arch] = append(images[role][arch], image)
 				}
 			}
-		} else if os.Getenv("KOPS_BASE_URL") != "" && isAPIServer {
+		} else if os.Getenv("KOPS_BASE_URL") != "" && hasAPIServer {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kube-apiserver-healthcheck"} {
 					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
@@ -155,7 +155,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 			}
 		}
 
-		if isMaster || isEtcd {
+		if hasControlPlane || hasEtcd {
 			for _, etcdCluster := range cluster.Spec.EtcdClusters {
 				for _, member := range etcdCluster.Members {
 					instanceGroup := fi.ValueOf(member.InstanceGroup)
