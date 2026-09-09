@@ -519,6 +519,20 @@ func (in *CertManagerConfig) DeepCopyInto(out *CertManagerConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.WebhookFeatureGates != nil {
+		in, out := &in.WebhookFeatureGates, &out.WebhookFeatureGates
+		*out = make(map[string]bool, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
+	if in.CAInjectorFeatureGates != nil {
+		in, out := &in.CAInjectorFeatureGates, &out.CAInjectorFeatureGates
+		*out = make(map[string]bool, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
