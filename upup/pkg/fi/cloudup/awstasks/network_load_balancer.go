@@ -366,7 +366,8 @@ func (e *NetworkLoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, err
 			}
 
 			if cluster.UsesLoadBalancerForKopsController() {
-				nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.ValueOf(e.VPC.ID), aws.ToString(lb.LoadBalancer.LoadBalancerName))
+				// Terraform does not populate the VPC task's ID, so use the discovered NLB's VPC.
+				nis, err := cloud.FindELBV2NetworkInterfacesByName(aws.ToString(lb.LoadBalancer.VpcId), aws.ToString(lb.LoadBalancer.LoadBalancerName))
 				if err != nil {
 					return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", aws.ToString(lb.LoadBalancer.LoadBalancerName), err)
 				}
