@@ -1,1 +1,94 @@
-
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: kops-channels
+    namespace: kube-system
+path: /etc/kubernetes/manifests/kops-channels.manifest
+type: file
+---
+contents:
+  task:
+    CA:
+      task:
+        Name: kops
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: kops
+          Organization:
+          - system:masters
+        type: client
+    Cert:
+      task:
+        Name: kops
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: kops
+          Organization:
+          - system:masters
+        type: client
+    Key:
+      task:
+        Name: kops
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: kops
+          Organization:
+          - system:masters
+        type: client
+    Name: kops
+    ServerURL: https://127.0.0.1
+mode: "0400"
+owner: kops-channels
+path: /var/lib/kops/kubeconfig
+type: file
+---
+Name: kops
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kops
+  Organization:
+  - system:masters
+type: client
+---
+CA:
+  task:
+    Name: kops
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kops
+      Organization:
+      - system:masters
+    type: client
+Cert:
+  task:
+    Name: kops
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kops
+      Organization:
+      - system:masters
+    type: client
+Key:
+  task:
+    Name: kops
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kops
+      Organization:
+      - system:masters
+    type: client
+Name: kops
+ServerURL: https://127.0.0.1
+---
+Name: kops-channels
+home: /var/lib/kops
+shell: /sbin/nologin
+uid: 10013
