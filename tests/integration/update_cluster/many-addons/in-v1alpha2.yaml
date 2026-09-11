@@ -7,8 +7,12 @@ spec:
   awsLoadBalancerController:
     enabled: true
   certManager:
+    cainjectorFeatureGates:
+      ServerSideApply: true
     enabled: true
     featureGates:
+      AdditionalCertificateOutputFormats: true
+    webhookFeatureGates:
       AdditionalCertificateOutputFormats: true
   clusterAutoscaler:
     enabled: true

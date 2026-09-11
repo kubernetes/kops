@@ -1991,6 +1991,8 @@ func autoConvert_v1alpha2_CertManagerConfig_To_kops_CertManagerConfig(in *CertMa
 	out.Nameservers = in.Nameservers
 	out.HostedZoneIDs = in.HostedZoneIDs
 	out.FeatureGates = in.FeatureGates
+	out.WebhookFeatureGates = in.WebhookFeatureGates
+	out.CAInjectorFeatureGates = in.CAInjectorFeatureGates
 	return nil
 }
 
@@ -2007,6 +2009,8 @@ func autoConvert_kops_CertManagerConfig_To_v1alpha2_CertManagerConfig(in *kops.C
 	out.Nameservers = in.Nameservers
 	out.HostedZoneIDs = in.HostedZoneIDs
 	out.FeatureGates = in.FeatureGates
+	out.WebhookFeatureGates = in.WebhookFeatureGates
+	out.CAInjectorFeatureGates = in.CAInjectorFeatureGates
 	return nil
 }
 

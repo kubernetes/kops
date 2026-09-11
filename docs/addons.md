@@ -208,6 +208,27 @@ spec:
     useServiceAccountExternalPermissions: true
 ```
 
+##### Feature gates
+
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+The cert-manager controller, webhook and cainjector each accept their own set of feature gates, so they are configured
+per component: `featureGates` applies to the controller, `webhookFeatureGates` to the webhook and `cainjectorFeatureGates`
+to the cainjector. Some features, such as `AdditionalCertificateOutputFormats` and `NameConstraints`, must be enabled on
+both the controller and the webhook to take effect.
+
+```yaml
+spec:
+  certManager:
+    enabled: true
+    featureGates:
+      AdditionalCertificateOutputFormats: true
+    webhookFeatureGates:
+      AdditionalCertificateOutputFormats: true
+```
+
+See the [cert-manager feature gates documentation](https://cert-manager.io/docs/installation/configuring-components/#feature-gates) for the gates each component supports.
+
 Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
 
 #### Karpenter

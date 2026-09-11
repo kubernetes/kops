@@ -1321,6 +1321,12 @@ type CertManagerConfig struct {
 
 	// FeatureGates is a list of experimental features that can be enabled or disabled.
 	FeatureGates map[string]bool `json:"featureGates,omitempty"`
+
+	// WebhookFeatureGates is a list of experimental features that can be enabled or disabled for the webhook.
+	WebhookFeatureGates map[string]bool `json:"webhookFeatureGates,omitempty"`
+
+	// CAInjectorFeatureGates is a list of experimental features that can be enabled or disabled for the cainjector.
+	CAInjectorFeatureGates map[string]bool `json:"cainjectorFeatureGates,omitempty"`
 }
 
 // LoadBalancerControllerSpec determines the AWS LB controller configuration.

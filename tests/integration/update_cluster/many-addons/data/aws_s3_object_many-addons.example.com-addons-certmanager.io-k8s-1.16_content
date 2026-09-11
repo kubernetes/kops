@@ -14414,6 +14414,7 @@ spec:
       - args:
         - --v=2
         - --leader-election-namespace=kube-system
+        - --feature-gates=ServerSideApply=true
         env:
         - name: POD_NAMESPACE
           valueFrom:
@@ -14605,6 +14606,7 @@ spec:
         - --dynamic-serving-dns-names=cert-manager-webhook
         - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE)
         - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE).svc
+        - --feature-gates=AdditionalCertificateOutputFormats=true
         env:
         - name: POD_NAMESPACE
           valueFrom:

@@ -13248,6 +13248,9 @@ spec:
           args:
           - --v=2
           - --leader-election-namespace=kube-system
+          {{ range $key, $value := .CertManager.CAInjectorFeatureGates }}
+          - --feature-gates={{ $key }}={{ $value }}
+          {{ end }}
           ports:
           - containerPort: 9402
             name: http-metrics
@@ -13453,6 +13456,9 @@ spec:
           - --dynamic-serving-dns-names=cert-manager-webhook
           - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE)
           - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE).svc
+          {{ range $key, $value := .CertManager.WebhookFeatureGates }}
+          - --feature-gates={{ $key }}={{ $value }}
+          {{ end }}
           ports:
           - name: https
             protocol: TCP

@@ -325,6 +325,12 @@ spec:
               certManager:
                 description: CertManager determines the metrics server configuration.
                 properties:
+                  cainjectorFeatureGates:
+                    additionalProperties:
+                      type: boolean
+                    description: CAInjectorFeatureGates is a list of experimental
+                      features that can be enabled or disabled for the cainjector.
+                    type: object
                   defaultIssuer:
                     description: |-
                       defaultIssuer sets a default clusterIssuer
@@ -364,6 +370,12 @@ spec:
                     items:
                       type: string
                     type: array
+                  webhookFeatureGates:
+                    additionalProperties:
+                      type: boolean
+                    description: WebhookFeatureGates is a list of experimental features
+                      that can be enabled or disabled for the webhook.
+                    type: object
                 type: object
               channel:
                 description: The Channel we are following
