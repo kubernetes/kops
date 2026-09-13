@@ -231,6 +231,7 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 					g.Ready = append(g.Ready, cm)
 				} else {
 					g.NeedUpdate = append(g.NeedUpdate, cm)
+					fmt.Printf("InstanceGroup %s needs update: instance %s instance template is behind\n", g.HumanName, cm.ID)
 				}
 			}
 
