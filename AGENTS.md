@@ -113,6 +113,14 @@ The project follows the conventional commit message format.
 
 Contributions are welcome! Before submitting a pull request, please open an issue to discuss your proposed changes. All pull requests must be reviewed and approved by a maintainer before they can be merged.
 
+## Testing New Configurations
+
+When adding support for a new cluster configuration (a new API field, topology, networking option, or piece of cloud infrastructure), see [docs/contributing/testing_new_configurations.md](docs/contributing/testing_new_configurations.md). In short:
+
+* Prefer a golden `update cluster` integration test (`tests/integration/update_cluster/`) so the rendered Terraform is verified and reviewable; prefer this over bespoke unit tests of model builders, which it usually makes redundant.
+* Add an e2e job in [test-infra](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/build_jobs.py) when real-cloud verification is needed.
+* Add a `kops create cluster` golden test (`tests/integration/create_cluster/`) when the CLI/defaulting path itself needs coverage.
+
 ## E2E CI Failure Troubleshooting
 
 For investigating E2E CI job failures — including locating artifacts, diagnosing root causes, and finding correlations across failing jobs — see [docs/e2e-failure-troubleshooting.md](docs/e2e-failure-troubleshooting.md).
