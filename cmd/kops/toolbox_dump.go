@@ -274,6 +274,19 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			klog.Warningf("error dumping nodes: %v", err)
 		}
 
+		igList, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			klog.Warningf("error listing instance groups: %v", err)
+		} else {
+			var instanceGroups []*kops.InstanceGroup
+			for i := range igList.Items {
+				instanceGroups = append(instanceGroups, &igList.Items[i])
+			}
+			if err := dump.DumpCloudInstanceGroups(ctx, cloud, cluster, instanceGroups, nodes.Items, options.Dir); err != nil {
+				klog.Warningf("error dumping cloud instance groups: %v", err)
+			}
+		}
+
 		if kubeConfig != nil && options.K8sResources {
 			dumper, err := dump.NewResourceDumper(kubeConfig, options.Output, options.Dir)
 			if err != nil {

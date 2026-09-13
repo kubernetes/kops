@@ -36,6 +36,7 @@ type AutoScalingAPI interface {
 	DeleteWarmPool(ctx context.Context, params *autoscaling.DeleteWarmPoolInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DeleteWarmPoolOutput, error)
 	DescribeAutoScalingGroups(ctx context.Context, params *autoscaling.DescribeAutoScalingGroupsInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
 	DescribeLifecycleHooks(ctx context.Context, params *autoscaling.DescribeLifecycleHooksInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeLifecycleHooksOutput, error)
+	DescribeScalingActivities(ctx context.Context, params *autoscaling.DescribeScalingActivitiesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeScalingActivitiesOutput, error)
 	DescribeTags(ctx context.Context, params *autoscaling.DescribeTagsInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeTagsOutput, error)
 	DescribeWarmPool(ctx context.Context, params *autoscaling.DescribeWarmPoolInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DescribeWarmPoolOutput, error)
 	DetachInstances(ctx context.Context, params *autoscaling.DetachInstancesInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DetachInstancesOutput, error)

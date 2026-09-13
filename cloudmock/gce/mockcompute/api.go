@@ -173,6 +173,17 @@ func (c *MockClient) InstanceGroupManagers() gce.InstanceGroupManagerClient {
 	return c.instanceGroupManagerClient
 }
 
+// SetInstanceGroupManagerErrors installs the canned ListErrors response for one
+// managed instance group.
+func (c *MockClient) SetInstanceGroupManagerErrors(project, zone, name string, errs []*compute.InstanceManagedByIgmError) {
+	c.instanceGroupManagerClient.SetErrors(project, zone, name, errs)
+}
+
+// SetManagedInstance installs the managed instance a group reports for name.
+func (c *MockClient) SetManagedInstance(project, zone, name string, mi *compute.ManagedInstance) {
+	c.instanceGroupManagerClient.SetManagedInstance(project, zone, name, mi)
+}
+
 func (c *MockClient) TargetPools() gce.TargetPoolClient {
 	return c.targetPoolClient
 }

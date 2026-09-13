@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -1083,8 +1084,124 @@ func buildCloudInstance(i autoscalingtypes.Instance, instances map[string]*ec2ty
 	return nil
 }
 
+// asgInstanceIDRegex extracts the first EC2 instance ID (i-xxxxxxxx) found in a
+// scaling activity's StatusMessage or Description. The capture is best-effort:
+// if no ID is found, GroupFailure.Instance is left blank.
+//
+// Instance IDs are exactly 8 or 17 hex digits, and the word boundaries matter:
+// an unanchored `i-[0-9a-f]{8,17}` matches inside "eni-0abcdef1234567890",
+// which scaling activity messages routinely mention, and would report a
+// network interface as the failing instance.
+var asgInstanceIDRegex = regexp.MustCompile(`\bi-(?:[0-9a-f]{17}|[0-9a-f]{8})\b`)
+
+// maxScalingActivityPages bounds how far back getGroupFailures reads. The
+// activities are most-recent-first and identical failures are aggregated, so
+// later pages almost never contribute a distinct entry.
+const maxScalingActivityPages = 5
+
+var _ cloudinstances.GroupFailureReporter = (*awsCloudImplementation)(nil)
+
+// GetGroupFailures returns recent provisioning failures observed by the AWS
+// Auto Scaling group backing this CloudInstanceGroup. See getGroupFailures
+// for the filtering and aggregation logic.
+func (c *awsCloudImplementation) GetGroupFailures(ctx context.Context, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.GroupFailure, error) {
+	return getGroupFailures(ctx, c, group)
+}
+
+// getGroupFailures returns recent failed scaling activities for the ASG
+// backing the given group.
+//
+// Results are filtered to errors timestamped after the most recent successful
+// instance creation in the group (the LaunchTime of an existing instance). If
+// the group has no instances at all, no filter is applied so the full retention
+// window is surfaced — that is precisely the failure mode this exists to
+// diagnose. Pagination short-circuits once activities pre-date the watermark,
+// since DescribeScalingActivities returns most-recent-first.
+func getGroupFailures(ctx context.Context, c AWSCloud, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.GroupFailure, error) {
+	asg, ok := group.Raw.(*autoscalingtypes.AutoScalingGroup)
+	if !ok || asg == nil {
+		return nil, nil
+	}
+	asgName := aws.ToString(asg.AutoScalingGroupName)
+	if asgName == "" {
+		return nil, nil
+	}
+
+	watermark := cloudinstances.Watermark(group)
+
+	type key struct{ code, message string }
+	agg := map[key]*cloudinstances.GroupFailure{}
+
+	paginator := autoscaling.NewDescribeScalingActivitiesPaginator(c.Autoscaling(), &autoscaling.DescribeScalingActivitiesInput{
+		AutoScalingGroupName: aws.String(asgName),
+	})
+paginate:
+	// A group with no instances has no watermark, so the short-circuit below
+	// never fires and pagination would otherwise walk the ASG's full six-week
+	// activity retention on every validation poll.
+	for pages := 0; paginator.HasMorePages() && pages < maxScalingActivityPages; pages++ {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("describing scaling activities for ASG %q: %w", asgName, err)
+		}
+		for _, a := range page.Activities {
+			if a.StatusCode != autoscalingtypes.ScalingActivityStatusCodeFailed && a.StatusCode != autoscalingtypes.ScalingActivityStatusCodeCancelled {
+				continue
+			}
+			var ts time.Time
+			if a.StartTime != nil {
+				ts = *a.StartTime
+			}
+			if !watermark.IsZero() && !ts.IsZero() && ts.Before(watermark) {
+				// Activities are returned most-recent-first; everything after
+				// this is older, so stop paginating.
+				break paginate
+			}
+			message := aws.ToString(a.StatusMessage)
+			if message == "" {
+				message = aws.ToString(a.Cause)
+			}
+			k := key{string(a.StatusCode), message}
+			e, ok := agg[k]
+			if !ok {
+				instance := asgInstanceIDRegex.FindString(message)
+				if instance == "" {
+					instance = asgInstanceIDRegex.FindString(aws.ToString(a.Description))
+				}
+				e = &cloudinstances.GroupFailure{
+					Code:      string(a.StatusCode),
+					Message:   message,
+					Instance:  instance,
+					FirstSeen: ts,
+					LastSeen:  ts,
+				}
+				agg[k] = e
+			}
+			e.Count++
+			if !ts.IsZero() {
+				if e.FirstSeen.IsZero() || ts.Before(e.FirstSeen) {
+					e.FirstSeen = ts
+				}
+				if ts.After(e.LastSeen) {
+					e.LastSeen = ts
+				}
+			}
+		}
+	}
+
+	out := make([]cloudinstances.GroupFailure, 0, len(agg))
+	for _, e := range agg {
+		out = append(out, *e)
+	}
+	cloudinstances.SortFailures(out)
+	return out, nil
+}
+
 func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2types.Instance) {
 	cm.MachineType = string(instance.InstanceType)
+	if instance.LaunchTime != nil {
+		cm.CreationTimestamp = *instance.LaunchTime
+	}
 	for _, tag := range instance.Tags {
 		key := aws.ToString(tag.Key)
 		if !strings.HasPrefix(key, TagNameRolePrefix) {
