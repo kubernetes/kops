@@ -70,6 +70,18 @@ func TestParseTaint(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name:    "invalid taint spec (unknown effect)",
+			taint:   "key1:PreferToSchedule",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "invalid taint spec (empty effect)",
+			taint:   "key1:",
+			want:    nil,
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range grid {
