@@ -69,7 +69,7 @@ func run(ctx context.Context) error {
 		WebsiteURL:          "https://kops.sigs.k8s.io/",
 		RepoURL:             "https://github.com/kubernetes/kops",
 		DocumentationURL:    "https://kops.sigs.k8s.io/",
-		ProductLogoURL:      "https://github.com/kubernetes/kops/blob/master/docs/img/logo.png",
+		ProductLogoURL:      "https://raw.githubusercontent.com/kubernetes/kops/refs/heads/master/docs/img/logo.svg",
 		Description:         "Kubernetes Operations (kOps) - Production Grade k8s Installation, Upgrades and Management",
 		ContactEmailAddress: "sig-cluster-lifecycle@kubernetes.io",
 	}

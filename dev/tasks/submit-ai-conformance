@@ -1,0 +1,324 @@
+#!/usr/bin/env python3
+
+"""Submit kOps AI conformance results to cncf/k8s-ai-conformance.
+
+Usage:
+  dev/tasks/submit-ai-conformance [--submit] <artifacts-url>
+
+By default, runs in dry-run mode. Pass --submit to actually create the PR.
+
+Examples:
+  dev/tasks/submit-ai-conformance https://gcsweb.k8s.io/gcs/kubernetes-ci-logs/logs/e2e-kops-ai-conformance/2034963660111089664/artifacts/
+  dev/tasks/submit-ai-conformance --submit https://gcsweb.k8s.io/gcs/kubernetes-ci-logs/logs/e2e-kops-ai-conformance/2034963660111089664/artifacts/
+"""
+
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import urllib.request
+
+import yaml
+
+
+JOB_NAME = "e2e-kops-ai-conformance"
+GCS_BUCKET = "kubernetes-ci-logs"
+CONFORMANCE_REPO = "cncf/k8s-ai-conformance"
+KOPS_DIR_NAME = "kops"
+
+
+def run(cmd, **kwargs):
+    """Run a command, printing it first."""
+    print(f"+ {' '.join(cmd)}")
+    return subprocess.run(cmd, check=True, **kwargs)
+
+
+def capture(cmd, **kwargs):
+    """Run a command and return its stdout."""
+    result = subprocess.run(cmd, capture_output=True, text=True, **kwargs)
+    if result.returncode != 0:
+        print(result.stdout, end="", file=sys.stderr)
+        print(result.stderr, end="", file=sys.stderr)
+        result.check_returncode()
+    return result.stdout.strip()
+
+
+def gsutil_cp(src, dst):
+    run(["gsutil", "-m", "cp", "-r", src, dst])
+
+
+def parse_build_id(input_str):
+    """Extract the build ID from a URL or raw ID."""
+    if re.fullmatch(r"\d+", input_str):
+        return input_str
+    m = re.search(rf"logs/{JOB_NAME}/(\d+)", input_str)
+    if m:
+        return m.group(1)
+    print(f"ERROR: Cannot parse build ID from: {input_str}", file=sys.stderr)
+    print("Provide either a build ID (e.g. 2034963660111089664) or a GCS URL.", file=sys.stderr)
+    sys.exit(1)
+
+
+def download_artifacts(build_id, tmpdir):
+    """Download ai-conformance.yaml and test evidence from GCS."""
+    gcs_prefix = f"gs://{GCS_BUCKET}/logs/{JOB_NAME}/{build_id}/artifacts"
+    print(f"Downloading artifacts from {gcs_prefix}...")
+    gsutil_cp(f"{gcs_prefix}/ai-conformance.yaml", f"{tmpdir}/ai-conformance.yaml")
+
+    # List test evidence files and download only the .md ones.
+    listing = capture(["gsutil", "ls", "-r", f"{gcs_prefix}/tests/"])
+    for line in listing.splitlines():
+        line = line.strip()
+        if not line.endswith("/output.md"):
+            continue
+        # e.g. gs://.../artifacts/tests/TestFoo/output.md -> tests/TestFoo/output.md
+        rel = line.split("/artifacts/", 1)[1]
+        dest = os.path.join(tmpdir, rel)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        gsutil_cp(line, dest)
+
+
+def download_template(kube_minor, tmpdir):
+    """Download the official conformance template for this k8s version."""
+    url = f"https://raw.githubusercontent.com/{CONFORMANCE_REPO}/main/docs/AIConformance-{kube_minor}.yaml"
+    print(f"Downloading conformance template from {url}...")
+    dest = os.path.join(tmpdir, "template.yaml")
+    urllib.request.urlretrieve(url, dest)
+    return dest
+
+
+def load_yaml(path):
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+def build_product_yaml(template, results):
+    """Merge our test results into the conformance template."""
+    # Build a lookup of our results by (category, id).
+    results_lookup = {}
+    for category, items in results.get("spec", {}).items():
+        for item in items:
+            results_lookup[(category, item["id"])] = item
+
+    # Merge metadata: start with template, overlay our results.
+    metadata = template["metadata"].copy()
+    metadata.update(results["metadata"])
+
+    # Fill in defaults for kOps.
+    if not metadata.get("contactEmailAddress") or metadata["contactEmailAddress"].startswith("["):
+        metadata["contactEmailAddress"] = "sig-cluster-lifecycle@kubernetes.io"
+    if not metadata.get("k8sConformanceUrl") or metadata["k8sConformanceUrl"].startswith("["):
+        kube_minor = metadata["kubernetesVersion"].lstrip("v").rsplit(".", 1)[0]
+        metadata["k8sConformanceUrl"] = f"https://github.com/cncf/k8s-conformance/tree/master/v{kube_minor}/kops"
+
+    # Build merged spec: template structure with our results filled in.
+    spec = {}
+    for category, template_items in template.get("spec", {}).items():
+        spec[category] = []
+        for tmpl_item in template_items:
+            merged = {
+                "id": tmpl_item["id"],
+                "description": tmpl_item["description"],
+                "level": tmpl_item["level"],
+            }
+
+            result = results_lookup.get((category, tmpl_item["id"]))
+            if result:
+                merged["status"] = result.get("status", "")
+                # Convert evidence paths: prefer .md over .html for GitHub rendering.
+                evidence = []
+                for e in result.get("evidence", []):
+                    if e.startswith("tests/"):
+                        evidence.append(e.replace("/output.html", "/output.md"))
+                    else:
+                        evidence.append(e)
+                merged["evidence"] = evidence
+                merged["notes"] = result.get("notes", "")
+            else:
+                # Not in our results.
+                if tmpl_item["level"] == "SHOULD":
+                    merged["status"] = "N/A"
+                    merged["evidence"] = []
+                    merged["notes"] = "Not applicable for kOps at this time."
+                else:
+                    merged["status"] = ""
+                    merged["evidence"] = []
+                    merged["notes"] = ""
+
+            spec[category].append(merged)
+
+    return {"metadata": metadata, "spec": spec}
+
+
+def write_product_yaml(data, path):
+    """Write PRODUCT.yaml with the standard header."""
+    class Dumper(yaml.Dumper):
+        pass
+
+    def str_representer(dumper, s):
+        if "\n" in s:
+            return dumper.represent_scalar("tag:yaml.org,2002:str", s, style="|")
+        return dumper.represent_scalar("tag:yaml.org,2002:str", s)
+
+    Dumper.add_representer(str, str_representer)
+
+    header = (
+        "# Kubernetes AI Conformance Checklist\n"
+        "# Notes: This checklist is based on the Kubernetes AI Conformance document.\n"
+        "# Participants should fill in the 'status', 'evidence', and 'notes' fields for each requirement.\n\n"
+    )
+    with open(path, "w") as f:
+        f.write(header)
+        yaml.dump(data, f, Dumper=Dumper, default_flow_style=False, sort_keys=False, width=200)
+
+    print(f"Wrote {path}")
+
+
+def copy_evidence(tmpdir, submit_dir):
+    """Copy .md evidence files into the submission directory."""
+    tests_src = os.path.join(tmpdir, "tests")
+    if not os.path.isdir(tests_src):
+        return
+    for root, _dirs, files in os.walk(tests_src):
+        for fname in files:
+            if fname == "output.md":
+                src = os.path.join(root, fname)
+                rel = os.path.relpath(src, tmpdir)  # e.g. tests/TestFoo/output.md
+                dst = os.path.join(submit_dir, rel)
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(src, dst)
+
+
+def create_pr(tmpdir, submit_dir, kube_minor, kube_version, platform_version, build_id):
+    """Clone the conformance repo, commit the submission, and open a PR."""
+    github_user = os.environ.get("GITHUB_USER", os.environ.get("USER", ""))
+    if not github_user:
+        print("ERROR: Set GITHUB_USER or USER environment variable.", file=sys.stderr)
+        sys.exit(1)
+
+    clone_dir = os.path.join(tmpdir, "k8s-ai-conformance")
+
+    # Ensure we have a fork.
+    try:
+        capture(["gh", "repo", "view", f"{github_user}/k8s-ai-conformance"])
+    except subprocess.CalledProcessError:
+        print(f"Forking {CONFORMANCE_REPO}...")
+        run(["gh", "repo", "fork", CONFORMANCE_REPO, "--clone=false"])
+
+    run(["gh", "repo", "clone", f"{github_user}/k8s-ai-conformance", clone_dir, "--", "--depth=1"])
+
+    branch = f"kops-v{kube_minor}"
+    run(["git", "remote", "add", "cncf", f"https://github.com/{CONFORMANCE_REPO}.git"], cwd=clone_dir)
+    run(["git", "fetch", "cncf", "main", "--depth=1"], cwd=clone_dir)
+    run(["git", "checkout", "-b", branch, "cncf/main"], cwd=clone_dir)
+
+    # Copy submission into the clone.
+    dest = os.path.join(clone_dir, f"v{kube_minor}", KOPS_DIR_NAME)
+    if os.path.exists(dest):
+        shutil.rmtree(dest)
+    shutil.copytree(submit_dir, dest)
+
+    # Commit.
+    run(["git", "add", f"v{kube_minor}/{KOPS_DIR_NAME}/"], cwd=clone_dir)
+    commit_msg = (
+        f"Add kOps AI Conformance results for v{kube_minor}\n\n"
+        f"kOps version: {platform_version}\n"
+        f"Kubernetes version: {kube_version}\n"
+        f"Build: https://prow.k8s.io/view/gs/{GCS_BUCKET}/logs/{JOB_NAME}/{build_id}\n"
+    )
+    run(["git", "commit", "-s", "-m", commit_msg], cwd=clone_dir)
+
+    # Push.
+    print(f"\nPushing to {github_user}/k8s-ai-conformance...")
+    run(["git", "push", "-u", "origin", branch, "--force"], cwd=clone_dir)
+
+    # Create PR.
+    print("\nCreating pull request...")
+    pr_body = (
+        f"## Conformance results for kOps v{kube_minor}\n\n"
+        f"- **Platform**: kOps\n"
+        f"- **Platform Version**: {platform_version}\n"
+        f"- **Kubernetes Version**: {kube_version}\n"
+        f"- **Vendor**: kOps Project\n\n"
+        f"### Evidence\n\n"
+        f"Test evidence is included directly in this PR as markdown files under "
+        f"`v{kube_minor}/{KOPS_DIR_NAME}/tests/`.\n\n"
+        f"The tests were run automatically by the "
+        f"[e2e-kops-ai-conformance](https://prow.k8s.io/view/gs/{GCS_BUCKET}/logs/{JOB_NAME}/{build_id}) Prow job.\n\n"
+        f"Full artifacts: https://gcsweb.k8s.io/gcs/{GCS_BUCKET}/logs/{JOB_NAME}/{build_id}/artifacts/\n"
+    )
+    pr_url = capture([
+        "gh", "pr", "create",
+        "--repo", CONFORMANCE_REPO,
+        "--head", f"{github_user}:{branch}",
+        "--title", f"Add kOps AI Conformance results for v{kube_minor}",
+        "--body", pr_body,
+    ], cwd=clone_dir)
+
+    print(f"\nPull request created: {pr_url}")
+
+
+def main():
+    args = sys.argv[1:]
+    dry_run = True
+    if "--submit" in args:
+        dry_run = False
+        args.remove("--submit")
+
+    if len(args) < 1:
+        print(__doc__, file=sys.stderr)
+        sys.exit(1)
+
+    build_id = parse_build_id(args[0])
+    print(f"Build ID: {build_id}")
+    if dry_run:
+        print("DRY RUN: will build submission locally but not create a PR")
+
+    tmpdir = tempfile.mkdtemp()
+    try:
+        # Download artifacts.
+        download_artifacts(build_id, tmpdir)
+
+        # Load our results.
+        results = load_yaml(os.path.join(tmpdir, "ai-conformance.yaml"))
+        kube_version = results["metadata"]["kubernetesVersion"]
+        platform_version = results["metadata"]["platformVersion"]
+        kube_minor = re.sub(r"^v", "", kube_version).rsplit(".", 1)[0]
+        print(f"Kubernetes version: {kube_version} (minor: {kube_minor})")
+        print(f"Platform version: {platform_version}")
+
+        # Download and merge with template.
+        template_path = download_template(kube_minor, tmpdir)
+        template = load_yaml(template_path)
+        product = build_product_yaml(template, results)
+
+        # Prepare submission directory.
+        submit_dir = os.path.join(tmpdir, "submission")
+        os.makedirs(submit_dir)
+        write_product_yaml(product, os.path.join(submit_dir, "PRODUCT.yaml"))
+        copy_evidence(tmpdir, submit_dir)
+
+        # Show what we're submitting.
+        print("\nSubmission contents:")
+        for root, _dirs, files in os.walk(submit_dir):
+            for f in sorted(files):
+                print(f"  {os.path.relpath(os.path.join(root, f), submit_dir)}")
+
+        if dry_run:
+            print(f"\nDry run output is in {submit_dir}")
+            print("PRODUCT.yaml:")
+            with open(os.path.join(submit_dir, "PRODUCT.yaml")) as f:
+                print(f.read())
+            return
+
+        # Create the PR.
+        create_pr(tmpdir, submit_dir, kube_minor, kube_version, platform_version, build_id)
+    finally:
+        if not dry_run:
+            shutil.rmtree(tmpdir)
+
+
+if __name__ == "__main__":
+    main()
