@@ -45,7 +45,7 @@ type BootstrapClientBuilder struct {
 }
 
 func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if b.IsMaster {
+	if b.canSignCertificates() {
 		return nil
 	}
 

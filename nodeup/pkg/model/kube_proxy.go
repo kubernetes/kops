@@ -45,6 +45,12 @@ func (b *KubeProxyBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
+	role := b.BootConfig.InstanceGroupRole
+	if role.HasEtcd() || role.HasKubeControllerManager() || role.HasScheduler() {
+		klog.V(2).Infof("Kube-proxy is disabled, role %s does not need kube-proxy.", role)
+		return nil
+	}
+
 	{
 		pod, err := b.buildPod()
 		if err != nil {

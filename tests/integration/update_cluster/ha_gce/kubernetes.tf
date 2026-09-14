@@ -352,8 +352,8 @@ resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
   disabled    = false
   name        = "master-to-master-ha-gce-example-com"
   network     = google_compute_network.ha-gce-example-com.name
-  source_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
-  target_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
+  source_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-etcd", "ha-gce-example-com-k8s-io-role-scheduler", "ha-gce-example-com-k8s-io-role-kubecontrollermanager", "ha-gce-example-com-k8s-io-role-master"]
+  target_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-etcd", "ha-gce-example-com-k8s-io-role-scheduler", "ha-gce-example-com-k8s-io-role-kubecontrollermanager", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
@@ -493,7 +493,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ha-gce-example-com" {
   name          = "ssh-external-to-master-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-etcd", "ha-gce-example-com-k8s-io-role-scheduler", "ha-gce-example-com-k8s-io-role-kubecontrollermanager", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-ipv6-ha-gce-example-com" {
@@ -505,7 +505,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-ha-gce-example-c
   name          = "ssh-external-to-master-ipv6-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-etcd", "ha-gce-example-com-k8s-io-role-scheduler", "ha-gce-example-com-k8s-io-role-kubecontrollermanager", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ha-gce-example-com" {

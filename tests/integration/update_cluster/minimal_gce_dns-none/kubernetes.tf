@@ -265,7 +265,7 @@ resource "google_compute_firewall" "lb-health-checks-minimal-gce-example-com" {
   name          = "lb-health-checks-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
   source_ranges = ["35.191.0.0/16", "130.211.0.0/22", "209.85.204.0/22", "209.85.152.0/22"]
-  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane"]
+  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-etcd"]
 }
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-example-com" {
@@ -290,8 +290,8 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-example-com" {
   disabled    = false
   name        = "master-to-master-minimal-gce-example-com"
   network     = google_compute_network.minimal-gce-example-com.name
-  source_tags = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-master"]
-  target_tags = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-master"]
+  source_tags = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-etcd", "minimal-gce-example-com-k8s-io-role-scheduler", "minimal-gce-example-com-k8s-io-role-kubecontrollermanager", "minimal-gce-example-com-k8s-io-role-master"]
+  target_tags = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-etcd", "minimal-gce-example-com-k8s-io-role-scheduler", "minimal-gce-example-com-k8s-io-role-kubecontrollermanager", "minimal-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-minimal-gce-example-com" {
@@ -431,7 +431,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-exam
   name          = "ssh-external-to-master-ipv6-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-etcd", "minimal-gce-example-com-k8s-io-role-scheduler", "minimal-gce-example-com-k8s-io-role-kubecontrollermanager", "minimal-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-example-com" {
@@ -443,7 +443,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-example-c
   name          = "ssh-external-to-master-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-example-com-k8s-io-role-control-plane", "minimal-gce-example-com-k8s-io-role-etcd", "minimal-gce-example-com-k8s-io-role-scheduler", "minimal-gce-example-com-k8s-io-role-kubecontrollermanager", "minimal-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-example-com" {

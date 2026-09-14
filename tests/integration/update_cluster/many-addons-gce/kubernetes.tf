@@ -272,8 +272,8 @@ resource "google_compute_firewall" "master-to-master-minimal-example-com" {
   disabled    = false
   name        = "master-to-master-minimal-example-com"
   network     = google_compute_network.minimal-example-com.name
-  source_tags = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-master"]
-  target_tags = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-master"]
+  source_tags = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-etcd", "minimal-example-com-k8s-io-role-scheduler", "minimal-example-com-k8s-io-role-kubecontrollermanager", "minimal-example-com-k8s-io-role-master"]
+  target_tags = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-etcd", "minimal-example-com-k8s-io-role-scheduler", "minimal-example-com-k8s-io-role-kubecontrollermanager", "minimal-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-minimal-example-com" {
@@ -413,7 +413,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-example-
   name          = "ssh-external-to-master-ipv6-minimal-example-com"
   network       = google_compute_network.minimal-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-etcd", "minimal-example-com-k8s-io-role-scheduler", "minimal-example-com-k8s-io-role-kubecontrollermanager", "minimal-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-minimal-example-com" {
@@ -425,7 +425,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-example-com" 
   name          = "ssh-external-to-master-minimal-example-com"
   network       = google_compute_network.minimal-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-example-com-k8s-io-role-control-plane", "minimal-example-com-k8s-io-role-etcd", "minimal-example-com-k8s-io-role-scheduler", "minimal-example-com-k8s-io-role-kubecontrollermanager", "minimal-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-example-com" {
