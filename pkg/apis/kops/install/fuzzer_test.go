@@ -134,15 +134,6 @@ func v1alpha2FuzzerFuncs(_ runtimeserializer.CodecFactory) []any {
 			if spec.Authentication != nil && spec.Authentication.OIDC != nil && spec.KubeAPIServer == nil {
 				spec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 			}
-
-			// v1alpha2 has no field for the provider binaries location
-			// (kubernetes/kops#18740).
-			if spec.CloudProvider.AWS != nil {
-				spec.CloudProvider.AWS.BinariesLocation = nil
-			}
-			if spec.CloudProvider.GCE != nil {
-				spec.CloudProvider.GCE.BinariesLocation = nil
-			}
 		},
 		func(spec *kops.KubeAPIServerConfig, c randfill.Continue) {
 			c.FillNoCustom(spec)
