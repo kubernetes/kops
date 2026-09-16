@@ -37,6 +37,7 @@ const (
 	RoleLabelKopsCCM        = "node-role.kops.k8s.io/cloud-controller-manager"
 	RoleLabelKopsChannel    = "node-role.kops.k8s.io/kops-channel"
 	RoleLabelKopsController = "node-role.kops.k8s.io/kops-controller"
+	RoleLabelCertManager    = "node-role.kops.k8s.io/cert-manager"
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )

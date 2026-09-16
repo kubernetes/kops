@@ -126,7 +126,10 @@ func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 	// For those clusters we should label the cluster with the control plane label
 	// For Split Control Plane clusters we run kops-channel/kops-controller on the APIServer node.
 	// For those clusters we should label the cluster with the appropriate specific KOPS labels.
-	nodeLabel := nodelabels.RoleLabelKopsCCM + "," + nodelabels.RoleLabelKopsChannel + "," + nodelabels.RoleLabelKopsController
+	nodeLabel := nodelabels.RoleLabelKopsCCM + "," +
+		nodelabels.RoleLabelKopsChannel + "," +
+		nodelabels.RoleLabelKopsController + "," +
+		nodelabels.RoleLabelCertManager
 	for _, ig := range b.AllInstanceGroups {
 		if ig.IsControlPlane() {
 			nodeLabel = nodelabels.RoleLabelControlPlane20
