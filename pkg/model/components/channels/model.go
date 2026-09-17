@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	kopsroot "k8s.io/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -130,6 +131,9 @@ func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 		nodelabels.RoleLabelKopsChannel + "," +
 		nodelabels.RoleLabelKopsController + "," +
 		nodelabels.RoleLabelCertManager
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
+		nodeLabel += "," + nodelabels.RoleLabelCAPIManager
+	}
 	for _, ig := range b.AllInstanceGroups {
 		if ig.IsControlPlane() {
 			nodeLabel = nodelabels.RoleLabelControlPlane20
