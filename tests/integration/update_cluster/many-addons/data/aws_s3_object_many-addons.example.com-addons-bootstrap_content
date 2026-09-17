@@ -48,7 +48,7 @@ spec:
       k8s-app: metrics-server
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: 5a9e96bc8f86441558134f498eb30fca8d3568efe33e7a941a1dfc722e111599
+    manifestHash: a0419480e54d7023fb596839c91000a6290a5b2ab31e046a1585c25c13bbb2d3
     name: certmanager.io
     prune:
       kinds:

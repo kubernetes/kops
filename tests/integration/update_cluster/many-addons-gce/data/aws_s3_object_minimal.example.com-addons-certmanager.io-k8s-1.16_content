@@ -14405,6 +14405,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
+              - key: node-role.kops.k8s.io/cert-manager
+                operator: Exists
+            - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
             - matchExpressions:
@@ -14445,6 +14448,8 @@ spec:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
       - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/api-server
         operator: Exists
 
 ---
@@ -14487,6 +14492,9 @@ spec:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kops.k8s.io/cert-manager
+                operator: Exists
             - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
@@ -14546,6 +14554,8 @@ spec:
         operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
+      - key: node-role.kubernetes.io/api-server
+        operator: Exists
 
 ---
 
@@ -14587,6 +14597,9 @@ spec:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kops.k8s.io/cert-manager
+                operator: Exists
             - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
@@ -14659,6 +14672,8 @@ spec:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
       - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/api-server
         operator: Exists
 
 ---
