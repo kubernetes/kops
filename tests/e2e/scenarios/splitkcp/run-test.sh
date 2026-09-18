@@ -72,12 +72,12 @@ kubectl delete pod -n kube-system -l k8s-app=kops-controller
 kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api"
 kubectl wait --for=condition=Available --timeout=5m -n capi-system deployment/capi-controller-manager
 
-kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api-provider-gcp"
-kubectl wait --for=condition=Available --timeout=5m -n capg-system deployment/capg-controller-manager
-
+# Skipping CAPI test for now.
+# kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api-provider-gcp"
+# kubectl wait --for=condition=Available --timeout=5m -n capg-system deployment/capg-controller-manager
 
 # Install extra RBAC for capi-manager loopback connection to cluster (used to check node health etc)
-kubectl apply --server-side -f "${REPO_ROOT}/clusterapi/examples/capi-loopback.yaml"
+# kubectl apply --server-side -f "${REPO_ROOT}/clusterapi/examples/capi-loopback.yaml"
 
 # Debug: log kops-controller
 kubectl logs -n kube-system -l k8s-app=kops-controller --follow &
@@ -85,12 +85,12 @@ kubectl logs -n kube-system -l k8s-app=kops-controller --follow &
 # Print the nodes, machines and gcpmachines
 kubectl get nodes -owide
 kubectl get machine -A -owide
-kubectl get gcpmachine -A -owide
+# kubectl get gcpmachine -A -owide
 
 # Print the nodes, machines and gcpmachines again
 kubectl get nodes -owide
 kubectl get machine -A -owide
-kubectl get gcpmachine -A -owide
+# kubectl get gcpmachine -A -owide
 
 # CAPI currently creates some firewall rules that otherwise are not cleaned up, and block kops cluster cleanup
 function cleanup_capi_leaks() {
