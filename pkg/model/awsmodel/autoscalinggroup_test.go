@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"testing"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -55,6 +57,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 		ig.Spec.RootVolume = &kops.InstanceRootVolumeSpec{}
 	}
 	ig.Spec.RootVolume.Optimization = new(true)
+	ig.Spec.RootVolume.Type = new("io2")
 
 	k := [][]byte{}
 	k = append(k, []byte(sshPublicKeyEntry))
@@ -120,6 +123,9 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 
 	if *lc.RootVolumeOptimization == false {
 		t.Fatalf("RootVolumeOptimization was expected to be true, but was false")
+	}
+	if got, want := lc.RootVolumeType, ec2types.VolumeTypeIo2; got != want {
+		t.Fatalf("RootVolumeType = %q, want %q", got, want)
 	}
 }
 

@@ -101,6 +101,18 @@ func TestSetInstanceGroupsFields(t *testing.T) {
 				},
 			},
 		},
+		{
+			Fields: []string{
+				"spec.rootVolume.type=io2",
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Type: new("io2"),
+					},
+				},
+			},
+		},
 	}
 
 	for _, g := range grid {

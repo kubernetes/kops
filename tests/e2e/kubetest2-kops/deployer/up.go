@@ -340,7 +340,7 @@ func (d *deployer) setInstanceGroupOverrides() error {
 		return err
 	}
 	for _, ig := range igs {
-		if string(ig.Spec.Role) == "Master" && len(d.ControlPlaneIGOverrides) > 0 {
+		if string(ig.Spec.Role) == "ControlPlane" && len(d.ControlPlaneIGOverrides) > 0 {
 			if err := d.setIGOverrides(ig.ObjectMeta.Name, d.ControlPlaneIGOverrides); err != nil {
 				return err
 			}

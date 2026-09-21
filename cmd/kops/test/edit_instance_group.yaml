@@ -12,6 +12,7 @@ spec:
   role: Node
   rollingUpdate:
     maxUnavailable: 50%
+  rootVolumeType: io2
   subnets:
   - subnet-us-test-1a
   taints:

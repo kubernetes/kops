@@ -66,7 +66,7 @@ func TestEditInstanceGroup(t *testing.T) {
 		editOptions := &EditInstanceGroupOptions{
 			ClusterName: clusterName,
 			GroupName:   "nodes",
-			Sets:        []string{"spec.maxSize=10", "spec.rollingUpdate.maxUnavailable=50%"},
+			Sets:        []string{"spec.maxSize=10", "spec.rollingUpdate.maxUnavailable=50%", "spec.rootVolume.type=io2"},
 		}
 		err := RunEditInstanceGroup(ctx, factory, &stdout, editOptions)
 		if err != nil {
@@ -78,6 +78,10 @@ func TestEditInstanceGroup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not get instance group: %v", err)
 	}
+	if storedIG.Spec.RootVolume == nil || storedIG.Spec.RootVolume.Type == nil || *storedIG.Spec.RootVolume.Type != "io2" {
+		t.Fatalf("expected rootVolume.type to be io2, got %#v", storedIG.Spec.RootVolume)
+	}
+
 	storedIG.CreationTimestamp = MagicTimestamp
 	actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(storedIG, schema.GroupVersion{Group: "kops.k8s.io", Version: "v1alpha2"})
 	if err != nil {

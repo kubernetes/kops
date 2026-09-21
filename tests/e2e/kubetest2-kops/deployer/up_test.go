@@ -17,9 +17,13 @@ limitations under the License.
 package deployer
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"testing"
+
+	"k8s.io/kops/tests/e2e/kubetest2-kops/builder"
 )
 
 func TestAppendIfUnset(t *testing.T) {
@@ -219,5 +223,65 @@ func TestProwJobLabel(t *testing.T) {
 				t.Errorf("label mismatch: got %q, want %q", actual, tc.expected)
 			}
 		})
+	}
+}
+
+func TestSetInstanceGroupOverridesControlPlane(t *testing.T) {
+	dir := t.TempDir()
+
+	kopsScript := filepath.Join(dir, "kops")
+	argsFile := filepath.Join(dir, "args")
+
+	script := `#!/bin/sh
+if [ "$1" = "get" ] && [ "$2" = "instancegroups" ]; then
+  cat <<'EOF'
+[
+  {
+    "metadata": {
+      "name": "control-plane-us-east-2a.masters.test.k8s.local"
+    },
+    "spec": {
+      "role": "ControlPlane"
+    }
+  }
+]
+EOF
+  exit 0
+fi
+
+if [ "$1" = "edit" ] && [ "$2" = "instancegroup" ]; then
+  printf '%s\n' "$@" > "$KOPS_TEST_ARGS_FILE"
+  exit 0
+fi
+
+echo "unexpected kops invocation: $@" >&2
+exit 1
+`
+
+	if err := os.WriteFile(kopsScript, []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	d := &deployer{
+		BuildOptions:            &builder.BuildOptions{BuildKubernetes: false},
+		KopsBinaryPath:          kopsScript,
+		ClusterName:             "test.k8s.local",
+		ControlPlaneIGOverrides: []string{"spec.rootVolume.type=io2"},
+		Env:                     []string{"KOPS_TEST_ARGS_FILE=" + argsFile},
+		stateStoreName:          "s3://test-state-store",
+	}
+
+	if err := d.setInstanceGroupOverrides(); err != nil {
+		t.Fatalf("setInstanceGroupOverrides() failed: %v", err)
+	}
+
+	args, err := os.ReadFile(argsFile)
+	if err != nil {
+		t.Fatalf("failed to read recorded kops arguments: %v", err)
+	}
+
+	want := "edit\ninstancegroup\n--name\ntest.k8s.local\ncontrol-plane-us-east-2a.masters.test.k8s.local\n--set\nspec.rootVolume.type=io2\n"
+	if got := string(args); got != want {
+		t.Errorf("unexpected kops edit arguments:\n%s", got)
 	}
 }
