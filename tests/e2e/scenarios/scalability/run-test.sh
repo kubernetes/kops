@@ -17,11 +17,13 @@
 set -e
 set -x
 
-make test-e2e-install
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  make test-e2e-install
+fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 if [[ -z "${K8S_VERSION:-}" ]]; then
-  K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
+  K8S_VERSION=https://dl.k8s.io/ci/latest.txt
 fi
 
 # Default Scale Scenario to performance
@@ -122,8 +124,7 @@ create_args+=("--set spec.kubeAPIServer.compactionInterval=150s")
 
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
-# this is required for kindnet to use nftables
-create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-iptables}")
+create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-nftables}")
 # this is required for prometheus to scrape kube-proxy metrics endpoint
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 # bump coredns memory on large clusters
@@ -260,13 +261,12 @@ if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
     --create-args="${create_args[*]}" \
     --test=kops \
     -- \
-    --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+    --test-package-url=https://dl.k8s.io \
     --test-package-dir=ci \
     --test-package-marker=latest.txt \
-    --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]\[KubeUp\]" \
+    --skip-regex="${SKIP_REGEX-\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]}" \
     --parallel=25
 else
-  rc=0
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
     --kubernetes-version="${K8S_VERSION}" \
@@ -276,13 +276,5 @@ else
     --provider="${CLOUD_PROVIDER}" \
     --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
     --kube-config="${HOME}/.kube/config" \
-    "${CLUSTERLOADER2_ARGS[@]}" || rc=$?
-
-  # Add the variant after kubetest2, which would otherwise overwrite metadata.json.
-  if [[ -n "${ARTIFACTS:-}" ]]; then
-    if jq --arg v "${EXPERIMENT_VARIANT:-base}" '. + {variant:$v}' "${ARTIFACTS}/metadata.json" >"${ARTIFACTS}/metadata.json.tmp"; then
-      mv "${ARTIFACTS}/metadata.json.tmp" "${ARTIFACTS}/metadata.json" || true
-    fi
-  fi
-  exit $rc
+    "${CLUSTERLOADER2_ARGS[@]}"
 fi
