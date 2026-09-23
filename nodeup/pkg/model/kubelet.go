@@ -642,8 +642,11 @@ func (b *KubeletBuilder) addECRCredentialProvider(c *fi.NodeupModelBuilderContex
 		// Build the list of container registry globs to match
 		registryList := []string{
 			"*.dkr.ecr.*.amazonaws.com",
+			"*.dkr-ecr.*.on.aws",
 			"*.dkr.ecr.*.amazonaws.com.cn",
+			"*.dkr-ecr.*.on.amazonwebservices.com.cn",
 			"*.dkr.ecr-fips.*.amazonaws.com",
+			"*.dkr-ecr-fips.*.on.aws",
 			"*.dkr.ecr.us-iso-east-1.c2s.ic.gov",
 		}
 
