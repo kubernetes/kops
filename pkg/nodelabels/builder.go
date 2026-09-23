@@ -37,6 +37,8 @@ const (
 	RoleLabelKopsCCM        = "node-role.kops.k8s.io/cloud-controller-manager"
 	RoleLabelKopsChannel    = "node-role.kops.k8s.io/kops-channel"
 	RoleLabelKopsController = "node-role.kops.k8s.io/kops-controller"
+	RoleLabelCertManager    = "node-role.kops.k8s.io/cert-manager"
+	RoleLabelCAPIManager    = "node-role.kops.k8s.io/capi-manager"
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
@@ -45,24 +47,33 @@ const (
 // This moved from the kubelet to a central controller in kubernetes 1.16
 func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (map[string]string, error) {
 	isControlPlane := false
-	isAPIServer := false
-	isNode := false
+	isAPIServerOnly := false
+	isNodeOnly := false
+	isEtcdOnly := false
+	isSchedulerOnly := false
+	isKubeControllerManagerOnly := false
 	switch {
 	case instanceGroup.Spec.Role.HasControlPlane():
 		isControlPlane = true
 	case instanceGroup.Spec.Role.HasAPIServer():
-		isAPIServer = true
+		isAPIServerOnly = true
 	case instanceGroup.Spec.Role.HasNode():
-		isNode = true
+		isNodeOnly = true
 	case instanceGroup.Spec.Role.HasBastion():
 		// no labels to add
+	case instanceGroup.Spec.Role.HasEtcd():
+		isEtcdOnly = true
+	case instanceGroup.Spec.Role.HasScheduler():
+		isSchedulerOnly = true
+	case instanceGroup.Spec.Role.HasKubeControllerManager():
+		isKubeControllerManagerOnly = true
 	default:
 		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)
 	}
 
 	// Merge KubeletConfig for NodeLabels
 	c := &api.KubeletConfigSpec{}
-	if isControlPlane {
+	if instanceGroup.Spec.Role.IsControlPlaneType() {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.ControlPlaneKubelet)
 	} else {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.Kubelet)
@@ -74,7 +85,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 
 	nodeLabels := c.NodeLabels
 
-	if isAPIServer || isControlPlane {
+	if isAPIServerOnly || isControlPlane {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
@@ -82,16 +93,38 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// We keep the featureflag as a placeholder to change the logic;
 		// when we drop the featureflag we should just always include the label, even for
 		// full control-plane nodes.
-		if isAPIServer || featureflag.APIServerNodes.Enabled() {
+		if isAPIServerOnly && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
+			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
 
-	if isNode {
+	if isNodeOnly {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
+	}
+
+	if isEtcdOnly {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelEtcd] = ""
+	}
+
+	if isSchedulerOnly {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelScheduler] = ""
+	}
+
+	if isKubeControllerManagerOnly {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelKubeControllerManager] = ""
 	}
 
 	if isControlPlane {

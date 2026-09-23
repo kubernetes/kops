@@ -13,3 +13,8 @@ spec:
             - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
+              - key: node-role.kubernetes.io/capi-manager
+                operator: Exists
+      tolerations:
+        - key: node-role.kubernetes.io/api-server
+          operator: Exists

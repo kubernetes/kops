@@ -87,6 +87,13 @@ type NodeupModelContext struct {
 	MachineType       string
 }
 
+func (c NodeupModelContext) canSignCertificates() bool {
+	if c.IsMaster || c.BootConfig.InstanceGroupRole.IsControlPlaneType() {
+		return true
+	}
+	return false
+}
+
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
 func (c *NodeupModelContext) Init() error {
 	k8sVersion, err := kopsmodel.ParseKubernetesVersion(c.NodeupConfig.KubernetesVersion)

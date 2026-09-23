@@ -45,8 +45,15 @@ type ChannelsBuilder struct {
 
 var _ fi.NodeupModelBuilder = &ChannelsBuilder{}
 
+func (b *ChannelsBuilder) runsChannels() bool {
+	if b.IsMaster || b.HasAPIServer {
+		return true
+	}
+	return false
+}
+
 func (b *ChannelsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.runsChannels() {
 		return nil
 	}
 

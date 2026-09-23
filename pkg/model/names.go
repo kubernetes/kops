@@ -63,6 +63,12 @@ func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
 		return ig.ObjectMeta.Name + ".masters." + b.ClusterName()
 	case kops.InstanceGroupRoleAPIServer:
 		return ig.ObjectMeta.Name + ".apiservers." + b.ClusterName()
+	case kops.InstanceGroupRoleEtcd:
+		return ig.ObjectMeta.Name + ".etcd." + b.ClusterName()
+	case kops.InstanceGroupRoleScheduler:
+		return ig.ObjectMeta.Name + ".scheduler." + b.ClusterName()
+	case kops.InstanceGroupRoleKubeControllerManager:
+		return ig.ObjectMeta.Name + ".kcm." + b.ClusterName()
 	case kops.InstanceGroupRoleNode, kops.InstanceGroupRoleBastion:
 		return ig.ObjectMeta.Name + "." + b.ClusterName()
 
@@ -143,6 +149,12 @@ func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 		rolename = "masters." + b.ClusterName()
 	case kops.InstanceGroupRoleAPIServer:
 		rolename = "apiservers." + b.ClusterName()
+	case kops.InstanceGroupRoleEtcd:
+		rolename = "etcds." + b.ClusterName()
+	case kops.InstanceGroupRoleScheduler:
+		rolename = "schedulers." + b.ClusterName()
+	case kops.InstanceGroupRoleKubeControllerManager:
+		rolename = "kcms." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
 		rolename = "bastions." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
