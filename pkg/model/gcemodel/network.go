@@ -151,6 +151,11 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				SourceSubnetworkIPRangesToNAT: s(gcetasks.SourceSubnetworkIPRangesSpecificSubnets),
 				Subnetworks:                   subnetworks,
 			}
+			if b.IsIPv6Only() {
+				// NAT64 lets IPv6-only pods reach IPv4-only destinations — the GCE
+				// equivalent of AWS's 64:ff9b::/96 NAT64 route.
+				r.SourceSubnetworkIPRangesToNAT64 = s(gcetasks.SourceSubnetworkIPRangesAllIPv6)
+			}
 			c.AddTask(r)
 		}
 	}
