@@ -367,10 +367,6 @@ verify-shellcheck:
 verify-terraform:
 	hack/verify-terraform.sh
 
-.PHONY: verify-hashes
-verify-hashes:
-	hack/verify-hashes.sh
-
 .PHONY: verify-ig-role-comparisons
 verify-ig-role-comparisons:
 	hack/verify-ig-role-comparisons.sh
