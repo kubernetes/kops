@@ -138,7 +138,7 @@ spec:
       k8s-addon: node-termination-handler.aws
   - id: k8s-1.16
     manifest: eks-pod-identity-webhook.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: dbab068a8b49dbba43a6f1b4167517ffa4e19a8f2372e422a6e3e408186f8d79
+    manifestHash: edf7d4e38e276408de841651e2939b24f5974de8b481fb049ca447c9a54282c7
     name: eks-pod-identity-webhook.addons.k8s.io
     needsPKI: true
     selector:
