@@ -176,13 +176,14 @@ generate_runc_hashes 1.1 15
 generate_runc_hashes 1.2 9
 generate_runc_hashes 1.3 5
 generate_runc_hashes 1.4 3
+generate_runc_hashes 1.5 1
 
 # Generate containerd hashes.
 generate_containerd_hashes 1.7 32
 generate_containerd_hashes 2.0 9
 generate_containerd_hashes 2.1 7
 generate_containerd_hashes 2.2 4
-generate_containerd_hashes 2.3 4
+generate_containerd_hashes 2.3 6
 
 # Generate CNI network plugins hashes.
 # Note: argument is now base path and list of versions (because there is no 1.6.1)
