@@ -168,7 +168,7 @@ KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
-KUBETEST2_ARGS+=("--pre-test-cmd=${REPO_ROOT}/tests/e2e/scenarios/scalability/pre-test.sh")
+KUBETEST2_ARGS+=("--pre-test-cmd=${PRE_TEST_CMD:-${REPO_ROOT}/tests/e2e/scenarios/scalability/pre-test.sh}")
 if [[ -n "${KUBE_FEATURE_GATES:-}" ]]; then
   KUBETEST2_ARGS+=("--kubernetes-feature-gates=${KUBE_FEATURE_GATES}")
 fi
