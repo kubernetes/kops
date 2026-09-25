@@ -29,8 +29,8 @@ type EtcdOptionsBuilder struct {
 var _ loader.ClusterOptionsBuilder = &EtcdOptionsBuilder{}
 
 const (
-	LatestEtcd35Version = "3.5.31"
-	LatestEtcd36Version = "3.6.12"
+	LatestEtcd35Version = "3.5.33"
+	LatestEtcd36Version = "3.6.14"
 	LatestEtcd37Version = "3.7.0"
 )
 
