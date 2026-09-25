@@ -1045,6 +1045,7 @@ func awsBuildCloudInstanceGroup(ctx context.Context, c AWSCloud, cluster *kops.C
 			}
 			instanceSeen[*id] = true
 			addCloudInstanceData(cm, instances[aws.ToString(id)])
+			fmt.Printf("InstanceGroup %s needs update: instance %s is detached\n", cg.HumanName, *id)
 		}
 	}
 
@@ -1070,6 +1071,7 @@ func buildCloudInstance(i autoscalingtypes.Instance, instances map[string]*ec2ty
 	status := cloudinstances.CloudInstanceStatusUpToDate
 	if newConfigName != currentConfigName {
 		status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		fmt.Printf("InstanceGroup %s needs update: instance %s launch configuration is behind\n", cg.HumanName, id)
 	}
 	cm, err := cg.NewCloudInstance(id, status, nodeMap[id])
 	if err != nil {
