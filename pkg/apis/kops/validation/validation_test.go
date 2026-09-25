@@ -2013,6 +2013,43 @@ func Test_Validate_ContainerdVersion(t *testing.T) {
 	}
 }
 
+func Test_Validate_RuncVersion(t *testing.T) {
+	grid := []struct {
+		version        string
+		expectedErrors []string
+	}{
+		{
+			version:        "not-a-semver",
+			expectedErrors: []string{"Invalid value::containerd.runc.version"},
+		},
+		{
+			version:        "1.1.15",
+			expectedErrors: []string{"Invalid value::containerd.runc.version"},
+		},
+		{
+			version:        "1.2.9",
+			expectedErrors: []string{"Invalid value::containerd.runc.version"},
+		},
+		{
+			version: "1.3.0",
+		},
+		{
+			version: "1.4.3",
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.version, func(t *testing.T) {
+			containerd := &kops.ContainerdConfig{
+				Runc: &kops.Runc{
+					Version: &g.version,
+				},
+			}
+			errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), true)
+			testErrors(t, g.version, errs, g.expectedErrors)
+		})
+	}
+}
+
 func Test_Validate_NriConfig(t *testing.T) {
 	unsupportedContainerdVersion := "1.6.0"
 	supportedContainerdVersion := "1.7.0"
