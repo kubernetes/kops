@@ -246,6 +246,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				awstasks.TargetGroupAttributeDeregistrationDelayTimeoutSeconds:               "30",
 			}
 
+			// The API target groups health check /readyz over HTTPS rather than opening a TCP
+			// connection: kube-apiserver accepts connections while it is still starting up, has lost
+			// etcd, or is draining before shutdown, and /readyz reports all of those. The NLB does not
+			// verify the serving certificate, and kube-apiserver allows this path without credentials.
 			{
 				groupName := b.NLBTargetGroupName("tcp")
 				groupTags := b.CloudTags(groupName, false)
@@ -264,7 +268,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Interval:            new(int32(10)),
 					HealthyThreshold:    new(int32(2)),
 					UnhealthyThreshold:  new(int32(2)),
-					HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+					HealthCheckProtocol: elbv2types.ProtocolEnumHttps,
+					HealthCheckPath:     new("/readyz"),
 					Shared:              new(false),
 				}
 				tg.CreateNewRevisionsWith(nlb)
@@ -343,7 +348,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Interval:            new(int32(10)),
 					HealthyThreshold:    new(int32(2)),
 					UnhealthyThreshold:  new(int32(2)),
-					HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+					HealthCheckProtocol: elbv2types.ProtocolEnumHttps,
+					HealthCheckPath:     new("/readyz"),
 					Shared:              new(false),
 				}
 				secondaryTG.CreateNewRevisionsWith(nlb)
