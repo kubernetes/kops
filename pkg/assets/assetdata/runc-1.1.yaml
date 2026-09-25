@@ -75,8 +75,6 @@ files:
 - name: v1.1.13/runc.arm64
   sha256: 4b93701752f5338ed51592b38e039aef8c1a59856d1225df21eba84c2830743c
 # runc 1.1.14
-- name: v1.1.14/SHA512
-  sha256: 'Hash:'
 - name: v1.1.14/runc.amd64
   sha256: a83c0804ebc16826829e7925626c4793da89a9b225bbcc468f2b338ea9f8e8a8
 - name: v1.1.14/runc.arm64

@@ -15,8 +15,6 @@ files:
 - name: v1.2.1/runc.arm64
   sha256: 8c0d81c80ffdaab986629a9c787d8468ab41851e7aab8f9617a4c3674e192aaa
 # runc 1.2.2
-- name: v1.2.2/SHA512
-  sha256: 'Hash:'
 - name: v1.2.2/runc.amd64
   sha256: a34f5ab4fc1df1f456293c3d797a76f2d41cf3cd970bb49fc53ba94bbc8a5cf6
 - name: v1.2.2/runc.arm64
@@ -42,22 +40,16 @@ files:
 - name: v1.2.6/runc.arm64
   sha256: 12c612e2ebe6ca198de676ce75ed557e79fe6109032209bb8e25166c967fe170
 # runc 1.2.7
-- name: v1.2.7/SHA512
-  sha256: 'Hash:'
 - name: v1.2.7/runc.amd64
   sha256: 7c6564ab7b562a275778e59dd6bd43404768e5462e31cbac6b15e36e14693ca8
 - name: v1.2.7/runc.arm64
   sha256: b540e52e2e2d285b7ac9336d788195eb832292e4aa311dbd936ff7e8514e6cb7
 # runc 1.2.8
-- name: v1.2.8/SHA512
-  sha256: 'Hash:'
 - name: v1.2.8/runc.amd64
   sha256: 09d2b25f31d3a819c97854c223ff9b36be7fdb0ce57fec709af499e1e19e8e89
 - name: v1.2.8/runc.arm64
   sha256: 7c463d49d83f2da9f5ba6db395600c8da6c5445fd4597c2de8e8b0f82eb1bebb
 # runc 1.2.9
-- name: v1.2.9/SHA512
-  sha256: 'Hash:'
 - name: v1.2.9/runc.amd64
   sha256: b21fda1d5a1510b19c3f6fb43ecb3a92887654a9d0c2b64e84b8b08f24ff0e30
 - name: v1.2.9/runc.arm64
