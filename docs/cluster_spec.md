@@ -1312,7 +1312,7 @@ Overriding the configuration of containerd has to be done with care as the defau
 ```yaml
 spec:
   containerd:
-    version: 2.3.4
+    version: 2.3.6
     logLevel: info
     configOverride: ""
 ```

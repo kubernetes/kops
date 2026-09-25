@@ -35,11 +35,11 @@ spec:
       docker.io:
       - https://registry-1.docker.io
     runc:
-      version: 1.4.3
+      version: 1.5.1
     sandboxImage: registry.k8s.io/pause:3.10.1
     skipInstall: true
     useECRCredentialsForMirrors: true
-    version: 2.3.4
+    version: 2.3.6
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:

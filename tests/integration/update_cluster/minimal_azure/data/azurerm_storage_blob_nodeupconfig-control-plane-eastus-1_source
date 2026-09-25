@@ -60,14 +60,14 @@ Assets:
   - 2f4ed7778681649b81244426c29c5d98df60ccabf83d561d69e61c1cbb943ddf@https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubelet
   - a2e984a18a0c063279d692533031c1eff93a262afcc0afdc517375432d060989@https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubectl
   - ab3bda535f9d90766cccc90d3dddb5482003dd744d7f22bcf98186bf8eea8be6@https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-amd64-v1.8.0.tgz
-  - 9d68969855fbf676cdb8ed758e420fb048d61f984f61de3e53eddfebe484d168@https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz
-  - f6ae8efc0fa40079e1475e97cbe9d1bd3f106a28d6af78a11d9f1bd565515e60@https://github.com/opencontainers/runc/releases/download/v1.4.3/runc.amd64
+  - df806bb9b86653ebc94822a7076642ff3c3614324dbc1b511bdf75ac1669b762@https://github.com/containerd/containerd/releases/download/v2.3.6/containerd-2.3.6-linux-amd64.tar.gz
+  - 177df879d50c913eb205e898d5c1c05a18f574053c0ce5524c471208eaf06f6f@https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64
   arm64:
   - aa658d077348b43d238f50966a583f4244b2a7d45590c77b3b165b7d44983ab8@https://dl.k8s.io/release/v1.35.0/bin/linux/arm64/kubelet
   - 58f82f9fe796c375c5c4b8439850b0f3f4d401a52434052f2df46035a8789e25@https://dl.k8s.io/release/v1.35.0/bin/linux/arm64/kubectl
   - 57ce466fc3b79db1f19b8f4c63e07a1112306efa53c94fe810a2150dd9e07ddb@https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-arm64-v1.8.0.tgz
-  - a985fbb7e18fc0362d31a055338f5d7b0e087a3e27f14c70d1c5965399a29f95@https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-arm64.tar.gz
-  - 633301e2e32f8a5ad54031aab4901eb00308bec677dd15faa2751e8f9dab5ca4@https://github.com/opencontainers/runc/releases/download/v1.4.3/runc.arm64
+  - 6b3d383cc051f0bd7b2303f9034fdc9029f04c237cadb23b5e890a5b68534e05@https://github.com/containerd/containerd/releases/download/v2.3.6/containerd-2.3.6-linux-arm64.tar.gz
+  - ca70e7dbd6616ca782a59b5d3ac86909123fdaa9fa3f89dcf29051c70eee7ce9@https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.arm64
 AzureAdminUser: admin-user
 CAs:
   apiserver-aggregator-ca: |
@@ -303,9 +303,9 @@ configStore:
 containerdConfig:
   logLevel: info
   runc:
-    version: 1.4.3
+    version: 1.5.1
   sandboxImage: registry.k8s.io/pause:3.10.1
-  version: 2.3.4
+  version: 2.3.6
 etcdManifests:
 - memfs://tests/minimal-azure.example.com/manifests/etcd/main-control-plane-eastus-1.yaml
 - memfs://tests/minimal-azure.example.com/manifests/etcd/events-control-plane-eastus-1.yaml
