@@ -3172,7 +3172,7 @@ spec:
       - https://kops-controller.internal.minimal.example.com:3988/
     InstanceGroupName: karpenter-nodes-default
     InstanceGroupRole: Node
-    NodeupConfigHash: 477F+2mKO7E//k/A2mGlxcBAdZuvpQ/wohqUkJzRgT4=
+    NodeupConfigHash: EAmpK0iG6ORF5m1m/9T5lJPh7/MUtRwqlnNvgzRFdo4=
 
     __EOF_KUBE_ENV
 
@@ -3422,7 +3422,7 @@ spec:
       - https://kops-controller.internal.minimal.example.com:3988/
     InstanceGroupName: karpenter-nodes-single-machinetype
     InstanceGroupRole: Node
-    NodeupConfigHash: MITTWmKqvlWV9oEKi+qaGgxJzawLw/3inMtDwEEZ+38=
+    NodeupConfigHash: Re6UObJS0qed9S+EwBa+yjcitO0OqVoOFBkF9sfYrjU=
 
     __EOF_KUBE_ENV
 

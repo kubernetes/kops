@@ -137,7 +137,7 @@ ConfigServer:
   - https://kops-controller.internal.nthimdsprocessor.longclustername.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: zfzlc9Tnw0Jr+elZJmvq9PKxbxxAUVaW+OwxvbcdX14=
+NodeupConfigHash: dUVzU6+4eyLJGXRLyGIoVY0la58/t1D8j3TxXdIzmls=
 
 __EOF_KUBE_ENV
 

@@ -23,24 +23,24 @@ files:
 - canonical: https://dl.k8s.io/release/v1.34.0/bin/linux/arm64/kubelet
   download: https://dl.k8s.io/release/v1.34.0/bin/linux/arm64/kubelet
   sha: e45a7795391cd62ee226666039153832d3096c0f892266cd968936e18b2b40b0
-- canonical: https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz
-  download: https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz
-  sha: 9d68969855fbf676cdb8ed758e420fb048d61f984f61de3e53eddfebe484d168
-- canonical: https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-arm64.tar.gz
-  download: https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-arm64.tar.gz
-  sha: a985fbb7e18fc0362d31a055338f5d7b0e087a3e27f14c70d1c5965399a29f95
+- canonical: https://github.com/containerd/containerd/releases/download/v2.3.6/containerd-2.3.6-linux-amd64.tar.gz
+  download: https://github.com/containerd/containerd/releases/download/v2.3.6/containerd-2.3.6-linux-amd64.tar.gz
+  sha: df806bb9b86653ebc94822a7076642ff3c3614324dbc1b511bdf75ac1669b762
+- canonical: https://github.com/containerd/containerd/releases/download/v2.3.6/containerd-2.3.6-linux-arm64.tar.gz
+  download: https://github.com/containerd/containerd/releases/download/v2.3.6/containerd-2.3.6-linux-arm64.tar.gz
+  sha: 6b3d383cc051f0bd7b2303f9034fdc9029f04c237cadb23b5e890a5b68534e05
 - canonical: https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-amd64-v1.7.1.tgz
   download: https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-amd64-v1.7.1.tgz
   sha: 1a28a0506bfe5bcdc981caf1a49eeab7e72da8321f1119b7be85f22621013098
 - canonical: https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-arm64-v1.7.1.tgz
   download: https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-arm64-v1.7.1.tgz
   sha: 119fcb508d1ac2149e49a550752f9cd64d023a1d70e189b59c476e4d2bf7c497
-- canonical: https://github.com/opencontainers/runc/releases/download/v1.4.3/runc.amd64
-  download: https://github.com/opencontainers/runc/releases/download/v1.4.3/runc.amd64
-  sha: f6ae8efc0fa40079e1475e97cbe9d1bd3f106a28d6af78a11d9f1bd565515e60
-- canonical: https://github.com/opencontainers/runc/releases/download/v1.4.3/runc.arm64
-  download: https://github.com/opencontainers/runc/releases/download/v1.4.3/runc.arm64
-  sha: 633301e2e32f8a5ad54031aab4901eb00308bec677dd15faa2751e8f9dab5ca4
+- canonical: https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64
+  download: https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64
+  sha: 177df879d50c913eb205e898d5c1c05a18f574053c0ce5524c471208eaf06f6f
+- canonical: https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.arm64
+  download: https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.arm64
+  sha: ca70e7dbd6616ca782a59b5d3ac86909123fdaa9fa3f89dcf29051c70eee7ce9
 images:
 - canonical: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.25.5
   download: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.25.5
