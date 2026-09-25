@@ -157,13 +157,6 @@ EOF
 
 # Generate k8s hashes.
 # The first argument is the major and minor version, the second is the maximum patch version.
-generate_k8s_hashes 1.25 16
-generate_k8s_hashes 1.26 15
-generate_k8s_hashes 1.27 16
-generate_k8s_hashes 1.28 15
-generate_k8s_hashes 1.29 15
-generate_k8s_hashes 1.30 14
-generate_k8s_hashes 1.31 14
 generate_k8s_hashes 1.32 13
 generate_k8s_hashes 1.33 13
 generate_k8s_hashes 1.34 12
