@@ -50,12 +50,12 @@ images:
   download: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0
 - canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
   download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
-- canonical: registry.k8s.io/etcd:v3.5.31
-  download: registry.k8s.io/etcd:v3.5.31
-- canonical: registry.k8s.io/etcd:v3.6.12
-  download: registry.k8s.io/etcd:v3.6.12
-- canonical: registry.k8s.io/etcd:v3.7.0
-  download: registry.k8s.io/etcd:v3.7.0
+- canonical: registry.k8s.io/etcd:v3.5.34
+  download: registry.k8s.io/etcd:v3.5.34
+- canonical: registry.k8s.io/etcd:v3.6.15
+  download: registry.k8s.io/etcd:v3.6.15
+- canonical: registry.k8s.io/etcd:v3.7.2
+  download: registry.k8s.io/etcd:v3.7.2
 - canonical: registry.k8s.io/kops/channels:1.37.0-beta.1
   download: registry.k8s.io/kops/channels:1.37.0-beta.1
 - canonical: registry.k8s.io/kops/dns-controller:1.37.0-beta.1
