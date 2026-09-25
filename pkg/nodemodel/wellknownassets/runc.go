@@ -77,7 +77,7 @@ func findRuncVersionUrl(arch architectures.Architecture, version string) (string
 	if err != nil {
 		return "", fmt.Errorf("unable to parse version string: %q", version)
 	}
-	if sv.LT(semver.MustParse("1.1.0")) {
+	if sv.LT(semver.MustParse("1.3.0")) {
 		return "", fmt.Errorf("unsupported runc version: %q", version)
 	}
 

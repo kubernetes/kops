@@ -33,13 +33,13 @@ func TestRuncVersionUrl(t *testing.T) {
 	}{
 		{
 			arch:    "",
-			version: "1.1.0",
+			version: "1.3.0",
 			url:     "",
 			err:     fmt.Errorf("unknown arch: \"\""),
 		},
 		{
 			arch:    "arm",
-			version: "1.1.0",
+			version: "1.3.0",
 			url:     "",
 			err:     fmt.Errorf("unknown arch: \"arm\""),
 		},
@@ -57,26 +57,26 @@ func TestRuncVersionUrl(t *testing.T) {
 		},
 		{
 			arch:    architectures.ArchitectureAmd64,
-			version: "1.0.0",
+			version: "1.2.9",
 			url:     "",
-			err:     fmt.Errorf("unsupported runc version: \"1.0.0\""),
+			err:     fmt.Errorf("unsupported runc version: \"1.2.9\""),
 		},
 		{
 			arch:    architectures.ArchitectureArm64,
-			version: "1.0.0",
+			version: "1.2.9",
 			url:     "",
-			err:     fmt.Errorf("unsupported runc version: \"1.0.0\""),
+			err:     fmt.Errorf("unsupported runc version: \"1.2.9\""),
 		},
 		{
 			arch:    architectures.ArchitectureAmd64,
-			version: "1.1.0",
-			url:     "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64",
+			version: "1.3.0",
+			url:     "https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.amd64",
 			err:     nil,
 		},
 		{
 			arch:    architectures.ArchitectureArm64,
-			version: "1.1.0",
-			url:     "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.arm64",
+			version: "1.3.0",
+			url:     "https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.arm64",
 			err:     nil,
 		},
 	}

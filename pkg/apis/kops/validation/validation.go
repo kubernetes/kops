@@ -1981,6 +1981,18 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 		}
 	}
 
+	if config.Runc != nil && config.Runc.Version != nil {
+		sv, err := semver.ParseTolerant(*config.Runc.Version)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("runc", "version"), config.Runc.Version,
+				fmt.Sprintf("unable to parse version string: %s", err.Error())))
+		}
+		if sv.LT(semver.MustParse("1.3.0")) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("runc", "version"), config.Runc.Version,
+				"unsupported legacy version; runc 1.3.0 or newer is required"))
+		}
+	}
+
 	if config.NRI != nil {
 		allErrs = append(allErrs, validateNriConfig(config, fldPath.Child("nri"))...)
 	}

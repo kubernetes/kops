@@ -67,8 +67,27 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("reading body %q: %w", hashFileURL, err)
 	}
 
+	m, err := parseHashFile(string(b), prefix, exclude)
+	if err != nil {
+		return fmt.Errorf("parsing %q: %w", hashFileURL, err)
+	}
+
+	out, err := yaml.Marshal(&m)
+	if err != nil {
+		return fmt.Errorf("building yaml: %w", err)
+	}
+	if _, err := os.Stdout.Write(out); err != nil {
+		return fmt.Errorf("writing output: %w", err)
+	}
+	return nil
+}
+
+// parseHashFile parses a sha256sum-style file, optionally wrapped in a PGP
+// clearsign envelope. File names are prefixed with prefix, and files matching
+// exclude are skipped.
+func parseHashFile(data, prefix string, exclude globList) (*manifest, error) {
 	m := &manifest{}
-	for _, line := range strings.Split(string(b), "\n") {
+	for _, line := range strings.Split(data, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -81,13 +100,13 @@ func run(ctx context.Context) error {
 			// Part of the PGP signature; end of signed content
 			break
 		}
-		if line == "Hash: SHA256" {
-			// Part of the PGP boilerplate
+		if strings.HasPrefix(line, "Hash: ") {
+			// Part of the PGP boilerplate; names the signature digest, e.g. SHA256 or SHA512
 			continue
 		}
 		tokens := strings.Fields(line)
 		if len(tokens) != 2 {
-			return fmt.Errorf("unexpected line %q (expected 2 tokens)", line)
+			return nil, fmt.Errorf("unexpected line %q (expected 2 tokens)", line)
 		}
 		hash := tokens[0]
 		name := tokens[1]
@@ -101,15 +120,7 @@ func run(ctx context.Context) error {
 			SHA256: hash,
 		})
 	}
-
-	out, err := yaml.Marshal(&m)
-	if err != nil {
-		return fmt.Errorf("building yaml: %w", err)
-	}
-	if _, err := os.Stdout.Write(out); err != nil {
-		return fmt.Errorf("writing output: %w", err)
-	}
-	return nil
+	return m, nil
 }
 
 type manifest struct {

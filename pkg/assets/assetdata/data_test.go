@@ -31,16 +31,16 @@ func TestGetHash(t *testing.T) {
 			Hash: "5ad4965598773d56a37a8e8429c3dc3d86b4c5c26d8417ab333ae345c053dae2",
 		},
 		{
-			Name: "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64",
-			Hash: "ab1c67fbcbdddbe481e48a55cf0ef9a86b38b166b5079e0010737fd87d7454bb",
+			Name: "https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.amd64",
+			Hash: "028986516ab5646370edce981df2d8e8a8d12188deaf837142a02097000ae2f2",
 		},
 		{
-			Name: "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.arm64",
-			Hash: "9ec8e68feabc4e7083a4cfa45ebe4d529467391e0b03ee7de7ddda5770b05e68",
+			Name: "https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.arm64",
+			Hash: "85c5e4e4f72e442c8c17bac07527cd4f961ee48e4f2b71797f7533c94f4a52b9",
 		},
 		{
-			Name: "https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.amd64",
-			Hash: "aadeef400b8f05645768c1476d1023f7875b78f52c7ff1967a6dbce236b8cbd8",
+			Name: "https://github.com/opencontainers/runc/releases/download/v1.3.5/runc.amd64",
+			Hash: "66fa8390be8fb3b23dfbb60c767368bb5b51f1acfa88692bbff1a82953d4d9e9",
 		},
 	}
 
