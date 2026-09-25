@@ -123,7 +123,7 @@ spec:
         - --sts-regional-endpoint
         - --aws-default-region=us-test-1
         - --v=5
-        image: amazon/amazon-eks-pod-identity-webhook:v0.5.7
+        image: public.ecr.aws/eks/amazon-eks-pod-identity-webhook:v0.6.17
         name: pod-identity-webhook
         readinessProbe:
           failureThreshold: 3
