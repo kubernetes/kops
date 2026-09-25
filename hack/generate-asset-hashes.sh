@@ -166,26 +166,17 @@ generate_k8s_hashes 1.37 1
 
 # Generate runc hashes.
 # The first argument is the major and minor version, the second is the maximum patch version.
-generate_runc_hashes 1.1 15
-generate_runc_hashes 1.2 9
 generate_runc_hashes 1.3 5
 generate_runc_hashes 1.4 3
 generate_runc_hashes 1.5 1
 
 # Generate containerd hashes.
-generate_containerd_hashes 1.7 32
-generate_containerd_hashes 2.0 9
 generate_containerd_hashes 2.1 7
 generate_containerd_hashes 2.2 4
 generate_containerd_hashes 2.3 6
 
 # Generate CNI network plugins hashes.
 # Note: argument is now base path and list of versions (because there is no 1.6.1)
-generate_cni_hashes 0.9 0.9.1
-generate_cni_hashes 1.2 1.2.0
-generate_cni_hashes 1.3 1.3.0
-generate_cni_hashes 1.4 1.4.1
-generate_cni_hashes 1.5 1.5.1
 generate_cni_hashes 1.6 1.6.2
 generate_cni_hashes 1.7 1.7.1
 generate_cni_hashes 1.8 1.8.0
