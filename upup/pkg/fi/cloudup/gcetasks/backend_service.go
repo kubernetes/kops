@@ -150,11 +150,13 @@ func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendSe
 		if err := cloud.WaitForOp(op); err != nil {
 			return fmt.Errorf("error waiting for backend service: %v", err)
 		}
-	} else if changes.HealthChecks != nil {
-		klog.V(2).Infof("Updating health checks of BackendService: %q", bs.Name)
+	} else if changes.HealthChecks != nil || changes.InstanceGroupManagers != nil {
+		klog.V(2).Infof("Updating health checks and backends of BackendService: %q", bs.Name)
 
+		// Patch replaces list fields wholesale, so send the full desired lists for both.
 		patch := &compute.BackendService{
 			HealthChecks: hcs,
+			Backends:     backends,
 			Fingerprint:  a.fingerprint,
 		}
 		op, err := cloud.Compute().RegionBackendServices().Patch(cloud.Project(), cloud.Region(), bs.Name, patch)

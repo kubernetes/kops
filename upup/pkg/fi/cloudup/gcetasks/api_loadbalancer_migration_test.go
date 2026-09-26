@@ -195,3 +195,64 @@ func TestBackendServiceReplacesHealthCheck(t *testing.T) {
 	runTasks(t, ctx, cloud, buildTasks(changed, ""))
 	checkNoChanges(t, ctx, cloud, buildTasks(changed, ""))
 }
+
+// TestBackendServiceUpdatesBackendsAndHealthCheck verifies that a health check replacement and a
+// change of the backend instance groups in the same run are both applied.
+func TestBackendServiceUpdatesBackendsAndHealthCheck(t *testing.T) {
+	ctx := context.TODO()
+
+	project := "testproject"
+	region := "us-test1"
+
+	cloud := gcemock.InstallMockGCECloud(region, project)
+
+	// The backend service only needs the names and zones of the instance group managers;
+	// the tasks are present so that the dependency resolves, but are not applied.
+	igm := func(name string) *InstanceGroupManager {
+		return &InstanceGroupManager{Name: new(name), Zone: new("us-test1-a"), Lifecycle: fi.LifecycleIgnore}
+	}
+
+	buildTasks := func(healthCheck *HealthCheck, igms []*InstanceGroupManager) map[string]fi.CloudupTask {
+		backendService := &BackendService{
+			Name:                  new("api"),
+			Protocol:              new("TCP"),
+			HealthChecks:          []*HealthCheck{healthCheck},
+			LoadBalancingScheme:   new("INTERNAL"),
+			InstanceGroupManagers: igms,
+			Lifecycle:             fi.LifecycleSync,
+		}
+		tasks := map[string]fi.CloudupTask{
+			"healthcheck":    healthCheck,
+			"backendservice": backendService,
+		}
+		for _, igm := range igms {
+			tasks[*igm.Name] = igm
+		}
+		return tasks
+	}
+
+	tcpHealthCheck := func() *HealthCheck {
+		return &HealthCheck{Name: new("api"), Port: 443, Protocol: HealthCheckProtocolTCP, Lifecycle: fi.LifecycleSync}
+	}
+	httpsHealthCheck := func() *HealthCheck {
+		return &HealthCheck{Name: new("api-https"), Port: 443, Protocol: HealthCheckProtocolHTTPS, RequestPath: new("/readyz"), Lifecycle: fi.LifecycleSync}
+	}
+
+	runTasks(t, ctx, cloud, buildTasks(tcpHealthCheck(), []*InstanceGroupManager{igm("igm-a")}))
+	checkNoChanges(t, ctx, cloud, buildTasks(tcpHealthCheck(), []*InstanceGroupManager{igm("igm-a")}))
+
+	// Replace the health check and add an instance group in the same run.
+	runTasks(t, ctx, cloud, buildTasks(httpsHealthCheck(), []*InstanceGroupManager{igm("igm-a"), igm("igm-b")}))
+	checkNoChanges(t, ctx, cloud, buildTasks(httpsHealthCheck(), []*InstanceGroupManager{igm("igm-a"), igm("igm-b")}))
+
+	bs, err := cloud.Compute().RegionBackendServices().Get(project, region, "api")
+	if err != nil {
+		t.Fatalf("getting backend service: %v", err)
+	}
+	if len(bs.HealthChecks) != 1 || lastComponent(bs.HealthChecks[0]) != "api-https" {
+		t.Errorf("expected backend service to use the api-https health check, got %v", bs.HealthChecks)
+	}
+	if len(bs.Backends) != 2 || lastComponent(bs.Backends[0].Group) != "igm-a" || lastComponent(bs.Backends[1].Group) != "igm-b" {
+		t.Errorf("expected backends igm-a and igm-b, got %v", bs.Backends)
+	}
+}
