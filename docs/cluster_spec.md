@@ -475,6 +475,49 @@ spec:
     - "key=value"
 ```
 
+### Authentication configuration
+
+kOps writes an [`AuthenticationConfiguration`](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#using-authentication-configuration)
+file for `kube-apiserver` on every node that runs it, and passes it with `--authentication-config`.
+The file enables anonymous authentication only for the `/healthz`, `/livez` and `/readyz` endpoints,
+which is what lets the kubelet probes and the load balancer health checks reach `kube-apiserver`
+without credentials while anonymous access to everything else stays disabled. The OIDC settings
+above are translated into a `jwt` authenticator in the same file, because `kube-apiserver` rejects
+the `--oidc-*` flags when an authentication configuration file is in use.
+
+To use your own authentication configuration (for example to configure several JWT authenticators or
+CEL claim mappings), deliver the file with `fileAssets` and point `authenticationConfigFile` at it.
+kOps reads that file on the node and writes a merged copy with the `anonymous` section added to
+`/srv/kubernetes/kube-apiserver/authentication-config.yaml`, which is the file kube-apiserver uses.
+If the file already configures `anonymous`, that section is kept as is and must allow the
+`/healthz`, `/livez` and `/readyz` paths, otherwise the probes and health checks fail.
+This option is mutually exclusive with the OIDC settings.
+
+```yaml
+spec:
+  kubeAPIServer:
+    authenticationConfigFile: /etc/kubernetes/authentication/config.yaml
+  fileAssets:
+  - name: authentication-config
+    path: /etc/kubernetes/authentication/config.yaml
+    roles:
+    - ControlPlane
+    content: |
+      apiVersion: apiserver.config.k8s.io/v1
+      kind: AuthenticationConfiguration
+      jwt:
+      - issuer:
+          url: https://your-oidc-provider.example.com
+          audiences:
+          - kubernetes
+        claimMappings:
+          username:
+            claim: email
+            prefix: ""
+```
+
+Setting `spec.kubeAPIServer.anonymousAuth: true` permits anonymous requests to all endpoints instead.
+
 ### Audit Logging
 
 Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/

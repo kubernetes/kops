@@ -19,7 +19,6 @@ steps:
       - kops-controller-push
       - kops-channels-push
       - dns-controller-push
-      - kube-apiserver-healthcheck-push
       - discovery-server-push
   # Push the artifacts
   - name: "mirror.gcr.io/library/golang:1.27.1-trixie"

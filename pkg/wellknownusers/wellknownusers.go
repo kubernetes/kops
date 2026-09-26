@@ -34,13 +34,7 @@ const (
 	// KopsControllerName is the username for the kops-controller user
 	KopsControllerName = "kops-controller"
 
-	// KubeApiserverHealthcheckID is the user id for kube-apiserver-healthcheck sidecar
-	// The user needs some extra permissions e.g. to read local secrets
-	// This should match the static pod's runAsUser
-	KubeApiserverHealthcheckID = 10012
-
-	// KubeApiserverHealthcheckName is the username for the kube-apiserver-healthcheck user
-	KubeApiserverHealthcheckName = "kube-apiserver-healthcheck"
+	// 10012 was the user id of the kube-apiserver-healthcheck sidecar (removed in kOps 1.38).
 
 	// KopsChannelsID is the user id for the kops-channels static pod.
 	// The user owns the kubeconfig mounted into the container.
