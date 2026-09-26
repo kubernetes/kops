@@ -411,6 +411,19 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 		}
 		oidc := in.Authentication.OIDC
 		kube := out.KubeAPIServer
+		// v1alpha2 stores groupsClaims in one comma-joined flag and requiredClaims
+		// as "key=value". Reject values that the read path would split, instead of
+		// writing a spec that comes back as something else.
+		for _, claim := range oidc.GroupsClaims {
+			if strings.Contains(claim, ",") {
+				return field.Invalid(field.NewPath("spec", "authentication", "oidc", "groupsClaims"), claim, "cannot contain a comma; it is stored in a single flag")
+			}
+		}
+		for claim := range oidc.RequiredClaims {
+			if strings.Contains(claim, "=") {
+				return field.Invalid(field.NewPath("spec", "authentication", "oidc", "requiredClaims"), claim, "key cannot contain '='; claims are stored as key=value")
+			}
+		}
 		kube.OIDCClientID = oidc.ClientID
 		if oidc.GroupsClaims != nil {
 			join := strings.Join(oidc.GroupsClaims, ",")
