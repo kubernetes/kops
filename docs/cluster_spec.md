@@ -488,7 +488,9 @@ the `--oidc-*` flags when an authentication configuration file is in use.
 To use your own authentication configuration (for example to configure several JWT authenticators or
 CEL claim mappings), deliver the file with `fileAssets` and point `authenticationConfigFile` at it.
 kOps reads that file on the node and writes a merged copy with the `anonymous` section added to
-`/srv/kubernetes/kube-apiserver/authentication-config.yaml`, which is the file kube-apiserver uses.
+`/srv/kubernetes/kube-apiserver/kops-authentication-config.yaml` (`/etc/srv/kubernetes/...` on ContainerOS),
+which is the file kube-apiserver uses. That path is reserved: `authenticationConfigFile`, `oidcCAFile`
+and file assets must use a different location.
 If the file already configures `anonymous`, that section is kept as is and must allow the
 `/healthz`, `/livez` and `/readyz` paths, otherwise the probes and health checks fail.
 This option is mutually exclusive with the OIDC settings.

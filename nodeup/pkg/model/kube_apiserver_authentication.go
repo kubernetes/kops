@@ -24,14 +24,11 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownpaths"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"sigs.k8s.io/yaml"
 )
-
-// authenticationConfigFileName is the name of the kube-apiserver AuthenticationConfiguration
-// file that nodeup writes into the kube-apiserver config directory.
-const authenticationConfigFileName = "authentication-config.yaml"
 
 // healthCheckPaths are the kube-apiserver endpoints that must be reachable without
 // credentials: the kubelet probes and the load balancer health checks call them.
@@ -126,7 +123,8 @@ func (b *KubeAPIServerBuilder) buildAuthenticationConfiguration(c *fi.NodeupMode
 	kubeAPIServer.OIDCUsernameClaim = nil
 	kubeAPIServer.OIDCUsernamePrefix = nil
 
-	configFile := filepath.Join(pathSrvKAPI, authenticationConfigFileName)
+	// Cluster validation rejects user files at this path, which would make the task below wait for itself.
+	configFile := filepath.Join(pathSrvKAPI, wellknownpaths.KubeAPIServerAuthenticationConfigFileName)
 	kubeAPIServer.AuthenticationConfigFile = configFile
 
 	// The v1 API of AuthenticationConfiguration was added in Kubernetes 1.34. Earlier releases

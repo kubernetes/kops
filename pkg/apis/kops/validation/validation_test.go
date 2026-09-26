@@ -398,6 +398,29 @@ func TestValidateKubeAPIServer(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Forbidden::KubeAPIServer.authenticationConfigFile"},
 		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthenticationConfigFile: "/srv/kubernetes/kube-apiserver/kops-authentication-config.yaml",
+			},
+			ExpectedErrors: []string{"Forbidden::KubeAPIServer.authenticationConfigFile"},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthenticationConfigFile: "/etc/srv/kubernetes/kube-apiserver/./kops-authentication-config.yaml",
+			},
+			ExpectedErrors: []string{"Forbidden::KubeAPIServer.authenticationConfigFile"},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				AuthenticationConfigFile: "/srv/kubernetes/kube-apiserver/authentication-config.yaml",
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				OIDCCAFile: new("/srv/kubernetes/kube-apiserver/kops-authentication-config.yaml"),
+			},
+			ExpectedErrors: []string{"Forbidden::KubeAPIServer.oidcCAFile"},
+		},
 	}
 	for _, g := range grid {
 		if g.Cluster == nil {
@@ -2693,6 +2716,34 @@ func TestValidateFileRepository(t *testing.T) {
 	}
 	for _, g := range grid {
 		errs := validateFileRepository(g.Input, field.NewPath("spec", "assets", "fileRepository"), g.CloudProvider)
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func TestValidateFileAssetSpecReservedPath(t *testing.T) {
+	grid := []struct {
+		Input          kops.FileAssetSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.FileAssetSpec{Name: "authn", Content: "x", Path: "/etc/kubernetes/authentication/config.yaml"},
+		},
+		{
+			Input:          kops.FileAssetSpec{Name: "authn", Content: "x", Path: "/srv/kubernetes/kube-apiserver/kops-authentication-config.yaml"},
+			ExpectedErrors: []string{"Forbidden::fileAssets.path"},
+		},
+		{
+			Input:          kops.FileAssetSpec{Name: "authn", Content: "x", Path: "/etc/srv/kubernetes/kube-apiserver//kops-authentication-config.yaml"},
+			ExpectedErrors: []string{"Forbidden::fileAssets.path"},
+		},
+		{
+			// Without a path the asset is written below <srv>/assets, from where the name can escape.
+			Input:          kops.FileAssetSpec{Name: "../kube-apiserver/kops-authentication-config.yaml", Content: "x"},
+			ExpectedErrors: []string{"Forbidden::fileAssets.path"},
+		},
+	}
+	for _, g := range grid {
+		errs := validateFileAssetSpec(&g.Input, field.NewPath("fileAssets"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
