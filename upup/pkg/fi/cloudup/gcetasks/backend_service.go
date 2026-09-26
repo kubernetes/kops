@@ -39,9 +39,24 @@ type BackendService struct {
 
 	Lifecycle    fi.Lifecycle
 	ForAPIServer bool
+
+	// fingerprint is required by the API when updating the backend service.
+	// Only set on the actual resource returned by Find.
+	fingerprint string
+
+	// pruneHealthChecks are names of health checks that this backend service no longer uses and
+	// that should be deleted once it has been updated.
+	pruneHealthChecks []string
 }
 
 var _ fi.CompareWithID = (*BackendService)(nil)
+
+// PruneHealthCheckWithName deletes the named regional health check after the backend service
+// has been updated. GCE cannot change the type of an existing health check, so a protocol change
+// is a new health check plus removal of the old one.
+func (e *BackendService) PruneHealthCheckWithName(name string) {
+	e.pruneHealthChecks = append(e.pruneHealthChecks, name)
+}
 
 func (e *BackendService) CompareWithID() *string {
 	return e.Name
@@ -70,6 +85,7 @@ func (e *BackendService) find(cloud gce.GCECloud) (*BackendService, error) {
 	actual := &BackendService{}
 	actual.Name = &r.Name
 	actual.Protocol = &r.Protocol
+	actual.fingerprint = r.Fingerprint
 	actual.LoadBalancingScheme = &r.LoadBalancingScheme
 	var hcs []*HealthCheck
 	for _, hc := range r.HealthChecks {
@@ -134,11 +150,98 @@ func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendSe
 		if err := cloud.WaitForOp(op); err != nil {
 			return fmt.Errorf("error waiting for backend service: %v", err)
 		}
+	} else if changes.HealthChecks != nil {
+		klog.V(2).Infof("Updating health checks of BackendService: %q", bs.Name)
+
+		patch := &compute.BackendService{
+			HealthChecks: hcs,
+			Fingerprint:  a.fingerprint,
+		}
+		op, err := cloud.Compute().RegionBackendServices().Patch(cloud.Project(), cloud.Region(), bs.Name, patch)
+		if err != nil {
+			return fmt.Errorf("error updating backend service: %v", err)
+		}
+
+		if err := cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error waiting for backend service: %v", err)
+		}
 	} else {
 		return fmt.Errorf("cannot apply changes to backend service: %v", changes)
 	}
 
 	return nil
+}
+
+var _ fi.CloudupProducesDeletions = (*BackendService)(nil)
+
+// FindDeletions implements fi.CloudupProducesDeletions
+func (e *BackendService) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
+	var removals []fi.CloudupDeletion
+
+	cloud := c.T.Cloud.(gce.GCECloud)
+	for _, name := range e.pruneHealthChecks {
+		hc, err := cloud.Compute().RegionHealthChecks().Get(cloud.Project(), cloud.Region(), name)
+		if err != nil {
+			if gce.IsNotFound(err) {
+				continue
+			}
+			return nil, fmt.Errorf("getting health check %q: %w", name, err)
+		}
+		removals = append(removals, &deleteHealthCheck{healthCheck: hc})
+	}
+
+	return removals, nil
+}
+
+// deleteHealthCheck tracks a regional HealthCheck that we're going to delete
+// It implements fi.CloudupDeletion
+type deleteHealthCheck struct {
+	healthCheck *compute.HealthCheck
+}
+
+var _ fi.CloudupDeletion = (*deleteHealthCheck)(nil)
+
+func (d *deleteHealthCheck) TaskName() string {
+	return "HealthCheck"
+}
+
+func (d *deleteHealthCheck) Item() string {
+	return d.healthCheck.Name
+}
+
+func (d *deleteHealthCheck) Delete(t fi.CloudupTarget) error {
+	gceTarget, ok := t.(*gce.GCEAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+	cloud := gceTarget.Cloud
+	name := d.healthCheck.Name
+
+	op, err := cloud.Compute().RegionHealthChecks().Delete(cloud.Project(), cloud.Region(), name)
+	if err != nil {
+		if gce.IsResourceInUse(err) {
+			// Another backend service still references it; it will be removed on a later update.
+			klog.Warningf("not deleting health check %q because it is still in use", name)
+			return nil
+		}
+		return fmt.Errorf("deleting health check %q: %w", name, err)
+	}
+	if err := cloud.WaitForOp(op); err != nil {
+		if gce.IsResourceInUse(err) {
+			klog.Warningf("not deleting health check %q because it is still in use", name)
+			return nil
+		}
+		return fmt.Errorf("deleting health check %q: %w", name, err)
+	}
+	return nil
+}
+
+func (d *deleteHealthCheck) String() string {
+	return d.TaskName() + "-" + d.Item()
+}
+
+func (d *deleteHealthCheck) DeferDeletion() bool {
+	return false
 }
 
 func (a *BackendService) URL(cloud gce.GCECloud) string {

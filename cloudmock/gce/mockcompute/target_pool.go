@@ -126,6 +126,18 @@ func (c *targetPoolClient) List(ctx context.Context, project, region string) ([]
 }
 
 func (c *targetPoolClient) AddHealthCheck(project, region, name string, req *compute.TargetPoolsAddHealthCheckRequest) (*compute.Operation, error) {
-	// TODO: AddHealthCheck test
+	c.Lock()
+	defer c.Unlock()
+	regions, ok := c.targetPools[project]
+	if !ok {
+		return nil, notFoundError()
+	}
+	tp, ok := regions[region][name]
+	if !ok {
+		return nil, notFoundError()
+	}
+	for _, hc := range req.HealthChecks {
+		tp.HealthChecks = append(tp.HealthChecks, hc.HealthCheck)
+	}
 	return doneOperation(), nil
 }

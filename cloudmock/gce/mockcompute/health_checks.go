@@ -92,6 +92,22 @@ func (c *healthCheckClient) Get(project, _, name string) (*compute.HealthCheck, 
 	return healthCheck, nil
 }
 
+func (c *healthCheckClient) Update(project, region, name string, healthCheck *compute.HealthCheck) (*compute.Operation, error) {
+	c.Lock()
+	defer c.Unlock()
+	healthChecks, ok := c.healthChecks[project]
+	if !ok {
+		return nil, notFoundError()
+	}
+	existing, ok := healthChecks[name]
+	if !ok {
+		return nil, notFoundError()
+	}
+	healthCheck.SelfLink = existing.SelfLink
+	healthChecks[name] = healthCheck
+	return doneOperation(), nil
+}
+
 func (c *healthCheckClient) List(_ context.Context, project, _ string) ([]*compute.HealthCheck, error) {
 	c.Lock()
 	defer c.Unlock()

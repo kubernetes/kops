@@ -27,11 +27,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
-// TargetPool represents a GCE TargetPool
+// TargetPool represents a GCE TargetPool.
+// kOps no longer creates target pools; the type remains so that forwarding rules and
+// instance group managers created by older versions can be read and migrated.
 // +kops:fitask
 type TargetPool struct {
-	Name        *string
-	HealthCheck *HTTPHealthcheck
+	Name *string
 
 	Lifecycle fi.Lifecycle
 }
@@ -58,7 +59,6 @@ func (e *TargetPool) Find(c *fi.CloudupContext) (*TargetPool, error) {
 	actual.Name = new(r.Name)
 
 	// Avoid spurious changes
-	actual.HealthCheck = e.HealthCheck
 	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
@@ -107,8 +107,7 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 }
 
 type terraformTargetPool struct {
-	Name         string                     `cty:"name"`
-	HealthChecks []*terraformWriter.Literal `cty:"health_checks"`
+	Name string `cty:"name"`
 }
 
 func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetPool) error {
@@ -116,9 +115,6 @@ func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 	tf := &terraformTargetPool{
 		Name: name,
-		HealthChecks: []*terraformWriter.Literal{
-			e.HealthCheck.TerraformLink(),
-		},
 	}
 
 	return t.RenderResource("google_compute_target_pool", name, tf)
