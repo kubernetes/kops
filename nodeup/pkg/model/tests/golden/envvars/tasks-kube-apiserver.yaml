@@ -19,7 +19,7 @@ contents: |
       - --allow-privileged=true
       - --api-audiences=kubernetes.svc.default
       - --apiserver-count=1
-      - --authentication-config=/srv/kubernetes/kube-apiserver/authentication-config.yaml
+      - --authentication-config=/srv/kubernetes/kube-apiserver/kops-authentication-config.yaml
       - --authorization-mode=Node,RBAC
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
@@ -218,19 +218,6 @@ mode: "0600"
 path: /srv/kubernetes/kube-apiserver/apiserver-aggregator.key
 type: file
 ---
-contents: |
-  anonymous:
-    conditions:
-    - path: /healthz
-    - path: /livez
-    - path: /readyz
-    enabled: true
-  apiVersion: apiserver.config.k8s.io/v1
-  kind: AuthenticationConfiguration
-mode: "0400"
-path: /srv/kubernetes/kube-apiserver/authentication-config.yaml
-type: file
----
 contents: ""
 mode: "0644"
 path: /srv/kubernetes/kube-apiserver/etcd-ca.crt
@@ -258,6 +245,19 @@ contents:
     type: client
 mode: "0600"
 path: /srv/kubernetes/kube-apiserver/etcd-client.key
+type: file
+---
+contents: |
+  anonymous:
+    conditions:
+    - path: /healthz
+    - path: /livez
+    - path: /readyz
+    enabled: true
+  apiVersion: apiserver.config.k8s.io/v1
+  kind: AuthenticationConfiguration
+mode: "0400"
+path: /srv/kubernetes/kube-apiserver/kops-authentication-config.yaml
 type: file
 ---
 contents:

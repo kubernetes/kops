@@ -26,7 +26,7 @@ contents: |
       - --audit-policy-file=/etc/kubernetes/audit/policy-config.yaml
       - --audit-webhook-batch-max-wait=5s
       - --audit-webhook-config-file=/etc/kubernetes/audit/webhook-config.yaml
-      - --authentication-config=/srv/kubernetes/kube-apiserver/authentication-config.yaml
+      - --authentication-config=/srv/kubernetes/kube-apiserver/kops-authentication-config.yaml
       - --authorization-mode=Node,RBAC
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
@@ -228,13 +228,6 @@ mode: "0600"
 path: /srv/kubernetes/kube-apiserver/apiserver-aggregator.key
 type: file
 ---
-afterFiles:
-- /etc/kubernetes/authentication-config.yaml
-contents: {}
-mode: "0400"
-path: /srv/kubernetes/kube-apiserver/authentication-config.yaml
-type: file
----
 contents: ""
 mode: "0644"
 path: /srv/kubernetes/kube-apiserver/etcd-ca.crt
@@ -262,6 +255,13 @@ contents:
     type: client
 mode: "0600"
 path: /srv/kubernetes/kube-apiserver/etcd-client.key
+type: file
+---
+afterFiles:
+- /etc/kubernetes/authentication-config.yaml
+contents: {}
+mode: "0400"
+path: /srv/kubernetes/kube-apiserver/kops-authentication-config.yaml
 type: file
 ---
 contents:
