@@ -82,14 +82,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-master-us-test1-a" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-with-a-very-very-very-very-very-long-name-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-with-a-very-very-very-very-very-long-name.example.com-addons-bootstrap_content")

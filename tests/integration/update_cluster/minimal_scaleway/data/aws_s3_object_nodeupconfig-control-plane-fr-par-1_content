@@ -302,7 +302,4 @@ containerdConfig:
 etcdManifests:
 - memfs://tests/scw-minimal.k8s.local/manifests/etcd/main-control-plane-fr-par-1.yaml
 - memfs://tests/scw-minimal.k8s.local/manifests/etcd/events-control-plane-fr-par-1.yaml
-staticManifests:
-- key: kube-apiserver-healthcheck
-  path: manifests/static/kube-apiserver-healthcheck.yaml
 usesNoneDNS: true
