@@ -34,3 +34,23 @@ func TestClusterFieldHumanPath(t *testing.T) {
 		}
 	}
 }
+
+func TestInternalPathForInstanceGroupField(t *testing.T) {
+	grid := []struct {
+		In       string
+		Expected string
+	}{
+		{In: "spec.rootVolumeType", Expected: "spec.rootVolume.type"},
+		{In: "spec.rootVolumeSize", Expected: "spec.rootVolume.size"},
+		{In: "spec.rootVolumeIops", Expected: "spec.rootVolume.iops"},
+		{In: "spec.rootVolumeEncryptionKey", Expected: "spec.rootVolume.encryptionKey"},
+		{In: "spec.machineType", Expected: "spec.machineType"},
+	}
+
+	for _, g := range grid {
+		actual := InternalPathForInstanceGroupField(g.In)
+		if actual != g.Expected {
+			t.Errorf("InternalPathForInstanceGroupField(%q) = %q; expected %q", g.In, actual, g.Expected)
+		}
+	}
+}

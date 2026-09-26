@@ -85,3 +85,27 @@ var clusterFieldMappings = []struct {
 	{V1Alpha2: "spec.externalDns.provider", V1Alpha3: "spec.externalDNS.provider"},
 	{V1Alpha2: "spec.externalDns.priorityClassName", V1Alpha3: "spec.externalDNS.priorityClassName"},
 }
+
+// InternalPathForInstanceGroupField returns the path for a given instance group field, as it appears in the internal API.
+func InternalPathForInstanceGroupField(fieldPath string) string {
+	for _, mapping := range instanceGroupFieldMappings {
+		if mapping.V1Alpha2 == fieldPath {
+			return mapping.Internal
+		}
+	}
+	return fieldPath
+}
+
+// instanceGroupFieldMappings maps v1alpha2 instance group field paths to their internal equivalents.
+var instanceGroupFieldMappings = []struct {
+	V1Alpha2 string
+	Internal string
+}{
+	{V1Alpha2: "spec.rootVolumeSize", Internal: "spec.rootVolume.size"},
+	{V1Alpha2: "spec.rootVolumeType", Internal: "spec.rootVolume.type"},
+	{V1Alpha2: "spec.rootVolumeIops", Internal: "spec.rootVolume.iops"},
+	{V1Alpha2: "spec.rootVolumeThroughput", Internal: "spec.rootVolume.throughput"},
+	{V1Alpha2: "spec.rootVolumeOptimization", Internal: "spec.rootVolume.optimization"},
+	{V1Alpha2: "spec.rootVolumeEncryption", Internal: "spec.rootVolume.encryption"},
+	{V1Alpha2: "spec.rootVolumeEncryptionKey", Internal: "spec.rootVolume.encryptionKey"},
+}
