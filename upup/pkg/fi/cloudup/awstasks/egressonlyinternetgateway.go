@@ -49,19 +49,47 @@ func (e *EgressOnlyInternetGateway) CompareWithID() *string {
 	return e.ID
 }
 
-func findEgressOnlyInternetGateway(ctx context.Context, cloud awsup.AWSCloud, request *ec2.DescribeEgressOnlyInternetGatewaysInput) (*ec2types.EgressOnlyInternetGateway, error) {
+func findEgressOnlyInternetGateway(ctx context.Context, cloud awsup.AWSCloud, request *ec2.DescribeEgressOnlyInternetGatewaysInput, vpcId string) (*ec2types.EgressOnlyInternetGateway, error) {
 	response, err := cloud.EC2().DescribeEgressOnlyInternetGateways(ctx, request)
+
 	if err != nil {
 		return nil, fmt.Errorf("error listing EgressOnlyInternetGateways: %v", err)
 	}
-	if response == nil || len(response.EgressOnlyInternetGateways) == 0 {
+
+	var filteredEgressOnlyInternetGateways []ec2types.EgressOnlyInternetGateway
+
+	if response != nil {
+		if vpcId == "" {
+			filteredEgressOnlyInternetGateways = response.EgressOnlyInternetGateways
+		} else {
+			for _, eigw := range response.EgressOnlyInternetGateways {
+				var vpcAttached bool = false
+
+				if eigw.Attachments != nil {
+					for _, attachment := range eigw.Attachments {
+						if *attachment.VpcId == vpcId {
+							vpcAttached = true
+							break
+						}
+					}
+				}
+
+				if vpcAttached {
+					filteredEgressOnlyInternetGateways = append(filteredEgressOnlyInternetGateways, eigw)
+				}
+			}
+		}
+	}
+
+	if len(filteredEgressOnlyInternetGateways) == 0 {
 		return nil, nil
 	}
 
-	if len(response.EgressOnlyInternetGateways) != 1 {
+	if len(filteredEgressOnlyInternetGateways) != 1 {
 		return nil, fmt.Errorf("found multiple EgressOnlyInternetGateways matching tags")
 	}
-	igw := response.EgressOnlyInternetGateways[0]
+
+	igw := filteredEgressOnlyInternetGateways[0]
 	return &igw, nil
 }
 
@@ -72,13 +100,12 @@ func (e *EgressOnlyInternetGateway) Find(c *fi.CloudupContext) (*EgressOnlyInter
 	request := &ec2.DescribeEgressOnlyInternetGatewaysInput{}
 
 	shared := fi.ValueOf(e.Shared)
-	if shared {
-		if fi.ValueOf(e.VPC.ID) == "" {
-			return nil, fmt.Errorf("VPC ID is required when EgressOnlyInternetGateway is shared")
-		}
 
-		request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", *e.VPC.ID)}
-	} else {
+	if shared && fi.ValueOf(e.VPC.ID) == "" {
+		return nil, fmt.Errorf("VPC ID is required when EgressOnlyInternetGateway is shared")
+	}
+
+	if !shared {
 		if e.ID != nil {
 			request.EgressOnlyInternetGatewayIds = []string{fi.ValueOf(e.ID)}
 		} else {
@@ -86,7 +113,7 @@ func (e *EgressOnlyInternetGateway) Find(c *fi.CloudupContext) (*EgressOnlyInter
 		}
 	}
 
-	eigw, err := findEgressOnlyInternetGateway(ctx, cloud, request)
+	eigw, err := findEgressOnlyInternetGateway(ctx, cloud, request, fi.ValueOf(e.VPC.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -187,8 +214,7 @@ func (_ *EgressOnlyInternetGateway) RenderTerraform(t *terraform.TerraformTarget
 			if vpcID == "" {
 				return fmt.Errorf("VPC ID is required when EgressOnlyInternetGateway is shared")
 			}
-			request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
-			igw, err := findEgressOnlyInternetGateway(ctx, t.Cloud.(awsup.AWSCloud), request)
+			igw, err := findEgressOnlyInternetGateway(ctx, t.Cloud.(awsup.AWSCloud), request, vpcID)
 			if err != nil {
 				return err
 			}
