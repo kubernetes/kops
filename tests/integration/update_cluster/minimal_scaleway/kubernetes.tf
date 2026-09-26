@@ -82,14 +82,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-control-plane-fr-par-1" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "tests/scw-minimal.k8s.local/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "nodeupconfig-control-plane-fr-par-1" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-control-plane-fr-par-1_content")

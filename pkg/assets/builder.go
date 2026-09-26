@@ -283,13 +283,6 @@ func (a *AssetBuilder) RemapImage(image string) string {
 		}
 	}
 
-	if strings.HasPrefix(image, "registry.k8s.io/kops/kube-apiserver-healthcheck:") {
-		override := os.Getenv("KUBE_APISERVER_HEALTHCHECK_IMAGE")
-		if override != "" {
-			image = override
-		}
-	}
-
 	normalized := NormalizeImage(a, image)
 	image = normalized
 	asset.DownloadLocation = normalized

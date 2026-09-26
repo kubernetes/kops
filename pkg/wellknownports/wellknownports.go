@@ -41,8 +41,7 @@ const (
 	// NodeLocalDNSHealthCheck is the port where the node-local-dns health check listens.
 	NodeLocalDNSHealthCheck = 3989
 
-	// KubeAPIServerHealthCheck is the port where kube-apiserver-healthcheck listens.
-	KubeAPIServerHealthCheck = 3990
+	// 3990 was the port of the kube-apiserver-healthcheck sidecar (removed in kOps 1.38).
 
 	EtcdCiliumGRPC                  = 3991
 	EtcdCiliumQuarantinedClientPort = 3992

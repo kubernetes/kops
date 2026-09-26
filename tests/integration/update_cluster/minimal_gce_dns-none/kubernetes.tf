@@ -82,14 +82,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-master-us-test1-a" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "tests/minimal-gce.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce.example.com-addons-bootstrap_content")
@@ -668,17 +660,18 @@ resource "google_compute_region_backend_service" "api-minimal-gce-example-com" {
     balancing_mode = "CONNECTION"
     group          = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-example-com.instance_group
   }
-  health_checks         = [google_compute_region_health_check.api-minimal-gce-example-com.id]
+  health_checks         = [google_compute_region_health_check.api-https-minimal-gce-example-com.id]
   load_balancing_scheme = "INTERNAL"
   name                  = "api-minimal-gce-example-com"
   protocol              = "TCP"
 }
 
-resource "google_compute_region_health_check" "api-minimal-gce-example-com" {
-  name = "api-minimal-gce-example-com"
-  tcp_health_check {
-    port = 443
+resource "google_compute_region_health_check" "api-https-minimal-gce-example-com" {
+  https_health_check {
+    port         = 443
+    request_path = "/readyz"
   }
+  name = "api-https-minimal-gce-example-com"
 }
 
 resource "google_compute_router" "nat-minimal-gce-example-com" {

@@ -302,6 +302,7 @@ type RegionBackendServiceClient interface {
 	Delete(project, region, name string) (*compute.Operation, error)
 	Get(project, region, name string) (*compute.BackendService, error)
 	List(ctx context.Context, project, region string) ([]*compute.BackendService, error)
+	Patch(project, region, name string, bs *compute.BackendService) (*compute.Operation, error)
 }
 
 type regionBackendServiceClientImpl struct {
@@ -320,6 +321,10 @@ func (c *regionBackendServiceClientImpl) Delete(project, region, name string) (*
 
 func (c *regionBackendServiceClientImpl) Get(project, region, name string) (*compute.BackendService, error) {
 	return c.srv.Get(project, region, name).Do()
+}
+
+func (c *regionBackendServiceClientImpl) Patch(project, region, name string, bs *compute.BackendService) (*compute.Operation, error) {
+	return c.srv.Patch(project, region, name, bs).Do()
 }
 
 func (c *regionBackendServiceClientImpl) List(ctx context.Context, project, region string) ([]*compute.BackendService, error) {
@@ -407,6 +412,7 @@ type RegionHealthChecksClient interface {
 	Delete(project, region, name string) (*compute.Operation, error)
 	Get(project, region, name string) (*compute.HealthCheck, error)
 	List(ctx context.Context, project, region string) ([]*compute.HealthCheck, error)
+	Update(project, region, name string, hc *compute.HealthCheck) (*compute.Operation, error)
 }
 
 type healthCheckClientImpl struct {
@@ -425,6 +431,10 @@ func (c *healthCheckClientImpl) Delete(project, region, name string) (*compute.O
 
 func (c *healthCheckClientImpl) Get(project, region, name string) (*compute.HealthCheck, error) {
 	return c.srv.Get(project, region, name).Do()
+}
+
+func (c *healthCheckClientImpl) Update(project, region, name string, hc *compute.HealthCheck) (*compute.Operation, error) {
+	return c.srv.Update(project, region, name, hc).Do()
 }
 
 func (c *healthCheckClientImpl) List(ctx context.Context, project, region string) ([]*compute.HealthCheck, error) {
@@ -749,6 +759,11 @@ func (c *instanceGroupManagerClientImpl) RecreateInstances(project, zone, name, 
 func (c *instanceGroupManagerClientImpl) SetTargetPools(project, zone, name string, targetPools []string) (*compute.Operation, error) {
 	req := &compute.InstanceGroupManagersSetTargetPoolsRequest{
 		TargetPools: targetPools,
+	}
+	if len(targetPools) == 0 {
+		// An empty list is omitted from the request body by default, which would leave the
+		// existing target pools in place instead of detaching them.
+		req.ForceSendFields = append(req.ForceSendFields, "TargetPools")
 	}
 	return c.srv.SetTargetPools(project, zone, name, req).Do()
 }

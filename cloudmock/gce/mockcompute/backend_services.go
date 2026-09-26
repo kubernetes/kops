@@ -92,6 +92,26 @@ func (c *backendServiceClient) Get(project, _, name string) (*compute.BackendSer
 	return backendService, nil
 }
 
+func (c *backendServiceClient) Patch(project, _, name string, patch *compute.BackendService) (*compute.Operation, error) {
+	c.Lock()
+	defer c.Unlock()
+	backendServices, ok := c.backendServices[project]
+	if !ok {
+		return nil, notFoundError()
+	}
+	backendService, ok := backendServices[name]
+	if !ok {
+		return nil, notFoundError()
+	}
+	if patch.HealthChecks != nil {
+		backendService.HealthChecks = patch.HealthChecks
+	}
+	if patch.Backends != nil {
+		backendService.Backends = patch.Backends
+	}
+	return doneOperation(), nil
+}
+
 func (c *backendServiceClient) List(_ context.Context, project, _ string) ([]*compute.BackendService, error) {
 	c.Lock()
 	defer c.Unlock()

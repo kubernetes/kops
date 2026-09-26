@@ -313,7 +313,4 @@ containerdConfig:
 etcdManifests:
 - memfs://tests/existing-iam.example.com/manifests/etcd/main-master-us-test-1c.yaml
 - memfs://tests/existing-iam.example.com/manifests/etcd/events-master-us-test-1c.yaml
-staticManifests:
-- key: kube-apiserver-healthcheck
-  path: manifests/static/kube-apiserver-healthcheck.yaml
 usesNoneDNS: false

@@ -825,7 +825,8 @@ resource "aws_lb_target_group" "tcp-private-shared-ip-exa-g7j47a" {
   health_check {
     healthy_threshold   = 2
     interval            = 10
-    protocol            = "TCP"
+    path                = "/readyz"
+    protocol            = "HTTPS"
     unhealthy_threshold = 2
   }
   name     = "tcp-private-shared-ip-exa-g7j47a"
@@ -971,14 +972,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-master-us-test-1a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_manifests-etcdmanager-main-master-us-test-1a_content")
   key                    = "clusters.example.com/private-shared-ip.example.com/manifests/etcd/main-master-us-test-1a.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "clusters.example.com/private-shared-ip.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

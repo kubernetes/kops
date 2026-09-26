@@ -31,8 +31,9 @@ import (
 type HealthCheckProtocol string
 
 const (
-	HealthCheckProtocolTCP HealthCheckProtocol = "TCP"
-	HealthCheckProtocolSSL HealthCheckProtocol = "SSL"
+	HealthCheckProtocolTCP   HealthCheckProtocol = "TCP"
+	HealthCheckProtocolSSL   HealthCheckProtocol = "SSL"
+	HealthCheckProtocolHTTPS HealthCheckProtocol = "HTTPS"
 )
 
 // +kops:fitask
@@ -41,10 +42,12 @@ const (
 // and HTTPSHealthCheck.  Those HCs are still needed for some types, so both
 // are implemented in kops, but this one should be preferred when possible.
 type HealthCheck struct {
-	Name      *string
-	Port      int64
-	Protocol  HealthCheckProtocol
-	Lifecycle fi.Lifecycle
+	Name     *string
+	Port     int64
+	Protocol HealthCheckProtocol
+	// RequestPath is the path requested by HTTPS health checks.
+	RequestPath *string
+	Lifecycle   fi.Lifecycle
 }
 
 var _ fi.CompareWithID = (*HealthCheck)(nil)
@@ -95,6 +98,12 @@ func (e *HealthCheck) find(cloud gce.GCECloud) (*HealthCheck, error) {
 		if r.SslHealthCheck != nil {
 			actual.Port = r.SslHealthCheck.Port
 		}
+	case "HTTPS":
+		actual.Protocol = HealthCheckProtocolHTTPS
+		if r.HttpsHealthCheck != nil {
+			actual.Port = r.HttpsHealthCheck.Port
+			actual.RequestPath = &r.HttpsHealthCheck.RequestPath
+		}
 	default:
 		actual.Protocol = HealthCheckProtocolTCP
 		if r.TcpHealthCheck != nil {
@@ -118,6 +127,7 @@ func (_ *HealthCheck) CheckChanges(a, e, changes *HealthCheck) error {
 			return fi.CannotChangeField("Port")
 		}
 		if e.protocol() != a.protocol() {
+			// GCE does not allow changing the type of an existing health check.
 			return fi.CannotChangeField("Protocol")
 		}
 	}
@@ -137,6 +147,12 @@ func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck)
 		hc.SslHealthCheck = &compute.SSLHealthCheck{
 			Port: e.Port,
 		}
+	case HealthCheckProtocolHTTPS:
+		hc.Type = "HTTPS"
+		hc.HttpsHealthCheck = &compute.HTTPSHealthCheck{
+			Port:        e.Port,
+			RequestPath: fi.ValueOf(e.RequestPath),
+		}
 	default:
 		hc.Type = "TCP"
 		hc.TcpHealthCheck = &compute.TCPHealthCheck{
@@ -155,6 +171,17 @@ func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck)
 		if err := cloud.WaitForOp(op); err != nil {
 			return fmt.Errorf("error waiting for healthcheck: %v", err)
 		}
+	} else if changes.RequestPath != nil {
+		klog.V(2).Infof("Updating HealthCheck %q", hc.Name)
+
+		op, err := cloud.Compute().RegionHealthChecks().Update(cloud.Project(), cloud.Region(), hc.Name, hc)
+		if err != nil {
+			return fmt.Errorf("error updating healthcheck: %v", err)
+		}
+
+		if err := cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error waiting for healthcheck: %v", err)
+		}
 	} else {
 		return fmt.Errorf("cannot apply changes to healthcheck: %v", changes)
 	}
@@ -166,10 +193,16 @@ type terraformHealthCheckBlock struct {
 	Port int64 `cty:"port"`
 }
 
+type terraformHTTPSHealthCheckBlock struct {
+	Port        int64   `cty:"port"`
+	RequestPath *string `cty:"request_path"`
+}
+
 type terraformHealthCheck struct {
-	Name           string                     `cty:"name"`
-	TCPHealthCheck *terraformHealthCheckBlock `cty:"tcp_health_check"`
-	SSLHealthCheck *terraformHealthCheckBlock `cty:"ssl_health_check"`
+	Name             string                          `cty:"name"`
+	TCPHealthCheck   *terraformHealthCheckBlock      `cty:"tcp_health_check"`
+	SSLHealthCheck   *terraformHealthCheckBlock      `cty:"ssl_health_check"`
+	HTTPSHealthCheck *terraformHTTPSHealthCheckBlock `cty:"https_health_check"`
 }
 
 func (_ *HealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HealthCheck) error {
@@ -180,6 +213,8 @@ func (_ *HealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	switch e.protocol() {
 	case HealthCheckProtocolSSL:
 		tf.SSLHealthCheck = &terraformHealthCheckBlock{Port: e.Port}
+	case HealthCheckProtocolHTTPS:
+		tf.HTTPSHealthCheck = &terraformHTTPSHealthCheckBlock{Port: e.Port, RequestPath: e.RequestPath}
 	default:
 		tf.TCPHealthCheck = &terraformHealthCheckBlock{Port: e.Port}
 	}

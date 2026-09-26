@@ -246,6 +246,20 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				awstasks.TargetGroupAttributeDeregistrationDelayTimeoutSeconds:               "30",
 			}
 
+			// The API target groups request /readyz over HTTPS rather than opening a TCP
+			// connection: kube-apiserver accepts connections while it is still starting up, has lost
+			// etcd, or is draining before shutdown, and /readyz reports all of those. The NLB does not
+			// verify the serving certificate, and kube-apiserver allows this path without credentials.
+			// The NLB health checker does not support TLS 1.3, so clusters that only accept TLS 1.3
+			// keep the TCP check; see
+			// https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
+			healthCheckProtocol := elbv2types.ProtocolEnumHttps
+			healthCheckPath := new("/readyz")
+			if b.Cluster.Spec.KubeAPIServer != nil && b.Cluster.Spec.KubeAPIServer.TLSMinVersion == "VersionTLS13" {
+				healthCheckProtocol = elbv2types.ProtocolEnumTcp
+				healthCheckPath = nil
+			}
+
 			{
 				groupName := b.NLBTargetGroupName("tcp")
 				groupTags := b.CloudTags(groupName, false)
@@ -264,7 +278,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Interval:            new(int32(10)),
 					HealthyThreshold:    new(int32(2)),
 					UnhealthyThreshold:  new(int32(2)),
-					HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+					HealthCheckProtocol: healthCheckProtocol,
+					HealthCheckPath:     healthCheckPath,
 					Shared:              new(false),
 				}
 				tg.CreateNewRevisionsWith(nlb)
@@ -343,7 +358,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Interval:            new(int32(10)),
 					HealthyThreshold:    new(int32(2)),
 					UnhealthyThreshold:  new(int32(2)),
-					HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+					HealthCheckProtocol: healthCheckProtocol,
+					HealthCheckPath:     healthCheckPath,
 					Shared:              new(false),
 				}
 				secondaryTG.CreateNewRevisionsWith(nlb)

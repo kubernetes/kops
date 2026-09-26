@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"slices"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
@@ -59,6 +60,10 @@ type ForwardingRule struct {
 
 	// pruneForwardingRules will prune any forwarding rules found with the specified names
 	pruneForwardingRules []forwardingRulePruneSpec
+
+	// pruneTargetPools will prune any target pools found with the specified names,
+	// together with the legacy HTTP health checks they reference.
+	pruneTargetPools []string
 }
 
 type forwardingRulePruneSpec struct {
@@ -73,6 +78,12 @@ func (e *ForwardingRule) CompareWithID() *string {
 
 func (e *ForwardingRule) PruneForwardingRulesWithName(name string) {
 	e.pruneForwardingRules = append(e.pruneForwardingRules, forwardingRulePruneSpec{Name: name})
+}
+
+// PruneTargetPoolWithName deletes the named target pool (and its legacy HTTP health checks)
+// once this forwarding rule no longer targets it.
+func (e *ForwardingRule) PruneTargetPoolWithName(name string) {
+	e.pruneTargetPools = append(e.pruneTargetPools, name)
 }
 
 func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
@@ -222,7 +233,23 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 		o.Subnetwork = e.Subnetwork.URL(project, t.Cloud.Region())
 	}
 
-	if a == nil {
+	recreate := false
+	if a != nil && (changes.TargetPool != nil || changes.BackendService != nil) {
+		// GCE cannot switch a forwarding rule between a target pool and a backend service in
+		// place. The IP address is a reserved static address, so it survives the recreation.
+		klog.Infof("Recreating ForwardingRule %q to change its target", name)
+
+		op, err := t.Cloud.Compute().ForwardingRules().Delete(ctx, t.Cloud.Project(), t.Cloud.Region(), name)
+		if err != nil {
+			return fmt.Errorf("deleting ForwardingRule %q: %w", name, err)
+		}
+		if err := t.Cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("deleting ForwardingRule %q: %w", name, err)
+		}
+		recreate = true
+	}
+
+	if a == nil || recreate {
 		klog.V(4).Infof("Creating ForwardingRule %q", o.Name)
 
 		op, err := t.Cloud.Compute().ForwardingRules().Insert(ctx, t.Cloud.Project(), t.Cloud.Region(), o)
@@ -344,6 +371,22 @@ var _ fi.CloudupProducesDeletions = (*ForwardingRule)(nil)
 func (e *ForwardingRule) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
 	var removals []fi.CloudupDeletion
 
+	if len(e.pruneTargetPools) != 0 {
+		ctx := c.Context()
+		cloud := c.T.Cloud.(gce.GCECloud)
+
+		targetPools, err := cloud.Compute().TargetPools().List(ctx, cloud.Project(), cloud.Region())
+		if err != nil {
+			return nil, fmt.Errorf("listing targetPools: %w", err)
+		}
+
+		for _, targetPool := range targetPools {
+			if slices.Contains(e.pruneTargetPools, targetPool.Name) {
+				removals = append(removals, &deleteTargetPool{targetPool: targetPool})
+			}
+		}
+	}
+
 	if len(e.pruneForwardingRules) != 0 {
 		ctx := c.Context()
 		cloud := c.T.Cloud.(gce.GCECloud)
@@ -416,4 +459,62 @@ func (d *deleteForwardingRule) DeferDeletion() bool {
 	// We want to defer deletion, in case new nodes are launched with
 	// the old configuration during the rolling-update operation.
 	return true
+}
+
+// deleteTargetPool tracks a TargetPool that we're going to delete, along with its health checks.
+// It implements fi.CloudupDeletion
+type deleteTargetPool struct {
+	targetPool *compute.TargetPool
+}
+
+var _ fi.CloudupDeletion = (*deleteTargetPool)(nil)
+
+func (d *deleteTargetPool) TaskName() string {
+	return "TargetPool"
+}
+
+func (d *deleteTargetPool) Item() string {
+	return d.targetPool.Name
+}
+
+func (d *deleteTargetPool) Delete(t fi.CloudupTarget) error {
+	gceTarget, ok := t.(*gce.GCEAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+	cloud := gceTarget.Cloud
+	name := d.targetPool.Name
+
+	op, err := cloud.Compute().TargetPools().Delete(cloud.Project(), cloud.Region(), name)
+	if err != nil {
+		return fmt.Errorf("deleting targetPool %q: %w", name, err)
+	}
+	if err := cloud.WaitForOp(op); err != nil {
+		return fmt.Errorf("deleting targetPool %q: %w", name, err)
+	}
+
+	// Target pools only support legacy HTTP health checks, which nothing else uses.
+	for _, healthCheckLink := range d.targetPool.HealthChecks {
+		healthCheckName := lastComponent(healthCheckLink)
+		op, err := cloud.Compute().HTTPHealthChecks().Delete(cloud.Project(), healthCheckName)
+		if err != nil {
+			if gce.IsNotFound(err) {
+				continue
+			}
+			return fmt.Errorf("deleting HTTP health check %q: %w", healthCheckName, err)
+		}
+		if err := cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("deleting HTTP health check %q: %w", healthCheckName, err)
+		}
+	}
+
+	return nil
+}
+
+func (d *deleteTargetPool) String() string {
+	return d.TaskName() + "-" + d.Item()
+}
+
+func (d *deleteTargetPool) DeferDeletion() bool {
+	return false
 }

@@ -194,7 +194,4 @@ containerdConfig:
     version: 1.5.1
   sandboxImage: registry.k8s.io/pause:3.10.1
   version: 2.3.6
-staticManifests:
-- key: kube-apiserver-healthcheck
-  path: manifests/static/kube-apiserver-healthcheck.yaml
 usesNoneDNS: false

@@ -74,7 +74,6 @@ DNS_CONTROLLER_TAG=$(IMAGE_TAG)
 #   upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
 KOPS_CONTROLLER_TAG=$(IMAGE_TAG)
 #   pkg/model/components/kubeapiserver/model.go
-KUBE_APISERVER_HEALTHCHECK_TAG=$(IMAGE_TAG)
 #   discovery/cmd/discovery-server/
 DISCOVERY_SERVER_TAG=$(IMAGE_TAG)
 #   nodeup/pkg/model/channels.go
@@ -116,7 +115,7 @@ nodeup-install: nodeup
 all-install: all kops-install nodeup-install
 
 .PHONY: all
-all: kops nodeup ko-kops-controller-export ko-kops-channels-export ko-dns-controller-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
+all: kops nodeup ko-kops-controller-export ko-kops-channels-export ko-dns-controller-export ko-discovery-server-export
 
 include tests/e2e/e2e.mk
 
@@ -517,17 +516,6 @@ ko-kops-channels-export-linux-amd64 ko-kops-channels-export-linux-arm64: ko-kops
 ko-kops-channels-export: ko-kops-channels-export-linux-amd64 ko-kops-channels-export-linux-arm64
 	echo "Done exporting kops-channels images"
 
-.PHONY: ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64
-ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64: ko-kube-apiserver-healthcheck-export-linux-%:
-	mkdir -p ${IMAGES}
-	KO_DOCKER_REPO="registry.k8s.io/kops" ${KO} build --tags ${KUBE_APISERVER_HEALTHCHECK_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kube-apiserver-healthcheck-$*.tar ./cmd/kube-apiserver-healthcheck
-	gzip -f ${IMAGES}/kube-apiserver-healthcheck-$*.tar
-	tools/sha256 ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256
-
-.PHONY: ko-kube-apiserver-healthcheck-export
-ko-kube-apiserver-healthcheck-export: ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64
-	echo "Done exporting kube-apiserver-healthcheck images"
-
 .PHONY: ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64
 ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64: ko-dns-controller-export-linux-%:
 	mkdir -p ${IMAGES}
@@ -655,23 +643,6 @@ dev-upload-kops-channels: version-dist-kops-channels
 dev-upload-kops-channels-amd64 dev-upload-kops-channels-arm64: dev-upload-kops-channels-%: version-dist-kops-channels-%
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
-# dev-upload-kube-apiserver-healthcheck uploads kube-apiserver-healthcheck
-.PHONY: version-dist-kube-apiserver-healthcheck version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64
-version-dist-kube-apiserver-healthcheck: version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64
-
-version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64: version-dist-kube-apiserver-healthcheck-%: ko-kube-apiserver-healthcheck-export-linux-%
-	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz.sha256
-
-.PHONY: dev-upload-kube-apiserver-healthcheck
-dev-upload-kube-apiserver-healthcheck: version-dist-kube-apiserver-healthcheck
-	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
-
-.PHONY: dev-upload-kube-apiserver-healthcheck-amd64 dev-upload-kube-apiserver-healthcheck-arm64
-dev-upload-kube-apiserver-healthcheck-amd64 dev-upload-kube-apiserver-healthcheck-arm64: dev-upload-kube-apiserver-healthcheck-%: version-dist-kube-apiserver-healthcheck-%
-	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
-
 # dev-upload-dns-controller uploads dns-controller
 .PHONY: version-dist-dns-controller version-dist-dns-controller-amd64 version-dist-dns-controller-arm64
 version-dist-dns-controller: version-dist-dns-controller-amd64 version-dist-dns-controller-arm64
@@ -710,7 +681,7 @@ dev-upload-discovery-server-amd64 dev-upload-discovery-server-arm64: dev-upload-
 .PHONY: dev-version-dist dev-version-dist-amd64 dev-version-dist-arm64
 dev-version-dist: dev-version-dist-amd64 dev-version-dist-arm64
 
-dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-kops-controller-% version-dist-kops-channels-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-discovery-server-%
+dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-kops-controller-% version-dist-kops-channels-% version-dist-dns-controller-% version-dist-discovery-server-%
 
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%
@@ -745,16 +716,6 @@ kops-channels-push: ko-kops-channels-push
 .PHONY: ko-kops-channels-push
 ko-kops-channels-push:
 	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}channels" GOFLAGS="-tags=${BUILDTAGS}" ${KO} build --tags ${KOPS_CHANNELS_TAG} --platform=linux/amd64,linux/arm64 --bare ./channels/cmd/channels/
-
-#------------------------------------------------------
-# kube-apiserver-healthcheck
-
-.PHONY: kube-apiserver-healthcheck-push
-kube-apiserver-healthcheck-push: ko-kube-apiserver-healthcheck-push
-
-.PHONY: ko-kube-apiserver-healthcheck-push
-ko-kube-apiserver-healthcheck-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck" ${KO} build --tags ${KUBE_APISERVER_HEALTHCHECK_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kube-apiserver-healthcheck/
 
 #------------------------------------------------------
 # discovery-server

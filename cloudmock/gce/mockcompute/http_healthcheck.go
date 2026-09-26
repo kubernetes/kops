@@ -61,7 +61,9 @@ func (c *httpHealthChecksClient) Insert(project string, hc *compute.HttpHealthCh
 	}
 	hc.SelfLink = fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/httpHealthChecks/%s", project, hc.Name)
 	hcs[hc.Name] = hc
-	return doneOperation(), nil
+	op := doneOperation()
+	op.TargetLink = hc.SelfLink
+	return op, nil
 }
 
 func (c *httpHealthChecksClient) Delete(project, name string) (*compute.Operation, error) {
