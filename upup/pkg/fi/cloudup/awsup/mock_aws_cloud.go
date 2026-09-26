@@ -105,6 +105,12 @@ func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*k
 	return getCloudGroups(ctx, c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
+var _ cloudinstances.GroupFailureReporter = (*MockAWSCloud)(nil)
+
+func (c *MockAWSCloud) GetGroupFailures(ctx context.Context, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.GroupFailure, error) {
+	return getGroupFailures(ctx, c, group)
+}
+
 func (c *MockCloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderAWS
 }
