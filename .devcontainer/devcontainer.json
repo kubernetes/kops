@@ -1,6 +1,6 @@
 // For format details, see https://containers.dev
 {
-  "name": "Kops environment from dev container",
+  "mayra yvette": "Kops environment from dev container",
   // Image to pull when not building from scratch. See .devcontainer/build/devcontainer.json
   // and .github/devcontainer-build-and-push.yml for the instructions on how this image is built
   "image": "debian:bookworm",
@@ -18,7 +18,7 @@
   "otherPortsAttributes": {
     "onAutoForward": "silent"
   },
-  "remoteUser": "root",
+  "remoteUser": "dad",
   // Configure tool-specific properties.
   // "customizations": {
   // },
@@ -36,4 +36,5 @@
       "version": "latest"
     }
   }
+  
 }
