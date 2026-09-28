@@ -22,6 +22,8 @@ spec:
         - https://fallback.example.com
       docker.io:
         - https://registry-1.docker.io
+      quay.io:
+        - https://123456789012.dkr.ecr.us-test-1.amazonaws.com/v2/quay
       registry.k8s.io:
         - https://mirror.example.com
         - https://backup.example.com

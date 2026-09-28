@@ -21,6 +21,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -777,7 +778,11 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 		var buf strings.Builder
 		for _, endpoint := range mirrors[name] {
 			fmt.Fprintf(&buf, "[host.%q]\n", endpoint)
-			buf.WriteString("  capabilities = [\"pull\", \"resolve\"]\n\n")
+			buf.WriteString("  capabilities = [\"pull\", \"resolve\"]\n")
+			if endpointHasPath(endpoint) {
+				buf.WriteString("  override_path = true\n")
+			}
+			buf.WriteString("\n")
 		}
 		// containerd uses the special "_default" directory as the catch-all namespace.
 		// Translate the kops convention of "*" so users don't end up with a literal
@@ -793,4 +798,17 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 		})
 	}
 	return nil
+}
+
+// endpointHasPath reports whether a mirror endpoint carries its own API path, e.g.
+// https://<account>.dkr.ecr.<region>.amazonaws.com/v2/<prefix> for an ECR pull-through cache.
+// containerd appends /v2 to hosts.toml host paths unless override_path is set, whereas the
+// legacy registry.mirrors endpoint list used a non-empty path as-is. Setting override_path
+// for these endpoints keeps the behaviour of the legacy configuration.
+func endpointHasPath(endpoint string) bool {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return false
+	}
+	return strings.TrimSuffix(u.Path, "/") != ""
 }
