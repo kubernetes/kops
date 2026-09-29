@@ -324,7 +324,13 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 			return err
 		}
 
-		if err := t.AddOutputVariable("vpc_ipv6_cidr_block", terraformWriter.LiteralData("aws_vpc", *e.Name, "ipv6_cidr_block")); err != nil {
+		// data.aws_vpc.ipv6_cidr_block is deprecated. Keep a single associated CIDR,
+		// or "" when the VPC has none, so the empty-string length check still works.
+		associations := terraformWriter.LiteralData("aws_vpc", *e.Name, "ipv6_cidr_block_associations")
+		ipv6CIDR := &terraformWriter.Literal{
+			String: fmt.Sprintf(`try([for a in %s : a.ipv6_cidr_block if a.state == "associated"][0], "")`, associations.String),
+		}
+		if err := t.AddOutputVariable("vpc_ipv6_cidr_block", ipv6CIDR); err != nil {
 			return err
 		}
 
