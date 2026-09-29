@@ -17,11 +17,13 @@
 set -e
 set -x
 
-make test-e2e-install
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  make test-e2e-install
+fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 if [[ -z "${K8S_VERSION:-}" ]]; then
-  K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
+  K8S_VERSION=https://dl.k8s.io/ci/latest.txt
 fi
 
 # Default Scale Scenario to performance
@@ -53,6 +55,12 @@ echo "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT=${KOPS_APISERVER_MAX_REQUESTS_INFLIGH
 # cilium does not yet pass conformance tests (shared hostport test)
 #create_args="--networking cilium"
 create_args=()
+# Correctness Scale tests require nfs packages
+if [[ "${INSTANCE_NAME:-}" == *ami-amazon-linux* ]]; then
+  create_args+=("--set spec.packages=nfs-utils")
+else
+  create_args+=("--set spec.packages=nfs-common")
+fi
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16,10.5.0.0/16,10.6.0.0/16,10.7.0.0/16,10.8.0.0/16,10.9.0.0/16,10.10.0.0/16,10.11.0.0/16,10.12.0.0/16")
   create_args+=("--node-size=${NODE_SIZE:-t3a.medium,t3.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c7a.large,r5a.large,r6a.large,m7a.large}")
@@ -122,8 +130,7 @@ create_args+=("--set spec.kubeAPIServer.compactionInterval=150s")
 
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
-# this is required for kindnet to use nftables
-create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-iptables}")
+create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-nftables}")
 # this is required for prometheus to scrape kube-proxy metrics endpoint
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 # bump coredns memory on large clusters
@@ -256,19 +263,20 @@ fi
 if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
+    --metadata=variant="${EXPERIMENT_VARIANT:-base}" \
     --kubernetes-version="${K8S_VERSION}" \
     --create-args="${create_args[*]}" \
     --test=kops \
     -- \
-    --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+    --test-package-url=https://dl.k8s.io \
     --test-package-dir=ci \
     --test-package-marker=latest.txt \
-    --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]\[KubeUp\]" \
-    --parallel=25
+    --skip-regex="${SKIP_REGEX-\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]}" \
+    --parallel=40
 else
-  rc=0
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
+    --metadata=variant="${EXPERIMENT_VARIANT:-base}" \
     --kubernetes-version="${K8S_VERSION}" \
     --create-args="${create_args[*]}" \
     --test=clusterloader2 \
@@ -276,13 +284,5 @@ else
     --provider="${CLOUD_PROVIDER}" \
     --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
     --kube-config="${HOME}/.kube/config" \
-    "${CLUSTERLOADER2_ARGS[@]}" || rc=$?
-
-  # Add the variant after kubetest2, which would otherwise overwrite metadata.json.
-  if [[ -n "${ARTIFACTS:-}" ]]; then
-    if jq --arg v "${EXPERIMENT_VARIANT:-base}" '. + {variant:$v}' "${ARTIFACTS}/metadata.json" >"${ARTIFACTS}/metadata.json.tmp"; then
-      mv "${ARTIFACTS}/metadata.json.tmp" "${ARTIFACTS}/metadata.json" || true
-    fi
-  fi
-  exit $rc
+    "${CLUSTERLOADER2_ARGS[@]}"
 fi
