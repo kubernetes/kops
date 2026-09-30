@@ -34,6 +34,7 @@ func SetInstancegroupFields(fields []string, instanceGroup *api.InstanceGroup) e
 
 		key := kv[0]
 		key = strings.TrimPrefix(key, "instancegroup.")
+		key = api.InternalPathForInstanceGroupField(key)
 
 		if err := reflectutils.SetString(instanceGroup, key, kv[1]); err != nil {
 			return err
