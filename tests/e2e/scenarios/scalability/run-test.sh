@@ -260,10 +260,10 @@ if [[ -z "${KOPS_CL2_TEST_CONFIG}" && "${CLOUD_PROVIDER}" == "gce" ]]; then
   CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml")
 fi
 
+rc=0
 if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
-    --metadata=variant="${EXPERIMENT_VARIANT:-base}" \
     --kubernetes-version="${K8S_VERSION}" \
     --create-args="${create_args[*]}" \
     --test=kops \
@@ -272,11 +272,10 @@ if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
     --test-package-dir=ci \
     --test-package-marker=latest.txt \
     --skip-regex="${SKIP_REGEX-\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]}" \
-    --parallel=40
+    --parallel=40 || rc=$?
 else
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
-    --metadata=variant="${EXPERIMENT_VARIANT:-base}" \
     --kubernetes-version="${K8S_VERSION}" \
     --create-args="${create_args[*]}" \
     --test=clusterloader2 \
@@ -284,5 +283,17 @@ else
     --provider="${CLOUD_PROVIDER}" \
     --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
     --kube-config="${HOME}/.kube/config" \
-    "${CLUSTERLOADER2_ARGS[@]}"
+    "${CLUSTERLOADER2_ARGS[@]}" || rc=$?
 fi
+
+# Add the variant after kubetest2, which would otherwise overwrite metadata.json.
+if [[ -n "${ARTIFACTS:-}" ]]; then
+  metadata_file="${ARTIFACTS}/metadata.json"
+  if jq --arg v "${EXPERIMENT_VARIANT:-base}" '. + {variant:$v}' "${metadata_file}" >"${metadata_file}.tmp"; then
+    mv "${metadata_file}.tmp" "${metadata_file}" || true
+  else
+    rm -f "${metadata_file}.tmp" || true
+  fi
+fi
+
+exit "${rc}"
