@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -800,15 +801,18 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 	return nil
 }
 
-// endpointHasPath reports whether a mirror endpoint carries its own API path, e.g.
-// https://<account>.dkr.ecr.<region>.amazonaws.com/v2/<prefix> for an ECR pull-through cache.
-// containerd appends /v2 to hosts.toml host paths unless override_path is set, whereas the
-// legacy registry.mirrors endpoint list used a non-empty path as-is. Setting override_path
-// for these endpoints keeps the behaviour of the legacy configuration.
+// endpointHasPath reports whether a mirror endpoint has a non-root path. These endpoints get
+// override_path, so containerd uses the path as-is instead of appending /v2, as the legacy
+// registry.mirrors config did.
 func endpointHasPath(endpoint string) bool {
+	// Match containerd's parseHostConfig normalization so we check the same path.
+	if !strings.HasPrefix(endpoint, "http") {
+		endpoint = "https://" + endpoint
+	}
+
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return false
 	}
-	return strings.TrimSuffix(u.Path, "/") != ""
+	return u.Path != "" && path.Clean(u.Path) != "/"
 }
