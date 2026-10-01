@@ -340,6 +340,17 @@ func TestMinimalWarmPool(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestMinimalWarmPoolPartialUpdate checks that updating only the control plane keeps the permissions
+// that the nodes in warm pools need to complete their lifecycle hooks.
+func TestMinimalWarmPoolPartialUpdate(t *testing.T) {
+	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").
+		runTestPartialUpdate(t, kops.CloudProviderAWS, partialUpdateTest{
+			instanceGroupRoles: controlPlaneRoles,
+			clusterResources:   []string{"aws_iam_instance_profile", "aws_iam_role", "aws_iam_role_policy"},
+			clusterDataFiles:   []string{"aws_iam_role_policy_nodes.minimal-warmpool.example.com_policy"},
+		})
+}
+
 // TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalEtcd(t *testing.T) {
 	newIntegrationTest("minimal-etcd.example.com", "minimal-etcd").
