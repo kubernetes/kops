@@ -18,6 +18,7 @@ package validation
 
 import (
 	"net"
+	"strings"
 	"testing"
 	"time"
 
@@ -2047,6 +2048,93 @@ func Test_Validate_RuncVersion(t *testing.T) {
 			errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), true)
 			testErrors(t, g.version, errs, g.expectedErrors)
 		})
+	}
+}
+
+func Test_Validate_ContainerdRegistryMirrors(t *testing.T) {
+	grid := []struct {
+		endpoint string
+		// expectedDetail is a substring of the error detail; empty means valid.
+		expectedDetail string
+	}{
+		// Valid endpoints.
+		{endpoint: "mirror.example.com"},
+		{endpoint: "10.0.0.5"},
+		{endpoint: "10.0.0.5:5000"},
+		{endpoint: "[2001:db8::5]:5000"},
+		{endpoint: "mirror.example.com:5000/v2/docker-hub"},
+		{endpoint: "https://mirror.example.com"},
+		{endpoint: "http://mirror.example.com:5000"},
+		{endpoint: "https://123456789012.dkr.ecr.us-east-1.amazonaws.com/v2/docker-hub"},
+		{endpoint: "http://localhost:5000"},
+		{endpoint: "https://127.0.0.1:5000"},
+		{endpoint: "http://[::1]:5000"},
+		// Only lowercase "http" and "https" schemes are accepted.
+		{endpoint: "HTTPS://mirror.example.com", expectedDetail: `scheme must be lowercase "http" or "https"`},
+		{endpoint: "Http://mirror.example.com", expectedDetail: `scheme must be lowercase "http" or "https"`},
+		{endpoint: "httpS://mirror.example.com", expectedDetail: `scheme must be lowercase "http" or "https"`},
+		{endpoint: "httpx://mirror.example.com", expectedDetail: `scheme must be lowercase "http" or "https"`},
+		{endpoint: "oci://mirror.example.com", expectedDetail: `scheme must be lowercase "http" or "https"`},
+		// containerd cannot parse these.
+		{endpoint: "mirror.example.com:port", expectedDetail: "containerd cannot parse this endpoint"},
+		{endpoint: "http://HostIP:Port", expectedDetail: "containerd cannot parse this endpoint"},
+		{endpoint: " mirror.example.com", expectedDetail: "containerd cannot parse this endpoint"},
+		// No host is left after containerd's normalization.
+		{endpoint: "", expectedDetail: "must include a host"},
+		{endpoint: "https://", expectedDetail: "must include a host"},
+		{endpoint: "http-cache.example.com", expectedDetail: "must include a host"},
+		{endpoint: "http-cache.example.com:5000", expectedDetail: "must include a host"},
+		// Loopback endpoints need an explicit scheme.
+		{endpoint: "localhost", expectedDetail: `must start with "http://" for a plain HTTP registry`},
+		{endpoint: "localhost:5000", expectedDetail: `must start with "http://" for a plain HTTP registry`},
+		{endpoint: "127.0.0.1:5000", expectedDetail: `must start with "http://" for a plain HTTP registry`},
+		{endpoint: "[::1]:5000", expectedDetail: `must start with "http://" for a plain HTTP registry`},
+	}
+	for _, g := range grid {
+		t.Run(g.endpoint, func(t *testing.T) {
+			containerd := &kops.ContainerdConfig{
+				RegistryMirrors: map[string][]string{"docker.io": {g.endpoint}},
+			}
+			errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), true)
+			if g.expectedDetail == "" {
+				testErrors(t, g.endpoint, errs, nil)
+				return
+			}
+			testErrors(t, g.endpoint, errs, []string{"Invalid value::containerd.registryMirrors[docker.io][0]"})
+			if len(errs) != 1 || !strings.Contains(errs[0].Detail, g.expectedDetail) {
+				t.Errorf("expected a single error containing %q, got %v", g.expectedDetail, errs)
+			}
+		})
+	}
+}
+
+func Test_Validate_ContainerdRegistryMirrorDuplicates(t *testing.T) {
+	grid := []struct {
+		endpoints      []string
+		expectedErrors []string
+	}{
+		{
+			endpoints:      []string{"https://mirror.example.com", "https://mirror.example.com"},
+			expectedErrors: []string{"Duplicate value::containerd.registryMirrors[docker.io][1]"},
+		},
+		{
+			endpoints:      []string{"https://mirror.example.com", "https://backup.example.com", "https://mirror.example.com"},
+			expectedErrors: []string{"Duplicate value::containerd.registryMirrors[docker.io][2]"},
+		},
+		{
+			// Different keys for the same host are not duplicates.
+			endpoints: []string{"mirror.example.com", "https://mirror.example.com", "https://mirror.example.com/"},
+		},
+	}
+	for _, g := range grid {
+		containerd := &kops.ContainerdConfig{
+			RegistryMirrors: map[string][]string{"docker.io": g.endpoints},
+		}
+		errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), true)
+		testErrors(t, g.endpoints, errs, g.expectedErrors)
+		if len(errs) != len(g.expectedErrors) {
+			t.Errorf("expected %d errors for %q, got %v", len(g.expectedErrors), g.endpoints, errs)
+		}
 	}
 }
 

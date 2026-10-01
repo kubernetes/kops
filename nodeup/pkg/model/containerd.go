@@ -687,6 +687,7 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 // registry.mirrors config did.
 func endpointHasPath(endpoint string) bool {
 	// Match containerd's parseHostConfig normalization so we check the same path.
+	// Keep in sync with validateContainerdMirrorEndpoint in pkg/apis/kops/validation.
 	if !strings.HasPrefix(endpoint, "http") {
 		endpoint = "https://" + endpoint
 	}

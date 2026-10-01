@@ -1395,7 +1395,7 @@ spec:
       docker.io:
       - https://registry-1.docker.io
       "*":
-      - http://HostIP2:Port2
+      - http://mirror.example.com:5000
 ```
 
 ### NRI configuration
