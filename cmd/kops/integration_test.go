@@ -222,6 +222,27 @@ func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// gceLoadBalancerResources are the terraform resources of the API load balancers on GCE.
+var gceLoadBalancerResources = []string{
+	"google_compute_address",
+	"google_compute_firewall",
+	"google_compute_forwarding_rule",
+	"google_compute_http_health_check",
+	"google_compute_region_backend_service",
+	"google_compute_region_health_check",
+	"google_compute_target_pool",
+}
+
+// TestMinimalGCEInternalLoadBalancerPartialUpdate checks that updating only the nodes keeps the
+// control plane in the backend service of the internal load balancer.
+func TestMinimalGCEInternalLoadBalancerPartialUpdate(t *testing.T) {
+	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
+		runTestPartialUpdate(t, kops.CloudProviderGCE, partialUpdateTest{
+			instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)},
+			clusterResources:   gceLoadBalancerResources,
+		})
+}
+
 // TestMinimalGCEInternalLoadBalancerCiliumEtcd runs tests on a minimal GCE configuration with an internal load balancer and cilium-etcd.
 func TestMinimalGCEInternalLoadBalancerCiliumEtcd(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb-cilium-etcd.example.com", "minimal_gce_ilb_cilium_etcd").
@@ -242,6 +263,25 @@ func TestMinimalGCEPublicLoadBalancerAPIServer(t *testing.T) {
 
 	newIntegrationTest("minimal-gce-plb-apiserver.example.com", "minimal_gce_plb_apiserver").
 		runTestTerraformGCE(t)
+}
+
+// TestMinimalGCEPublicLoadBalancerAPIServerPartialUpdate checks that updating only some instance groups
+// keeps the load balancers and firewall rules of the control plane and APIServer instance groups.
+func TestMinimalGCEPublicLoadBalancerAPIServerPartialUpdate(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	defer featureflag.ParseFlags("-APIServerNodes")
+
+	for _, p := range []partialUpdateTest{
+		{name: "master-us-test1-a", instanceGroups: []string{"master-us-test1-a"}},
+		{name: "apiserver-us-test1-a", instanceGroups: []string{"apiserver-us-test1-a"}},
+		{name: "nodes", instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			p.clusterResources = gceLoadBalancerResources
+			newIntegrationTest("minimal-gce-plb-apiserver.example.com", "minimal_gce_plb_apiserver").
+				runTestPartialUpdate(t, kops.CloudProviderGCE, p)
+		})
+	}
 }
 
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
