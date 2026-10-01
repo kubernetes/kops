@@ -18,8 +18,10 @@ package bootstrapchannelbuilder
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -30,7 +32,16 @@ import (
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 )
 
-func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) error {
+// karpenterInstanceGroupKinds are the kinds of the objects that kOps generates for each Karpenter
+// instance group, named after the instance group.
+var karpenterInstanceGroupKinds = []schema.GroupKind{
+	{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
+	{Group: "karpenter.sh", Kind: "NodePool"},
+}
+
+// buildPruneDirectives configures pruning of the objects that are not in the manifest, except
+// those of the protectedInstanceGroups, see protectedInstanceGroupNames.
+func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, protectedInstanceGroups []string) error {
 	spec.Prune = &channelsapi.PruneSpec{}
 
 	// We add these labels to all objects we manage, so we reuse them for pruning.
@@ -61,10 +72,7 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) erro
 		{Group: "policy", Kind: "PodDisruptionBudget"},
 	}
 	if *spec.Name == "karpenter.sh" {
-		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds,
-			schema.GroupKind{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
-			schema.GroupKind{Group: "karpenter.sh", Kind: "NodePool"},
-		)
+		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds, karpenterInstanceGroupKinds...)
 	}
 	pruneGroupKind := make(map[schema.GroupKind]bool)
 	for _, gk := range alwaysPruneGroupKinds {
@@ -137,6 +145,16 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) erro
 		}
 
 		pruneSpec.LabelSelector = selector.String()
+
+		// The objects of the protected instance groups are excluded by name. Since kOps 1.23,
+		// kops-channels passes the field selector to the list call that finds the objects to prune.
+		if slices.Contains(karpenterInstanceGroupKinds, gk) && len(protectedInstanceGroups) != 0 {
+			var nameSelectors []fields.Selector
+			for _, name := range protectedInstanceGroups {
+				nameSelectors = append(nameSelectors, fields.OneTermNotEqualSelector("metadata.name", name))
+			}
+			pruneSpec.FieldSelector = fields.AndSelectors(nameSelectors...).String()
+		}
 
 		spec.Prune.Kinds = append(spec.Prune.Kinds, pruneSpec)
 	}
