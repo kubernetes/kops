@@ -295,3 +295,34 @@ func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
 		t.Error("new config did not match expected new config")
 	}
 }
+
+func TestEndpointHasPath(t *testing.T) {
+	grid := []struct {
+		endpoint string
+		expected bool
+	}{
+		{endpoint: "https://mirror.example.com", expected: false},
+		{endpoint: "https://mirror.example.com/", expected: false},
+		{endpoint: "https://mirror.example.com//", expected: false},
+		{endpoint: "http://10.0.0.5:5000", expected: false},
+		{endpoint: "mirror.example.com", expected: false},
+		{endpoint: "mirror.example.com:5000", expected: false},
+		{endpoint: "10.0.0.5", expected: false},
+		{endpoint: "https://mirror.example.com/v2", expected: true},
+		{endpoint: "https://123456789012.dkr.ecr.us-east-1.amazonaws.com/v2/docker-hub", expected: true},
+		{endpoint: "mirror.example.com:5000/v2/docker-hub", expected: true},
+		{endpoint: "10.0.0.5:5000/v2/docker-hub", expected: true},
+		{endpoint: "https://mirror.example.com/./", expected: false},
+		{endpoint: "https://mirror.example.com/v2/..", expected: false},
+		{endpoint: "https://mirror.example.com/prefix/./v2", expected: true},
+		{endpoint: "https://mirror.example.com/v2/docker-hub/", expected: true},
+		{endpoint: "[::1]:5000/v2/x", expected: true},
+		{endpoint: "https://[fd00::1]:5000", expected: false},
+	}
+
+	for _, g := range grid {
+		if actual := endpointHasPath(g.endpoint); actual != g.expected {
+			t.Errorf("endpointHasPath(%q): got %v, expected %v", g.endpoint, actual, g.expected)
+		}
+	}
+}
