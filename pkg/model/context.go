@@ -317,7 +317,7 @@ func (b *KopsModelContext) UsesBastionDns() bool {
 
 // UsesSSHBastion checks if we have a Bastion in the cluster
 func (b *KopsModelContext) UsesSSHBastion() bool {
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.Spec.Role.HasBastion() {
 			return true
 		}

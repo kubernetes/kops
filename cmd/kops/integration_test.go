@@ -370,6 +370,22 @@ func TestBastionAdditionalUserData(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestBastionPartialUpdate checks that updating only some instance groups keeps SSH access
+// through the bastions, and does not open it directly to the other instances.
+func TestBastionPartialUpdate(t *testing.T) {
+	for _, p := range []partialUpdateTest{
+		{name: "control-plane", instanceGroupRoles: controlPlaneRoles},
+		{name: "nodes", instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)}},
+		{name: "bastions", instanceGroupRoles: []string{string(kops.InstanceGroupRoleBastion)}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			p.clusterResources = []string{"aws_lb", "aws_lb_listener", "aws_lb_target_group", "aws_security_group", "aws_security_group_rule"}
+			newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").
+				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
+		})
+	}
+}
+
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
 	newIntegrationTest("privateflannel.example.com", "privateflannel").
@@ -614,6 +630,25 @@ func TestAPIServerNodes(t *testing.T) {
 
 	newIntegrationTest("minimal.example.com", "apiservernodes").
 		runTestTerraformAWS(t)
+}
+
+// TestAPIServerNodesPartialUpdate checks that updating only some instance groups keeps the
+// security groups and rules of the other instance groups.
+func TestAPIServerNodesPartialUpdate(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	defer featureflag.ParseFlags("-APIServerNodes")
+
+	for _, p := range []partialUpdateTest{
+		{name: "control-plane", instanceGroupRoles: []string{string(kops.InstanceGroupRoleControlPlane)}},
+		{name: "apiserver", instanceGroups: []string{"apiserver"}},
+		{name: "nodes", instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			p.clusterResources = []string{"aws_lb", "aws_lb_listener", "aws_lb_target_group", "aws_security_group", "aws_security_group_rule"}
+			newIntegrationTest("minimal.example.com", "apiservernodes").
+				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
+		})
+	}
 }
 
 // TestNTHIMDSProcessor tests the output for resources required by NTH IMDS Processor mode
