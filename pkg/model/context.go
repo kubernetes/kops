@@ -122,10 +122,11 @@ func (b *KopsModelContext) FindZonesForInstanceGroup(ig *kops.InstanceGroup) ([]
 	return model.FindZonesForInstanceGroup(b.Cluster, ig)
 }
 
-// MasterInstanceGroups returns InstanceGroups with the master role
+// MasterInstanceGroups returns the instance groups with the control-plane role,
+// including those not being updated
 func (b *KopsModelContext) MasterInstanceGroups() []*kops.InstanceGroup {
 	var groups []*kops.InstanceGroup
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if !ig.IsControlPlane() {
 			continue
 		}
