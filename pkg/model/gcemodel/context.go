@@ -123,10 +123,6 @@ func (c *GCEModelContext) GCETagsForAPIServerTargets() []string {
 	return tags
 }
 
-func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {
-	return &gcetasks.TargetPool{Name: s(c.NameForTargetPool(id))}
-}
-
 func (c *GCEModelContext) NameForTargetPool(id string) string {
 	return c.SafeSuffixedObjectName(id)
 }
@@ -144,14 +140,6 @@ func (c *GCEModelContext) NameForForwardingRule(id string) string {
 }
 
 func (c *GCEModelContext) NameForIPAddress(id string) string {
-	return c.SafeSuffixedObjectName(id)
-}
-
-func (c *GCEModelContext) NameForPoolHealthcheck(id string) string {
-	return c.SafeObjectName(id)
-}
-
-func (c *GCEModelContext) NameForHealthcheck(id string) string {
 	return c.SafeSuffixedObjectName(id)
 }
 

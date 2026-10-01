@@ -156,10 +156,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 		c.EnableAdmissionPlugins = append(c.EnableAdmissionPlugins, c.AppendAdmissionPlugins...)
 	}
 
-	// We make sure to disable AnonymousAuth
+	// We make sure to disable AnonymousAuth.
+	// nodeup translates this into the authentication configuration file, where anonymous
+	// requests stay allowed for the health check endpoints only.
 	c.AnonymousAuth = new(false)
 
-	// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990
+	// kube-apiserver no longer has an insecure port.
 	c.InsecureBindAddress = ""
 	c.InsecurePort = nil
 

@@ -134,7 +134,8 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 			return fmt.Errorf("error creating InstanceGroupManager: %v", err)
 		}
 	} else {
-		if changes.TargetPools != nil {
+		// An empty expected list is not reported in changes, but still means "detach".
+		if changes.TargetPools != nil || (len(e.TargetPools) == 0 && len(a.TargetPools) != 0) {
 			op, err := t.Cloud.Compute().InstanceGroupManagers().SetTargetPools(t.Cloud.Project(), *e.Zone, i.Name, i.TargetPools)
 			if err != nil {
 				return fmt.Errorf("error updating TargetPools for InstanceGroupManager: %v", err)

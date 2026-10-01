@@ -82,14 +82,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-master-us-test1-a" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-with-a-very-very-very-very-very-long-name-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-with-a-very-very-very-very-very-long-name.example.com-addons-bootstrap_content")
@@ -629,17 +621,18 @@ resource "google_compute_region_backend_service" "api-minimal-gce-with-a-very-ve
     balancing_mode = "CONNECTION"
     group          = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f.instance_group
   }
-  health_checks         = [google_compute_region_health_check.api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi.id]
+  health_checks         = [google_compute_region_health_check.api-https-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi.id]
   load_balancing_scheme = "INTERNAL"
   name                  = "api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi"
   protocol              = "TCP"
 }
 
-resource "google_compute_region_health_check" "api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi" {
-  name = "api-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi"
-  tcp_health_check {
-    port = 443
+resource "google_compute_region_health_check" "api-https-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi" {
+  https_health_check {
+    port         = 443
+    request_path = "/readyz"
   }
+  name = "api-https-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi"
 }
 
 resource "google_compute_router" "nat-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi" {

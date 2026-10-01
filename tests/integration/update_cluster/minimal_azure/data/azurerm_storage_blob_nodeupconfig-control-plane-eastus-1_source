@@ -309,7 +309,4 @@ containerdConfig:
 etcdManifests:
 - memfs://tests/minimal-azure.example.com/manifests/etcd/main-control-plane-eastus-1.yaml
 - memfs://tests/minimal-azure.example.com/manifests/etcd/events-control-plane-eastus-1.yaml
-staticManifests:
-- key: kube-apiserver-healthcheck
-  path: manifests/static/kube-apiserver-healthcheck.yaml
 usesNoneDNS: true

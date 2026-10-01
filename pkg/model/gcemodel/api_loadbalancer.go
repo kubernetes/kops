@@ -38,32 +38,60 @@ type APILoadBalancerBuilder struct {
 
 var _ fi.CloudupModelBuilder = &APILoadBalancerBuilder{}
 
-// createPublicLB validates the existence of a target pool with the given name,
-// and creates an IP address and forwarding rule pointing to that target pool.
-func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext) error {
-	healthCheck := &gcetasks.HTTPHealthcheck{
-		Name:        s(b.NameForHealthcheck("api")),
-		Port:        i64(wellknownports.KubeAPIServerHealthCheck),
-		RequestPath: s("/healthz"),
+// apiHealthCheck returns the health check shared by the API load balancers.
+// It requests /readyz over HTTPS rather than opening a TCP connection: kube-apiserver accepts
+// connections while it is still starting up, has lost etcd, or is draining before shutdown, and
+// /readyz reports all of those. GCE does not verify the serving certificate, and kube-apiserver
+// allows this path without credentials.
+func (b *APILoadBalancerBuilder) apiHealthCheck() *gcetasks.HealthCheck {
+	return &gcetasks.HealthCheck{
+		Name:        s(b.NameForHealthCheck("api-https")),
+		Port:        wellknownports.KubeAPIServer,
+		Protocol:    gcetasks.HealthCheckProtocolHTTPS,
+		RequestPath: s("/readyz"),
 		Lifecycle:   b.Lifecycle,
 	}
-	c.AddTask(healthCheck)
+}
 
-	// TODO: point target pool to instance group managers, as done in internal LB.
-	targetPool := &gcetasks.TargetPool{
-		Name:        s(b.NameForTargetPool("api")),
-		HealthCheck: healthCheck,
-		Lifecycle:   b.Lifecycle,
+// linkToInstanceGroupManager returns a reference to the instance group manager of an instance group.
+func (b *APILoadBalancerBuilder) linkToInstanceGroupManager(ig *kops.InstanceGroup) (*gcetasks.InstanceGroupManager, error) {
+	if len(ig.Spec.Zones) > 1 {
+		return nil, fmt.Errorf("instance group %q has %d zones, which is not yet supported for GCP", ig.GetName(), len(ig.Spec.Zones))
 	}
-	c.AddTask(targetPool)
+	if len(ig.Spec.Zones) == 0 {
+		return nil, fmt.Errorf("instance group %q must specify exactly one zone", ig.GetName())
+	}
+	zone := ig.Spec.Zones[0]
+	return &gcetasks.InstanceGroupManager{Name: s(gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)), Zone: s(zone)}, nil
+}
 
-	poolHealthCheck := &gcetasks.PoolHealthCheck{
-		Name:        s(b.NameForPoolHealthcheck("api")),
-		Healthcheck: healthCheck,
-		Pool:        targetPool,
-		Lifecycle:   b.Lifecycle,
+// createPublicLB creates an external passthrough load balancer for the API: a backend service
+// pointing at the instance groups that serve the API, an IP address and a forwarding rule.
+func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext, healthCheck *gcetasks.HealthCheck) error {
+	// The API server only instance groups front the public endpoint when the cluster has any;
+	// otherwise the control plane instance groups do.
+	clusterHasAPIServerOnly := b.HasAPIServerOnlyInstanceGroups()
+	var igms []*gcetasks.InstanceGroupManager
+	for _, ig := range b.InstanceGroups {
+		if !ig.IsAPIServerOnly() && (clusterHasAPIServerOnly || !ig.IsControlPlane()) {
+			continue
+		}
+		igm, err := b.linkToInstanceGroupManager(ig)
+		if err != nil {
+			return err
+		}
+		igms = append(igms, igm)
 	}
-	c.AddTask(poolHealthCheck)
+
+	backendService := &gcetasks.BackendService{
+		Name:                  s(b.NameForBackendService("api-public")),
+		Protocol:              s("TCP"),
+		HealthChecks:          []*gcetasks.HealthCheck{healthCheck},
+		Lifecycle:             b.Lifecycle,
+		LoadBalancingScheme:   s("EXTERNAL"),
+		InstanceGroupManagers: igms,
+	}
+	c.AddTask(backendService)
 
 	ipAddress := &gcetasks.Address{
 		Name: s(b.NameForIPAddress("api")),
@@ -75,11 +103,11 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 
 	clusterLabel := gce.LabelForCluster(b.ClusterName())
 
-	c.AddTask(&gcetasks.ForwardingRule{
+	forwardingRule := &gcetasks.ForwardingRule{
 		Name:                s(b.NameForForwardingRule("api")),
 		Lifecycle:           b.Lifecycle,
 		PortRange:           s(strconv.Itoa(wellknownports.KubeAPIServer) + "-" + strconv.Itoa(wellknownports.KubeAPIServer)),
-		TargetPool:          targetPool,
+		BackendService:      backendService,
 		IPAddress:           ipAddress,
 		IPProtocol:          "TCP",
 		LoadBalancingScheme: s("EXTERNAL"),
@@ -87,7 +115,11 @@ func (b *APILoadBalancerBuilder) createPublicLB(c *fi.CloudupModelBuilderContext
 			clusterLabel.Key: clusterLabel.Value,
 			"name":           "api",
 		},
-	})
+	}
+	// Clusters created before kOps 1.38 used a target pool, whose legacy HTTP health check
+	// went through the (since removed) kube-apiserver-healthcheck sidecar.
+	forwardingRule.PruneTargetPoolWithName(b.NameForTargetPool("api"))
+	c.AddTask(forwardingRule)
 
 	return nil
 }
@@ -146,16 +178,8 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 // createInternalLB creates an internal load balancer for the cluster.  In
 // GCP this entails creating a health check, backend service, and one forwarding rule
 // per specified subnet pointing to that backend service.
-func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext) error {
+func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderContext, hc *gcetasks.HealthCheck) error {
 	clusterLabel := gce.LabelForCluster(b.ClusterName())
-
-	hc := &gcetasks.HealthCheck{
-		Name:      s(b.NameForHealthCheck("api")),
-		Port:      wellknownports.KubeAPIServer,
-		Protocol:  gcetasks.HealthCheckProtocolTCP,
-		Lifecycle: b.Lifecycle,
-	}
-	c.AddTask(hc)
 
 	// Collect ControlPlane and APIServer MIGs separately. The API backend service
 	// includes both (both serve the kube-apiserver), while the kops-controller and
@@ -200,6 +224,8 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		LoadBalancingScheme:   s("INTERNAL"),
 		InstanceGroupManagers: apiIGMs,
 	}
+	// Clusters created before kOps 1.38 used a TCP health check, which cannot be changed in place.
+	backendService.PruneHealthCheckWithName(b.NameForHealthCheck("api"))
 	c.AddTask(backendService)
 
 	// kopsControllerBS is a backend service that targets ControlPlane or MIGs.
@@ -415,21 +441,24 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return nil
 	}
 
+	healthCheck := b.apiHealthCheck()
+	c.AddTask(healthCheck)
+
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypePublic:
-		if err := b.createPublicLB(c); err != nil {
+		if err := b.createPublicLB(c, healthCheck); err != nil {
 			return err
 		}
 		// We always create the internal load balancer also;
 		// it allows us to restrict access to only the nodes.
-		if err := b.createInternalLB(c); err != nil {
+		if err := b.createInternalLB(c, healthCheck); err != nil {
 			return err
 		}
 
 		return b.addFirewallRules(c)
 
 	case kops.LoadBalancerTypeInternal:
-		if err := b.createInternalLB(c); err != nil {
+		if err := b.createInternalLB(c, healthCheck); err != nil {
 			return err
 		}
 

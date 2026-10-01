@@ -225,6 +225,17 @@ func (c *instanceGroupManagerClient) RecreateInstances(project, zone, name, id s
 }
 
 func (c *instanceGroupManagerClient) SetTargetPools(project, zone, name string, targetPools []string) (*compute.Operation, error) {
+	c.Lock()
+	defer c.Unlock()
+	igmZones, ok := c.instanceGroupManagers[project]
+	if !ok {
+		return nil, notFoundError()
+	}
+	igm, ok := igmZones[zone][name]
+	if !ok {
+		return nil, notFoundError()
+	}
+	igm.TargetPools = targetPools
 	return doneOperation(), nil
 }
 

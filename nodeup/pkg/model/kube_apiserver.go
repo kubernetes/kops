@@ -132,6 +132,9 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if err := b.writeAuthenticationConfig(c, &kubeAPIServer); err != nil {
 		return err
 	}
+	if err := b.buildAuthenticationConfiguration(c, pathSrvKAPI, &kubeAPIServer); err != nil {
+		return err
+	}
 
 	if b.NodeupConfig.APIServerConfig.EncryptionConfigSecretHash != "" {
 		encryptionConfigPath := new(filepath.Join(pathSrvKAPI, "encryptionconfig.yaml"))
@@ -251,13 +254,6 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Contents: fi.NewBytesResource(manifest),
 			Type:     nodetasks.FileType_File,
 		})
-	}
-
-	// If we're using kube-apiserver-healthcheck, we need to set up the client cert etc
-	if b.findHealthcheckManifest() != nil {
-		if err := b.addHealthcheckSidecarTasks(c); err != nil {
-			return err
-		}
 	}
 
 	c.AddTask(&nodetasks.File{
@@ -646,14 +642,21 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 		},
 	}
 
-	useHealthcheckProxy := b.findHealthcheckManifest() != nil
+	// The probes go straight to the secure port. The kubelet does not verify the serving
+	// certificate for HTTPS probes, and the authentication configuration written above allows
+	// anonymous requests to these health check paths.
+	securePort := kubeAPIServer.SecurePort
+	if securePort == 0 {
+		securePort = wellknownports.KubeAPIServer
+	}
 
 	livenessProbe := &v1.Probe{
 		ProbeHandler: v1.ProbeHandler{
 			HTTPGet: &v1.HTTPGetAction{
-				Host: "127.0.0.1",
-				Path: "/livez",
-				Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
+				Host:   "127.0.0.1",
+				Path:   "/livez",
+				Port:   intstr.FromInt32(securePort),
+				Scheme: v1.URISchemeHTTPS,
 			},
 		},
 		InitialDelaySeconds: 10,
@@ -665,9 +668,10 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	readinessProbe := &v1.Probe{
 		ProbeHandler: v1.ProbeHandler{
 			HTTPGet: &v1.HTTPGetAction{
-				Host: "127.0.0.1",
-				Path: "/healthz",
-				Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
+				Host:   "127.0.0.1",
+				Path:   "/readyz",
+				Port:   intstr.FromInt32(securePort),
+				Scheme: v1.URISchemeHTTPS,
 			},
 		},
 		InitialDelaySeconds: 0,
@@ -679,9 +683,10 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	startupProbe := &v1.Probe{
 		ProbeHandler: v1.ProbeHandler{
 			HTTPGet: &v1.HTTPGetAction{
-				Host: "127.0.0.1",
-				Path: "/livez",
-				Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
+				Host:   "127.0.0.1",
+				Path:   "/livez",
+				Port:   intstr.FromInt32(securePort),
+				Scheme: v1.URISchemeHTTPS,
 			},
 		},
 		InitialDelaySeconds: 10,
@@ -690,25 +695,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 		PeriodSeconds:       10,
 	}
 
-	allProbes := []*v1.Probe{
-		startupProbe,
-		livenessProbe,
-		readinessProbe,
-	}
-
 	insecurePort := fi.ValueOf(kubeAPIServer.InsecurePort)
-	if useHealthcheckProxy {
-		// kube-apiserver-healthcheck sidecar container runs on port 3990
-	} else if insecurePort != 0 {
-		for _, probe := range allProbes {
-			probe.HTTPGet.Port = intstr.FromInt(int(insecurePort))
-		}
-	} else if kubeAPIServer.SecurePort != 0 {
-		for _, probe := range allProbes {
-			probe.HTTPGet.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
-			probe.HTTPGet.Scheme = v1.URISchemeHTTPS
-		}
-	}
 
 	resourceRequests := v1.ResourceList{}
 	resourceLimits := v1.ResourceList{}
@@ -823,12 +810,6 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	kubemanifest.MarkPodAsClusterCritical(pod)
 
 	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
-
-	if useHealthcheckProxy {
-		if err := b.addHealthcheckSidecar(ctx, pod); err != nil {
-			return nil, err
-		}
-	}
 
 	return pod, nil
 }

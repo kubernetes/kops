@@ -38,6 +38,21 @@ func IsNotFound(err error) bool {
 	return apiErr.Code == 404
 }
 
+// IsResourceInUse returns true if the error says the resource is still referenced by another
+// resource (for example a health check still used by a backend service).
+func IsResourceInUse(err error) bool {
+	var apiErr *googleapi.Error
+	if !errors.As(err, &apiErr) {
+		return false
+	}
+	for _, e := range apiErr.Errors {
+		if e.Reason == "resourceInUseByAnotherResource" {
+			return true
+		}
+	}
+	return false
+}
+
 func IsNotReady(err error) bool {
 	apiErr, ok := err.(*googleapi.Error)
 	if !ok {

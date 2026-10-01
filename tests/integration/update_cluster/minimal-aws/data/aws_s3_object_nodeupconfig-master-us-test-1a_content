@@ -310,7 +310,4 @@ containerdConfig:
 etcdManifests:
 - memfs://clusters.example.com/minimal-aws.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/minimal-aws.example.com/manifests/etcd/events-master-us-test-1a.yaml
-staticManifests:
-- key: kube-apiserver-healthcheck
-  path: manifests/static/kube-apiserver-healthcheck.yaml
 usesNoneDNS: false

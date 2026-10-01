@@ -1038,7 +1038,8 @@ resource "aws_lb_target_group" "tcp-existingsg-example-co-jml1o0" {
   health_check {
     healthy_threshold   = 2
     interval            = 10
-    protocol            = "TCP"
+    path                = "/readyz"
+    protocol            = "HTTPS"
     unhealthy_threshold = 2
   }
   name     = "tcp-existingsg-example-co-jml1o0"
@@ -1275,14 +1276,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-master-us-test-1c" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_manifests-etcdmanager-main-master-us-test-1c_content")
   key                    = "clusters.example.com/existingsg.example.com/manifests/etcd/main-master-us-test-1c.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "clusters.example.com/existingsg.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

@@ -16,7 +16,7 @@ See also pkg/wellknownports/wellknownports.go
 | 2384 | etcd events metrics                      |
 | 3988 | kops controller serving port             |
 | 3989 | node local dns health check              |
-| 3990 | Kube API health check                    |
+| 3990 | Kube API health check (removed in kOps 1.38) |
 | 3991 | etcd-manager - cilium - grpc             |
 | 3992 | etcd-manager - cilium - quarantined      |
 | 3993 | dns gossip - dns-controller - memberlist (removed in kOps 1.37) |

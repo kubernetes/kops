@@ -43,7 +43,6 @@ import (
 	"k8s.io/kops/pkg/model/azuremodel"
 	"k8s.io/kops/pkg/model/components/channels"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
-	"k8s.io/kops/pkg/model/components/kubeapiserver"
 	"k8s.io/kops/pkg/model/components/kubescheduler"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
@@ -570,11 +569,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				KopsModelContext: modelContext,
 				Lifecycle:        clusterLifecycle,
 				Cluster:          cluster,
-			},
-			&kubeapiserver.KubeApiserverBuilder{
-				AssetBuilder:     assetBuilder,
-				KopsModelContext: modelContext,
-				Lifecycle:        clusterLifecycle,
 			},
 			&kubescheduler.KubeSchedulerBuilder{
 				AssetBuilder:     assetBuilder,

@@ -548,14 +548,6 @@ resource "azurerm_storage_blob" "manifests-etcdmanager-main-control-plane-eastus
   type                 = "Block"
 }
 
-resource "azurerm_storage_blob" "manifests-static-kube-apiserver-healthcheck" {
-  name                 = "tests/minimal-azure.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider             = azurerm.files
-  source               = "${path.module}/data/azurerm_storage_blob_manifests-static-kube-apiserver-healthcheck_source"
-  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
-  type                 = "Block"
-}
-
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-azure-cloud-config-addons-k8s-io-k8s-1-31" {
   name                 = "tests/minimal-azure.example.com/addons/azure-cloud-config.addons.k8s.io/k8s-1.31.yaml"
   provider             = azurerm.files

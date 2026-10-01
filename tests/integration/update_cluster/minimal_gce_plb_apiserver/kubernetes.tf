@@ -82,14 +82,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-master-us-test1-a" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "tests/minimal-gce-plb-apiserver.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-plb-apiserver-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-plb-apiserver.example.com-addons-bootstrap_content")
@@ -459,8 +451,9 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-plb-apiserv
 }
 
 resource "google_compute_forwarding_rule" "api-minimal-gce-plb-apiserver-example-com" {
-  ip_address  = google_compute_address.api-minimal-gce-plb-apiserver-example-com.address
-  ip_protocol = "TCP"
+  backend_service = google_compute_region_backend_service.api-public-minimal-gce-plb-apiserver-example-com.id
+  ip_address      = google_compute_address.api-minimal-gce-plb-apiserver-example-com.address
+  ip_protocol     = "TCP"
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-plb-apiserver-example-com"
     "name"                = "api"
@@ -468,7 +461,6 @@ resource "google_compute_forwarding_rule" "api-minimal-gce-plb-apiserver-example
   load_balancing_scheme = "EXTERNAL"
   name                  = "api-minimal-gce-plb-apiserver-example-com"
   port_range            = "443-443"
-  target                = google_compute_target_pool.api-minimal-gce-plb-apiserver-example-com.self_link
 }
 
 resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-plb-apiserver-example-com" {
@@ -486,12 +478,6 @@ resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-plb-apiserve
   subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
 }
 
-resource "google_compute_http_health_check" "api-minimal-gce-plb-apiserver-example-com" {
-  name         = "api-minimal-gce-plb-apiserver-example-com"
-  port         = 3990
-  request_path = "/healthz"
-}
-
 resource "google_compute_instance_group_manager" "a-apiserver-us-test1-a-minimal-gce-plb-apiserver-example-com" {
   base_instance_name = "apiserver-us-test1-a"
   lifecycle {
@@ -499,7 +485,6 @@ resource "google_compute_instance_group_manager" "a-apiserver-us-test1-a-minimal
   }
   list_managed_instances_results = "PAGINATED"
   name                           = "a-apiserver-us-test1-a-minimal-gce-plb-apiserver-example-com"
-  target_pools                   = [google_compute_target_pool.api-minimal-gce-plb-apiserver-example-com.self_link]
   target_size                    = 2
   update_policy {
     minimal_action = "REPLACE"
@@ -734,9 +719,20 @@ resource "google_compute_region_backend_service" "api-minimal-gce-plb-apiserver-
     balancing_mode = "CONNECTION"
     group          = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-plb-apiserver-example-com.instance_group
   }
-  health_checks         = [google_compute_region_health_check.api-minimal-gce-plb-apiserver-example-com.id]
+  health_checks         = [google_compute_region_health_check.api-https-minimal-gce-plb-apiserver-example-com.id]
   load_balancing_scheme = "INTERNAL"
   name                  = "api-minimal-gce-plb-apiserver-example-com"
+  protocol              = "TCP"
+}
+
+resource "google_compute_region_backend_service" "api-public-minimal-gce-plb-apiserver-example-com" {
+  backend {
+    balancing_mode = "CONNECTION"
+    group          = google_compute_instance_group_manager.a-apiserver-us-test1-a-minimal-gce-plb-apiserver-example-com.instance_group
+  }
+  health_checks         = [google_compute_region_health_check.api-https-minimal-gce-plb-apiserver-example-com.id]
+  load_balancing_scheme = "EXTERNAL"
+  name                  = "api-public-minimal-gce-plb-apiserver-example-com"
   protocol              = "TCP"
 }
 
@@ -755,11 +751,12 @@ resource "google_compute_region_backend_service" "kops-controller-minimal-gce-pl
   protocol              = "TCP"
 }
 
-resource "google_compute_region_health_check" "api-minimal-gce-plb-apiserver-example-com" {
-  name = "api-minimal-gce-plb-apiserver-example-com"
-  tcp_health_check {
-    port = 443
+resource "google_compute_region_health_check" "api-https-minimal-gce-plb-apiserver-example-com" {
+  https_health_check {
+    port         = 443
+    request_path = "/readyz"
   }
+  name = "api-https-minimal-gce-plb-apiserver-example-com"
 }
 
 resource "google_compute_region_health_check" "kops-controller-minimal-gce-plb-apiserver-example-com" {
@@ -792,11 +789,6 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-plb-apiserver-example
   network       = google_compute_network.minimal-gce-plb-apiserver-example-com.name
   region        = "us-test1"
   stack_type    = "IPV4_ONLY"
-}
-
-resource "google_compute_target_pool" "api-minimal-gce-plb-apiserver-example-com" {
-  health_checks = [google_compute_http_health_check.api-minimal-gce-plb-apiserver-example-com.self_link]
-  name          = "api-minimal-gce-plb-apiserver-example-com"
 }
 
 terraform {

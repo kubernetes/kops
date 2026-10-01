@@ -75,14 +75,6 @@ resource "aws_s3_object" "manifests-etcdmanager-main-master-fsn1" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
-  key                    = "tests/minimal.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-bootstrap_content")

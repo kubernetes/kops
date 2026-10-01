@@ -111,29 +111,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		// don't need to push/pull from a registry
 		if os.Getenv("KOPS_BASE_URL") != "" && isControlPlaneType {
 			for _, arch := range architectures.GetSupported() {
-				for _, name := range []string{"kops-controller", "kops-channels", "dns-controller", "kube-apiserver-healthcheck"} {
-					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
-					if err != nil {
-						return nil, err
-					}
-
-					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
-
-					asset, err := assetBuilder.RemapFile(baseURL, nil)
-					if err != nil {
-						return nil, err
-					}
-
-					image := &nodeup.Image{
-						Sources: []string{asset.DownloadURL.String()},
-						Hash:    asset.SHAValue.Hex(),
-					}
-					images[role][arch] = append(images[role][arch], image)
-				}
-			}
-		} else if os.Getenv("KOPS_BASE_URL") != "" && hasAPIServer {
-			for _, arch := range architectures.GetSupported() {
-				for _, name := range []string{"kube-apiserver-healthcheck"} {
+				for _, name := range []string{"kops-controller", "kops-channels", "dns-controller"} {
 					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
 					if err != nil {
 						return nil, err

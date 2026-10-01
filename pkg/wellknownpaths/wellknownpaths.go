@@ -25,4 +25,9 @@ const (
 
 	// KubeSchedulerKubeConfig is the path where we write the kube-scheduler kubeconfig file (on the control-plane nodes).
 	KubeSchedulerKubeConfig = "/var/lib/kube-scheduler/kubeconfig"
+
+	// KubeAPIServerAuthenticationConfigFileName is the name of the kube-apiserver AuthenticationConfiguration
+	// file that nodeup writes into the kube-apiserver config directory (/srv/kubernetes/kube-apiserver,
+	// or /etc/srv/kubernetes/kube-apiserver on ContainerOS). User-supplied files must not use this path.
+	KubeAPIServerAuthenticationConfigFileName = "kops-authentication-config.yaml"
 )

@@ -17,9 +17,9 @@ contents: |
       - --also-stdout
       - /usr/local/bin/kube-apiserver
       - --allow-privileged=true
-      - --anonymous-auth=false
       - --api-audiences=kubernetes.svc.default
       - --apiserver-count=1
+      - --authentication-config=/srv/kubernetes/kube-apiserver/kops-authentication-config.yaml
       - --authorization-mode=Node,RBAC
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
@@ -32,14 +32,6 @@ contents: |
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
-      - --oidc-client-id=oidc-client
-      - --oidc-groups-claim=groupclaim1,groupclaim2
-      - '--oidc-groups-prefix=oidcgroup:'
-      - --oidc-issuer-url=https://oidc-issuer.nonexistent
-      - --oidc-required-claim=claim1=value1
-      - --oidc-required-claim=claim2=value2
-      - --oidc-username-claim=user
-      - '--oidc-username-prefix=oidc:'
       - --proxy-client-cert-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.crt
       - --proxy-client-key-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.key
       - --requestheader-allowed-names=aggregator
@@ -83,7 +75,7 @@ contents: |
         failureThreshold: 3
         httpGet:
           host: 127.0.0.1
-          path: /healthz
+          path: /readyz
           port: 443
           scheme: HTTPS
         periodSeconds: 1
@@ -249,6 +241,36 @@ contents:
     type: client
 mode: "0600"
 path: /srv/kubernetes/kube-apiserver/etcd-client.key
+type: file
+---
+contents: |
+  anonymous:
+    conditions:
+    - path: /healthz
+    - path: /livez
+    - path: /readyz
+    enabled: true
+  apiVersion: apiserver.config.k8s.io/v1
+  jwt:
+  - claimMappings:
+      groups:
+        claim: groupclaim1,groupclaim2
+        prefix: 'oidcgroup:'
+      username:
+        claim: user
+        prefix: 'oidc:'
+    claimValidationRules:
+    - claim: claim1
+      requiredValue: value1
+    - claim: claim2
+      requiredValue: value2
+    issuer:
+      audiences:
+      - oidc-client
+      url: https://oidc-issuer.nonexistent
+  kind: AuthenticationConfiguration
+mode: "0400"
+path: /srv/kubernetes/kube-apiserver/kops-authentication-config.yaml
 type: file
 ---
 contents:
