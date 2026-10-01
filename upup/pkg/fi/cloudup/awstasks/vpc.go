@@ -328,7 +328,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		// or "" when the VPC has none, so the empty-string length check still works.
 		associations := terraformWriter.LiteralData("aws_vpc", *e.Name, "ipv6_cidr_block_associations")
 		ipv6CIDR := &terraformWriter.Literal{
-			String: fmt.Sprintf(`try([for a in %s : a.ipv6_cidr_block if a.state == "associated"][0], "")`, associations.String),
+			String: fmt.Sprintf(`element(concat([for a in %s : a.ipv6_cidr_block if a.state == "associated"], [""]), 0)`, associations.String),
 		}
 		if err := t.AddOutputVariable("vpc_ipv6_cidr_block", ipv6CIDR); err != nil {
 			return err
