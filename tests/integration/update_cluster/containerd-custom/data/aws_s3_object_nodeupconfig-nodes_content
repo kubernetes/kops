@@ -52,7 +52,7 @@ containerdConfig:
     urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
   registryMirrors:
     '*':
-    - http://HostIP2:Port2
+    - http://mirror.example.com:5000
     docker.io:
     - https://registry-1.docker.io
   runc:

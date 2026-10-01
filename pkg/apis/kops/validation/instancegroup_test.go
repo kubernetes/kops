@@ -230,6 +230,32 @@ func TestValidBootDevice(t *testing.T) {
 	}
 }
 
+func TestCrossValidateInstanceGroupContainerdRegistryMirrors(t *testing.T) {
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
+		},
+	}
+	ig := createMinimalInstanceGroup()
+	ig.Spec.Containerd = &kops.ContainerdConfig{
+		RegistryMirrors: map[string][]string{
+			"*":         {"https://mirror.example.com", "HTTPS://mirror.example.com"},
+			"docker.io": {"localhost:5000", "http://localhost:5000"},
+		},
+	}
+	expected := []string{
+		"Invalid value::spec.containerd.registryMirrors[*][1]",
+		"Invalid value::spec.containerd.registryMirrors[docker.io][0]",
+	}
+	errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
+	testErrors(t, ig.Spec.Containerd.RegistryMirrors, errs, expected)
+	if len(errs) != len(expected) {
+		t.Errorf("expected %d errors, got %v", len(expected), errs)
+	}
+}
+
 func TestValidNodeLabels(t *testing.T) {
 	grid := []struct {
 		label    string

@@ -19,11 +19,13 @@ package validation
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"net"
 	"net/netip"
 	"net/url"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -2039,6 +2041,8 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 		}
 	}
 
+	allErrs = append(allErrs, validateContainerdRegistryMirrors(config.RegistryMirrors, fldPath.Child("registryMirrors"))...)
+
 	if config.NvidiaGPU != nil {
 		allErrs = append(allErrs, validateNvidiaConfig(cluster, config.NvidiaGPU, fldPath.Child("nvidia"), inClusterConfig)...)
 	}
@@ -2048,6 +2052,60 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 	}
 
 	return allErrs
+}
+
+// validateContainerdRegistryMirrors rejects mirror endpoints that containerd cannot use from the
+// hosts.toml files nodeup writes; it would only log the problem and pull from the upstream registry.
+func validateContainerdRegistryMirrors(mirrors map[string][]string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	for _, name := range slices.Sorted(maps.Keys(mirrors)) {
+		seen := sets.New[string]()
+		for i, endpoint := range mirrors[name] {
+			endpointPath := fldPath.Key(name).Index(i)
+			// A repeated endpoint is a duplicate TOML table, so containerd would ignore the file.
+			if seen.Has(endpoint) {
+				allErrs = append(allErrs, field.Duplicate(endpointPath, endpoint))
+				continue
+			}
+			seen.Insert(endpoint)
+			if err := validateContainerdMirrorEndpoint(endpoint, endpointPath); err != nil {
+				allErrs = append(allErrs, err)
+			}
+		}
+	}
+	return allErrs
+}
+
+func validateContainerdMirrorEndpoint(endpoint string, fldPath *field.Path) *field.Error {
+	// containerd prepends "https://" unless the endpoint starts with lowercase "http", so
+	// "HTTPS://x" ends up with host "HTTPS:".
+	scheme, _, hasScheme := strings.Cut(endpoint, "://")
+	if hasScheme && scheme != "http" && scheme != "https" {
+		return field.Invalid(fldPath, endpoint, `scheme must be lowercase "http" or "https"`)
+	}
+
+	// Same normalization as containerd's parseHostConfig and nodeup's endpointHasPath.
+	normalized := endpoint
+	if !strings.HasPrefix(normalized, "http") {
+		normalized = "https://" + normalized
+	}
+	u, err := url.Parse(normalized)
+	if err != nil {
+		return field.Invalid(fldPath, endpoint, fmt.Sprintf("containerd cannot parse this endpoint: %v", err))
+	}
+	// Also catches host names that start with "http", which containerd does not prefix.
+	if u.Host == "" {
+		return field.Invalid(fldPath, endpoint, `must include a host; a host name that starts with "http" needs an explicit "https://" or "http://" prefix`)
+	}
+
+	// containerd's legacy registry.mirrors config used http for loopback endpoints without a
+	// scheme, but hosts.toml uses https, so require an explicit scheme.
+	host := u.Hostname()
+	if !hasScheme && (host == "localhost" || net.ParseIP(host).IsLoopback()) {
+		return field.Invalid(fldPath, endpoint, `must start with "http://" for a plain HTTP registry or "https://" for TLS; containerd uses https for mirror endpoints without a scheme, including loopback ones`)
+	}
+
+	return nil
 }
 
 func validateNriConfig(containerd *kops.ContainerdConfig, fldPath *field.Path) (allErrs field.ErrorList) {
