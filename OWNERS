@@ -15,14 +15,13 @@ emeritus_approvers:
   - johngmyers
   - kashifsaadat
   - mikesplain
+  - olemarkus
   - rdrgmnzs
 approvers:
   - hakman
   - justinsb
-  - olemarkus
   - rifelpet
   - zetaab
 reviewers:
   - hakman
-  - olemarkus
   - zetaab
