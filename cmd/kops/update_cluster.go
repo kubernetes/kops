@@ -153,6 +153,13 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Example:           updateClusterExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			// Terraform treats omitted resources as deletions, so only render a complete configuration.
+			if options.Target == cloudup.TargetTerraform && (len(options.InstanceGroups) != 0 || len(options.InstanceGroupRoles) != 0) {
+				return fmt.Errorf("cannot use --target=terraform with --instance-group or --instance-group-roles; generate the full configuration and use terraform apply -target instead")
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_, err := RunUpdateCluster(cmd.Context(), f, out, options)
 			return err
