@@ -95,6 +95,11 @@ $ kops edit cluster \
 # editor opens, make your changes ...
 ```
 
+The Terraform target requires the complete cluster configuration and cannot be combined with
+`--instance-group` or `--instance-group-roles`. Omitting resources from the configuration can cause
+Terraform to plan their destruction. For staged upgrades, generate the full configuration and follow
+the [targeted Terraform apply procedure](tutorial/upgrading-kubernetes.md).
+
 Then output your changes/edits to kOps cluster state into the Terraform files. Run `kops update` with `--target` and `--out` parameters:
 
 ```
