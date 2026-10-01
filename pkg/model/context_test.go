@@ -89,3 +89,21 @@ func TestCloudTagsForInstanceGroup_Taints(t *testing.T) {
 		})
 	}
 }
+
+func TestUsesSSHBastionWhenUpdatingOtherInstanceGroups(t *testing.T) {
+	bastions := &kops.InstanceGroup{}
+	bastions.ObjectMeta.Name = "bastions"
+	bastions.Spec.Role = kops.InstanceGroupRoleBastion
+	nodes := &kops.InstanceGroup{}
+	nodes.ObjectMeta.Name = "nodes"
+	nodes.Spec.Role = kops.InstanceGroupRoleNode
+
+	// Without the bastions, the SSH access rules would allow SSH directly to the instances.
+	b := &KopsModelContext{
+		AllInstanceGroups: []*kops.InstanceGroup{bastions, nodes},
+		InstanceGroups:    []*kops.InstanceGroup{nodes},
+	}
+	if !b.UsesSSHBastion() {
+		t.Errorf("UsesSSHBastion() = false when updating only the nodes, want true")
+	}
+}
