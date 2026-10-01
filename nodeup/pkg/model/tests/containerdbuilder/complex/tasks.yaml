@@ -13,6 +13,14 @@ path: /etc/containerd/certs.d/docker.io/hosts.toml
 type: file
 ---
 contents: |+
+  [host."https://123456789012.dkr.ecr.us-test-1.amazonaws.com/v2/quay"]
+    capabilities = ["pull", "resolve"]
+    override_path = true
+
+path: /etc/containerd/certs.d/quay.io/hosts.toml
+type: file
+---
+contents: |+
   [host."https://mirror.example.com"]
     capabilities = ["pull", "resolve"]
 

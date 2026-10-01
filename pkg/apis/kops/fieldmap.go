@@ -85,3 +85,29 @@ var clusterFieldMappings = []struct {
 	{V1Alpha2: "spec.externalDns.provider", V1Alpha3: "spec.externalDNS.provider"},
 	{V1Alpha2: "spec.externalDns.priorityClassName", V1Alpha3: "spec.externalDNS.priorityClassName"},
 }
+
+// InternalPathForInstanceGroupField returns the path for a given instance group field, as it appears in the internal API.
+func InternalPathForInstanceGroupField(fieldPath string) string {
+	for _, mapping := range instanceGroupFieldMappings {
+		if mapping.V1Alpha2 == fieldPath {
+			return mapping.V1Alpha3
+		}
+	}
+	return fieldPath
+}
+
+// instanceGroupFieldMappings maps v1alpha2 instance group field paths to their v1alpha3 equivalents.
+var instanceGroupFieldMappings = []struct {
+	V1Alpha2 string
+	V1Alpha3 string
+}{
+	{V1Alpha2: "spec.rootVolumeSize", V1Alpha3: "spec.rootVolume.size"},
+	{V1Alpha2: "spec.rootVolumeType", V1Alpha3: "spec.rootVolume.type"},
+	{V1Alpha2: "spec.rootVolumeIops", V1Alpha3: "spec.rootVolume.iops"},
+	{V1Alpha2: "spec.rootVolumeThroughput", V1Alpha3: "spec.rootVolume.throughput"},
+	{V1Alpha2: "spec.rootVolumeOptimization", V1Alpha3: "spec.rootVolume.optimization"},
+	{V1Alpha2: "spec.rootVolumeEncryption", V1Alpha3: "spec.rootVolume.encryption"},
+	{V1Alpha2: "spec.rootVolumeEncryptionKey", V1Alpha3: "spec.rootVolume.encryptionKey"},
+	{V1Alpha2: "spec.associatePublicIp", V1Alpha3: "spec.associatePublicIP"},
+	{V1Alpha2: "spec.kubelet.authenticationTokenWebhookCacheTtl", V1Alpha3: "spec.kubelet.authenticationTokenWebhookCacheTTL"},
+}

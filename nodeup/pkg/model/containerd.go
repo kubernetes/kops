@@ -21,6 +21,8 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -658,7 +660,11 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 		var buf strings.Builder
 		for _, endpoint := range mirrors[name] {
 			fmt.Fprintf(&buf, "[host.%q]\n", endpoint)
-			buf.WriteString("  capabilities = [\"pull\", \"resolve\"]\n\n")
+			buf.WriteString("  capabilities = [\"pull\", \"resolve\"]\n")
+			if endpointHasPath(endpoint) {
+				buf.WriteString("  override_path = true\n")
+			}
+			buf.WriteString("\n")
 		}
 		// containerd uses the special "_default" directory as the catch-all namespace.
 		// Translate the kops convention of "*" so users don't end up with a literal
@@ -674,4 +680,20 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 		})
 	}
 	return nil
+}
+
+// endpointHasPath reports whether a mirror endpoint has a non-root path. These endpoints get
+// override_path, so containerd uses the path as-is instead of appending /v2, as the legacy
+// registry.mirrors config did.
+func endpointHasPath(endpoint string) bool {
+	// Match containerd's parseHostConfig normalization so we check the same path.
+	if !strings.HasPrefix(endpoint, "http") {
+		endpoint = "https://" + endpoint
+	}
+
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return false
+	}
+	return u.Path != "" && path.Clean(u.Path) != "/"
 }

@@ -19,7 +19,9 @@ package commands
 import (
 	"reflect"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -97,6 +99,52 @@ func TestSetInstanceGroupsFields(t *testing.T) {
 						"group1",
 						"group2",
 						"group3",
+					},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.rootVolumeType=gp3",
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Type: new("gp3"),
+					},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.rootVolumeSize=64",
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Size: new(int32(64)),
+					},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.associatePublicIp=true",
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					AssociatePublicIP: new(true),
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.kubelet.authenticationTokenWebhookCacheTtl=10s",
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Kubelet: &kops.KubeletConfigSpec{
+						AuthenticationTokenWebhookCacheTTL: &metav1.Duration{Duration: 10 * time.Second},
 					},
 				},
 			},
