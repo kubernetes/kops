@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"slices"
 	"strings"
 
 	"k8s.io/kops/pkg/nodeidentity/aws"
@@ -34,6 +35,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -61,35 +63,9 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, field.Required(field.NewPath("objectMeta", "name"), ""))
 	}
 
-	// Matching the whole value on purpose, so that a composite role such as
-	// "APIServer,Scheduler" falls through to the default case and is rejected. Composite
-	// roles are only accepted once this function validates each role individually.
-	switch g.Spec.Role { // kops:single-role-switch
-	case "":
-		allErrs = append(allErrs, field.Required(field.NewPath("spec", "role"), "Role must be set"))
-	case kops.InstanceGroupRoleControlPlane:
-		if len(g.Spec.Subnets) == 0 {
-			allErrs = append(allErrs, field.Required(field.NewPath("spec", "subnets"), "controlPlane InstanceGroup must specify at least one Subnet"))
-		}
-		if fi.ValueOf(g.Spec.MinSize) > 1 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "minSize"), fi.ValueOf(g.Spec.MinSize), "controlPlane InstanceGroup must have minSize set to 1"))
-		}
-		if fi.ValueOf(g.Spec.MaxSize) > 1 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "maxSize"), fi.ValueOf(g.Spec.MaxSize), "controlPlane InstanceGroup must have maxSize set to 1, add more InstanceGroups instead"))
-		}
-	case kops.InstanceGroupRoleNode:
-	case kops.InstanceGroupRoleBastion:
-	case kops.InstanceGroupRoleAPIServer:
-	case kops.InstanceGroupRoleEtcd:
-	case kops.InstanceGroupRoleScheduler:
-	case kops.InstanceGroupRoleKubeControllerManager:
-	default:
-		var supported []string
-		for _, role := range kops.AllInstanceGroupRoles {
-			supported = append(supported, string(role))
-		}
-		allErrs = append(allErrs, field.NotSupported(field.NewPath("spec", "role"), g.Spec.Role, supported))
-	}
+	allErrs = append(allErrs, validateInstanceGroupRoles(g)...)
+	allErrs = append(allErrs, validateServesWellKnownServices(g)...)
+	allErrs = append(allErrs, validateHostedComponents(g)...)
 
 	if g.Spec.Tenancy != "" {
 		tenancy := ec2types.Tenancy(g.Spec.Tenancy)
@@ -663,6 +639,152 @@ func validateExternalLoadBalancer(lb *kops.LoadBalancerSpec, fldPath *field.Path
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupARN"), name,
 				"Target Group ARN resource name must have at most 32 characters"))
 		}
+	}
+
+	return allErrs
+}
+
+// validateInstanceGroupRoles validates spec.role, which is a comma-separated list of roles.
+func validateInstanceGroupRoles(g *kops.InstanceGroup) field.ErrorList {
+	allErrs := field.ErrorList{}
+	rolePath := field.NewPath("spec", "role")
+
+	roles := g.Spec.Role.Roles()
+	if len(roles) == 0 {
+		allErrs = append(allErrs, field.Required(rolePath, "Role must be set"))
+		return allErrs
+	}
+
+	var supported []string
+	for _, role := range kops.AllInstanceGroupRoles {
+		supported = append(supported, string(role))
+	}
+
+	unsupported := false
+	for _, role := range roles {
+		if !slices.Contains(kops.AllInstanceGroupRoles, role) {
+			allErrs = append(allErrs, field.NotSupported(rolePath, role, supported))
+			unsupported = true
+		}
+	}
+	if unsupported {
+		// The combination rules below would report confusing follow-on errors.
+		return allErrs
+	}
+
+	if len(roles) > 1 {
+		if !featureflag.ExperimentalRoles.Enabled() {
+			allErrs = append(allErrs, field.Forbidden(rolePath,
+				"combining roles in one InstanceGroup requires the ExperimentalRoles feature flag"))
+		}
+
+		// Node and Bastion groups are not part of the control plane, and ControlPlane already
+		// means every control-plane component, so none of them combine with anything.
+		for _, role := range []kops.InstanceGroupRole{
+			kops.InstanceGroupRoleNode,
+			kops.InstanceGroupRoleBastion,
+			kops.InstanceGroupRoleControlPlane,
+		} {
+			if g.Spec.Role.HasRole(role) {
+				allErrs = append(allErrs, field.Forbidden(rolePath,
+					fmt.Sprintf("the %s role cannot be combined with other roles", role)))
+			}
+		}
+	}
+
+	if g.Spec.Role.HasControlPlane() {
+		if len(g.Spec.Subnets) == 0 {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "subnets"), "controlPlane InstanceGroup must specify at least one Subnet"))
+		}
+		if fi.ValueOf(g.Spec.MinSize) > 1 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "minSize"), fi.ValueOf(g.Spec.MinSize), "controlPlane InstanceGroup must have minSize set to 1"))
+		}
+		if fi.ValueOf(g.Spec.MaxSize) > 1 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "maxSize"), fi.ValueOf(g.Spec.MaxSize), "controlPlane InstanceGroup must have maxSize set to 1, add more InstanceGroups instead"))
+		}
+	}
+
+	return allErrs
+}
+
+// validateServesWellKnownServices checks that each endpoint listed is one kOps knows about, and
+// that the instance group has a role capable of serving it.
+func validateServesWellKnownServices(g *kops.InstanceGroup) field.ErrorList {
+	allErrs := field.ErrorList{}
+	basePath := field.NewPath("spec", "servesWellKnownServices")
+
+	var supported []string
+	for _, service := range kops.AllWellKnownServices {
+		supported = append(supported, string(service))
+	}
+
+	seen := map[kops.WellKnownService]bool{}
+	for i, service := range g.Spec.ServesWellKnownServices {
+		path := basePath.Index(i)
+
+		if !slices.Contains(kops.AllWellKnownServices, service) {
+			allErrs = append(allErrs, field.NotSupported(path, service, supported))
+			continue
+		}
+		if seen[service] {
+			allErrs = append(allErrs, field.Duplicate(path, service))
+			continue
+		}
+		seen[service] = true
+
+		switch service {
+		case kops.WellKnownServiceKubeAPIServerExternal, kops.WellKnownServiceKubeAPIServerInternal:
+			if !g.RunsAPIServer() {
+				allErrs = append(allErrs, field.Forbidden(path,
+					"only an InstanceGroup running the API server can serve this endpoint"))
+			}
+		case kops.WellKnownServiceEtcdMain:
+			if !g.RunsEtcd() {
+				allErrs = append(allErrs, field.Forbidden(path,
+					"only an InstanceGroup running etcd can serve this endpoint"))
+			}
+		case kops.WellKnownServiceKopsController:
+			if !g.IsControlPlaneType() {
+				allErrs = append(allErrs, field.Forbidden(path,
+					"only a control-plane InstanceGroup can serve this endpoint"))
+			}
+		}
+	}
+
+	return allErrs
+}
+
+// validateHostedComponents checks that each component listed is one kOps knows about and that
+// the instance group is one it can be placed on.
+func validateHostedComponents(g *kops.InstanceGroup) field.ErrorList {
+	allErrs := field.ErrorList{}
+	basePath := field.NewPath("spec", "hostedComponents")
+
+	var supported []string
+	for _, component := range kops.AllClusterComponents {
+		supported = append(supported, string(component))
+	}
+
+	seen := map[kops.ClusterComponent]bool{}
+	for i, component := range g.Spec.HostedComponents {
+		path := basePath.Index(i)
+
+		if !slices.Contains(kops.AllClusterComponents, component) {
+			allErrs = append(allErrs, field.NotSupported(path, component, supported))
+			continue
+		}
+		if seen[component] {
+			allErrs = append(allErrs, field.Duplicate(path, component))
+			continue
+		}
+		seen[component] = true
+	}
+
+	// These components need a kubeconfig signed by the cluster CA and have to come up before
+	// the cluster is ready, which is only true on control-plane instances.
+	if len(g.Spec.HostedComponents) > 0 && !g.IsControlPlaneType() {
+		allErrs = append(allErrs, field.Forbidden(basePath,
+			"cluster components can only be hosted on a control-plane InstanceGroup"))
 	}
 
 	return allErrs

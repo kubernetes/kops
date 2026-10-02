@@ -18,6 +18,7 @@ package kops
 
 import (
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -377,5 +378,118 @@ func TestInstanceGroupIsRoleOnly(t *testing.T) {
 		if got := ig.IsRoleOnly(g.query); got != g.want {
 			t.Errorf("role %q: IsRoleOnly(%q) = %v, want %v", g.role, g.query, got, g.want)
 		}
+	}
+}
+
+// TestServedWellKnownServices pins the role-derived defaults. The first four cases are the
+// topologies that existed before the field, and must keep behaving identically.
+func TestServedWellKnownServices(t *testing.T) {
+	grid := []struct {
+		name string
+		role InstanceGroupRole
+		set  []WellKnownService
+		want []WellKnownService
+	}{
+		{
+			name: "full control plane serves everything",
+			role: InstanceGroupRoleControlPlane,
+			want: []WellKnownService{
+				WellKnownServiceKubeAPIServerExternal,
+				WellKnownServiceKubeAPIServerInternal,
+				WellKnownServiceKopsController,
+				WellKnownServiceEtcdMain,
+			},
+		},
+		{
+			name: "dedicated API server fronts both endpoints",
+			role: InstanceGroupRoleAPIServer,
+			want: []WellKnownService{
+				WellKnownServiceKubeAPIServerExternal,
+				WellKnownServiceKubeAPIServerInternal,
+				WellKnownServiceKopsController,
+			},
+		},
+		{
+			name: "dedicated etcd serves only etcd",
+			role: InstanceGroupRoleEtcd,
+			want: []WellKnownService{WellKnownServiceEtcdMain},
+		},
+		{
+			name: "node serves nothing",
+			role: InstanceGroupRoleNode,
+			want: nil,
+		},
+		{
+			name: "bastion serves nothing",
+			role: InstanceGroupRoleBastion,
+			want: nil,
+		},
+		{
+			name: "scheduler alone serves nothing",
+			role: InstanceGroupRoleScheduler,
+			want: nil,
+		},
+		{
+			name: "kube-controller-manager alone serves nothing",
+			role: InstanceGroupRoleKubeControllerManager,
+			want: nil,
+		},
+		{
+			// The reason the derived default matters: this API server exists for the scheduler
+			// beside it, so nothing should be routed to it.
+			name: "API server co-located with the scheduler is local only",
+			role: "APIServer,Scheduler",
+			want: nil,
+		},
+		{
+			name: "API server co-located with kube-controller-manager is local only",
+			role: "APIServer,KubeControllerManager",
+			want: nil,
+		},
+		{
+			// etcd beside an API server still has to be reachable by the other API servers.
+			name: "API server co-located with etcd serves both",
+			role: "APIServer,Etcd",
+			want: []WellKnownService{
+				WellKnownServiceKubeAPIServerExternal,
+				WellKnownServiceKubeAPIServerInternal,
+				WellKnownServiceKopsController,
+				WellKnownServiceEtcdMain,
+			},
+		},
+		{
+			name: "explicit value wins over the derived default",
+			role: InstanceGroupRoleAPIServer,
+			set:  []WellKnownService{WellKnownServiceKubeAPIServerInternal},
+			want: []WellKnownService{WellKnownServiceKubeAPIServerInternal},
+		},
+		{
+			name: "explicitly empty means serves nothing",
+			role: InstanceGroupRoleAPIServer,
+			set:  []WellKnownService{},
+			want: []WellKnownService{},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			ig := &InstanceGroup{Spec: InstanceGroupSpec{
+				Role:                    g.role,
+				ServesWellKnownServices: g.set,
+			}}
+
+			got := ig.ServedWellKnownServices()
+			if !reflect.DeepEqual(got, g.want) {
+				t.Errorf("role %q: ServedWellKnownServices() = %v, want %v", g.role, got, g.want)
+			}
+
+			// ServesWellKnownService must agree with the list.
+			for _, service := range AllWellKnownServices {
+				want := slices.Contains(g.want, service)
+				if got := ig.ServesWellKnownService(service); got != want {
+					t.Errorf("role %q: ServesWellKnownService(%q) = %v, want %v", g.role, service, got, want)
+				}
+			}
+		})
 	}
 }

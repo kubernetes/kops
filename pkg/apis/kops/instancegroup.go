@@ -173,6 +173,57 @@ func (r InstanceGroupRole) IsControlPlaneType() bool {
 	return r.HasControlPlane() || r.HasAPIServer() || r.HasEtcd() || r.HasScheduler() || r.HasKubeControllerManager()
 }
 
+// WellKnownService names a cluster endpoint that an instance group can serve.
+//
+// This is instance group membership: which endpoints route traffic to this group. It is related
+// to, but distinct from, the WellKnownService values in pkg/wellknownservices, which name the
+// addresses a cluster advertises. The API server appears here twice, because a group can serve
+// the endpoint clients outside the cluster use without serving the one used inside it, or the
+// other way around.
+type WellKnownService string
+
+const (
+	// WellKnownServiceKubeAPIServerExternal is the API server endpoint used by clients outside
+	// the cluster, typically a public load balancer.
+	WellKnownServiceKubeAPIServerExternal WellKnownService = "kube-apiserver-external"
+	// WellKnownServiceKubeAPIServerInternal is the API server endpoint used by clients inside
+	// the cluster, including the nodes themselves.
+	WellKnownServiceKubeAPIServerInternal WellKnownService = "kube-apiserver-internal"
+	// WellKnownServiceKopsController is the endpoint where kops-controller listens.
+	WellKnownServiceKopsController WellKnownService = "kops-controller"
+	// WellKnownServiceEtcdMain is the endpoint where the main etcd cluster listens.
+	WellKnownServiceEtcdMain WellKnownService = "etcd-main"
+)
+
+// AllWellKnownServices is a slice of all valid WellKnownService values
+var AllWellKnownServices = []WellKnownService{
+	WellKnownServiceKubeAPIServerExternal,
+	WellKnownServiceKubeAPIServerInternal,
+	WellKnownServiceKopsController,
+	WellKnownServiceEtcdMain,
+}
+
+// ClusterComponent names a cluster component that kOps schedules onto a node rather than
+// running as a static pod, and which therefore has to be placed explicitly.
+type ClusterComponent string
+
+const (
+	ClusterComponentCloudControllerManager ClusterComponent = "cloud-controller-manager"
+	ClusterComponentKopsController         ClusterComponent = "kops-controller"
+	ClusterComponentKopsChannel            ClusterComponent = "kops-channel"
+	ClusterComponentCertManager            ClusterComponent = "cert-manager"
+	ClusterComponentCAPIManager            ClusterComponent = "capi-manager"
+)
+
+// AllClusterComponents is a slice of all valid ClusterComponent values
+var AllClusterComponents = []ClusterComponent{
+	ClusterComponentCloudControllerManager,
+	ClusterComponentKopsController,
+	ClusterComponentKopsChannel,
+	ClusterComponentCertManager,
+	ClusterComponentCAPIManager,
+}
+
 const (
 	// BtfsFilesystem indicates a btfs filesystem
 	BtfsFilesystem = "btfs"
@@ -197,7 +248,16 @@ type InstanceGroupSpec struct {
 	// Manager determines what is managing the node lifecycle
 	Manager InstanceManager `json:"manager,omitempty"`
 	// Role determines the role of instances in this instance group.
+	// This is a comma-separated list, so one instance group can take on several
+	// control-plane roles, for example "APIServer,Scheduler".
 	Role InstanceGroupRole `json:"role,omitempty"`
+	// ServesWellKnownServices lists the cluster endpoints that should route traffic to this
+	// instance group. When unset it is derived from the roles; see
+	// InstanceGroup.ServedWellKnownServices.
+	ServesWellKnownServices []WellKnownService `json:"servesWellKnownServices,omitempty"`
+	// HostedComponents lists the cluster components that kOps schedules onto nodes, rather than
+	// running as static pods, which should be placed on this instance group.
+	HostedComponents []ClusterComponent `json:"hostedComponents,omitempty"`
 	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
 	// MinSize is the minimum size of the pool
@@ -512,6 +572,46 @@ func (g *InstanceGroup) IsKubeControllerManagerOnly() bool {
 // RunsKubeControllerManager checks if instanceGroup runs KubeControllerManager
 func (g *InstanceGroup) RunsKubeControllerManager() bool {
 	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasKubeControllerManager()
+}
+
+// ServedWellKnownServices returns the cluster endpoints that should route traffic to this
+// instance group.
+//
+// When spec.servesWellKnownServices is unset the set is derived from the group's roles, so that
+// clusters predating the field keep their behaviour. Because the field is omitempty an
+// explicitly empty list cannot be told apart from an unset one; that is not a limitation in
+// practice, because the derived value for the one case that needs it -- an API server that
+// exists only to serve the kube-scheduler or kube-controller-manager running beside it -- is
+// already the empty set.
+func (g *InstanceGroup) ServedWellKnownServices() []WellKnownService {
+	if g.Spec.ServesWellKnownServices != nil {
+		return g.Spec.ServesWellKnownServices
+	}
+
+	role := g.Spec.Role
+
+	// An API server co-located with the scheduler or controller-manager is there for that
+	// component alone, reachable on localhost, so nothing should be routed to it.
+	localOnlyAPIServer := role.HasAPIServer() &&
+		(role.HasScheduler() || role.HasKubeControllerManager())
+
+	var services []WellKnownService
+	if role.HasControlPlane() || (role.HasAPIServer() && !localOnlyAPIServer) {
+		services = append(services,
+			WellKnownServiceKubeAPIServerExternal,
+			WellKnownServiceKubeAPIServerInternal,
+			WellKnownServiceKopsController)
+	}
+	if role.HasControlPlane() || role.HasEtcd() {
+		services = append(services, WellKnownServiceEtcdMain)
+	}
+	return services
+}
+
+// ServesWellKnownService reports whether the given cluster endpoint should route traffic to
+// this instance group.
+func (g *InstanceGroup) ServesWellKnownService(service WellKnownService) bool {
+	return slices.Contains(g.ServedWellKnownServices(), service)
 }
 
 // HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.
