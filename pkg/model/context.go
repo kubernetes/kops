@@ -215,9 +215,12 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		}
 	case kops.CloudProviderGCE:
 		clusterLabel := gce.LabelForCluster(b.ClusterName())
-		roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
 		labels[clusterLabel.Key] = clusterLabel.Value
-		labels[roleLabel] = ig.Spec.Role.ToLowerString()
+		// One label per role: a composite role joined into a single label would not be a valid
+		// GCE label, and per-role labels keep each role individually selectable.
+		for _, role := range ig.Spec.Role.Roles() {
+			labels[gce.GceLabelNameRolePrefix+role.ToLowerString()] = role.ToLowerString()
+		}
 		labels[gce.GceLabelNameInstanceGroup] = ig.ObjectMeta.Name
 		if ig.Spec.Role.HasControlPlane() {
 			labels[gce.GceLabelNameRolePrefix+"master"] = "master"

@@ -17,6 +17,7 @@ limitations under the License.
 package kops
 
 import (
+	"slices"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -82,32 +83,90 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleKubeControllerManager,
 }
 
+// RoleSeparator separates the individual roles in a composite InstanceGroupRole value,
+// for example "APIServer,Scheduler".
+const RoleSeparator = ","
+
+// Roles returns the set of roles this value carries.
+//
+// An InstanceGroupRole is a comma-separated list, so that a single InstanceGroup can take on
+// several control-plane roles (for example an IG running kube-scheduler alongside the API
+// server it talks to). Entries are trimmed and deduplicated. Recognised roles come first, in
+// the canonical order of AllInstanceGroupRoles, so that "Scheduler,APIServer" and
+// "APIServer,Scheduler" normalize identically; unrecognised entries are kept, in input order,
+// after the recognised ones, so validation can report them.
+func (r InstanceGroupRole) Roles() []InstanceGroupRole {
+	var known, unknown []InstanceGroupRole
+	seen := make(map[InstanceGroupRole]bool)
+
+	for _, field := range strings.Split(string(r), RoleSeparator) {
+		role := InstanceGroupRole(strings.TrimSpace(field))
+		if role == "" || seen[role] {
+			continue
+		}
+		seen[role] = true
+		if slices.Contains(AllInstanceGroupRoles, role) {
+			known = append(known, role)
+		} else {
+			unknown = append(unknown, role)
+		}
+	}
+
+	slices.SortStableFunc(known, func(a, b InstanceGroupRole) int {
+		return slices.Index(AllInstanceGroupRoles, a) - slices.Index(AllInstanceGroupRoles, b)
+	})
+
+	return append(known, unknown...)
+}
+
+// HasRole reports whether this value carries the given role.
+func (r InstanceGroupRole) HasRole(role InstanceGroupRole) bool {
+	// Fast path for the overwhelmingly common single-role case. It also keeps the behaviour of
+	// unrecognised values byte-identical to a direct comparison.
+	if !strings.Contains(string(r), RoleSeparator) {
+		return r == role
+	}
+	return slices.Contains(r.Roles(), role)
+}
+
+// PrimaryRole returns the single most significant role this value carries, using the canonical
+// order of AllInstanceGroupRoles. Use it only where exactly one role can be represented, such
+// as naming a cloud resource, selecting an IAM identity, or choosing a state-store path; for
+// behavioural decisions prefer the Has* helpers, which consider every role.
+func (r InstanceGroupRole) PrimaryRole() InstanceGroupRole {
+	roles := r.Roles()
+	if len(roles) == 0 {
+		return ""
+	}
+	return roles[0]
+}
+
 func (r InstanceGroupRole) HasControlPlane() bool {
-	return r == InstanceGroupRoleControlPlane
+	return r.HasRole(InstanceGroupRoleControlPlane)
 }
 
 func (r InstanceGroupRole) HasNode() bool {
-	return r == InstanceGroupRoleNode
+	return r.HasRole(InstanceGroupRoleNode)
 }
 
 func (r InstanceGroupRole) HasBastion() bool {
-	return r == InstanceGroupRoleBastion
+	return r.HasRole(InstanceGroupRoleBastion)
 }
 
 func (r InstanceGroupRole) HasAPIServer() bool {
-	return r == InstanceGroupRoleAPIServer
+	return r.HasRole(InstanceGroupRoleAPIServer)
 }
 
 func (r InstanceGroupRole) HasEtcd() bool {
-	return r == InstanceGroupRoleEtcd
+	return r.HasRole(InstanceGroupRoleEtcd)
 }
 
 func (r InstanceGroupRole) HasScheduler() bool {
-	return r == InstanceGroupRoleScheduler
+	return r.HasRole(InstanceGroupRoleScheduler)
 }
 
 func (r InstanceGroupRole) HasKubeControllerManager() bool {
-	return r == InstanceGroupRoleKubeControllerManager
+	return r.HasRole(InstanceGroupRoleKubeControllerManager)
 }
 
 func (r InstanceGroupRole) IsControlPlaneType() bool {
@@ -471,7 +530,7 @@ func (g *InstanceGroup) IsBastion() bool {
 
 // IsKarpenterManaged checks if instanceGroup is a worker node group managed by Karpenter.
 func (g *InstanceGroup) IsKarpenterManaged() bool {
-	return g.Spec.Manager == InstanceManagerKarpenter && g.Spec.Role == InstanceGroupRoleNode
+	return g.Spec.Manager == InstanceManagerKarpenter && g.Spec.Role.HasNode()
 }
 
 func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
@@ -481,13 +540,28 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 }
 
+// ToLowerString returns a lowercase form of the role, safe for use in GCE label keys and
+// values, cloud resource names and state-store paths.
+//
+// Single-role values keep their historic spelling exactly. Composite values join the
+// individual roles with an underscore, in canonical order; a hyphen would be ambiguous
+// because "control-plane" already contains one.
 func (r InstanceGroupRole) ToLowerString() string {
-	switch {
-	case r.HasControlPlane():
-		return "control-plane"
-	default:
-		return strings.ToLower(string(r))
+	roles := r.Roles()
+	if len(roles) <= 1 {
+		switch {
+		case r.HasControlPlane():
+			return "control-plane"
+		default:
+			return strings.ToLower(strings.TrimSpace(string(r)))
+		}
 	}
+
+	parts := make([]string, 0, len(roles))
+	for _, role := range roles {
+		parts = append(parts, role.ToLowerString())
+	}
+	return strings.Join(parts, "_")
 }
 
 // LoadBalancer defines a load balancer
