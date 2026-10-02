@@ -259,11 +259,11 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 		providerVersions := map[string]map[string]string{
 			"aws": {
 				"source":  "hashicorp/aws",
-				"version": ">= 5.0.0",
+				"version": ">= 6.57.1",
 			},
 			"google": {
 				"source":  "hashicorp/google",
-				"version": ">= 5.11.0",
+				"version": ">= 6.8.0",
 			},
 			"hcloud": {
 				"source":  "hetznercloud/hcloud",
@@ -275,7 +275,7 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 			},
 			"scaleway": {
 				"source":  "scaleway/scaleway",
-				"version": ">= 2.2.1",
+				"version": ">= 2.54.0",
 			},
 			"digitalocean": {
 				"source":  "digitalocean/digitalocean",
