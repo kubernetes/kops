@@ -18,6 +18,7 @@ package tester
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -67,18 +68,6 @@ func parseKubeconfig(jsonPath string) (string, error) {
 	return s, nil
 }
 
-// The --host flag was required in the kubernetes e2e tests, until https://github.com/kubernetes/kubernetes/pull/87030
-// We can likely drop this when we drop support / testing for k8s 1.17
-func (t *Tester) addHostFlag() error {
-	server, err := parseKubeconfig(".clusters[0].cluster.server")
-	if err != nil {
-		return err
-	}
-	klog.Infof("Adding --host=%s", server)
-	t.TestArgs += " --host=" + server
-	return nil
-}
-
 // hasFlag detects if the specified flag has been passed in the args
 func hasFlag(args string, flag string) bool {
 	for _, arg := range strings.Split(args, " ") {
@@ -96,6 +85,54 @@ func hasFlag(args string, flag string) bool {
 
 func (t *Tester) getKopsVersion() (string, error) {
 	return kops.GetVersion("kops")
+}
+
+func (t *Tester) setKubeBastion() error {
+	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return err
+	}
+	igs, err := t.getKopsInstanceGroups()
+	if err != nil {
+		return err
+	}
+	controlPlaneGroups := sets.NewString()
+	for _, ig := range igs {
+		if ig.Spec.Role == "Master" {
+			controlPlaneGroups.Insert(ig.Name)
+		}
+	}
+	if controlPlaneGroups.Len() == 0 {
+		return fmt.Errorf("no control-plane instance groups found in cluster %q", cluster.Name)
+	}
+
+	cmd := exec.Command("kops", "get", "instances", "--name", cluster.Name, "-ojson")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("querying instances for cluster %q: %w; stderr=%s", cluster.Name, err, strings.TrimSpace(stderr.String()))
+	}
+	var instances []struct {
+		ID            string `json:"id"`
+		InstanceGroup string `json:"instanceGroup"`
+		ExternalIP    string `json:"externalIP"`
+		InternalIP    string `json:"internalIP"`
+	}
+	if err := json.Unmarshal(output, &instances); err != nil {
+		return fmt.Errorf("parsing instances JSON: %w", err)
+	}
+	for _, instance := range instances {
+		if !controlPlaneGroups.Has(instance.InstanceGroup) {
+			continue
+		}
+		if instance.ExternalIP != "" {
+			os.Setenv("KUBE_SSH_BASTION", instance.ExternalIP)
+			return nil
+		}
+		return fmt.Errorf("control-plane instance %q has no IP address", instance.ID)
+	}
+	return fmt.Errorf("no control-plane instances found in cluster %q", cluster.Name)
 }
 
 func (t *Tester) getKopsCluster() (*api.Cluster, error) {
@@ -502,7 +539,7 @@ func (t *Tester) execute() error {
 		return nil
 	}
 
-	if err := t.addHostFlag(); err != nil {
+	if err := t.setKubeBastion(); err != nil {
 		return err
 	}
 
@@ -549,6 +586,12 @@ func (t *Tester) execute() error {
 	}
 
 	t.TestArgs += " --disable-log-dump"
+
+	kopsVersion, err := t.getKopsVersion()
+	if err != nil {
+		return fmt.Errorf("getting kOps version for metadata: %w", err)
+	}
+	t.AddMetadata("kops-version", kopsVersion)
 
 	return t.Test()
 }
