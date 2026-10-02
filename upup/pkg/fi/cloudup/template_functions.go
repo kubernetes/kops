@@ -1088,10 +1088,10 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 	return tag
 }
 
-// GetNodeInstanceGroups returns a map containing the defined instance groups of role "Node".
+// GetNodeInstanceGroups returns the instance groups of role "Node", including those not being updated.
 func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGroupSpec {
 	nodegroups := make(map[string]kops.InstanceGroupSpec)
-	for _, ig := range tf.KopsModelContext.InstanceGroups {
+	for _, ig := range tf.AllInstanceGroups {
 		if ig.Spec.Role.HasNode() {
 			nodegroups[ig.ObjectMeta.Name] = ig.Spec
 		}
@@ -1109,8 +1109,15 @@ type ClusterAutoscalerNodeGroup struct {
 // GetClusterAutoscalerNodeGroups returns a map containing ClusterAutoscaler info for each instance group of type Node.
 func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() (map[string]ClusterAutoscalerNodeGroup, error) {
 	cluster := tf.Cluster
+	// The addon is applied to the whole cluster, so all instance groups are listed. On Hetzner,
+	// every node group needs a node config, which HCloudClusterConfig can only render for the
+	// instance groups being updated, so only those are listed there.
+	instanceGroups := tf.AllInstanceGroups
+	if cluster.GetCloudProvider() == kops.CloudProviderHetzner {
+		instanceGroups = tf.KopsModelContext.InstanceGroups
+	}
 	groups := make(map[string]ClusterAutoscalerNodeGroup)
-	for _, ig := range tf.KopsModelContext.InstanceGroups {
+	for _, ig := range instanceGroups {
 		if ig.Spec.Role.HasNode() && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
 			group := ClusterAutoscalerNodeGroup{
 				AutoScale: ig.Spec.Autoscale,
@@ -1181,6 +1188,8 @@ func (tf *TemplateFunctions) HCloudClusterConfig() (string, error) {
 		NodeConfigs: map[string]hcloudNodeConfig{},
 	}
 
+	// Only the instance groups being updated have a ServerGroup task, whose user data is needed
+	// here. GetClusterAutoscalerNodeGroups lists only these on Hetzner for this reason.
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
 		if !ig.Spec.Role.HasNode() {
 			continue

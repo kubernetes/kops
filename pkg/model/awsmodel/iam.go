@@ -82,7 +82,7 @@ func (b *IAMModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for profileARN, igRole := range sharedProfileARNsToIGRole {
 		lchPermissions := false
 		defaultWarmPool := b.Cluster.Spec.CloudProvider.AWS.WarmPool
-		for _, ig := range b.InstanceGroups {
+		for _, ig := range b.AllInstanceGroups {
 			warmPool := defaultWarmPool.ResolveDefaults(ig)
 			if ig.Spec.Role == igRole && warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
 				lchPermissions = true
@@ -105,11 +105,12 @@ func (b *IAMModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 	}
 
-	// Generate IAM tasks for each managed role
+	// Generate IAM tasks for each managed role. The role is shared by all its instance groups,
+	// so the warm pools of those not being updated need the lifecycle hook permissions too.
 	defaultWarmPool := b.Cluster.Spec.CloudProvider.AWS.WarmPool
 	for igRole := range managedRoles {
 		haveWarmPool := false
-		for _, ig := range b.InstanceGroups {
+		for _, ig := range b.AllInstanceGroups {
 			warmPool := defaultWarmPool.ResolveDefaults(ig)
 			if ig.Spec.Role == igRole && warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
 				haveWarmPool = true

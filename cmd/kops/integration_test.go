@@ -24,25 +24,37 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	"golang.org/x/crypto/ssh"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -210,6 +222,27 @@ func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// gceLoadBalancerResources are the terraform resources of the API load balancers on GCE.
+var gceLoadBalancerResources = []string{
+	"google_compute_address",
+	"google_compute_firewall",
+	"google_compute_forwarding_rule",
+	"google_compute_http_health_check",
+	"google_compute_region_backend_service",
+	"google_compute_region_health_check",
+	"google_compute_target_pool",
+}
+
+// TestMinimalGCEInternalLoadBalancerPartialUpdate checks that updating only the nodes keeps the
+// control plane in the backend service of the internal load balancer.
+func TestMinimalGCEInternalLoadBalancerPartialUpdate(t *testing.T) {
+	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
+		runTestPartialUpdate(t, kops.CloudProviderGCE, partialUpdateTest{
+			instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)},
+			clusterResources:   gceLoadBalancerResources,
+		})
+}
+
 // TestMinimalGCEInternalLoadBalancerCiliumEtcd runs tests on a minimal GCE configuration with an internal load balancer and cilium-etcd.
 func TestMinimalGCEInternalLoadBalancerCiliumEtcd(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb-cilium-etcd.example.com", "minimal_gce_ilb_cilium_etcd").
@@ -230,6 +263,25 @@ func TestMinimalGCEPublicLoadBalancerAPIServer(t *testing.T) {
 
 	newIntegrationTest("minimal-gce-plb-apiserver.example.com", "minimal_gce_plb_apiserver").
 		runTestTerraformGCE(t)
+}
+
+// TestMinimalGCEPublicLoadBalancerAPIServerPartialUpdate checks that updating only some instance groups
+// keeps the load balancers and firewall rules of the control plane and APIServer instance groups.
+func TestMinimalGCEPublicLoadBalancerAPIServerPartialUpdate(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	defer featureflag.ParseFlags("-APIServerNodes")
+
+	for _, p := range []partialUpdateTest{
+		{name: "master-us-test1-a", instanceGroups: []string{"master-us-test1-a"}},
+		{name: "apiserver-us-test1-a", instanceGroups: []string{"apiserver-us-test1-a"}},
+		{name: "nodes", instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			p.clusterResources = gceLoadBalancerResources
+			newIntegrationTest("minimal-gce-plb-apiserver.example.com", "minimal_gce_plb_apiserver").
+				runTestPartialUpdate(t, kops.CloudProviderGCE, p)
+		})
+	}
 }
 
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
@@ -268,6 +320,17 @@ func TestHA(t *testing.T) {
 func TestHighAvailabilityGCE(t *testing.T) {
 	newIntegrationTest("ha-gce.example.com", "ha_gce").
 		runTestTerraformGCE(t)
+}
+
+// TestHighAvailabilityGCEPartialUpdate checks that updating only the control plane keeps the node
+// groups of the nodes in the cluster-autoscaler addon.
+func TestHighAvailabilityGCEPartialUpdate(t *testing.T) {
+	newIntegrationTest("ha-gce.example.com", "ha_gce").
+		runTestPartialUpdate(t, kops.CloudProviderGCE, partialUpdateTest{
+			instanceGroupRoles: controlPlaneRoles,
+			clusterResources:   gceLoadBalancerResources,
+			clusterDataFiles:   []string{"aws_s3_object_ha-gce.example.com-addons-" + clusterAutoscalerAddon + "_content"},
+		})
 }
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
@@ -328,6 +391,17 @@ func TestMinimalWarmPool(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestMinimalWarmPoolPartialUpdate checks that updating only the control plane keeps the permissions
+// that the nodes in warm pools need to complete their lifecycle hooks.
+func TestMinimalWarmPoolPartialUpdate(t *testing.T) {
+	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").
+		runTestPartialUpdate(t, kops.CloudProviderAWS, partialUpdateTest{
+			instanceGroupRoles: controlPlaneRoles,
+			clusterResources:   []string{"aws_iam_instance_profile", "aws_iam_role", "aws_iam_role_policy"},
+			clusterDataFiles:   []string{"aws_iam_role_policy_nodes.minimal-warmpool.example.com_policy"},
+		})
+}
+
 // TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalEtcd(t *testing.T) {
 	newIntegrationTest("minimal-etcd.example.com", "minimal-etcd").
@@ -356,6 +430,22 @@ func TestExistingSG(t *testing.T) {
 func TestBastionAdditionalUserData(t *testing.T) {
 	newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").
 		runTestTerraformAWS(t)
+}
+
+// TestBastionPartialUpdate checks that updating only some instance groups keeps SSH access
+// through the bastions, and does not open it directly to the other instances.
+func TestBastionPartialUpdate(t *testing.T) {
+	for _, p := range []partialUpdateTest{
+		{name: "control-plane", instanceGroupRoles: controlPlaneRoles},
+		{name: "nodes", instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)}},
+		{name: "bastions", instanceGroupRoles: []string{string(kops.InstanceGroupRoleBastion)}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			p.clusterResources = []string{"aws_lb", "aws_lb_listener", "aws_lb_target_group", "aws_security_group", "aws_security_group_rule"}
+			newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").
+				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
+		})
+	}
 }
 
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
@@ -486,6 +576,29 @@ func TestKarpenter(t *testing.T) {
 	test.runTestTerraformAWS(t)
 }
 
+// TestKarpenterPartialUpdate checks that updating only some instance groups keeps the NodePools and
+// EC2NodeClasses of the other Karpenter instance groups, whose nodes Karpenter would terminate.
+func TestKarpenterPartialUpdate(t *testing.T) {
+	for _, p := range []partialUpdateTest{
+		{name: "control-plane", instanceGroupRoles: controlPlaneRoles},
+		{name: "karpenter-nodes-default", instanceGroups: []string{"karpenter-nodes-default"}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			// The subnets are selected by their instance group tags.
+			p.clusterResources = []string{"aws_subnet"}
+			p.changedDataFiles = []string{
+				"aws_s3_object_minimal.example.com-addons-bootstrap_content",
+				"aws_s3_object_minimal.example.com-addons-karpenter.sh-k8s-1.19_content",
+			}
+			p.checkChangedDataFiles = func(t *testing.T, expectedDataDir, actualDataDir string) {
+				assertAddonObjectsKept(t, expectedDataDir, actualDataDir, "minimal.example.com", "karpenter.sh", "k8s-1.19")
+			}
+			newIntegrationTest("minimal.example.com", "karpenter").
+				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
+		})
+	}
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").
@@ -581,6 +694,25 @@ func TestAPIServerNodes(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestAPIServerNodesPartialUpdate checks that updating only some instance groups keeps the
+// security groups and rules of the other instance groups.
+func TestAPIServerNodesPartialUpdate(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	defer featureflag.ParseFlags("-APIServerNodes")
+
+	for _, p := range []partialUpdateTest{
+		{name: "control-plane", instanceGroupRoles: []string{string(kops.InstanceGroupRoleControlPlane)}},
+		{name: "apiserver", instanceGroups: []string{"apiserver"}},
+		{name: "nodes", instanceGroupRoles: []string{string(kops.InstanceGroupRoleNode)}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			p.clusterResources = []string{"aws_lb", "aws_lb_listener", "aws_lb_target_group", "aws_security_group", "aws_security_group_rule"}
+			newIntegrationTest("minimal.example.com", "apiservernodes").
+				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
+		})
+	}
+}
+
 // TestNTHIMDSProcessor tests the output for resources required by NTH IMDS Processor mode
 func TestNTHIMDSProcessor(t *testing.T) {
 	newIntegrationTest("nthimdsprocessor.longclustername.example.com", "nth-imds-processor").
@@ -615,6 +747,16 @@ func TestCASPriorityExpander(t *testing.T) {
 func TestCASPriorityExpanderCustom(t *testing.T) {
 	test := newIntegrationTest("cas-priority-expander-custom.example.com", "cluster-autoscaler-priority-expander-custom")
 	test.runTestTerraformAWS(t)
+}
+
+// TestCASPriorityExpanderPartialUpdate checks that updating only the control plane keeps the node
+// groups and priorities of the other instance groups in the cluster-autoscaler addon.
+func TestCASPriorityExpanderPartialUpdate(t *testing.T) {
+	newIntegrationTest("cas-priority-expander.example.com", "cluster-autoscaler-priority-expander").
+		runTestPartialUpdate(t, kops.CloudProviderAWS, partialUpdateTest{
+			instanceGroupRoles: controlPlaneRoles,
+			clusterDataFiles:   []string{"aws_s3_object_cas-priority-expander.example.com-addons-" + clusterAutoscalerAddon + "_content"},
+		})
 }
 
 // readDirFilenames returns the names of the files in dir, sorted by name, or nil if dir
@@ -1086,6 +1228,296 @@ func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
 	h.MockKopsVersion(integrationTestKopsVersion)
 
 	i.runTest(t, ctx, h, "", "", nil)
+}
+
+// controlPlaneRoles are the instance group roles that the first step of "kops reconcile cluster" updates.
+var controlPlaneRoles = []string{
+	string(kops.InstanceGroupRoleAPIServer),
+	string(kops.InstanceGroupRoleControlPlane),
+}
+
+// partialUpdateTest describes an update of only some instance groups.
+type partialUpdateTest struct {
+	name string
+
+	// instanceGroups or instanceGroupRoles select the instance groups to update.
+	instanceGroups     []string
+	instanceGroupRoles []string
+
+	// clusterResources are the types of terraform resources that do not belong to a single
+	// instance group, so the partial update must render all of them.
+	clusterResources []string
+	// clusterDataFiles are the data files that do not belong to a single instance group,
+	// so the partial update must render all of them.
+	clusterDataFiles []string
+
+	// changedDataFiles are the data files that the partial update renders differently by design,
+	// which checkChangedDataFiles checks instead.
+	changedDataFiles      []string
+	checkChangedDataFiles func(t *testing.T, expectedDataDir, actualDataDir string)
+}
+
+// runTestPartialUpdate updates only some instance groups, as "kops update cluster --instance-group"
+// does. Everything it renders must match the expected output of the full update.
+func (i *integrationTest) runTestPartialUpdate(t *testing.T, cloudProvider kops.CloudProviderID, p partialUpdateTest) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
+	ctx := testcontext.ForTest(t)
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion(integrationTestKopsVersion)
+	switch cloudProvider {
+	case kops.CloudProviderAWS:
+		h.SetupMockAWS()
+	case kops.CloudProviderGCE:
+		h.SetupMockGCE()
+	default:
+		t.Fatalf("unsupported cloud provider %q", cloudProvider)
+	}
+
+	var stdout bytes.Buffer
+	i.srcDir = updateClusterTestBase + i.srcDir
+	factory := i.setupCluster(t, ctx, "in-"+i.version+".yaml", stdout)
+
+	options := &UpdateClusterOptions{}
+	options.InitDefaults()
+	options.Target = "terraform"
+	options.OutDir = path.Join(h.TempDir, "out")
+	options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
+	options.CreateKubecfg = false
+	options.IgnoreKubeletVersionSkew = true
+	options.ClusterName = i.clusterName
+	options.InstanceGroups = p.instanceGroups
+	options.InstanceGroupRoles = p.instanceGroupRoles
+	if _, err := RunUpdateCluster(ctx, factory, &stdout, options); err != nil {
+		t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
+	}
+
+	// The output is compared without golden.AssertMatchesFile, because hack/update-expected.sh
+	// would overwrite the full update's output with it.
+	expectedResources := readTerraformResources(t, filepath.Join(i.srcDir, "kubernetes.tf"))
+	actualResources := readTerraformResources(t, filepath.Join(h.TempDir, "out", "kubernetes.tf"))
+	for _, address := range slices.Sorted(maps.Keys(actualResources)) {
+		expected, found := expectedResources[address]
+		if !found {
+			t.Errorf("resource %q is not rendered by the full update", address)
+		} else if actual := actualResources[address]; actual != expected {
+			t.Errorf("resource %q differs from the full update:\n%s", address, diff.FormatDiff(expected, actual))
+		}
+	}
+	for _, address := range slices.Sorted(maps.Keys(expectedResources)) {
+		resourceType, _, _ := strings.Cut(address, ".")
+		if _, found := actualResources[address]; !found && slices.Contains(p.clusterResources, resourceType) {
+			t.Errorf("resource %q is not rendered", address)
+		}
+	}
+
+	expectedDataDir := filepath.Join(i.srcDir, "data")
+	actualDataDir := filepath.Join(h.TempDir, "out", "data")
+	actualDataFilenames := readDirFilenames(t, actualDataDir)
+	for _, filename := range actualDataFilenames {
+		if slices.Contains(p.changedDataFiles, filename) {
+			continue
+		}
+		expected, err := os.ReadFile(filepath.Join(expectedDataDir, filename))
+		if err != nil {
+			t.Errorf("data file %q is not rendered by the full update: %v", filename, err)
+			continue
+		}
+		actual, err := os.ReadFile(filepath.Join(actualDataDir, filename))
+		if err != nil {
+			t.Fatalf("failed to read data file %q: %v", filename, err)
+		}
+		e, a := strings.TrimSpace(string(expected)), strings.TrimSpace(string(actual))
+		if strings.HasSuffix(filename, "_user_data") {
+			if e, err = normalizeUserData(e); err != nil {
+				t.Fatalf("invalid expected user-data %q: %v", filename, err)
+			}
+			if a, err = normalizeUserData(a); err != nil {
+				t.Fatalf("invalid actual user-data %q: %v", filename, err)
+			}
+		}
+		if a != e {
+			t.Errorf("data file %q differs from the full update:\n%s", filename, diff.FormatDiff(e, a))
+		}
+	}
+	for _, filename := range p.clusterDataFiles {
+		if !slices.Contains(actualDataFilenames, filename) {
+			t.Errorf("data file %q is not rendered", filename)
+		}
+	}
+
+	// Rendering only the instance groups being updated is the purpose of the partial update:
+	// the nodeup config of an instance group, if it has one, is rendered only when it is updated.
+	cluster, err := GetCluster(ctx, factory, i.clusterName)
+	if err != nil {
+		t.Fatalf("error getting cluster: %v", err)
+	}
+	clientset, err := factory.KopsClient()
+	if err != nil {
+		t.Fatalf("error getting clientset: %v", err)
+	}
+	instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, cluster)
+	if err != nil {
+		t.Fatalf("error reading instance groups: %v", err)
+	}
+	expectedDataFilenames := readDirFilenames(t, expectedDataDir)
+	notUpdating := 0
+	for _, ig := range instanceGroups {
+		updating := slices.Contains(p.instanceGroups, ig.ObjectMeta.Name) || slices.Contains(p.instanceGroupRoles, string(ig.Spec.Role))
+		if !updating {
+			notUpdating++
+		}
+		filename := "aws_s3_object_nodeupconfig-" + ig.ObjectMeta.Name + "_content"
+		if !slices.Contains(expectedDataFilenames, filename) {
+			continue
+		}
+		if rendered := slices.Contains(actualDataFilenames, filename); rendered != updating {
+			t.Errorf("nodeup config of instance group %q: rendered=%v, but updating=%v", ig.ObjectMeta.Name, rendered, updating)
+		}
+	}
+	if notUpdating == 0 {
+		t.Errorf("all instance groups are being updated")
+	}
+
+	if p.checkChangedDataFiles != nil {
+		p.checkChangedDataFiles(t, expectedDataDir, actualDataDir)
+	}
+}
+
+// terraformResourceHeader matches the first line of a resource in the terraform output of kOps,
+// which ends with a "}" line.
+var terraformResourceHeader = regexp.MustCompile(`^resource "([^"]+)" "([^"]+)" \{$`)
+
+// readTerraformResources returns the resources in a terraform file written by kOps, by address.
+func readTerraformResources(t *testing.T, filename string) map[string]string {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read terraform file: %v", err)
+	}
+
+	resources := make(map[string]string)
+	lines := strings.Split(string(data), "\n")
+	for start := 0; start < len(lines); start++ {
+		match := terraformResourceHeader.FindStringSubmatch(lines[start])
+		if match == nil {
+			continue
+		}
+		end := start
+		for end < len(lines) && lines[end] != "}" {
+			end++
+		}
+		resources[match[1]+"."+match[2]] = strings.Join(lines[start:end+1], "\n")
+		start = end
+	}
+	return resources
+}
+
+// assertAddonObjectsKept checks that the partial update renders the same objects as the full update
+// for the instance groups being updated, and that its prune spec keeps the others.
+func assertAddonObjectsKept(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string) {
+	expectedChannel := readBootstrapChannel(t, filepath.Join(expectedDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
+	actualChannel := readBootstrapChannel(t, filepath.Join(actualDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
+	if len(actualChannel) != len(expectedChannel) {
+		t.Errorf("bootstrap channel has %d addons, the full update has %d", len(actualChannel), len(expectedChannel))
+	}
+	for name, expected := range expectedChannel {
+		actual := actualChannel[name]
+		switch {
+		case actual == nil:
+			t.Fatalf("addon %q is not in the bootstrap channel", name)
+		case name != addonName && !reflect.DeepEqual(actual, expected):
+			t.Errorf("addon %q in the bootstrap channel differs from the full update", name)
+		}
+	}
+	pruneSpec := actualChannel[addonName].Prune
+	if pruneSpec == nil {
+		t.Fatalf("addon %q is not pruned by the bootstrap channel", addonName)
+	}
+
+	filename := "aws_s3_object_" + clusterName + "-addons-" + addonName + "-" + addonID + "_content"
+	expectedObjects := readManifestObjects(t, filepath.Join(expectedDataDir, filename))
+	actualObjects := readManifestObjects(t, filepath.Join(actualDataDir, filename))
+	for key, actual := range actualObjects {
+		if expected, found := expectedObjects[key]; !found {
+			t.Errorf("object %s is not in the full update's addon", key)
+		} else if !reflect.DeepEqual(actual, expected) {
+			t.Errorf("object %s differs from the full update's addon", key)
+		}
+	}
+
+	// Pruning deletes the objects of the kinds in the prune spec that match its selectors,
+	// and are not in the manifest; see channels.Pruner.
+	for _, key := range slices.Sorted(maps.Keys(expectedObjects)) {
+		if _, found := actualObjects[key]; found {
+			continue
+		}
+		object := expectedObjects[key]
+		for _, kind := range pruneSpec.Kinds {
+			if object.GroupVersionKind().GroupKind() != (schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
+				continue
+			}
+			if len(kind.Namespaces) != 0 && !slices.Contains(kind.Namespaces, object.GetNamespace()) {
+				continue
+			}
+			labelSelector, err := labels.Parse(kind.LabelSelector)
+			if err != nil {
+				t.Fatalf("failed to parse label selector %q: %v", kind.LabelSelector, err)
+			}
+			fieldSelector, err := fields.ParseSelector(kind.FieldSelector)
+			if err != nil {
+				t.Fatalf("failed to parse field selector %q: %v", kind.FieldSelector, err)
+			}
+			if labelSelector.Matches(labels.Set(object.GetLabels())) &&
+				fieldSelector.Matches(fields.Set{"metadata.name": object.GetName(), "metadata.namespace": object.GetNamespace()}) {
+				t.Errorf("object %s of the full update's addon would be pruned", key)
+			}
+		}
+	}
+}
+
+// readBootstrapChannel returns the addons of a bootstrap channel, by name.
+func readBootstrapChannel(t *testing.T, filename string) map[string]*channelsapi.AddonSpec {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read bootstrap channel: %v", err)
+	}
+	var channel channelsapi.Addons
+	if err := yaml.UnmarshalStrict(data, &channel); err != nil {
+		t.Fatalf("failed to parse bootstrap channel %q: %v", filename, err)
+	}
+	addons := make(map[string]*channelsapi.AddonSpec)
+	for _, addon := range channel.Spec.Addons {
+		addons[fi.ValueOf(addon.Name)] = addon
+	}
+	return addons
+}
+
+// readManifestObjects returns the objects in an addon manifest, by kind, namespace and name.
+func readManifestObjects(t *testing.T, filename string) map[string]*unstructured.Unstructured {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read manifest: %v", err)
+	}
+	objects, err := kubemanifest.LoadObjectsFrom(data)
+	if err != nil {
+		t.Fatalf("failed to parse manifest %q: %v", filename, err)
+	}
+	unstructuredObjects := make(map[string]*unstructured.Unstructured)
+	for _, object := range objects {
+		b, err := object.MarshalJSON()
+		if err != nil {
+			t.Fatalf("failed to marshal object: %v", err)
+		}
+		u := &unstructured.Unstructured{}
+		if err := u.UnmarshalJSON(b); err != nil {
+			t.Fatalf("failed to parse object: %v", err)
+		}
+		key := u.GroupVersionKind().GroupKind().String() + " " + path.Join(u.GetNamespace(), u.GetName())
+		unstructuredObjects[key] = u
+	}
+	return unstructuredObjects
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
