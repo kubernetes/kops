@@ -17,7 +17,7 @@
 set -e
 set -x
 
-if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+if ! kubetest2 kops --help 2>&1 | grep -q -- "--metadata" || [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
   make test-e2e-install
 fi
 
