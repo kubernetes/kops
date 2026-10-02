@@ -753,8 +753,16 @@ func Convert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGr
 	if err := autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in, out, s); err != nil {
 		return err
 	}
-	if in.Role == "Master" {
-		out.Role = kops.InstanceGroupRoleControlPlane
+	// "Master" is the legacy spelling of the ControlPlane role. Role is a comma-separated list,
+	// so replace the token wherever it appears rather than only when it is the whole value.
+	if in.Role != "" {
+		fields := strings.Split(string(in.Role), kops.RoleSeparator)
+		for i, field := range fields {
+			if strings.TrimSpace(field) == "Master" {
+				fields[i] = string(kops.InstanceGroupRoleControlPlane)
+			}
+		}
+		out.Role = kops.InstanceGroupRole(strings.Join(fields, kops.RoleSeparator))
 	}
 	if in.RootVolumeEncryption != nil {
 		if out.RootVolume == nil {
@@ -805,8 +813,16 @@ func Convert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.Insta
 	if err := autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in, out, s); err != nil {
 		return err
 	}
+	// v1alpha2 spells the ControlPlane role "Master". Replace just that token, so the other
+	// roles in a composite value survive the round trip.
 	if in.Role.HasControlPlane() {
-		out.Role = "Master"
+		fields := strings.Split(string(in.Role), kops.RoleSeparator)
+		for i, field := range fields {
+			if InstanceGroupRole(strings.TrimSpace(field)) == InstanceGroupRole(kops.InstanceGroupRoleControlPlane) {
+				fields[i] = "Master"
+			}
+		}
+		out.Role = InstanceGroupRole(strings.Join(fields, kops.RoleSeparator))
 	}
 	if in.RootVolume != nil {
 		rv := in.RootVolume
