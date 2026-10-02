@@ -230,7 +230,7 @@ resource "google_compute_firewall" "https-api-ipv6-minimal-gce-split-cp-example-
   name          = "https-api-ipv6-minimal-gce-split-cp-example-com"
   network       = google_compute_network.minimal-gce-split-cp-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-apiserver"]
+  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver"]
 }
 
 resource "google_compute_firewall" "https-api-minimal-gce-split-cp-example-com" {
@@ -242,7 +242,7 @@ resource "google_compute_firewall" "https-api-minimal-gce-split-cp-example-com" 
   name          = "https-api-minimal-gce-split-cp-example-com"
   network       = google_compute_network.minimal-gce-split-cp-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-apiserver"]
+  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver"]
 }
 
 resource "google_compute_firewall" "lb-health-checks-minimal-gce-split-cp-example-com" {
@@ -253,7 +253,7 @@ resource "google_compute_firewall" "lb-health-checks-minimal-gce-split-cp-exampl
   name          = "lb-health-checks-minimal-gce-split-cp-example-com"
   network       = google_compute_network.minimal-gce-split-cp-example-com.name
   source_ranges = ["35.191.0.0/16", "130.211.0.0/22", "209.85.204.0/22", "209.85.152.0/22"]
-  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver"]
+  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-etcd"]
 }
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-split-cp-example-com" {
@@ -278,8 +278,8 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-split-cp-exampl
   disabled    = false
   name        = "master-to-master-minimal-gce-split-cp-example-com"
   network     = google_compute_network.minimal-gce-split-cp-example-com.name
-  source_tags = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
-  target_tags = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
+  source_tags = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-etcd", "minimal-gce-split-cp-example-com-k8s-io-role-scheduler", "minimal-gce-split-cp-e-uoivph-k8s-io-role-kubecontrollermanager", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
+  target_tags = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-etcd", "minimal-gce-split-cp-example-com-k8s-io-role-scheduler", "minimal-gce-split-cp-e-uoivph-k8s-io-role-kubecontrollermanager", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-minimal-gce-split-cp-example-com" {
@@ -319,6 +319,30 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-split-cp-example-
   }
   allow {
     ports    = ["3988"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["10257"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["10259"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["10249"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["2382"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["2384"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["9100"]
     protocol = "tcp"
   }
   disabled    = false
@@ -395,7 +419,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-spli
   name          = "ssh-external-to-master-ipv6-minimal-gce-split-cp-example-com"
   network       = google_compute_network.minimal-gce-split-cp-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-etcd", "minimal-gce-split-cp-example-com-k8s-io-role-scheduler", "minimal-gce-split-cp-e-uoivph-k8s-io-role-kubecontrollermanager", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-split-cp-example-com" {
@@ -407,7 +431,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-split-cp-
   name          = "ssh-external-to-master-minimal-gce-split-cp-example-com"
   network       = google_compute_network.minimal-gce-split-cp-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-split-cp-example-com-k8s-io-role-control-plane", "minimal-gce-split-cp-example-com-k8s-io-role-apiserver", "minimal-gce-split-cp-example-com-k8s-io-role-etcd", "minimal-gce-split-cp-example-com-k8s-io-role-scheduler", "minimal-gce-split-cp-e-uoivph-k8s-io-role-kubecontrollermanager", "minimal-gce-split-cp-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-split-cp-example-com" {
@@ -570,7 +594,7 @@ resource "google_compute_instance_template" "apiserver-us-test1-a-minimal-gce-sp
   metadata = {
     "cluster-name"                    = "minimal-gce-split-cp.example.com"
     "kops-k8s-io-instance-group-name" = "apiserver-us-test1-a"
-    "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
+    "ssh-keys"                        = "ubuntu: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "user-data"                       = file("${path.module}/data/google_compute_instance_template_apiserver-us-test1-a-minimal-gce-split-cp-example-com_metadata_user-data")
   }
   name_prefix = "apiserver-us-test1-a-mini-9pn4b7-"
@@ -587,7 +611,7 @@ resource "google_compute_instance_template" "apiserver-us-test1-a-minimal-gce-sp
   }
   service_account {
     email  = "default"
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
+    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
   tags = ["minimal-gce-split-cp-example-com-k8s-io-role-apiserver"]
 }
@@ -622,7 +646,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-split
   metadata = {
     "cluster-name"                    = "minimal-gce-split-cp.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
-    "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
+    "ssh-keys"                        = "ubuntu: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "user-data"                       = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-split-cp-example-com_metadata_user-data")
   }
   name_prefix = "master-us-test1-a-minimal-3lququ-"
@@ -674,7 +698,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-split-cp-example-
     "cluster-name"                    = "minimal-gce-split-cp.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
     "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
-    "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
+    "ssh-keys"                        = "ubuntu: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "user-data"                       = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-split-cp-example-com_metadata_user-data")
   }
   name_prefix = "nodes-minimal-gce-split-c-r6fkcl-"
@@ -717,6 +741,10 @@ resource "google_compute_region_backend_service" "api-minimal-gce-split-cp-examp
 }
 
 resource "google_compute_region_backend_service" "kops-controller-minimal-gce-split-cp-example-com" {
+  backend {
+    balancing_mode = "CONNECTION"
+    group          = google_compute_instance_group_manager.a-apiserver-us-test1-a-minimal-gce-split-cp-example-com.instance_group
+  }
   backend {
     balancing_mode = "CONNECTION"
     group          = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-split-cp-example-com.instance_group

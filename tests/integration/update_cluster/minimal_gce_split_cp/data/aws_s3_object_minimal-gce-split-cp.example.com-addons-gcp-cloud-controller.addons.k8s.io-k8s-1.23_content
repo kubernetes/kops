@@ -24,6 +24,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
+              - key: node-role.kops.k8s.io/cloud-controller-manager
+                operator: Exists
+            - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
             - matchExpressions:
@@ -44,7 +47,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v35.0.0
+        image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v36.2.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -70,15 +73,7 @@ spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: cloud-controller-manager
       tolerations:
-      - effect: NoSchedule
-        key: node.cloudprovider.kubernetes.io/uninitialized
-        value: "true"
-      - effect: NoSchedule
-        key: node.kubernetes.io/not-ready
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/control-plane
+      - operator: Exists
       volumes:
       - hostPath:
           path: /etc/kubernetes/cloud.config

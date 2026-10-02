@@ -79,7 +79,6 @@ spec:
   maxSize: 1
   minSize: 1
   role: Master
-  excludeFromExternalAPILoadBalancer: true
   subnets:
     - us-test1
   zones:

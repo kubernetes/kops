@@ -66,7 +66,6 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		isControlPlaneType := role.IsControlPlaneType()
 		hasControlPlane := role.HasControlPlane()
 		hasAPIServer := role.HasAPIServer()
-		hasEtcd := role.HasEtcd()
 		hasScheduler := role.HasScheduler()
 		hasKCM := role.HasKubeControllerManager()
 
@@ -154,17 +153,16 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 				}
 			}
 		}
+	}
 
-		if hasControlPlane || hasEtcd {
-			for _, etcdCluster := range cluster.Spec.EtcdClusters {
-				for _, member := range etcdCluster.Members {
-					instanceGroup := fi.ValueOf(member.InstanceGroup)
-					etcdManifest := fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, instanceGroup)
-					entry := configBase.Join(etcdManifest).Path()
-					if !slices.Contains(etcdManifests[instanceGroup], entry) {
-						etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], entry)
-					}
-				}
+	// etcd manifests are keyed by instance group name, so collecting them is independent of role.
+	for _, etcdCluster := range cluster.Spec.EtcdClusters {
+		for _, member := range etcdCluster.Members {
+			instanceGroup := fi.ValueOf(member.InstanceGroup)
+			etcdManifest := fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, instanceGroup)
+			entry := configBase.Join(etcdManifest).Path()
+			if !slices.Contains(etcdManifests[instanceGroup], entry) {
+				etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], entry)
 			}
 		}
 	}
@@ -197,6 +195,13 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	isMaster := role.HasControlPlane()
 	hasAPIServer := isMaster || role.HasAPIServer()
+
+	// hostsEtcd is true when this instance group backs an etcd member. etcd can be co-located
+	// with any control-plane role, so membership -- not role -- decides which instances receive
+	// the etcd manifests, cluster names and etcd-manager/peer CAs. The role checks are kept
+	// alongside it so existing clusters, where a control-plane group may carry etcd material
+	// without being referenced as a member, are unaffected.
+	hostsEtcd := isMaster || role.HasEtcd() || isEtcdMember(cluster, ig.ObjectMeta.Name)
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
 
@@ -238,7 +243,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 		}
 
-		if isMaster || role.HasEtcd() {
+		if hostsEtcd {
 			if err := loadCertificates(keysets, "etcd-clients-ca", config, true); err != nil {
 				return nil, nil, err
 			}
@@ -265,7 +270,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 				config.KeypairIDs[fi.DiscoveryCAID] = keysets[fi.DiscoveryCAID].Primary.Id
 			}
 		}
-		if !isMaster && !role.HasEtcd() {
+		if !hostsEtcd {
 			if keysets["etcd-client-cilium"] != nil {
 				config.KeypairIDs["etcd-client-cilium"] = keysets["etcd-client-cilium"].Primary.Id
 			}
@@ -375,7 +380,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	config.Images = n.images[role]
 
-	if isMaster || role.HasEtcd() {
+	if hostsEtcd {
 		for _, etcdCluster := range cluster.Spec.EtcdClusters {
 			config.EtcdClusterNames = append(config.EtcdClusterNames, etcdCluster.Name)
 		}
@@ -395,6 +400,18 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	config.Packages = append(config.Packages, ig.Spec.Packages...)
 
 	return config, bootConfig, nil
+}
+
+// isEtcdMember reports whether any etcd cluster member is hosted on the named instance group.
+func isEtcdMember(cluster *kops.Cluster, instanceGroupName string) bool {
+	for _, etcdCluster := range cluster.Spec.EtcdClusters {
+		for _, member := range etcdCluster.Members {
+			if fi.ValueOf(member.InstanceGroup) == instanceGroupName {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // selectControlPlaneIPs narrows the addresses that reach the API server down to the ones a node

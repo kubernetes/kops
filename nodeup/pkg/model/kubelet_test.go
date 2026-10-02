@@ -301,6 +301,23 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("unexpected number of instance groups: found %d", len(model.InstanceGroups))
 	}
 
+	// nodeup.NewConfig does not populate EtcdManifests; in a real cluster nodeupconfigbuilder
+	// fills it in for every instance group that backs an etcd member. Several builders key off
+	// it (via NodeupModelContext.HostsEtcd) to decide whether etcd is local, so mirror that here.
+	if len(model.InstanceGroups) == 1 {
+		igName := model.InstanceGroups[0].ObjectMeta.Name
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			for _, member := range etcdCluster.Members {
+				if fi.ValueOf(member.InstanceGroup) != igName {
+					continue
+				}
+				nodeupModelContext.NodeupConfig.EtcdManifests = append(
+					nodeupModelContext.NodeupConfig.EtcdManifests,
+					fmt.Sprintf("memfs://tests/manifests/etcd/%s-%s.yaml", etcdCluster.Name, igName))
+			}
+		}
+	}
+
 	// Are we mocking out too much of the apply_cluster logic?
 	nodeupModelContext.NodeupConfig.CAs["kubernetes-ca"] = dummyCertificate + nextCertificate
 	nodeupModelContext.NodeupConfig.KeypairIDs["kubernetes-ca"] = "3"

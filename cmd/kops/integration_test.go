@@ -232,6 +232,17 @@ func TestMinimalGCEPublicLoadBalancerAPIServer(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCESplitControlPlane runs tests on a GCE configuration where the control plane is
+// split across a ControlPlane instance group (which hosts etcd) and a dedicated APIServer
+// instance group that fronts the public load balancer.
+func TestMinimalGCESplitControlPlane(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	defer featureflag.ParseFlags("-APIServerNodes")
+
+	newIntegrationTest("minimal-gce-split-cp.example.com", "minimal_gce_split_cp").
+		runTestTerraformGCE(t)
+}
+
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").

@@ -13,6 +13,7 @@ spec:
     - --v=4
     - --yes
     - --interval=1m0s
+    - --node-labels=node-role.kubernetes.io/control-plane
     - --node-name=$(NODE_NAME)
     - memfs://tests/minimal-gce-split-cp.example.com/addons/bootstrap-channel.yaml
     env:
@@ -24,7 +25,7 @@ spec:
       value: /var/lib/kops/kubeconfig
     - name: HOME
       value: /tmp
-    image: registry.k8s.io/kops/channels:1.34.0-beta.1
+    image: registry.k8s.io/kops/channels:1.37.0-beta.1
     name: kops-channels
     readinessProbe:
       failureThreshold: 2
