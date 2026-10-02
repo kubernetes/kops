@@ -243,6 +243,18 @@ func TestMinimalGCESplitControlPlane(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCEMultiRole runs tests on a GCE cluster whose control plane is split across
+// instance groups, including two that carry more than one role: a kube-scheduler and a
+// kube-controller-manager each sitting beside the API server they talk to. The externally
+// reachable API server, the internal one and etcd are separate groups.
+func TestMinimalGCEMultiRole(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes,+ExperimentalRoles")
+	defer featureflag.ParseFlags("-APIServerNodes,-ExperimentalRoles")
+
+	newIntegrationTest("minimal-gce-multirole.example.com", "minimal_gce_multirole").
+		runTestTerraformGCE(t)
+}
+
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").

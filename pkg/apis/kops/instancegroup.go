@@ -614,6 +614,15 @@ func (g *InstanceGroup) ServesWellKnownService(service WellKnownService) bool {
 	return slices.Contains(g.ServedWellKnownServices(), service)
 }
 
+// ServesRemoteAPIServer reports whether anything off the instance connects to this group's API
+// server. An API server that exists only for the kube-scheduler or kube-controller-manager
+// running beside it is reached on localhost, so it needs neither a load balancer nor a firewall
+// opening of its own.
+func (g *InstanceGroup) ServesRemoteAPIServer() bool {
+	return g.ServesWellKnownService(WellKnownServiceKubeAPIServerExternal) ||
+		g.ServesWellKnownService(WellKnownServiceKubeAPIServerInternal)
+}
+
 // HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.
 // gVisor is only valid on workers; ValidateInstanceGroup rejects it on other roles.
 func (g *InstanceGroup) HasGVisor() bool {

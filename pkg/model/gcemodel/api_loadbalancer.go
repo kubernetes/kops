@@ -157,15 +157,21 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	}
 	c.AddTask(hc)
 
-	// Collect ControlPlane and APIServer MIGs separately. The API backend service
-	// includes both (both serve the kube-apiserver), while the kops-controller and
-	// etcd backend services only include ControlPlane MIGs.
+	// Each backend service gets the MIGs of the instance groups that serve its endpoint. An
+	// instance group's roles say what it runs; spec.servesWellKnownServices says what traffic
+	// should reach it, which is what decides load balancer membership.
 	var apiIGMs []*gcetasks.InstanceGroupManager
 	var etcdIGMs []*gcetasks.InstanceGroupManager
 	var kopsControllerIGMs []*gcetasks.InstanceGroupManager
 	requireEtcdLB := false
 	for _, ig := range b.InstanceGroups {
-		if !ig.RunsAPIServer() && !ig.RunsEtcd() {
+		servesAPI := b.ServesWellKnownService(ig, kops.WellKnownServiceKubeAPIServerInternal)
+		servesKopsController := b.ServesWellKnownService(ig, kops.WellKnownServiceKopsController)
+		servesEtcd := b.ServesWellKnownService(ig, kops.WellKnownServiceEtcdMain)
+
+		// Groups that run an API server still need the etcd load balancer decision below, even
+		// when nothing is routed to them.
+		if !servesAPI && !servesKopsController && !servesEtcd && !ig.RunsAPIServer() {
 			continue
 		}
 		if len(ig.Spec.Zones) > 1 {
@@ -176,13 +182,13 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		}
 		zone := ig.Spec.Zones[0]
 		igm := &gcetasks.InstanceGroupManager{Name: s(gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)), Zone: s(zone)}
-		if ig.RunsAPIServer() {
+		if servesAPI {
 			apiIGMs = append(apiIGMs, igm)
 		}
-		if ig.RunsEtcd() {
+		if servesEtcd {
 			etcdIGMs = append(etcdIGMs, igm)
 		}
-		if ig.IsControlPlane() || ig.RunsAPIServer() /* && Check for no control plane */ {
+		if servesKopsController {
 			kopsControllerIGMs = append(kopsControllerIGMs, igm)
 		}
 		// An API server that does not host etcd locally has to reach it over the network. With
@@ -235,7 +241,8 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	for _, sn := range b.Cluster.Spec.Networking.Subnets {
 		var subnet *gcetasks.Subnet
 		for _, ig := range b.InstanceGroups {
-			if ig.RunsAPIServer() && slices.Contains(ig.Spec.Subnets, sn.Name) {
+			if b.ServesWellKnownService(ig, kops.WellKnownServiceKubeAPIServerInternal) &&
+				slices.Contains(ig.Spec.Subnets, sn.Name) {
 				subnet = b.LinkToSubnet(&sn)
 				break
 			}

@@ -92,10 +92,12 @@ func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {
 }
 
 // HasAPIServerInstanceGroups returns true if the cluster has any instance group carrying the
-// APIServer role, that is any API server running outside a full control-plane group.
+// APIServer role that something connects to remotely, and which therefore carries the APIServer
+// network tag. Groups whose API server is only reached on localhost are excluded, so that
+// firewall rules do not reference a tag no instance has.
 func (c *GCEModelContext) HasAPIServerInstanceGroups() bool {
 	for _, ig := range c.InstanceGroups {
-		if ig.Spec.Role.HasAPIServer() {
+		if ig.Spec.Role.HasAPIServer() && ig.ServesRemoteAPIServer() {
 			return true
 		}
 	}

@@ -329,6 +329,43 @@ func (b *KopsModelContext) UsesSSHBastion() bool {
 	return false
 }
 
+// usesExplicitWellKnownServices reports whether any instance group configures
+// spec.servesWellKnownServices. Cluster-wide, because the historic defaults it replaces are
+// themselves cluster-wide. Uses AllInstanceGroups: an apply filtered to a subset of instance
+// groups must still see the whole topology, or it would resolve the endpoints differently from
+// an unfiltered one.
+func (b *KopsModelContext) usesExplicitWellKnownServices() bool {
+	for _, ig := range b.AllInstanceGroups {
+		if ig.Spec.ServesWellKnownServices != nil {
+			return true
+		}
+	}
+	return false
+}
+
+// ServesWellKnownService reports whether the given cluster endpoint should route traffic to
+// this instance group.
+//
+// While no instance group in the cluster sets spec.servesWellKnownServices, the historic
+// behaviour applies, which the role-derived defaults cannot express because it depends on the
+// other instance groups: a cluster with dedicated API server groups routes externally reachable
+// traffic to those alone, leaving the control-plane groups free for the core controllers. Once
+// any instance group sets the field, the configured and role-derived values are authoritative.
+func (b *KopsModelContext) ServesWellKnownService(ig *kops.InstanceGroup, service kops.WellKnownService) bool {
+	if !b.usesExplicitWellKnownServices() &&
+		service == kops.WellKnownServiceKubeAPIServerExternal &&
+		ig.IsControlPlane() {
+
+		for _, other := range b.AllInstanceGroups {
+			if other.Spec.Role.HasAPIServer() {
+				return false
+			}
+		}
+	}
+
+	return ig.ServesWellKnownService(service)
+}
+
 // UseLoadBalancerForAPI checks if we are using a load balancer for the kubeapi
 func (b *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return b.Cluster.Spec.API.LoadBalancer != nil

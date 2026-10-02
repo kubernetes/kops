@@ -211,6 +211,13 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 		// every role it carries, and grant the union of the scopes those roles need.
 		grantDNSScope := false
 		for _, role := range ig.Spec.Role.Roles() {
+			// Network tags exist so that other instances and load balancers can reach this one.
+			// An API server nothing connects to remotely needs no tag, and tagging it would put
+			// it behind the firewall rules that open the API server port to the cluster and to
+			// the API access CIDRs.
+			if role.HasAPIServer() && !ig.ServesRemoteAPIServer() {
+				continue
+			}
 			t.Tags = append(t.Tags, b.GCETagForRole(role))
 
 			switch role {
@@ -331,16 +338,6 @@ func SplitCountAcrossZones(count int, zones []string) map[string]int {
 }
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	// Dedicated API server groups front the public load balancer in place of the control-plane
-	// groups; see the target pool comment below.
-	clusterHasDedicatedAPIServers := false
-	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role.HasAPIServer() {
-			clusterHasDedicatedAPIServers = true
-			break
-		}
-	}
-
 	for _, ig := range b.InstanceGroups {
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
@@ -380,12 +377,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				ListManagedInstancesResults: "PAGINATED",
 			}
 
-			// Attach API server instances to load balancer if we're using one
-			// Do not attach API server instances from the control plane if we
-			// have an APIServer only IG declared. We are assuming that APIServer
-			// only IG is a front end and other APIServers are dedicated for
-			// internal use
-			if ig.Spec.Role.HasAPIServer() || (!clusterHasDedicatedAPIServers && ig.IsControlPlane()) {
+			// Attach the instances that serve the externally reachable API server endpoint to
+			// the public load balancer.
+			if b.ServesWellKnownService(ig, kops.WellKnownServiceKubeAPIServerExternal) {
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
 					if lbSpec != nil {
