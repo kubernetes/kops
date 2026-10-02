@@ -411,19 +411,22 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			KubeControllerManager: *cluster.Spec.KubeControllerManager,
 			KubeScheduler:         *cluster.Spec.KubeScheduler,
 		}
-	} else if instanceGroup.IsKubeControllerManagerOnly() {
-		config.ControlPlaneConfig = &ControlPlaneConfig{
-			KubeControllerManager: *cluster.Spec.KubeControllerManager,
+	} else if instanceGroup.RunsKubeControllerManager() || instanceGroup.RunsScheduler() {
+		// Configure each component the group runs. These are not mutually exclusive: a group
+		// can carry both roles, or carry one alongside the API server it talks to.
+		config.ControlPlaneConfig = &ControlPlaneConfig{}
+		if instanceGroup.RunsKubeControllerManager() {
+			config.ControlPlaneConfig.KubeControllerManager = *cluster.Spec.KubeControllerManager
 		}
-		config.APIServerConfig = &APIServerConfig{
-			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
+		if instanceGroup.RunsScheduler() {
+			config.ControlPlaneConfig.KubeScheduler = *cluster.Spec.KubeScheduler
 		}
-	} else if instanceGroup.IsSchedulerOnly() {
-		config.ControlPlaneConfig = &ControlPlaneConfig{
-			KubeScheduler: *cluster.Spec.KubeScheduler,
-		}
-		config.APIServerConfig = &APIServerConfig{
-			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
+		// Both components need the cluster DNS domain. A group that also runs an API server has
+		// a fully populated APIServerConfig already; don't overwrite it with this stub.
+		if config.APIServerConfig == nil {
+			config.APIServerConfig = &APIServerConfig{
+				ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
+			}
 		}
 	}
 

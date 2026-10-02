@@ -61,7 +61,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, field.Required(field.NewPath("objectMeta", "name"), ""))
 	}
 
-	switch g.Spec.Role {
+	// Matching the whole value on purpose, so that a composite role such as
+	// "APIServer,Scheduler" falls through to the default case and is rejected. Composite
+	// roles are only accepted once this function validates each role individually.
+	switch g.Spec.Role { // kops:single-role-switch
 	case "":
 		allErrs = append(allErrs, field.Required(field.NewPath("spec", "role"), "Role must be set"))
 	case kops.InstanceGroupRoleControlPlane:

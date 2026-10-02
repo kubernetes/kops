@@ -303,7 +303,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 		if g.RunsScheduler() {
 			schedulerGroupCount++
 		}
-		if g.IsEtcdOnly() || g.IsSchedulerOnly() || g.IsKubeControllerManagerOnly() {
+		if g.Spec.Role.HasEtcd() || g.Spec.Role.HasScheduler() || g.Spec.Role.HasKubeControllerManager() {
 			splitRoleCount++
 		}
 	}

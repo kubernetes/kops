@@ -185,10 +185,14 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		if ig.IsControlPlane() || ig.RunsAPIServer() /* && Check for no control plane */ {
 			kopsControllerIGMs = append(kopsControllerIGMs, igm)
 		}
-		if ig.IsAPIServerOnly() {
-			requireEtcdLB = b.Cluster.UsesNoneDNS()
+		// An API server that does not host etcd locally has to reach it over the network. With
+		// DNS it can use the etcd DNS name; with dns=none it needs a load balancer address.
+		// Accumulate, rather than assign: with several instance groups the last one examined
+		// would otherwise decide for the whole cluster.
+		if ig.RunsAPIServer() && !ig.RunsEtcd() {
+			requireEtcdLB = requireEtcdLB || b.Cluster.UsesNoneDNS()
 		}
-		if ig.IsEtcdOnly() {
+		if ig.RunsEtcd() && !ig.RunsAPIServer() {
 			requireEtcdLB = true
 		}
 	}
@@ -204,7 +208,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 
 	// kopsControllerBS is a backend service that targets ControlPlane or MIGs.
 	kopsControllerBS := backendService
-	if b.HasAPIServerOnlyInstanceGroups() || b.HasEtcdOnlyInstanceGroups() {
+	if b.HasAPIServerInstanceGroups() || b.HasDedicatedEtcdInstanceGroups() {
 		controlPlaneHC := &gcetasks.HealthCheck{
 			Name:      s(b.NameForHealthCheck("kops-controller")),
 			Port:      wellknownports.KopsControllerPort,
@@ -292,7 +296,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 
 		if model.UseCiliumEtcd(b.Cluster) {
 			etcdBS := kopsControllerBS
-			if b.HasEtcdOnlyInstanceGroups() {
+			if b.HasDedicatedEtcdInstanceGroups() {
 				etcdBS = &gcetasks.BackendService{
 					Name:                  s(b.NameForBackendService("cilium-etcd")),
 					Protocol:              s("TCP"),

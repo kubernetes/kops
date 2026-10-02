@@ -167,7 +167,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		return nil, fmt.Errorf("unable to find IAM profile link for instance group %q: %w", ig.ObjectMeta.Name, err)
 	}
 
-	rootVolumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+	rootVolumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role.PrimaryRole())
 	if err != nil {
 		return nil, err
 	}
@@ -375,7 +375,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 // buildSecurityGroups is responsible for building security groups for a launch template.
 func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
 	// @step: if required we add the override for the security group for this instancegroup
-	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
+	sgLink := b.LinkToSecurityGroup(ig.Spec.Role.PrimaryRole())
 	if ig.Spec.SecurityGroupOverride != nil {
 		sgName := fmt.Sprintf("%v-%v", fi.ValueOf(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
 		sgLink = &awstasks.SecurityGroup{

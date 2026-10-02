@@ -463,49 +463,55 @@ func (g *InstanceGroup) IsControlPlaneType() bool {
 	}
 }
 
-// IsAPIServerOnly checks if instanceGroup runs only the API Server
+// IsRoleOnly reports whether the given role is the only role this instanceGroup carries.
+//
+// Prefer the Runs* helpers for deciding what a group should run; a group that carries
+// additional roles still runs this one. IsRoleOnly is for the narrower question of whether a
+// group is dedicated to a single role, for example when deciding whether it needs to reach a
+// component over the network rather than on localhost.
+func (g *InstanceGroup) IsRoleOnly(role InstanceGroupRole) bool {
+	roles := g.Spec.Role.Roles()
+	return len(roles) == 1 && roles[0] == role
+}
+
+// IsAPIServerOnly checks if the API Server is the only role of this instanceGroup
 func (g *InstanceGroup) IsAPIServerOnly() bool {
-	switch {
-	case g.Spec.Role.HasAPIServer():
-		return true
-	default:
-		return false
-	}
+	return g.IsRoleOnly(InstanceGroupRoleAPIServer)
 }
 
-// hasAPIServer checks if instanceGroup runs an API Server
+// RunsAPIServer checks if instanceGroup runs an API Server
 func (g *InstanceGroup) RunsAPIServer() bool {
-	return g.IsControlPlane() || g.IsAPIServerOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasAPIServer()
 }
 
-// IsEtcdOnly checks if instanceGroup runs only Etcd
+// IsEtcdOnly checks if Etcd is the only role of this instanceGroup
 func (g *InstanceGroup) IsEtcdOnly() bool {
-	return g.Spec.Role.HasEtcd()
+	return g.IsRoleOnly(InstanceGroupRoleEtcd)
 }
 
-// HasEtcd checks if instanceGroup runs Etcd
+// RunsEtcd checks if instanceGroup runs Etcd
 func (g *InstanceGroup) RunsEtcd() bool {
-	return g.IsControlPlane() || g.IsEtcdOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasEtcd()
 }
 
-// IsSchedulerOnly checks if instanceGroup runs only Scheduler
+// IsSchedulerOnly checks if Scheduler is the only role of this instanceGroup
 func (g *InstanceGroup) IsSchedulerOnly() bool {
-	return g.Spec.Role.HasScheduler()
+	return g.IsRoleOnly(InstanceGroupRoleScheduler)
 }
 
-// HasScheduler checks if instanceGroup runs Scheduler
+// RunsScheduler checks if instanceGroup runs Scheduler
 func (g *InstanceGroup) RunsScheduler() bool {
-	return g.IsControlPlane() || g.IsSchedulerOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasScheduler()
 }
 
-// IsKubeControllerManagerOnly checks if instanceGroup runs only KubeControllerManager
+// IsKubeControllerManagerOnly checks if KubeControllerManager is the only role of this instanceGroup
 func (g *InstanceGroup) IsKubeControllerManagerOnly() bool {
-	return g.Spec.Role.HasKubeControllerManager()
+	return g.IsRoleOnly(InstanceGroupRoleKubeControllerManager)
 }
 
 // RunsKubeControllerManager checks if instanceGroup runs KubeControllerManager
 func (g *InstanceGroup) RunsKubeControllerManager() bool {
-	return g.IsControlPlane() || g.IsKubeControllerManagerOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasKubeControllerManager()
 }
 
 // HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.

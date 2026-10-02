@@ -46,29 +46,21 @@ const (
 // BuildNodeLabels returns the node labels for the specified instance group
 // This moved from the kubelet to a central controller in kubernetes 1.16
 func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (map[string]string, error) {
-	isControlPlane := false
-	isAPIServerOnly := false
-	isNodeOnly := false
-	isEtcdOnly := false
-	isSchedulerOnly := false
-	isKubeControllerManagerOnly := false
-	switch {
-	case instanceGroup.Spec.Role.HasControlPlane():
-		isControlPlane = true
-	case instanceGroup.Spec.Role.HasAPIServer():
-		isAPIServerOnly = true
-	case instanceGroup.Spec.Role.HasNode():
-		isNodeOnly = true
-	case instanceGroup.Spec.Role.HasBastion():
-		// no labels to add
-	case instanceGroup.Spec.Role.HasEtcd():
-		isEtcdOnly = true
-	case instanceGroup.Spec.Role.HasScheduler():
-		isSchedulerOnly = true
-	case instanceGroup.Spec.Role.HasKubeControllerManager():
-		isKubeControllerManagerOnly = true
-	default:
-		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)
+	// A single instance group can carry several roles, so these are independent rather than a
+	// first-match dispatch: a group running kube-scheduler alongside its API server must end up
+	// labelled for both.
+	role := instanceGroup.Spec.Role
+	hasControlPlane := role.HasControlPlane()
+	hasAPIServer := role.HasAPIServer()
+	hasNode := role.HasNode()
+	hasEtcd := role.HasEtcd()
+	hasScheduler := role.HasScheduler()
+	hasKubeControllerManager := role.HasKubeControllerManager()
+
+	// Bastions get no labels, but they are a recognised role.
+	if !hasControlPlane && !hasAPIServer && !hasNode && !hasEtcd && !hasScheduler &&
+		!hasKubeControllerManager && !role.HasBastion() {
+		return nil, fmt.Errorf("unhandled instanceGroup role %q", role)
 	}
 
 	// Merge KubeletConfig for NodeLabels
@@ -85,7 +77,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 
 	nodeLabels := c.NodeLabels
 
-	if isAPIServerOnly || isControlPlane {
+	if hasAPIServer || hasControlPlane {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
@@ -93,41 +85,41 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// We keep the featureflag as a placeholder to change the logic;
 		// when we drop the featureflag we should just always include the label, even for
 		// full control-plane nodes.
-		if isAPIServerOnly && featureflag.APIServerNodes.Enabled() {
+		if hasAPIServer && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
 			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
 
-	if isNodeOnly {
+	if hasNode {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
 	}
 
-	if isEtcdOnly {
+	if hasEtcd {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelEtcd] = ""
 	}
 
-	if isSchedulerOnly {
+	if hasScheduler {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelScheduler] = ""
 	}
 
-	if isKubeControllerManagerOnly {
+	if hasKubeControllerManager {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelKubeControllerManager] = ""
 	}
 
-	if isControlPlane {
+	if hasControlPlane {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
