@@ -20,6 +20,13 @@ UPLOAD_DEST?=$(S3_BUCKET)
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
+# Version-only markers live beside the version directories. PULL_BASE_REF is supplied by Cloud Build
+# even when the checkout has a detached HEAD.
+ifeq ($(PULL_BASE_REF),master)
+VERSION_MARKER_FILE=latest.txt
+else ifneq (,$(filter release-1.%,$(PULL_BASE_REF)))
+VERSION_MARKER_FILE=$(patsubst release-%,latest-%.txt,$(PULL_BASE_REF))
+endif
 GOPATH_1ST:=$(shell go env GOPATH)
 UNIQUE:=$(shell date +%s)
 BUILD=$(KOPS_ROOT)/.build
@@ -242,6 +249,10 @@ gcs-upload: gcloud version-dist
 gcs-upload-and-tag: gcloud gcs-upload
 	echo "${GCS_URL}${VERSION}" > ${UPLOAD}/latest.txt
 	gcloud storage cp --cache-control="private, max-age=0, no-transform" ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+ifneq ($(VERSION_MARKER_FILE),)
+	echo "${VERSION}" > ${UPLOAD}/latest-version.txt
+	gcloud storage cp --cache-control="private, max-age=0, no-transform" ${UPLOAD}/latest-version.txt ${GCS_LOCATION}${VERSION_MARKER_FILE}
+endif
 
 # gcs-publish-ci is the entry point for CI testing
 .PHONY: gcs-publish-ci
