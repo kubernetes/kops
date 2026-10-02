@@ -117,7 +117,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			ig.Spec.MaxSize = new(int32(1))
 		}
 	} else {
-		if ig.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
+		if ig.Spec.Role.HasAPIServer() && !featureflag.APIServerNodes.Enabled() {
 			return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
 		}
 		if !featureflag.ExperimentalRoles.Enabled() {
@@ -172,7 +172,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		if len(ig.Spec.Subnets) == 0 {
 			return nil, fmt.Errorf("control-plane InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
 		}
-	} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
+	} else if ig.Spec.Role.HasAPIServer() && cluster.Spec.IsIPv6Only() {
 		if len(ig.Spec.Subnets) == 0 {
 			for _, subnet := range cluster.Spec.Networking.Subnets {
 				if subnet.Type != kops.SubnetTypePrivate && subnet.Type != kops.SubnetTypeUtility {
@@ -301,19 +301,21 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelControlPlane20 + "=:" + string(v1.TaintEffectNoSchedule))
 		}
-		if ig.IsAPIServerOnly() {
+		// One taint per role, so a group carrying several roles repels anything that does not
+		// tolerate all of them.
+		if ig.Spec.Role.HasAPIServer() {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelAPIServer16 + "=:" + string(v1.TaintEffectNoSchedule))
 		}
-		if ig.IsEtcdOnly() {
+		if ig.Spec.Role.HasEtcd() {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelEtcd + "=:" + string(v1.TaintEffectNoSchedule))
 		}
-		if ig.IsKubeControllerManagerOnly() {
+		if ig.Spec.Role.HasKubeControllerManager() {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelKubeControllerManager + "=:" + string(v1.TaintEffectNoSchedule))
 		}
-		if ig.IsSchedulerOnly() {
+		if ig.Spec.Role.HasScheduler() {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelScheduler + "=:" + string(v1.TaintEffectNoSchedule))
 		}

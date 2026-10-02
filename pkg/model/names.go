@@ -32,7 +32,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-// SecurityGroupName returns the security group name for the specific role
+// SecurityGroupName returns the security group name for the specific role.
+// role must be a single role; callers with an InstanceGroup pass Role.PrimaryRole().
 func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string {
 	switch role {
 	case kops.InstanceGroupRoleBastion:
@@ -55,7 +56,7 @@ func (b *KopsModelContext) LinkToSecurityGroup(role kops.InstanceGroupRole) *aws
 
 // AutoscalingGroupName derives the autoscaling group name for us
 func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
-	switch ig.Spec.Role {
+	switch ig.Spec.Role.PrimaryRole() {
 	case kops.InstanceGroupRoleControlPlane:
 		// We need to keep this back-compatible, so we introduce the masters name,
 		// though the IG name suffices for uniqueness, and with sensible naming masters
@@ -141,7 +142,8 @@ func (b *KopsModelContext) NameForDNSZone() string {
 	return name
 }
 
-// IAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup
+// IAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup.
+// role must be a single role; callers with an InstanceGroup pass Role.PrimaryRole().
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	var rolename string
 	switch role {
@@ -186,7 +188,7 @@ func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*aw
 		name, err := FindCustomAuthNameFromArn(fi.ValueOf(ig.Spec.IAM.Profile))
 		return &awstasks.IAMInstanceProfile{Name: &name}, err
 	}
-	name := b.IAMName(ig.Spec.Role)
+	name := b.IAMName(ig.Spec.Role.PrimaryRole())
 	return &awstasks.IAMInstanceProfile{Name: &name}, nil
 }
 

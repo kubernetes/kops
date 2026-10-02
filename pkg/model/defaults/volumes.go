@@ -31,7 +31,8 @@ const (
 	DefaultVolumeSizeNode = 128
 )
 
-// DefaultInstanceGroupVolumeSize returns the default volume size for nodes in an InstanceGroup with the specified role
+// DefaultInstanceGroupVolumeSize returns the default volume size for nodes in an InstanceGroup with the specified role.
+// role must be a single role; callers with an InstanceGroup pass Role.PrimaryRole().
 func DefaultInstanceGroupVolumeSize(role kops.InstanceGroupRole) (int32, error) {
 	switch role {
 	case kops.InstanceGroupRoleControlPlane:

@@ -264,3 +264,118 @@ func TestInstanceGroupRoleIsControlPlaneType(t *testing.T) {
 		}
 	}
 }
+
+// TestInstanceGroupIsRoleOnlyVsRuns is the contract that makes composite roles safe: Is*Only
+// asks whether a group is dedicated to one role, Runs* asks whether it runs that component at
+// all. Conflating the two is what made the pre-composite helpers misleading, since IsAPIServerOnly
+// was implemented as a plain "has the APIServer role" check.
+func TestInstanceGroupIsRoleOnlyVsRuns(t *testing.T) {
+	grid := []struct {
+		role InstanceGroupRole
+
+		apiServerOnly bool
+		etcdOnly      bool
+		schedulerOnly bool
+		kcmOnly       bool
+
+		runsAPIServer bool
+		runsEtcd      bool
+		runsScheduler bool
+		runsKCM       bool
+	}{
+		{
+			role:          InstanceGroupRoleAPIServer,
+			apiServerOnly: true,
+			runsAPIServer: true,
+		},
+		{
+			role:     InstanceGroupRoleEtcd,
+			etcdOnly: true,
+			runsEtcd: true,
+		},
+		{
+			role:          InstanceGroupRoleScheduler,
+			schedulerOnly: true,
+			runsScheduler: true,
+		},
+		{
+			role:    InstanceGroupRoleKubeControllerManager,
+			kcmOnly: true,
+			runsKCM: true,
+		},
+		{
+			// A full control-plane group runs every component but is dedicated to none of them.
+			role:          InstanceGroupRoleControlPlane,
+			runsAPIServer: true,
+			runsEtcd:      true,
+			runsScheduler: true,
+			runsKCM:       true,
+		},
+		{
+			// The case composite roles exist for: a scheduler and the API server it talks to.
+			// It runs both, and is dedicated to neither.
+			role:          "APIServer,Scheduler",
+			runsAPIServer: true,
+			runsScheduler: true,
+		},
+		{
+			role:          "APIServer,KubeControllerManager",
+			runsAPIServer: true,
+			runsKCM:       true,
+		},
+		{
+			role:          "APIServer,Etcd",
+			runsAPIServer: true,
+			runsEtcd:      true,
+		},
+		{
+			role: InstanceGroupRoleNode,
+		},
+	}
+
+	for _, g := range grid {
+		ig := &InstanceGroup{Spec: InstanceGroupSpec{Role: g.role}}
+
+		for _, tc := range []struct {
+			name string
+			got  bool
+			want bool
+		}{
+			{"IsAPIServerOnly", ig.IsAPIServerOnly(), g.apiServerOnly},
+			{"IsEtcdOnly", ig.IsEtcdOnly(), g.etcdOnly},
+			{"IsSchedulerOnly", ig.IsSchedulerOnly(), g.schedulerOnly},
+			{"IsKubeControllerManagerOnly", ig.IsKubeControllerManagerOnly(), g.kcmOnly},
+			{"RunsAPIServer", ig.RunsAPIServer(), g.runsAPIServer},
+			{"RunsEtcd", ig.RunsEtcd(), g.runsEtcd},
+			{"RunsScheduler", ig.RunsScheduler(), g.runsScheduler},
+			{"RunsKubeControllerManager", ig.RunsKubeControllerManager(), g.runsKCM},
+		} {
+			if tc.got != tc.want {
+				t.Errorf("role %q: %s() = %v, want %v", g.role, tc.name, tc.got, tc.want)
+			}
+		}
+	}
+}
+
+func TestInstanceGroupIsRoleOnly(t *testing.T) {
+	grid := []struct {
+		role  InstanceGroupRole
+		query InstanceGroupRole
+		want  bool
+	}{
+		{role: InstanceGroupRoleAPIServer, query: InstanceGroupRoleAPIServer, want: true},
+		{role: InstanceGroupRoleAPIServer, query: InstanceGroupRoleScheduler, want: false},
+		{role: "APIServer,Scheduler", query: InstanceGroupRoleAPIServer, want: false},
+		{role: "APIServer,Scheduler", query: InstanceGroupRoleScheduler, want: false},
+		// Duplicates still describe a group dedicated to one role.
+		{role: "Etcd,Etcd", query: InstanceGroupRoleEtcd, want: true},
+		{role: "", query: InstanceGroupRoleNode, want: false},
+	}
+
+	for _, g := range grid {
+		ig := &InstanceGroup{Spec: InstanceGroupSpec{Role: g.role}}
+		if got := ig.IsRoleOnly(g.query); got != g.want {
+			t.Errorf("role %q: IsRoleOnly(%q) = %v, want %v", g.role, g.query, got, g.want)
+		}
+	}
+}
