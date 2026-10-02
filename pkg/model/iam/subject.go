@@ -110,6 +110,7 @@ func (g *GenericServiceAccount) BuildAWSPolicy(*PolicyBuilder) (*Policy, error) 
 }
 
 // BuildNodeRoleSubject returns a Subject implementation for the specified InstanceGroupRole.
+// igRole must be a single role; callers with an InstanceGroup pass Role.PrimaryRole().
 func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPermissions bool) (Subject, error) {
 	switch igRole {
 	case kops.InstanceGroupRoleControlPlane:

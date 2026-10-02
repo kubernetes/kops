@@ -41,6 +41,9 @@ func TestBuildNodeLabels(t *testing.T) {
 		ig       *kops.InstanceGroup
 		expected map[string]string
 
+		// expectError is set for roles BuildNodeLabels should reject.
+		expectError bool
+
 		// Allow us to test labels at different feature flag levels
 		featureFlags string
 	}{
@@ -251,6 +254,90 @@ func TestBuildNodeLabels(t *testing.T) {
 				"node3":                        "override3",
 			},
 		},
+		{
+			// A composite role must produce the labels of every role it carries, not just the
+			// first one matched.
+			name: "RoleAPIServerAndScheduler",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "node1",
+						},
+					},
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: "APIServer,Scheduler",
+				},
+			},
+			expected: map[string]string{
+				RoleLabelAPIServer16:              "",
+				"kops.k8s.io/kops-controller-pki": "",
+				RoleLabelScheduler:                "",
+			},
+			featureFlags: "+APIServerNodes",
+		},
+		{
+			name: "RoleAPIServerAndKubeControllerManager",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "node1",
+						},
+					},
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: "APIServer,KubeControllerManager",
+				},
+			},
+			expected: map[string]string{
+				RoleLabelAPIServer16:              "",
+				"kops.k8s.io/kops-controller-pki": "",
+				RoleLabelKubeControllerManager:    "",
+			},
+			featureFlags: "+APIServerNodes",
+		},
+		{
+			// Etcd co-located with the API server it serves.
+			name: "RoleAPIServerAndEtcd",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: "APIServer,Etcd",
+				},
+			},
+			expected: map[string]string{
+				RoleLabelAPIServer16:              "",
+				"kops.k8s.io/kops-controller-pki": "",
+				RoleLabelEtcd:                     "",
+			},
+			featureFlags: "+APIServerNodes",
+		},
+		{
+			name: "RoleUnknown",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: "Nonsense",
+				},
+			},
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -262,6 +349,12 @@ func TestBuildNodeLabels(t *testing.T) {
 				}()
 			}
 			out, err := BuildNodeLabels(test.cluster, test.ig)
+			if test.expectError {
+				if err == nil {
+					t.Fatalf("expected an error from BuildNodeLabels, got labels %v", out)
+				}
+				return
+			}
 			if err != nil {
 				t.Fatalf("unexpected error from BuildNodeLabels: %v", err)
 			}
