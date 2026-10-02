@@ -277,6 +277,52 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 
 For more information about using the Gateway API with Cilium, see the [Cilium Gateway API documentation](https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/).
 
+## Bandwidth Manager and BBR
+
+Cilium can enforce per-Pod egress bandwidth limits (via the `kubernetes.io/egress-bandwidth` annotation) using its eBPF-based [Bandwidth Manager](https://docs.cilium.io/en/stable/network/kubernetes/bandwidth-manager/), and optionally use [BBR](https://docs.cilium.io/en/stable/network/kubernetes/bandwidth-manager/#bbr-tcp-congestion-control) as the TCP congestion control algorithm for Pod traffic.
+
+You can enable the Bandwidth Manager on its own:
+
+```yaml
+spec:
+  networking:
+    cilium:
+      enableBandwidthManager: true
+```
+
+Or enable Bandwidth Manager **and** BBR together:
+
+```yaml
+spec:
+  networking:
+    cilium:
+      enableBandwidthManager: true
+      enableBBR: true
+```
+
+`enableBBR` requires `enableBandwidthManager` — Cilium's BBR path plugs into the Bandwidth Manager's eBPF EDT scheduler, so without Bandwidth Manager there is nothing for it to attach to. When `enableBBR` is set, kOps also writes the node sysctls `net.core.default_qdisc=fq` and `net.ipv4.tcp_congestion_control=bbr` so the host kernel TCP stack uses BBR as well.
+
+**Requirements**
+
+- Linux kernel **>= 5.18** on every node when `enableBBR` is set (the eBPF BBR pacing path needs a recent kernel). The Bandwidth Manager on its own works on older 5.x kernels.
+- Direct routing or BPF host routing. The default kOps + Cilium setup satisfies this.
+
+**Notes on AWS + Ubuntu**
+
+- Ubuntu 22.04 (kernel 5.15) does not include the BBR pacing path Cilium uses; prefer Ubuntu 24.04 (kernel 6.8) or a newer HWE kernel.
+- The kOps default AWS AMI (Ubuntu) ships with the `tcp_bbr` module; no extra image customization is required.
+
+**When BBR helps in AWS**
+
+BBR's advantage scales with the bandwidth-delay product (BDP). Modern AWS instances have ENA NICs in the 10–100 Gbps range, so even at sub-millisecond intra-AZ RTT — and especially at 1–2 ms cross-AZ — the BDP is large enough that a single CUBIC flow needs seconds to ramp up to line rate and backs off hard on any random loss. BBR converges to the bottleneck bandwidth much faster and is far more resilient to spurious loss. Workloads that typically benefit:
+
+- Large pod-to-pod or pod-to-service transfers (model checkpoints, dataset shuffles, backups, log shipping).
+- Cross-AZ replication and database streaming.
+- Egress to S3 / other AWS services over VPC endpoints, and any egress to the internet.
+- Workloads on instances with 25 Gbps+ networking where a single flow is expected to fill the pipe.
+
+For workloads dominated by very short, low-volume RPCs on the same AZ, the practical difference is smaller — but BBR is generally safe to enable cluster-wide.
+
 ## Getting help
 
 For problems with deploying Cilium please post an issue to Github:
