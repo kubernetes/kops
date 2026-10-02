@@ -1,0 +1,184 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal-gce-multirole.example.com
+spec:
+  api:
+    loadBalancer:
+      type: Public
+      useForInternalApi: true
+      subnets:
+        - name: us-test-1
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: gce
+  configBase: memfs://tests/minimal-gce-multirole.example.com
+  etcdClusters:
+    - cpuRequest: 200m
+      etcdMembers:
+        - instanceGroup: etcd-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: main
+    - cpuRequest: 100m
+      etcdMembers:
+        - instanceGroup: etcd-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: events
+  cloudConfig:
+    gceServiceAccount: default
+  iam:
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+    - 0.0.0.0/0
+    - ::/0
+  kubernetesVersion: v1.32.0
+  masterPublicName: api.minimal-gce-multirole.example.com
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  project: testproject
+  sshAccess:
+    - 0.0.0.0/0
+    - ::/0
+  subnets:
+    - name: us-test1
+      region: us-test1
+      type: Private
+  topology:
+    dns:
+      type: Public
+
+---
+# The externally reachable API servers: the only group behind the public load balancer.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-multirole.example.com
+  name: external-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: e2-standard-2
+  maxSize: 2
+  minSize: 2
+  role: APIServer
+  servesWellKnownServices:
+    - kube-apiserver-external
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+
+---
+# The internal API server: serves the cluster itself, and hosts the scheduled components.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-multirole.example.com
+  name: internal-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: APIServer
+  servesWellKnownServices:
+    - kube-apiserver-internal
+    - kops-controller
+  hostedComponents:
+    - cloud-controller-manager
+    - kops-controller
+    - kops-channel
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+
+---
+# etcd, fronted by its own internal load balancer for all the API servers.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-multirole.example.com
+  name: etcd-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: Etcd
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+
+---
+# kube-scheduler, with a private API server that only it talks to.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-multirole.example.com
+  name: scheduler-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: APIServer,Scheduler
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+
+---
+# kube-controller-manager, with a private API server that only it talks to.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-multirole.example.com
+  name: kcm-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: APIServer,KubeControllerManager
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-multirole.example.com
+  name: nodes
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: e2-standard-4
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+    - us-test1-b
