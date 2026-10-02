@@ -322,6 +322,17 @@ func TestHighAvailabilityGCE(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestHighAvailabilityGCEPartialUpdate checks that updating only the control plane keeps the node
+// groups of the nodes in the cluster-autoscaler addon.
+func TestHighAvailabilityGCEPartialUpdate(t *testing.T) {
+	newIntegrationTest("ha-gce.example.com", "ha_gce").
+		runTestPartialUpdate(t, kops.CloudProviderGCE, partialUpdateTest{
+			instanceGroupRoles: controlPlaneRoles,
+			clusterResources:   gceLoadBalancerResources,
+			clusterDataFiles:   []string{"aws_s3_object_ha-gce.example.com-addons-" + clusterAutoscalerAddon + "_content"},
+		})
+}
+
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().
@@ -736,6 +747,16 @@ func TestCASPriorityExpander(t *testing.T) {
 func TestCASPriorityExpanderCustom(t *testing.T) {
 	test := newIntegrationTest("cas-priority-expander-custom.example.com", "cluster-autoscaler-priority-expander-custom")
 	test.runTestTerraformAWS(t)
+}
+
+// TestCASPriorityExpanderPartialUpdate checks that updating only the control plane keeps the node
+// groups and priorities of the other instance groups in the cluster-autoscaler addon.
+func TestCASPriorityExpanderPartialUpdate(t *testing.T) {
+	newIntegrationTest("cas-priority-expander.example.com", "cluster-autoscaler-priority-expander").
+		runTestPartialUpdate(t, kops.CloudProviderAWS, partialUpdateTest{
+			instanceGroupRoles: controlPlaneRoles,
+			clusterDataFiles:   []string{"aws_s3_object_cas-priority-expander.example.com-addons-" + clusterAutoscalerAddon + "_content"},
+		})
 }
 
 // readDirFilenames returns the names of the files in dir, sorted by name, or nil if dir

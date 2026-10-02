@@ -664,7 +664,67 @@ func TestGetClusterAutoscalerNodeGroupsGCE(t *testing.T) {
 		t.Run(g.desc, func(t *testing.T) {
 			tf := &TemplateFunctions{cloud: cloud}
 			tf.Cluster = cluster
-			tf.InstanceGroups = []*kops.InstanceGroup{g.ig}
+			tf.AllInstanceGroups = []*kops.InstanceGroup{g.ig}
+			tf.InstanceGroups = tf.AllInstanceGroups
+
+			actual, err := tf.GetClusterAutoscalerNodeGroups()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(actual, g.expected) {
+				t.Errorf("expected %+v, got %+v", g.expected, actual)
+			}
+		})
+	}
+}
+
+func TestGetClusterAutoscalerNodeGroupsWhenUpdatingSomeInstanceGroups(t *testing.T) {
+	newIG := func(name string) *kops.InstanceGroup {
+		return &kops.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{Name: name},
+			Spec: kops.InstanceGroupSpec{
+				Role:        kops.InstanceGroupRoleNode,
+				MachineType: "cx22",
+				MinSize:     new(int32(1)),
+				MaxSize:     new(int32(3)),
+				Subnets:     []string{"fsn1"},
+			},
+		}
+	}
+	nodesA, nodesB := newIG("nodes-a"), newIG("nodes-b")
+
+	grid := []struct {
+		desc          string
+		cloudProvider kops.CloudProviderSpec
+		expected      map[string]ClusterAutoscalerNodeGroup
+	}{
+		{
+			desc:          "AWS",
+			cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			expected: map[string]ClusterAutoscalerNodeGroup{
+				"nodes-a": {MinSize: 1, MaxSize: 3, Other: "nodes-a.minimal.example.com"},
+				"nodes-b": {MinSize: 1, MaxSize: 3, Other: "nodes-b.minimal.example.com"},
+			},
+		},
+		{
+			// The Hetzner autoscaler needs the node config of every node group, which can only be
+			// rendered for the instance groups being updated.
+			desc:          "Hetzner",
+			cloudProvider: kops.CloudProviderSpec{Hetzner: &kops.HetznerSpec{}},
+			expected: map[string]ClusterAutoscalerNodeGroup{
+				"nodes-a": {MinSize: 1, MaxSize: 3, Other: "cx22:fsn1:nodes-a"},
+			},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			tf := &TemplateFunctions{}
+			tf.Cluster = &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{Name: "minimal.example.com"},
+				Spec:       kops.ClusterSpec{CloudProvider: g.cloudProvider},
+			}
+			tf.AllInstanceGroups = []*kops.InstanceGroup{nodesA, nodesB}
+			tf.InstanceGroups = []*kops.InstanceGroup{nodesA}
 
 			actual, err := tf.GetClusterAutoscalerNodeGroups()
 			if err != nil {
