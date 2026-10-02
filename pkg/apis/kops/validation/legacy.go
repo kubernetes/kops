@@ -320,6 +320,14 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 		return fmt.Errorf("must configure at least one Node InstanceGroup")
 	}
 
+	if err := validateInstanceGroupRoleCombinations(c, groups); err != nil {
+		return err
+	}
+
+	if err := validateWellKnownServiceCoverage(c, groups); err != nil {
+		return err
+	}
+
 	for _, g := range groups {
 		errs := CrossValidateInstanceGroup(g, c, cloud, strict)
 
@@ -338,4 +346,49 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 
 func isExperimentalClusterDNS(k *kops.KubeletConfigSpec, dns *kops.KubeDNSConfig) bool {
 	return k != nil && k.ClusterDNS != dns.ServerIP && dns.NodeLocalDNS != nil && k.ClusterDNS != dns.NodeLocalDNS.LocalIP
+}
+
+// validateInstanceGroupRoleCombinations gates instance groups that carry more than one role.
+// Only GCE wires up the per-role network tags, load balancer membership and addressing that a
+// split control plane needs; on other clouds a composite role would be silently ignored.
+func validateInstanceGroupRoleCombinations(c *kops.Cluster, groups []*kops.InstanceGroup) error {
+	for _, g := range groups {
+		if len(g.Spec.Role.Roles()) < 2 {
+			continue
+		}
+		if c.GetCloudProvider() != kops.CloudProviderGCE {
+			return fmt.Errorf("InstanceGroup %q combines several roles, which is only supported on GCE", g.ObjectMeta.Name)
+		}
+	}
+	return nil
+}
+
+// validateWellKnownServiceCoverage checks that something in the cluster serves each endpoint the
+// cluster cannot work without. Instance groups that do not set spec.servesWellKnownServices
+// derive it from their roles, so this passes for any cluster that predates the field.
+func validateWellKnownServiceCoverage(c *kops.Cluster, groups []*kops.InstanceGroup) error {
+	served := map[kops.WellKnownService]int{}
+	for _, g := range groups {
+		for _, service := range g.ServedWellKnownServices() {
+			served[service]++
+		}
+	}
+
+	required := []kops.WellKnownService{
+		kops.WellKnownServiceKubeAPIServerInternal,
+		kops.WellKnownServiceKopsController,
+		kops.WellKnownServiceEtcdMain,
+	}
+	// Only require an externally reachable API server when the cluster actually exposes one.
+	if c.Spec.API.LoadBalancer != nil || c.Spec.API.DNS != nil {
+		required = append(required, kops.WellKnownServiceKubeAPIServerExternal)
+	}
+
+	for _, service := range required {
+		if served[service] == 0 {
+			return fmt.Errorf("no InstanceGroup serves the %q endpoint; set spec.servesWellKnownServices on the InstanceGroup that should", service)
+		}
+	}
+
+	return nil
 }
