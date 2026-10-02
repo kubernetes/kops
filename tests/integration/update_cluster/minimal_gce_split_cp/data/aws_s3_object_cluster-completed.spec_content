@@ -18,7 +18,7 @@ spec:
     gcpPDCSIDriver:
       defaultStorageClassName: balanced-storage
       enabled: true
-      version: v1.22.1
+      version: v1.26.0
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-split-cp-example-com-k8s-io-role-node
@@ -29,7 +29,7 @@ spec:
     clusterName: minimal-gce-split-cp-example-com
     controllers:
     - '*'
-    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v35.0.0
+    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v36.2.4
     leaderElection:
       leaderElect: true
   cloudProvider: gce
@@ -38,9 +38,9 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.3.5
+      version: 1.5.1
     sandboxImage: registry.k8s.io/pause:3.10.1
-    version: 2.2.4
+    version: 2.3.6
   dnsZone: "1"
   etcdClusters:
   - backups:
@@ -53,7 +53,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.5.30
+    version: 3.5.34
   - backups:
       backupStore: memfs://tests/minimal-gce-split-cp.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -64,7 +64,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.5.30
+    version: 3.5.34
   externalDns:
     provider: dns-controller
   iam:
@@ -180,6 +180,8 @@ spec:
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ImageVolume: "true"
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
