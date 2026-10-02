@@ -259,7 +259,7 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 		providerVersions := map[string]map[string]string{
 			"aws": {
 				"source":  "hashicorp/aws",
-				"version": ">= 5.0.0",
+				"version": ">= 6.57.1",
 			},
 			"google": {
 				"source":  "hashicorp/google",
