@@ -275,7 +275,7 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 			},
 			"scaleway": {
 				"source":  "scaleway/scaleway",
-				"version": ">= 2.2.1",
+				"version": ">= 2.54.0",
 			},
 			"digitalocean": {
 				"source":  "digitalocean/digitalocean",
