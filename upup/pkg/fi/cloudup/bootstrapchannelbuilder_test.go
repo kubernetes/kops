@@ -92,31 +92,7 @@ func TestBootstrapChannelBuilder_InstanceGroupAddonsWhenUpdatingOthers(t *testin
 	h.SetupMockAWS()
 
 	ctx := context.TODO()
-
-	clusterYaml, err := os.ReadFile("tests/bootstrapchannelbuilder/simple/cluster.yaml")
-	if err != nil {
-		t.Fatalf("error reading cluster yaml file: %v", err)
-	}
-	obj, _, err := kopscodecs.Decode(clusterYaml, nil)
-	if err != nil {
-		t.Fatalf("error parsing cluster yaml: %v", err)
-	}
-	cluster := obj.(*kopsapi.Cluster)
-	cloud, err := BuildCloud(cluster)
-	if err != nil {
-		t.Fatalf("error from BuildCloud: %v", err)
-	}
-	if err := PerformAssignments(cluster, vfs.Context, cloud); err != nil {
-		t.Fatalf("error from PerformAssignments: %v", err)
-	}
-	cluster, err = mockedPopulateClusterSpec(ctx, cluster, cloud)
-	if err != nil {
-		t.Fatalf("error from PopulateClusterSpec: %v", err)
-	}
-	templates, err := templates.LoadTemplates(ctx, models.NewAssetPath("cloudup/resources"))
-	if err != nil {
-		t.Fatalf("error building templates: %v", err)
-	}
+	cluster, cloud, addonTemplates := loadChannelBuilderTestCluster(t, ctx, "simple")
 
 	controlPlane := &kopsapi.InstanceGroup{
 		ObjectMeta: metav1.ObjectMeta{Name: "control-plane"},
@@ -151,7 +127,7 @@ func TestBootstrapChannelBuilder_InstanceGroupAddonsWhenUpdatingOthers(t *testin
 		kopsModel,
 		fi.LifecycleSync,
 		assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false),
-		templates,
+		addonTemplates,
 		nil,
 		&addonTemplateRenderer{modelContext: kopsModel, cloud: cloud},
 	)
@@ -169,12 +145,12 @@ func TestBootstrapChannelBuilder_InstanceGroupAddonsWhenUpdatingOthers(t *testin
 	}
 }
 
-func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
-	ctx := context.TODO()
+// loadChannelBuilderTestCluster loads the cluster of a bootstrap channel builder test from
+// tests/bootstrapchannelbuilder/<key>/cluster.yaml, populates its spec and loads the addon templates.
+func loadChannelBuilderTestCluster(t *testing.T, ctx context.Context, key string) (*kopsapi.Cluster, fi.Cloud, *templates.Templates) {
+	t.Helper()
 
-	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
-
-	clusterYamlPath := path.Join(basedir, "cluster.yaml")
+	clusterYamlPath := path.Join("tests/bootstrapchannelbuilder/", key, "cluster.yaml")
 	clusterYaml, err := os.ReadFile(clusterYamlPath)
 	if err != nil {
 		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
@@ -194,16 +170,23 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(ctx, cluster, cloud)
+	cluster, err = mockedPopulateClusterSpec(ctx, cluster, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec for %q: %v", key, err)
 	}
-	cluster = fullSpec
 
-	templates, err := templates.LoadTemplates(ctx, models.NewAssetPath("cloudup/resources"))
+	addonTemplates, err := templates.LoadTemplates(ctx, models.NewAssetPath("cloudup/resources"))
 	if err != nil {
 		t.Fatalf("error building templates for %q: %v", key, err)
 	}
+	return cluster, cloud, addonTemplates
+}
+
+func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
+	ctx := context.TODO()
+
+	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
+	cluster, cloud, addonTemplates := loadChannelBuilderTestCluster(t, ctx, key)
 
 	vfs.Context.ResetMemfsContext(true)
 
@@ -254,7 +237,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		&kopsModel,
 		fi.LifecycleSync,
 		assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false),
-		templates,
+		addonTemplates,
 		nil,
 		addonRenderer,
 	)
