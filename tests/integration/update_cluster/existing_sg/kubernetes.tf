@@ -1872,7 +1872,7 @@ terraform {
     aws = {
       "configuration_aliases" = [aws.files]
       "source"                = "hashicorp/aws"
-      "version"               = ">= 5.0.0"
+      "version"               = ">= 6.57.1"
     }
   }
 }
