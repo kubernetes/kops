@@ -4524,6 +4524,24 @@ func Convert_kops_InstanceGroupList_To_v1alpha2_InstanceGroupList(in *kops.Insta
 func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGroupSpec, out *kops.InstanceGroupSpec, s conversion.Scope) error {
 	out.Manager = kops.InstanceManager(in.Manager)
 	out.Role = kops.InstanceGroupRole(in.Role)
+	if in.ServesWellKnownServices != nil {
+		in, out := &in.ServesWellKnownServices, &out.ServesWellKnownServices
+		*out = make([]kops.WellKnownService, len(*in))
+		for i := range *in {
+			(*out)[i] = kops.WellKnownService((*in)[i])
+		}
+	} else {
+		out.ServesWellKnownServices = nil
+	}
+	if in.HostedComponents != nil {
+		in, out := &in.HostedComponents, &out.HostedComponents
+		*out = make([]kops.ClusterComponent, len(*in))
+		for i := range *in {
+			(*out)[i] = kops.ClusterComponent((*in)[i])
+		}
+	} else {
+		out.HostedComponents = nil
+	}
 	out.Image = in.Image
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
@@ -4708,6 +4726,24 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.InstanceGroupSpec, out *InstanceGroupSpec, s conversion.Scope) error {
 	out.Manager = InstanceManager(in.Manager)
 	out.Role = InstanceGroupRole(in.Role)
+	if in.ServesWellKnownServices != nil {
+		in, out := &in.ServesWellKnownServices, &out.ServesWellKnownServices
+		*out = make([]WellKnownService, len(*in))
+		for i := range *in {
+			(*out)[i] = WellKnownService((*in)[i])
+		}
+	} else {
+		out.ServesWellKnownServices = nil
+	}
+	if in.HostedComponents != nil {
+		in, out := &in.HostedComponents, &out.HostedComponents
+		*out = make([]ClusterComponent, len(*in))
+		for i := range *in {
+			(*out)[i] = ClusterComponent((*in)[i])
+		}
+	} else {
+		out.HostedComponents = nil
+	}
 	out.Image = in.Image
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
