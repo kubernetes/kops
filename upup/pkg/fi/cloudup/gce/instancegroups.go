@@ -164,6 +164,9 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 		if err != nil {
 			return nil, fmt.Errorf("error listing InstanceGroupManagers: %v", err)
 		}
+
+		var instancesByName map[string]*compute.Instance
+
 		for _, mig := range migs {
 			name := mig.Name
 
@@ -201,14 +204,22 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				return nil, err
 			}
 
+			if len(instances) > 0 && instancesByName == nil {
+				zoneInstances, err := c.Compute().Instances().List(ctx, project, zoneName)
+				if err != nil {
+					return nil, fmt.Errorf("error listing Instances: %v", err)
+				}
+				instancesByName = make(map[string]*compute.Instance, len(zoneInstances))
+				for _, inst := range zoneInstances {
+					instancesByName[inst.Name] = inst
+				}
+			}
+
 			for _, i := range instances {
 				id := i.Instance
 				name := LastComponent(id)
-				instance, err := c.Compute().Instances().Get(project, zoneName, name)
-				if err != nil {
-					if !IsNotFound(err) {
-						return nil, fmt.Errorf("error getting Instance: %v", err)
-					}
+				instance := instancesByName[name]
+				if instance == nil {
 					klog.Warningf("Instance %s not found, it may not have been created", name)
 					continue
 				}
