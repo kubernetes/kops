@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
@@ -45,11 +46,11 @@ type ChannelsBuilder struct {
 
 var _ fi.NodeupModelBuilder = &ChannelsBuilder{}
 
+// runsChannels reports whether kops-channels runs on this instance. cloudup decides placement
+// and says so by setting the manifest path, so there is one answer rather than a role check here
+// that has to be kept in step with it.
 func (b *ChannelsBuilder) runsChannels() bool {
-	if b.IsMaster || b.HasAPIServer {
-		return true
-	}
-	return false
+	return b.NodeupConfig.ChannelsManifest != ""
 }
 
 func (b *ChannelsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
@@ -102,19 +103,51 @@ func (b *ChannelsBuilder) readChannelsManifest(c *fi.NodeupModelBuilderContext) 
 		return nil, fmt.Errorf("reading kops-channels manifest %s: %w", b.NodeupConfig.ChannelsManifest, err)
 	}
 
-	// SELinux is per-IG via containerdConfig, so the decoration can only be applied at nodeup.
-	// Skip the parse/reserialize round-trip when there's nothing to add.
-	if b.NodeupConfig.ContainerdConfig == nil || !b.NodeupConfig.ContainerdConfig.SeLinuxEnabled {
+	// SELinux is per-IG via containerdConfig, and so are the node labels when the cluster places
+	// the scheduled components explicitly; both can only be applied at nodeup. Skip the
+	// parse/reserialize round-trip when there is nothing to change.
+	selinux := b.NodeupConfig.ContainerdConfig != nil && b.NodeupConfig.ContainerdConfig.SeLinuxEnabled
+	if !selinux && len(b.NodeupConfig.ChannelsNodeLabels) == 0 {
 		return data, nil
 	}
 	pod := &v1.Pod{}
 	if err := yaml.Unmarshal(data, pod); err != nil {
 		return nil, fmt.Errorf("parsing kops-channels manifest: %w", err)
 	}
-	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
+	if selinux {
+		kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
+	}
+	if len(b.NodeupConfig.ChannelsNodeLabels) > 0 {
+		if err := setChannelsNodeLabels(pod, b.NodeupConfig.ChannelsNodeLabels); err != nil {
+			return nil, err
+		}
+	}
 	out, err := k8scodecs.ToVersionedYaml(pod)
 	if err != nil {
 		return nil, fmt.Errorf("re-marshaling kops-channels manifest: %w", err)
 	}
 	return out, nil
+}
+
+// setChannelsNodeLabels replaces the --node-labels argument in the kops-channels manifest. The
+// manifest in the state store is shared by every instance group, carrying the cluster-wide
+// default; this narrows it to what this instance group claims.
+func setChannelsNodeLabels(pod *v1.Pod, labels []string) error {
+	const flag = "--node-labels="
+
+	for i := range pod.Spec.Containers {
+		container := &pod.Spec.Containers[i]
+		if container.Name != "kops-channels" {
+			continue
+		}
+		for j, arg := range container.Args {
+			if strings.HasPrefix(arg, flag) {
+				container.Args[j] = flag + strings.Join(labels, ",")
+				return nil
+			}
+		}
+		return fmt.Errorf("no %s argument in kops-channels manifest", flag)
+	}
+
+	return fmt.Errorf("no kops-channels container in kops-channels manifest")
 }

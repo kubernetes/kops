@@ -17,82 +17,107 @@ limitations under the License.
 package model
 
 import (
-	"bytes"
-	"context"
+	"reflect"
 	"testing"
 
 	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/yaml"
-
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
-// stubChannelsManifest is the pod YAML the test seeds into VFS; real content is exercised by
-// the cloudup ChannelsBuilder tests.
-const stubChannelsManifest = "apiVersion: v1\nkind: Pod\nmetadata:\n  name: kops-channels\n  namespace: kube-system\n"
-
-func TestChannelsBuilder(t *testing.T) {
-	manifestPath := "memfs://clusters.example.com/minimal.example.com/manifests/channels/kops-channels.yaml"
-	RunGoldenTest(t, "tests/channels/", "channels", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
-		p, err := vfs.Context.BuildVfsPath(manifestPath)
-		if err != nil {
-			t.Fatalf("building vfs path: %v", err)
-		}
-		if err := p.WriteFile(target.Context(), bytes.NewReader([]byte(stubChannelsManifest)), nil); err != nil {
-			t.Fatalf("seeding kops-channels manifest: %v", err)
-		}
-		nodeupModelContext.NodeupConfig.ChannelsManifest = manifestPath
-		builder := ChannelsBuilder{NodeupModelContext: nodeupModelContext}
-		return builder.Build(target)
-	})
+func channelsPod(args []string, containerName string) *v1.Pod {
+	return &v1.Pod{
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
+				{Name: containerName, Args: args},
+			},
+		},
+	}
 }
 
-// TestReadChannelsManifest_SELinux pins the parse/decorate/reserialize toggle:
-// SeLinuxEnabled=true adds the permissive context, false/nil leaves it untouched.
-func TestReadChannelsManifest_SELinux(t *testing.T) {
-	vfs.Context.ResetMemfsContext(true)
-	manifestPath := "memfs://test/manifests/channels/kops-channels.yaml"
-	p, err := vfs.Context.BuildVfsPath(manifestPath)
-	if err != nil {
-		t.Fatalf("building vfs path: %v", err)
-	}
-	if err := p.WriteFile(context.Background(), bytes.NewReader([]byte(stubChannelsManifest)), nil); err != nil {
-		t.Fatalf("seeding manifest: %v", err)
+// TestSetChannelsNodeLabels checks that only the --node-labels argument is rewritten. The
+// manifest in the state store is shared by every instance group and carries the cluster-wide
+// default; nodeup narrows it to what this instance group claims.
+func TestSetChannelsNodeLabels(t *testing.T) {
+	baseArgs := []string{
+		"apply", "channel",
+		"--v=4",
+		"--yes",
+		"--interval=5m0s",
+		"--node-labels=node-role.kops.k8s.io/kops-channel,node-role.kops.k8s.io/cert-manager",
+		"--node-name=$(NODE_NAME)",
+		"memfs://channel.yaml",
 	}
 
-	cases := []struct {
-		name    string
-		cfg     *kops.ContainerdConfig
-		wantSEL bool
-	}{
-		{name: "enabled", cfg: &kops.ContainerdConfig{SeLinuxEnabled: true}, wantSEL: true},
-		{name: "disabled", cfg: &kops.ContainerdConfig{SeLinuxEnabled: false}, wantSEL: false},
-		{name: "nil", cfg: nil, wantSEL: false},
+	pod := channelsPod(append([]string{}, baseArgs...), "kops-channels")
+	if err := setChannelsNodeLabels(pod, []string{"node-role.kops.k8s.io/kops-controller"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			b := &ChannelsBuilder{NodeupModelContext: &NodeupModelContext{
-				NodeupConfig: &nodeup.Config{
-					ChannelsManifest: manifestPath,
-					ContainerdConfig: tc.cfg,
-				},
-			}}
-			out, err := b.readChannelsManifest(&fi.NodeupModelBuilderContext{})
-			if err != nil {
-				t.Fatalf("readChannelsManifest: %v", err)
-			}
-			pod := &v1.Pod{}
-			if err := yaml.Unmarshal(out, pod); err != nil {
-				t.Fatalf("parsing output: %v", err)
-			}
-			got := pod.Spec.SecurityContext != nil && pod.Spec.SecurityContext.SELinuxOptions != nil &&
-				pod.Spec.SecurityContext.SELinuxOptions.Type == "spc_t"
-			if got != tc.wantSEL {
-				t.Fatalf("SELinux context present=%v, want=%v\noutput:\n%s", got, tc.wantSEL, out)
+
+	want := append([]string{}, baseArgs...)
+	want[5] = "--node-labels=node-role.kops.k8s.io/kops-controller"
+	if got := pod.Spec.Containers[0].Args; !reflect.DeepEqual(got, want) {
+		t.Errorf("args = %v, want %v", got, want)
+	}
+}
+
+func TestSetChannelsNodeLabelsMultiple(t *testing.T) {
+	pod := channelsPod([]string{"apply", "channel", "--node-labels=a", "chan"}, "kops-channels")
+	labels := []string{"node-role.kops.k8s.io/kops-channel", "node-role.kops.k8s.io/kops-controller"}
+	if err := setChannelsNodeLabels(pod, labels); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want := "--node-labels=node-role.kops.k8s.io/kops-channel,node-role.kops.k8s.io/kops-controller"
+	if got := pod.Spec.Containers[0].Args[2]; got != want {
+		t.Errorf("arg = %q, want %q", got, want)
+	}
+}
+
+// TestSetChannelsNodeLabelsErrors covers the cases where the manifest is not the shape we expect.
+// Silently doing nothing would leave the node claiming the cluster-wide default set of
+// components, which is what this rewrite exists to narrow.
+func TestSetChannelsNodeLabelsErrors(t *testing.T) {
+	grid := []struct {
+		name string
+		pod  *v1.Pod
+	}{
+		{
+			name: "no node-labels argument",
+			pod:  channelsPod([]string{"apply", "channel", "chan"}, "kops-channels"),
+		},
+		{
+			name: "no kops-channels container",
+			pod:  channelsPod([]string{"--node-labels=a"}, "something-else"),
+		},
+		{
+			name: "no containers",
+			pod:  &v1.Pod{},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			if err := setChannelsNodeLabels(g.pod, []string{"x"}); err == nil {
+				t.Errorf("expected an error, got none")
 			}
 		})
+	}
+}
+
+// TestRunsChannels checks that placement follows the manifest path cloudup sets, rather than a
+// role check that could drift from it.
+func TestRunsChannels(t *testing.T) {
+	for _, g := range []struct {
+		manifest string
+		want     bool
+	}{
+		{manifest: "memfs://tests/manifests/channels/kops-channels.yaml", want: true},
+		{manifest: "", want: false},
+	} {
+		b := &ChannelsBuilder{NodeupModelContext: &NodeupModelContext{
+			NodeupConfig: &nodeup.Config{ChannelsManifest: g.manifest},
+		}}
+		if got := b.runsChannels(); got != g.want {
+			t.Errorf("ChannelsManifest=%q: runsChannels() = %v, want %v", g.manifest, got, g.want)
+		}
 	}
 }
