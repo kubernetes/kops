@@ -364,3 +364,152 @@ func TestBuildNodeLabels(t *testing.T) {
 		})
 	}
 }
+
+// TestAll checks that the managed-label list covers every label BuildNodeLabels and
+// kops-channels can set. Anything missing would never be pruned from a node that stops having
+// that role.
+func TestAll(t *testing.T) {
+	all := make(map[string]bool)
+	for _, label := range All() {
+		if all[label] {
+			t.Errorf("All() contains %q twice", label)
+		}
+		all[label] = true
+	}
+
+	expected := []string{
+		RoleLabelAPIServer16,
+		RoleLabelNode16,
+		RoleLabelEtcd,
+		RoleLabelScheduler,
+		RoleLabelKubeControllerManager,
+		RoleLabelControlPlane20,
+	}
+	for _, label := range expected {
+		if !all[label] {
+			t.Errorf("All() is missing role label %q", label)
+		}
+	}
+	for component, label := range ClusterComponentLabel {
+		if !all[label] {
+			t.Errorf("All() is missing %q, the label for component %q", label, component)
+		}
+	}
+}
+
+// TestClusterComponentLabelCoversAllComponents makes sure every component in the API has a label,
+// since a component without one could be claimed in spec.hostedComponents and then silently
+// never placed.
+func TestClusterComponentLabelCoversAllComponents(t *testing.T) {
+	for _, component := range kops.AllClusterComponents {
+		if _, ok := ClusterComponentLabel[component]; !ok {
+			t.Errorf("no node label mapped for cluster component %q", component)
+		}
+	}
+}
+
+func TestChannelsNodeLabels(t *testing.T) {
+	ig := func(name string, role kops.InstanceGroupRole, components []kops.ClusterComponent) *kops.InstanceGroup {
+		g := &kops.InstanceGroup{}
+		g.ObjectMeta.Name = name
+		g.Spec.Role = role
+		g.Spec.HostedComponents = components
+		return g
+	}
+	gceCluster := func() *kops.Cluster {
+		c := &kops.Cluster{}
+		c.Spec.CloudProvider.GCE = &kops.GCESpec{}
+		return c
+	}
+	awsCluster := func() *kops.Cluster {
+		c := &kops.Cluster{}
+		c.Spec.CloudProvider.AWS = &kops.AWSSpec{}
+		return c
+	}
+
+	grid := []struct {
+		name    string
+		cluster *kops.Cluster
+		groups  []*kops.InstanceGroup
+		want    map[string][]string
+	}{
+		{
+			name:    "control plane cluster uses the control-plane label",
+			cluster: awsCluster(),
+			groups: []*kops.InstanceGroup{
+				ig("master", kops.InstanceGroupRoleControlPlane, nil),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]string{
+				"master": {RoleLabelControlPlane20},
+				"nodes":  nil,
+			},
+		},
+		{
+			name:    "split control plane claims every component on each API server",
+			cluster: awsCluster(),
+			groups: []*kops.InstanceGroup{
+				ig("apiserver", kops.InstanceGroupRoleAPIServer, nil),
+				ig("etcd", kops.InstanceGroupRoleEtcd, nil),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]string{
+				"apiserver": {RoleLabelKopsCCM, RoleLabelKopsChannel, RoleLabelKopsController, RoleLabelCertManager},
+				"etcd":      nil,
+				"nodes":     nil,
+			},
+		},
+		{
+			name:    "GCE adds the capi-manager label",
+			cluster: gceCluster(),
+			groups: []*kops.InstanceGroup{
+				ig("apiserver", kops.InstanceGroupRoleAPIServer, nil),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]string{
+				"apiserver": {RoleLabelKopsCCM, RoleLabelKopsChannel, RoleLabelKopsController, RoleLabelCertManager, RoleLabelCAPIManager},
+				"nodes":     nil,
+			},
+		},
+		{
+			// The case the field exists for: four API servers, only one of which hosts the
+			// scheduled components.
+			name:    "explicit placement gives the components to one group",
+			cluster: gceCluster(),
+			groups: []*kops.InstanceGroup{
+				ig("external", kops.InstanceGroupRoleAPIServer, nil),
+				ig("internal", kops.InstanceGroupRoleAPIServer, []kops.ClusterComponent{
+					kops.ClusterComponentKopsChannel,
+					kops.ClusterComponentKopsController,
+					kops.ClusterComponentCloudControllerManager,
+				}),
+				ig("scheduler", "APIServer,Scheduler", nil),
+				ig("kcm", "APIServer,KubeControllerManager", nil),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]string{
+				"external": nil,
+				// Sorted, not in spec order.
+				"internal":  {RoleLabelKopsCCM, RoleLabelKopsChannel, RoleLabelKopsController},
+				"scheduler": nil,
+				"kcm":       nil,
+				"nodes":     nil,
+			},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			for _, instanceGroup := range g.groups {
+				want, ok := g.want[instanceGroup.Name]
+				if !ok {
+					t.Fatalf("test case does not cover instance group %q", instanceGroup.Name)
+				}
+				got := ChannelsNodeLabels(g.cluster, g.groups, instanceGroup)
+				if !reflect.DeepEqual(got, want) {
+					t.Errorf("%s: ChannelsNodeLabels() = %v, want %v", instanceGroup.Name, got, want)
+				}
+			}
+		})
+	}
+}

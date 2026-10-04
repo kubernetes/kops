@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -46,11 +47,15 @@ type nodeUpConfigBuilder struct {
 	configBase                 vfs.Path
 	cluster                    *kops.Cluster
 	etcdManifests              map[string][]string
+	instanceGroups             []*kops.InstanceGroup
 	images                     map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
 	encryptionConfigSecretHash string
 }
 
-func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
+// NewNodeUpConfigBuilder builds the per-instance-group nodeup configuration. instanceGroups is
+// the cluster's full set, which some decisions need: where the scheduled cluster components are
+// placed depends on what the other instance groups claim.
+func NewNodeUpConfigBuilder(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, assetBuilder *assets.AssetBuilder, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
@@ -172,6 +177,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		channelsManifest:           channelsManifest,
 		configBase:                 configBase,
 		cluster:                    cluster,
+		instanceGroups:             instanceGroups,
 		etcdManifests:              etcdManifests,
 		images:                     images,
 		encryptionConfigSecretHash: encryptionConfigSecretHash,
@@ -386,7 +392,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 		config.EtcdManifests = n.etcdManifests[ig.Name]
 	}
-	if isMaster || role.HasAPIServer() {
+	// Historically every instance group with an API server ran kops-channels. When the cluster
+	// places the scheduled components explicitly, only the groups that claim one need to: the
+	// others would apply the channel redundantly and hold a cluster-admin kubeconfig they have
+	// no use for. Control-plane groups always run it, since they install the addons.
+	runsChannels := isMaster || role.HasAPIServer()
+	if n.usesExplicitHostedComponents() {
+		config.ChannelsNodeLabels = nodelabels.ChannelsNodeLabels(cluster, n.instanceGroups, ig)
+		runsChannels = isMaster || len(config.ChannelsNodeLabels) > 0
+	}
+	if runsChannels {
 		config.ChannelsManifest = n.channelsManifest
 	}
 
@@ -568,4 +583,16 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 	sort.Strings(unique)
 
 	return unique
+}
+
+// usesExplicitHostedComponents reports whether any instance group configures
+// spec.hostedComponents. While none does, the cluster-wide default in the shared kops-channels
+// manifest applies and nothing needs to be sent per instance group.
+func (n *nodeUpConfigBuilder) usesExplicitHostedComponents() bool {
+	for _, ig := range n.instanceGroups {
+		if ig.Spec.HostedComponents != nil {
+			return true
+		}
+	}
+	return false
 }

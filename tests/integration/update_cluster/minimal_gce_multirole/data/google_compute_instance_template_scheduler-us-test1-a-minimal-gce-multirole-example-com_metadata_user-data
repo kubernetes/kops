@@ -113,7 +113,7 @@ ClusterName: minimal-gce-multirole.example.com
 ConfigBase: memfs://tests/minimal-gce-multirole.example.com
 InstanceGroupName: scheduler-us-test1-a
 InstanceGroupRole: APIServer,Scheduler
-NodeupConfigHash: f/UAWyyGicsYB4gHK4Jo2E5fmkwKsqfJQv6j6U2tZuo=
+NodeupConfigHash: SJtlcHwi6cEc21x8ugBwsVAGkn2MtUrzpIWMO7PB+Es=
 
 __EOF_KUBE_ENV
 

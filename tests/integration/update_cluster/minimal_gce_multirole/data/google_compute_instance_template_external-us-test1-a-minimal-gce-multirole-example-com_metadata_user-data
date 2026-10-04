@@ -113,7 +113,7 @@ ClusterName: minimal-gce-multirole.example.com
 ConfigBase: memfs://tests/minimal-gce-multirole.example.com
 InstanceGroupName: external-us-test1-a
 InstanceGroupRole: APIServer
-NodeupConfigHash: I0wpg1dtvdEVDI1AAmn8bnWwfavoFobTzDogNSp5ZzY=
+NodeupConfigHash: wRUjwBOA3wPEggXPC73056/67SKltruKoLhDNJcBN28=
 
 __EOF_KUBE_ENV
 
