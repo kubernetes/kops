@@ -152,6 +152,89 @@ func TestDeepValidate_WellKnownServiceCoverage_Split(t *testing.T) {
 	}
 }
 
+// TestDeepValidate_HostedComponentCoverage checks that a cluster placing the scheduled
+// components explicitly cannot leave one of them homeless. kOps places them by node label, so a
+// component nothing claims is simply never scheduled, which is a cluster that silently never
+// finishes coming up.
+func TestDeepValidate_HostedComponentCoverage(t *testing.T) {
+	build := func(components []kopsapi.ClusterComponent) []*kopsapi.InstanceGroup {
+		apiserver := buildMinimalInstanceGroup("apiserver", kopsapi.InstanceGroupRoleAPIServer, "subnet-us-test-1a")
+		apiserver.Spec.HostedComponents = components
+		return []*kopsapi.InstanceGroup{
+			apiserver,
+			buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, "subnet-us-test-1a"),
+			buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, "subnet-us-test-1a"),
+			buildMinimalInstanceGroup("scheduler", kopsapi.InstanceGroupRoleScheduler, "subnet-us-test-1a"),
+			buildMinimalNodeInstanceGroup("subnet-us-test-1a"),
+		}
+	}
+
+	// buildDefaultCluster runs an external cloud-controller-manager, as any current cluster does,
+	// so a complete claim set includes it.
+	complete := []kopsapi.ClusterComponent{
+		kopsapi.ClusterComponentKopsChannel,
+		kopsapi.ClusterComponentKopsController,
+		kopsapi.ClusterComponentCloudControllerManager,
+	}
+
+	t.Run("complete", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		if err := validation.DeepValidate(c, build(complete), true, vfs.Context, nil); err != nil {
+			t.Fatalf("Expected no error from DeepValidate, got %v", err)
+		}
+	})
+
+	t.Run("missing kops-controller", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		groups := build([]kopsapi.ClusterComponent{
+			kopsapi.ClusterComponentKopsChannel,
+			kopsapi.ClusterComponentCloudControllerManager,
+		})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"kops-controller\" component")
+	})
+
+	t.Run("missing kops-channel", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		groups := build([]kopsapi.ClusterComponent{
+			kopsapi.ClusterComponentKopsController,
+			kopsapi.ClusterComponentCloudControllerManager,
+		})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"kops-channel\" component")
+	})
+
+	t.Run("explicitly empty on one group still counts as in use", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		// The field is set, but claims nothing: the cluster would install the addons and never
+		// schedule them.
+		groups := build([]kopsapi.ClusterComponent{})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"kops-channel\" component")
+	})
+
+	t.Run("cloud-controller-manager required when the cluster runs one", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		groups := build([]kopsapi.ClusterComponent{
+			kopsapi.ClusterComponentKopsChannel,
+			kopsapi.ClusterComponentKopsController,
+		})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"cloud-controller-manager\" component")
+	})
+
+	t.Run("cert-manager required when enabled", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		c.Spec.CertManager = &kopsapi.CertManagerConfig{Enabled: new(true)}
+		expectErrorFromDeepValidate(t, c, build(complete), "no InstanceGroup hosts the \"cert-manager\" component")
+	})
+
+	t.Run("components the cluster will not install need no home", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		// cert-manager disabled, so not claiming it is fine. capi-manager is never required.
+		c.Spec.CertManager = &kopsapi.CertManagerConfig{Enabled: new(false)}
+		if err := validation.DeepValidate(c, build(complete), true, vfs.Context, nil); err != nil {
+			t.Fatalf("Expected no error from DeepValidate, got %v", err)
+		}
+	})
+}
+
 func TestDeepValidate_NoNodeZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
