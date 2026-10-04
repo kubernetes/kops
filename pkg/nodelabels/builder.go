@@ -18,6 +18,7 @@ package nodelabels
 
 import (
 	"fmt"
+	"sort"
 
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
@@ -42,6 +43,93 @@ const (
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
+
+// ClusterComponentLabel maps each scheduled cluster component to the node label its addon
+// selects on.
+var ClusterComponentLabel = map[api.ClusterComponent]string{
+	api.ClusterComponentCloudControllerManager: RoleLabelKopsCCM,
+	api.ClusterComponentKopsController:         RoleLabelKopsController,
+	api.ClusterComponentKopsChannel:            RoleLabelKopsChannel,
+	api.ClusterComponentCertManager:            RoleLabelCertManager,
+	api.ClusterComponentCAPIManager:            RoleLabelCAPIManager,
+}
+
+// All returns every node label kOps manages to describe a node's roles. Anything that prunes
+// kOps-managed labels should use this, rather than keeping a list of its own that has to be
+// remembered when a new role label is added.
+func All() []string {
+	labels := []string{
+		RoleLabelAPIServer16,
+		RoleLabelNode16,
+		RoleLabelEtcd,
+		RoleLabelScheduler,
+		RoleLabelKubeControllerManager,
+		RoleLabelControlPlane20,
+	}
+	for _, label := range ClusterComponentLabel {
+		labels = append(labels, label)
+	}
+	sort.Strings(labels)
+	return labels
+}
+
+// LegacyChannelsNodeLabels returns the labels kops-channels applied to its own node before
+// spec.hostedComponents existed: the control-plane label when the cluster has a full
+// control-plane instance group, and the per-component kOps labels when the control plane is
+// split out.
+func LegacyChannelsNodeLabels(cluster *api.Cluster, allInstanceGroups []*api.InstanceGroup) []string {
+	for _, ig := range allInstanceGroups {
+		if ig.IsControlPlane() {
+			return []string{RoleLabelControlPlane20}
+		}
+	}
+
+	labels := []string{
+		RoleLabelKopsCCM,
+		RoleLabelKopsChannel,
+		RoleLabelKopsController,
+		RoleLabelCertManager,
+	}
+	if cluster.GetCloudProvider() == api.CloudProviderGCE {
+		labels = append(labels, RoleLabelCAPIManager)
+	}
+	return labels
+}
+
+// ChannelsNodeLabels returns the labels that kops-channels, running on this instance group,
+// should apply to its own node. The components kOps schedules rather than running as static pods
+// are placed by selecting on these labels, so this is what decides where they run.
+//
+// While no instance group in the cluster configures spec.hostedComponents, every instance group
+// that runs kops-channels claims every component, as it did before the field existed. Once any
+// instance group sets it, each group claims only what it lists.
+func ChannelsNodeLabels(cluster *api.Cluster, allInstanceGroups []*api.InstanceGroup, ig *api.InstanceGroup) []string {
+	explicit := false
+	for _, other := range allInstanceGroups {
+		if other.Spec.HostedComponents != nil {
+			explicit = true
+			break
+		}
+	}
+
+	if explicit {
+		var labels []string
+		for _, component := range ig.Spec.HostedComponents {
+			if label, ok := ClusterComponentLabel[component]; ok {
+				labels = append(labels, label)
+			}
+		}
+		sort.Strings(labels)
+		return labels
+	}
+
+	// Historically kops-channels ran, and so claimed the components, on every instance group
+	// with an API server.
+	if !ig.IsControlPlane() && !ig.Spec.Role.HasAPIServer() {
+		return nil
+	}
+	return LegacyChannelsNodeLabels(cluster, allInstanceGroups)
+}
 
 // BuildNodeLabels returns the node labels for the specified instance group
 // This moved from the kubelet to a central controller in kubernetes 1.16

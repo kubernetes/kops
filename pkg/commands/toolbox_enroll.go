@@ -803,7 +803,18 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 		return nil, err
 	}
 
-	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, encryptionConfigSecretHash)
+	// The full set, not just the instance group being enrolled: where the scheduled cluster
+	// components are placed depends on what the other instance groups claim.
+	instanceGroupList, err := b.GetInstanceGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	instanceGroups := make([]*kops.InstanceGroup, 0, len(instanceGroupList.Items))
+	for i := range instanceGroupList.Items {
+		instanceGroups = append(instanceGroups, &instanceGroupList.Items[i])
+	}
+
+	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, instanceGroups, assetBuilder, encryptionConfigSecretHash)
 	if err != nil {
 		return nil, err
 	}

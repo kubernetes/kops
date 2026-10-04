@@ -113,7 +113,7 @@ ClusterName: minimal-gce-multirole.example.com
 ConfigBase: memfs://tests/minimal-gce-multirole.example.com
 InstanceGroupName: kcm-us-test1-a
 InstanceGroupRole: APIServer,KubeControllerManager
-NodeupConfigHash: DU42uCmCgTmz3bujeHTFX7hRCYoXUjj+DgurGUwoTJ0=
+NodeupConfigHash: tKI5Qef3P0lIPskdbjxmGqnvlDskr2/P6otF++DFxDk=
 
 __EOF_KUBE_ENV
 

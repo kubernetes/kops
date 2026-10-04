@@ -190,7 +190,6 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
-channelsManifest: memfs://tests/minimal-gce-multirole.example.com/manifests/channels/kops-channels.yaml
 configStore:
   keypairs: memfs://tests/minimal-gce-multirole.example.com/pki
   secrets: memfs://tests/minimal-gce-multirole.example.com/secrets
