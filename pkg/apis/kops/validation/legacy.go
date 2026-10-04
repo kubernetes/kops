@@ -328,6 +328,10 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 		return err
 	}
 
+	if err := validateHostedComponentCoverage(c, groups); err != nil {
+		return err
+	}
+
 	for _, g := range groups {
 		errs := CrossValidateInstanceGroup(g, c, cloud, strict)
 
@@ -387,6 +391,54 @@ func validateWellKnownServiceCoverage(c *kops.Cluster, groups []*kops.InstanceGr
 	for _, service := range required {
 		if served[service] == 0 {
 			return fmt.Errorf("no InstanceGroup serves the %q endpoint; set spec.servesWellKnownServices on the InstanceGroup that should", service)
+		}
+	}
+
+	return nil
+}
+
+// validateHostedComponentCoverage checks that every component the cluster will install is hosted
+// somewhere. kOps schedules these rather than running them as static pods, placing them by node
+// label, so a component no instance group claims is never scheduled at all.
+//
+// Only checked once an instance group configures spec.hostedComponents. Until then every
+// instance group with an API server claims every component, so there is nothing to get wrong.
+func validateHostedComponentCoverage(c *kops.Cluster, groups []*kops.InstanceGroup) error {
+	explicit := false
+	for _, g := range groups {
+		if g.Spec.HostedComponents != nil {
+			explicit = true
+			break
+		}
+	}
+	if !explicit {
+		return nil
+	}
+
+	hosted := map[kops.ClusterComponent]bool{}
+	for _, g := range groups {
+		for _, component := range g.Spec.HostedComponents {
+			hosted[component] = true
+		}
+	}
+
+	// kops-channels installs the addons and kops-controller signs certificates and labels
+	// nodes; a cluster cannot come up without either.
+	required := []kops.ClusterComponent{
+		kops.ClusterComponentKopsChannel,
+		kops.ClusterComponentKopsController,
+	}
+	if c.Spec.ExternalCloudControllerManager != nil {
+		required = append(required, kops.ClusterComponentCloudControllerManager)
+	}
+	if c.Spec.CertManager != nil && fi.ValueOf(c.Spec.CertManager.Enabled) &&
+		(c.Spec.CertManager.Managed == nil || fi.ValueOf(c.Spec.CertManager.Managed)) {
+		required = append(required, kops.ClusterComponentCertManager)
+	}
+
+	for _, component := range required {
+		if !hosted[component] {
+			return fmt.Errorf("no InstanceGroup hosts the %q component; add it to spec.hostedComponents on the InstanceGroup that should run it", component)
 		}
 	}
 

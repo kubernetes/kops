@@ -1,0 +1,181 @@
+{{$zone := index .zones 0}}
+# A control plane split across instance groups, two of which carry more than one role.
+#
+# The topology cannot be expressed through the create-cluster flags, which only take a count and
+# a size per role, so this scenario declares it as YAML instead:
+#
+#   external    APIServer                        serves clients outside the cluster
+#   internal    APIServer                        serves the cluster, and hosts the scheduled components
+#   etcd        Etcd                             reached by every API server over its own load balancer
+#   scheduler   APIServer,Scheduler              a kube-scheduler and the API server it alone talks to
+#   kcm         APIServer,KubeControllerManager  likewise for kube-controller-manager
+#   nodes       Node
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: {{.clusterName}}
+spec:
+  kubernetesApiAccess:
+  - {{.publicIP}}
+  channel: stable
+  cloudProvider: {{.cloudProvider}}
+  configBase: "{{.stateStore}}/{{.clusterName}}"
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: etcd-{{$zone}}
+      name: a
+    name: main
+  - etcdMembers:
+    - instanceGroup: etcd-{{$zone}}
+      name: a
+    name: events
+  iam:
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesVersion: {{.kubernetesVersion}}
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - {{.publicIP}}
+  subnets:
+  - name: {{$zone}}
+    type: Public
+    zone: {{$zone}}
+  topology:
+    dns:
+      type: None
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: SSHCredential
+metadata:
+  name: admin
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  publicKey: {{.sshPublicKey}}
+
+---
+
+# The only instance group behind the public load balancer.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: external-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: APIServer
+  servesWellKnownServices:
+  - kube-apiserver-external
+  subnets:
+  - {{$zone}}
+  zones:
+  - {{$zone}}
+
+---
+
+# Serves the cluster itself, and runs the components kOps schedules rather than
+# running as static pods.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: internal-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: APIServer
+  servesWellKnownServices:
+  - kube-apiserver-internal
+  - kops-controller
+  hostedComponents:
+  - cloud-controller-manager
+  - kops-controller
+  - kops-channel
+  subnets:
+  - {{$zone}}
+  zones:
+  - {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: etcd-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: Etcd
+  subnets:
+  - {{$zone}}
+  zones:
+  - {{$zone}}
+
+---
+
+# kube-scheduler, with an API server only it talks to, on localhost.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: scheduler-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: APIServer,Scheduler
+  subnets:
+  - {{$zone}}
+  zones:
+  - {{$zone}}
+
+---
+
+# kube-controller-manager, likewise.
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: kcm-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  role: APIServer,KubeControllerManager
+  subnets:
+  - {{$zone}}
+  zones:
+  - {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: nodes-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  machineType: e2-standard-2
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - {{$zone}}
+  zones:
+  - {{$zone}}
