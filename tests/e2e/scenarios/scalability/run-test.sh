@@ -55,12 +55,7 @@ echo "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT=${KOPS_APISERVER_MAX_REQUESTS_INFLIGH
 # cilium does not yet pass conformance tests (shared hostport test)
 #create_args="--networking cilium"
 create_args=()
-# Correctness Scale tests require nfs packages
-if [[ "${INSTANCE_NAME:-}" == *ami-amazon-linux* ]]; then
-  create_args+=("--set spec.packages=nfs-utils")
-else
-  create_args+=("--set spec.packages=nfs-common")
-fi
+
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16,10.5.0.0/16,10.6.0.0/16,10.7.0.0/16,10.8.0.0/16,10.9.0.0/16,10.10.0.0/16,10.11.0.0/16,10.12.0.0/16")
   create_args+=("--node-size=${NODE_SIZE:-t3a.medium,t3.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c7a.large,r5a.large,r6a.large,m7a.large}")
@@ -144,6 +139,13 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c3-standard-8}")
 else
   create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
+fi
+
+# Correctness Scale tests require nfs packages
+if [[ "${INSTANCE_IMAGE:-}" == *ami-amazon-linux* ]]; then
+  create_args+=("--set spec.packages=nfs-utils")
+elif [[ "${INSTANCE_IMAGE:-}" == *ubuntu* ]]; then
+  create_args+=("--set spec.packages=nfs-common")
 fi
 
 # Enable HTTP for events etcd to reduce TLS overhead in scale tests
@@ -271,6 +273,7 @@ if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
     --test-package-url=https://dl.k8s.io \
     --test-package-dir=ci \
     --test-package-marker=latest.txt \
+    --configure-bastion=true \
     --skip-regex="${SKIP_REGEX-\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]}" \
     --parallel=40
 else
