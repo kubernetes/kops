@@ -128,6 +128,10 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 	project := c.Project()
 	ctx := context.Background()
 
+	// Every instance template has carried the cluster label since kOps 1.23, so
+	// filtering on it keeps other clusters sharing the project out of the listing.
+	clusterLabel := LabelForCluster(cluster.Name)
+
 	nodesByProviderID := make(map[string]*v1.Node)
 
 	for i := range nodes {
@@ -205,9 +209,9 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 			}
 
 			if len(instances) > 0 && instancesByName == nil {
-				zoneInstances, err := c.Compute().Instances().List(ctx, project, zoneName)
+				zoneInstances, err := c.Compute().Instances().List(ctx, project, zoneName, clusterLabel)
 				if err != nil {
-					return nil, fmt.Errorf("error listing Instances: %v", err)
+					return nil, fmt.Errorf("error listing Instances in zone %q: %v", zoneName, err)
 				}
 				instancesByName = make(map[string]*compute.Instance, len(zoneInstances))
 				for _, inst := range zoneInstances {

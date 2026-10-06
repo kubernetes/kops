@@ -19,6 +19,7 @@ package gce
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	compute "google.golang.org/api/compute/v1"
 )
@@ -604,7 +605,8 @@ func (c *routerClientImpl) List(ctx context.Context, project, region string) ([]
 type InstanceClient interface {
 	Insert(project, zone string, i *compute.Instance) (*compute.Operation, error)
 	Get(project, zone, name string) (*compute.Instance, error)
-	List(ctx context.Context, project, zone string) ([]*compute.Instance, error)
+	// List returns the instances in the zone that carry every given label.
+	List(ctx context.Context, project, zone string, labels ...Label) ([]*compute.Instance, error)
 	Delete(project, zone, name string) (*compute.Operation, error)
 	SetMetadata(project, zone, name string, metadata *compute.Metadata) (*compute.Operation, error)
 }
@@ -623,9 +625,18 @@ func (c *instanceClientImpl) Get(project, zone, name string) (*compute.Instance,
 	return c.srv.Get(project, zone, name).Do()
 }
 
-func (c *instanceClientImpl) List(ctx context.Context, project, zone string) ([]*compute.Instance, error) {
+func (c *instanceClientImpl) List(ctx context.Context, project, zone string, labels ...Label) ([]*compute.Instance, error) {
+	call := c.srv.List(project, zone)
+	if len(labels) > 0 {
+		// Each label is its own parenthesised expression; the API ANDs them.
+		terms := make([]string, 0, len(labels))
+		for _, l := range labels {
+			terms = append(terms, fmt.Sprintf("(labels.%s = %q)", l.Key, l.Value))
+		}
+		call = call.Filter(strings.Join(terms, " "))
+	}
 	var insts []*compute.Instance
-	if err := c.srv.List(project, zone).Pages(ctx, func(p *compute.InstanceList) error {
+	if err := call.Pages(ctx, func(p *compute.InstanceList) error {
 		insts = append(insts, p.Items...)
 		return nil
 	}); err != nil {
