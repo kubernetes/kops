@@ -41,6 +41,11 @@ func migSelfLink(name string) string {
 		"/zones/" + testZone + "/instanceGroupManagers/" + name
 }
 
+func instanceSelfLink(name string) string {
+	return "https://www.googleapis.com/compute/v1/projects/" + testProject +
+		"/zones/" + testZone + "/instances/" + name
+}
+
 func igmError(code, message, instance, timestamp string) *compute.InstanceManagedByIgmError {
 	e := &compute.InstanceManagedByIgmError{
 		Error:     &compute.InstanceManagedByIgmErrorManagedInstanceError{Code: code, Message: message},
@@ -272,10 +277,31 @@ func TestGetCloudGroups(t *testing.T) {
 	if _, err := cloud.Compute().InstanceGroupManagers().Insert(testProject, testZone, mig); err != nil {
 		t.Fatalf("Insert InstanceGroupManager: %v", err)
 	}
+	// Real MIG instances inherit the template's labels; the mock's do not, so
+	// replace the instance the mock created with a labelled one.
+	clusterLabel := gceup.LabelForCluster(clusterName)
+	if _, err := cloud.Compute().Instances().Insert(testProject, testZone, &compute.Instance{
+		Name:   testMIG,
+		Labels: map[string]string{clusterLabel.Key: clusterLabel.Value},
+	}); err != nil {
+		t.Fatalf("Insert Instance: %v", err)
+	}
 	// Managed instance with no backing compute.Instance yet should be skipped.
 	cloud.ComputeClient().SetManagedInstance(testProject, testZone, "a-nodes-pending", &compute.ManagedInstance{
 		Name:     "a-nodes-pending",
-		Instance: "https://www.googleapis.com/compute/v1/projects/" + testProject + "/zones/" + testZone + "/instances/a-nodes-pending",
+		Instance: instanceSelfLink("a-nodes-pending"),
+	})
+	// Another cluster's instance in the same zone; the mock's ListManagedInstances
+	// returns it too, so only the label filter keeps it out of the group.
+	if _, err := cloud.Compute().Instances().Insert(testProject, testZone, &compute.Instance{
+		Name:   "a-nodes-other",
+		Labels: map[string]string{clusterLabel.Key: "othercluster-example-com"},
+	}); err != nil {
+		t.Fatalf("Insert Instance: %v", err)
+	}
+	cloud.ComputeClient().SetManagedInstance(testProject, testZone, "a-nodes-other", &compute.ManagedInstance{
+		Name:     "a-nodes-other",
+		Instance: instanceSelfLink("a-nodes-other"),
 	})
 
 	cluster := &kops.Cluster{ObjectMeta: metav1.ObjectMeta{Name: clusterName}}

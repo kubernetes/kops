@@ -99,7 +99,7 @@ func (c *instanceClient) Get(project, zone, name string) (*compute.Instance, err
 	return igm, nil
 }
 
-func (c *instanceClient) List(ctx context.Context, project, zone string) ([]*compute.Instance, error) {
+func (c *instanceClient) List(ctx context.Context, project, zone string, labels ...gce.Label) ([]*compute.Instance, error) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -114,9 +114,21 @@ func (c *instanceClient) List(ctx context.Context, project, zone string) ([]*com
 
 	var l []*compute.Instance
 	for _, instance := range instances {
-		l = append(l, instance)
+		if hasLabels(instance, labels) {
+			l = append(l, instance)
+		}
 	}
 	return l, nil
+}
+
+// hasLabels reports whether instance carries every label in labels.
+func hasLabels(instance *compute.Instance, labels []gce.Label) bool {
+	for _, l := range labels {
+		if instance.Labels[l.Key] != l.Value {
+			return false
+		}
+	}
+	return true
 }
 
 func (c *instanceClient) SetMetadata(project, zone, name string, metadata *compute.Metadata) (*compute.Operation, error) {
