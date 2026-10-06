@@ -21,9 +21,12 @@ import (
 	"time"
 
 	compute "google.golang.org/api/compute/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cloudmock/gce"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	gceup "k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 )
 
 const (
@@ -239,5 +242,51 @@ func TestGetGroupInstanceStatusesNonMIG(t *testing.T) {
 	}
 	if got != nil {
 		t.Errorf("GetGroupInstanceStatuses() = %+v, want nil", got)
+	}
+}
+
+func TestGetCloudGroups(t *testing.T) {
+	cloud := newTestCloud(t)
+	clusterName := "testcluster.example.com"
+
+	tpl := &compute.InstanceTemplate{
+		Name: "nodes-template",
+		Properties: &compute.InstanceProperties{
+			Metadata: &compute.Metadata{
+				Items: []*compute.MetadataItems{
+					{Key: gcemetadata.MetadataKeyClusterName, Value: &clusterName},
+				},
+			},
+		},
+	}
+	if _, err := cloud.Compute().InstanceTemplates().Insert(testProject, tpl); err != nil {
+		t.Fatalf("Insert InstanceTemplate: %v", err)
+	}
+
+	mig := &compute.InstanceGroupManager{
+		Name:             testMIG,
+		Zone:             testZone,
+		InstanceTemplate: tpl.SelfLink,
+		TargetSize:       2,
+	}
+	if _, err := cloud.Compute().InstanceGroupManagers().Insert(testProject, testZone, mig); err != nil {
+		t.Fatalf("Insert InstanceGroupManager: %v", err)
+	}
+	// Managed instance with no backing compute.Instance yet should be skipped.
+	cloud.ComputeClient().SetManagedInstance(testProject, testZone, "a-nodes-pending", &compute.ManagedInstance{
+		Name:     "a-nodes-pending",
+		Instance: "https://www.googleapis.com/compute/v1/projects/" + testProject + "/zones/" + testZone + "/instances/a-nodes-pending",
+	})
+
+	cluster := &kops.Cluster{ObjectMeta: metav1.ObjectMeta{Name: clusterName}}
+	ig := &kops.InstanceGroup{ObjectMeta: metav1.ObjectMeta{Name: "nodes"}}
+
+	groups, err := gceup.GetCloudGroups(cloud, cluster, []*kops.InstanceGroup{ig}, false, nil)
+	if err != nil {
+		t.Fatalf("GetCloudGroups() error = %v", err)
+	}
+	g := groups[testMIG]
+	if g == nil || len(g.NeedUpdate) != 1 || g.NeedUpdate[0].ID != testMIG {
+		t.Fatalf("unexpected group %q: %+v", testMIG, g)
 	}
 }
