@@ -222,7 +222,7 @@ type KubeletConfigSpec struct {
 	// DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
 	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 	// CgroupDriver allows the explicit setting of the kubelet cgroup driver.
-	// DEPRECATED: The cgroup driver is automatically detected.
+	// Valid values are "systemd" (the default) and "cgroupfs". containerd is configured to use the same driver.
 	CgroupDriver string `json:"cgroupDriver,omitempty" flag:"cgroup-driver"`
 	// HousekeepingInterval allows to specify interval between container housekeepings.
 	HousekeepingInterval *metav1.Duration `json:"housekeepingInterval,omitempty" flag:"housekeeping-interval"`

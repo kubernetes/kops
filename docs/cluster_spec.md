@@ -1531,19 +1531,20 @@ which would end up in a drop-in file on all masters and nodes of the cluster.
 
 ## cgroupDriver
 
-As of Kubernetes 1.20, kOps will default the cgroup driver of the kubelet and the container runtime to use systemd as the default cgroup driver
-as opposed to cgroup fs.
+kOps defaults the cgroup driver of the kubelet and containerd to `systemd`.
+Set `spec.kubelet.cgroupDriver` to `cgroupfs` to use the cgroupfs driver instead:
 
-It is important to ensure that the kubelet and the container runtime are using the same cgroup driver.
-containerd follows the kubelet's cgroup driver, so setting `cgroupDriver` on the kubelet is enough;
-there is no separate runtime setting to change.
-
-Setting kubelet to use cgroupfs:
 ```yaml
 spec:
   kubelet:
     cgroupDriver: cgroupfs
 ```
+
+containerd follows the kubelet's cgroup driver, so there is no separate containerd setting.
+Changing the driver replaces all nodes: run `kops update cluster --yes` and then `kops rolling-update cluster --yes`.
+
+The cgroupfs driver avoids asking systemd to create a transient scope unit for every pod, which is slow and can fail when many pods are created at once.
+The pod cgroups are then not visible to systemd tools such as `systemd-cgtop` and `systemd-oomd`.
 
 ## NTP
 

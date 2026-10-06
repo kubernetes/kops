@@ -216,9 +216,11 @@ func (b *ContainerdBuilder) buildSystemdService(containerdVersion semver.Version
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
-	cgroup := b.NodeupConfig.KubeletConfig.RuntimeCgroups
-	if cgroup != "" {
-		manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
+	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" {
+		cgroup := b.NodeupConfig.KubeletConfig.RuntimeCgroups
+		if cgroup != "" {
+			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
+		}
 	}
 
 	manifestString := manifest.Render()
@@ -506,9 +508,12 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	if len(containerd.RegistryMirrors) > 0 {
 		config.SetPath([]string{"plugins", "io.containerd.cri.v1.images", "registry", "config_path"}, containerdRegistryDirPath)
 	}
+	// containerd must use the same cgroup driver as the kubelet. With KubeletCgroupDriverFromCRI the kubelet
+	// takes the driver from the runtime, so this is the setting that decides the effective driver on the node.
+	systemdCgroup := b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd"
 	config.SetPath([]string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "default_runtime_name"}, "runc")
 	config.SetPath([]string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
-	config.SetPath([]string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, true)
+	config.SetPath([]string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, systemdCgroup)
 	if b.NodeupConfig.UsesKubenet {
 		// Using containerd with Kubenet requires special configuration.
 		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
@@ -517,7 +522,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	}
 
 	if b.InstallNvidiaRuntime() {
-		appendNvidiaGPURuntimeConfig(config.Table("plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"))
+		appendNvidiaGPURuntimeConfig(config.Table("plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"), systemdCgroup)
 	}
 
 	if b.InstallGVisorRuntime() {
@@ -598,12 +603,12 @@ func applyConfigAdditions(config *tomlwriter.Tree, additions map[string]intstr.I
 	return nil
 }
 
-func appendNvidiaGPURuntimeConfig(runtimes *tomlwriter.Tree) {
+func appendNvidiaGPURuntimeConfig(runtimes *tomlwriter.Tree, systemdCgroup bool) {
 	runtimes.SetPath([]string{"nvidia", "privileged_without_host_devices"}, false)
 	runtimes.SetPath([]string{"nvidia", "runtime_engine"}, "")
 	runtimes.SetPath([]string{"nvidia", "runtime_root"}, "")
 	runtimes.SetPath([]string{"nvidia", "runtime_type"}, "io.containerd.runc.v2")
-	runtimes.SetPath([]string{"nvidia", "options", "SystemdCgroup"}, true)
+	runtimes.SetPath([]string{"nvidia", "options", "SystemdCgroup"}, systemdCgroup)
 	runtimes.SetPath([]string{"nvidia", "options", "BinaryName"}, "/usr/bin/nvidia-container-runtime")
 }
 
