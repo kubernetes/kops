@@ -1,0 +1,98 @@
+mode: "0755"
+path: /etc/kubernetes/manifests
+type: directory
+---
+contents: |
+  DAEMON_ARGS="--cloud-provider=external --kubeconfig=/var/lib/kubelet/kubeconfig --register-schedulable=true --runtime-request-timeout=15m0s --v=2 --config=/var/lib/kubelet/kubelet.conf --image-credential-provider-config=/var/lib/kubelet/credential-provider.conf --image-credential-provider-bin-dir=/usr/local/bin"
+  HOME="/root"
+path: /etc/sysconfig/kubelet
+type: file
+---
+beforeServices:
+- kubelet.service
+contents: |
+  apiVersion: kubelet.config.k8s.io/v1beta1
+  authentication:
+    anonymous: {}
+    webhook:
+      cacheTTL: 0s
+      enabled: true
+    x509:
+      clientCAFile: /srv/kubernetes/ca.crt
+  authorization:
+    mode: Webhook
+    webhook:
+      cacheAuthorizedTTL: 0s
+      cacheUnauthorizedTTL: 0s
+  cgroupDriver: cgroupfs
+  cgroupRoot: /
+  clusterDNS:
+  - 100.64.0.10
+  clusterDomain: cluster.local
+  containerRuntimeEndpoint: unix:///run/containerd/containerd.sock
+  cpuManagerReconcilePeriod: 0s
+  crashLoopBackOff: {}
+  enableDebuggingHandlers: true
+  evictionHard:
+    imagefs.available: 10%
+    imagefs.inodesFree: 5%
+    memory.available: 100Mi
+    nodefs.available: 10%
+    nodefs.inodesFree: 5%
+  evictionPressureTransitionPeriod: 0s
+  fileCheckFrequency: 0s
+  httpCheckFrequency: 0s
+  imageMaximumGCAge: 0s
+  imageMinimumGCAge: 0s
+  kind: KubeletConfiguration
+  kubeletCgroups: /kubelet
+  logging:
+    flushFrequency: 0
+    options:
+      json:
+        infoBufferSize: "0"
+      text:
+        infoBufferSize: "0"
+    verbosity: 0
+  memorySwap: {}
+  nodeStatusReportFrequency: 0s
+  nodeStatusUpdateFrequency: 0s
+  protectKernelDefaults: true
+  resolvConf: /run/systemd/resolve/resolv.conf
+  runtimeRequestTimeout: 0s
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
+  staticPodPath: /etc/kubernetes/manifests
+  streamingConnectionIdleTimeout: 0s
+  syncFrequency: 0s
+  tlsCertFile: /srv/kubernetes/kubelet-server.crt
+  tlsPrivateKeyFile: /srv/kubernetes/kubelet-server.key
+  volumePluginDir: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/
+  volumeStatsAggPeriod: 0s
+path: /var/lib/kubelet/kubelet.conf
+type: file
+---
+Name: kubelet.service
+definition: |
+  [Unit]
+  Description=Kubernetes Kubelet Server
+  Documentation=https://github.com/kubernetes/kubernetes
+  After=containerd.service
+
+  [Service]
+  EnvironmentFile=/etc/sysconfig/kubelet
+  ExecStart=/usr/local/bin/kubelet "$DAEMON_ARGS"
+  Restart=always
+  RestartSec=2s
+  StartLimitInterval=0
+  KillMode=process
+  User=root
+  CPUAccounting=true
+  MemoryAccounting=true
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true

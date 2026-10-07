@@ -1117,6 +1117,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		if k.MemorySwapBehavior != "" {
 			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("memorySwapBehavior"), &k.MemorySwapBehavior, []string{"LimitedSwap", "UnlimitedSwap"})...)
 		}
+
+		if k.CgroupDriver != "" {
+			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("cgroupDriver"), &k.CgroupDriver, []string{"systemd", "cgroupfs"})...)
+		}
 	}
 	return allErrs
 }

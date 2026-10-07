@@ -496,7 +496,7 @@ spec:
                   cgroupDriver:
                     description: |-
                       CgroupDriver allows the explicit setting of the kubelet cgroup driver.
-                      DEPRECATED: The cgroup driver is automatically detected.
+                      Valid values are "systemd" (the default) and "cgroupfs". containerd is configured to use the same driver.
                     type: string
                   cgroupRoot:
                     description: cgroupRoot is the root cgroup to use for pods. This

@@ -54,6 +54,10 @@ func TestContainerdBuilder_V3(t *testing.T) {
 	runContainerdBuilderTest(t, "v3", distributions.DistributionUbuntu2604)
 }
 
+func TestContainerdBuilder_Cgroupfs(t *testing.T) {
+	runContainerdBuilderTest(t, "cgroupfs", distributions.DistributionUbuntu2604)
+}
+
 func TestContainerdBuilder_BuildFlags(t *testing.T) {
 	grid := []struct {
 		config   kops.ContainerdConfig
@@ -238,6 +242,9 @@ func TestContainerdConfigNRITimeouts(t *testing.T) {
 	b := &ContainerdBuilder{
 		NodeupModelContext: &NodeupModelContext{
 			NodeupConfig: &nodeup.Config{
+				KubeletConfig: kops.KubeletConfigSpec{
+					CgroupDriver: "systemd",
+				},
 				ContainerdConfig: &kops.ContainerdConfig{
 					NRI: &kops.NRIConfig{
 						Enabled:                   new(true),
@@ -315,7 +322,7 @@ func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, true)
 
-	appendNvidiaGPURuntimeConfig(config.Table("plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes"))
+	appendNvidiaGPURuntimeConfig(config.Table("plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes"), true)
 
 	newConfig := config.String()
 

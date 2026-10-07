@@ -1090,3 +1090,31 @@ func TestValidateInstanceGroupName(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateInstanceGroupKubeletCgroupDriver(t *testing.T) {
+	grid := []struct {
+		CgroupDriver   string
+		ExpectedErrors []string
+	}{
+		{CgroupDriver: "", ExpectedErrors: []string{}},
+		{CgroupDriver: "systemd", ExpectedErrors: []string{}},
+		{CgroupDriver: "cgroupfs", ExpectedErrors: []string{}},
+		{CgroupDriver: "cgroup-fs", ExpectedErrors: []string{"Unsupported value::spec.kubelet.cgroupDriver"}},
+	}
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "nodes",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role: kops.InstanceGroupRoleNode,
+				Kubelet: &kops.KubeletConfigSpec{
+					CgroupDriver: g.CgroupDriver,
+				},
+			},
+		}
+		errs := ValidateInstanceGroup(ig, nil, false)
+		testErrors(t, g.CgroupDriver, errs, g.ExpectedErrors)
+	}
+}

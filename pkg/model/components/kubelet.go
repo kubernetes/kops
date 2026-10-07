@@ -143,11 +143,13 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 		cluster.Spec.CloudProvider.GCE.NodeTags = new(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
 	}
 
-	// Set systemd as the default cgroup driver for kubelet
-	// In Kubernetes 1.34, with the KubeletCgroupDriverFromCRI feature gate enabled and a container runtime
-	// that supports the RuntimeConfig CRI RPC, the kubelet automatically detects the appropriate cgroup driver
-	// from the runtime, and ignores the cgroupDriver setting within the kubelet configuration.
-	kubelet.CgroupDriver = "systemd"
+	// Set systemd as the default cgroup driver for kubelet, unless the user opted in to cgroupfs.
+	// nodeup configures containerd with the same driver (SystemdCgroup in the runc options), so that
+	// a kubelet that detects the driver from the runtime (KubeletCgroupDriverFromCRI) gets the same answer
+	// as the cgroupDriver setting in its own configuration.
+	if kubelet.CgroupDriver == "" {
+		kubelet.CgroupDriver = "systemd"
+	}
 
 	if kubelet.ProtectKernelDefaults == nil {
 		kubelet.ProtectKernelDefaults = new(true)

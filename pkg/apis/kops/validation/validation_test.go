@@ -2784,3 +2784,32 @@ func TestValidateFileRepository(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func TestValidateKubeletCgroupDriver(t *testing.T) {
+	grid := []struct {
+		Input          kops.KubeletConfigSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input:          kops.KubeletConfigSpec{},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.KubeletConfigSpec{CgroupDriver: "systemd"},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.KubeletConfigSpec{CgroupDriver: "cgroupfs"},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.KubeletConfigSpec{CgroupDriver: "cgroup-fs"},
+			ExpectedErrors: []string{"Unsupported value::spec.kubelet.cgroupDriver"},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateKubelet(&g.Input, &kops.Cluster{}, field.NewPath("spec", "kubelet"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

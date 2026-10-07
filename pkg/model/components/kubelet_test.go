@@ -84,3 +84,28 @@ func TestFeatureGatesOverride(t *testing.T) {
 		t.Errorf("ExperimentalCriticalPodAnnotation feature should be disalbled")
 	}
 }
+
+func TestCgroupDriverDefault(t *testing.T) {
+	cluster := buildKubeletTestCluster()
+
+	if err := buildOptions(cluster); err != nil {
+		t.Fatal(err)
+	}
+
+	if cluster.Spec.Kubelet.CgroupDriver != "systemd" {
+		t.Errorf("cgroupDriver should default to systemd, got %q", cluster.Spec.Kubelet.CgroupDriver)
+	}
+}
+
+func TestCgroupDriverOverride(t *testing.T) {
+	cluster := buildKubeletTestCluster()
+	cluster.Spec.Kubelet.CgroupDriver = "cgroupfs"
+
+	if err := buildOptions(cluster); err != nil {
+		t.Fatal(err)
+	}
+
+	if cluster.Spec.Kubelet.CgroupDriver != "cgroupfs" {
+		t.Errorf("cgroupDriver should keep the configured value cgroupfs, got %q", cluster.Spec.Kubelet.CgroupDriver)
+	}
+}
