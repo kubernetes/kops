@@ -20,6 +20,8 @@ import (
 	"reflect"
 	"slices"
 	"testing"
+
+	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
 
 func TestAppendIfUnset(t *testing.T) {
@@ -217,6 +219,60 @@ func TestProwJobLabel(t *testing.T) {
 			}
 			if actual != tc.expected {
 				t.Errorf("label mismatch: got %q, want %q", actual, tc.expected)
+			}
+		})
+	}
+}
+
+func TestAWSBastionFallbackOverrides(t *testing.T) {
+	cases := []struct {
+		name     string
+		ig       *api.InstanceGroup
+		expected []string
+	}{
+		{
+			name: "arm64 bastion gets t4g fallbacks",
+			ig:   &api.InstanceGroup{Spec: api.InstanceGroupSpec{Role: "Bastion", MachineType: "t4g.micro"}},
+			expected: []string{
+				"spec.mixedInstancesPolicy.instances=t4g.micro",
+				"spec.mixedInstancesPolicy.instances=t4g.small",
+				"spec.mixedInstancesPolicy.instances=t4g.medium",
+				"spec.mixedInstancesPolicy.onDemandAllocationStrategy=prioritized",
+			},
+		},
+		{
+			name: "amd64 bastion gets t3 fallbacks",
+			ig:   &api.InstanceGroup{Spec: api.InstanceGroupSpec{Role: "Bastion", MachineType: "t3.micro"}},
+			expected: []string{
+				"spec.mixedInstancesPolicy.instances=t3.micro",
+				"spec.mixedInstancesPolicy.instances=t3.small",
+				"spec.mixedInstancesPolicy.instances=t3.medium",
+				"spec.mixedInstancesPolicy.onDemandAllocationStrategy=prioritized",
+			},
+		},
+		{
+			name: "bastion with unknown machine type is left alone",
+			ig:   &api.InstanceGroup{Spec: api.InstanceGroupSpec{Role: "Bastion", MachineType: "c6g.large"}},
+		},
+		{
+			name: "bastion with existing mixed instances policy is left alone",
+			ig: &api.InstanceGroup{Spec: api.InstanceGroupSpec{
+				Role:                 "Bastion",
+				MachineType:          "t4g.micro",
+				MixedInstancesPolicy: &api.MixedInstancesPolicySpec{Instances: []string{"t4g.micro"}},
+			}},
+		},
+		{
+			name: "non-bastion is left alone",
+			ig:   &api.InstanceGroup{Spec: api.InstanceGroupSpec{Role: "Node", MachineType: "t3.micro"}},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := awsBastionFallbackOverrides(tc.ig)
+			if !slices.Equal(actual, tc.expected) {
+				t.Errorf("got %v, want %v", actual, tc.expected)
 			}
 		})
 	}
