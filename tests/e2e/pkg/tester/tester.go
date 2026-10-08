@@ -458,7 +458,7 @@ func (t *Tester) addCSIDriverFlags() error {
 		return fmt.Errorf("reading embedded %s/sc.yaml: %w", provider, err)
 	}
 	scPath := filepath.Join(tmpDir, "sc.yaml")
-	if err := os.WriteFile(scPath, scData, 0644); err != nil {
+	if err := os.WriteFile(scPath, scData, 0o600); err != nil {
 		return fmt.Errorf("writing sc.yaml: %w", err)
 	}
 
@@ -474,7 +474,7 @@ func (t *Tester) addCSIDriverFlags() error {
 		1,
 	)
 	driverPath := filepath.Join(tmpDir, "driver.yaml")
-	if err := os.WriteFile(driverPath, []byte(driverContent), 0644); err != nil {
+	if err := os.WriteFile(driverPath, []byte(driverContent), 0o600); err != nil {
 		return fmt.Errorf("writing driver.yaml: %w", err)
 	}
 

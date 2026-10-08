@@ -29,7 +29,7 @@ var httpTransport *http.Transport
 func init() {
 	httpTransport = new(http.Transport)
 	httpTransport.Proxy = http.ProxyFromEnvironment
-	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
+	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/"))) //nolint:gosec // Lets URL flags such as the kops version marker point at local files.
 }
 
 // HTTPGETWithHeaders writes the response of an HTTP GET request

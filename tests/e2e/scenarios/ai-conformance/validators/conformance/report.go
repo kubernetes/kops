@@ -89,7 +89,7 @@ func WriteReport(artifactsDir string, metadata Metadata) error {
 	if err != nil {
 		return fmt.Errorf("marshaling conformance report: %w", err)
 	}
-	if err := os.WriteFile(reportPath, b, 0644); err != nil {
+	if err := os.WriteFile(reportPath, b, 0o600); err != nil {
 		return fmt.Errorf("writing conformance report to %q: %w", reportPath, err)
 	}
 

@@ -38,7 +38,7 @@ func UnzipToTempDir(data []byte) (string, error) {
 	}
 
 	for _, r := range reader.File {
-		fileNamePath := filepath.Join(dir, r.Name)
+		fileNamePath := filepath.Join(dir, r.Name) //nolint:gosec // The prefix check below rejects paths outside dir.
 		if !strings.HasPrefix(fileNamePath, filepath.Clean(dir)+string(os.PathSeparator)) {
 			return "", fmt.Errorf("invalid file path: %v", fileNamePath)
 		}
@@ -62,7 +62,7 @@ func UnzipToTempDir(data []byte) (string, error) {
 			return "", err
 		}
 
-		_, err = io.Copy(output, fileReader)
+		_, err = io.Copy(output, fileReader) //nolint:gosec // Only used for the Terraform release archive from releases.hashicorp.com.
 
 		output.Close()
 		fileReader.Close()

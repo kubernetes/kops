@@ -89,7 +89,7 @@ func PathForTestArtifact(t Testing, fileName string, opts ...PathForTestArtifact
 func WriteTestArtifact(t Testing, fileName string, content []byte) {
 	outputFile := PathForTestArtifact(t, fileName, WithMkdirAll())
 
-	if err := os.WriteFile(outputFile, content, 0644); err != nil {
+	if err := os.WriteFile(outputFile, content, 0o600); err != nil {
 		t.Fatalf("failed to write attestation file %q: %v", outputFile, err)
 		return
 	}
