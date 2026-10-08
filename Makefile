@@ -177,9 +177,18 @@ protobuf:
 hooks: # Install Git hooks
 	cp hack/pre-commit.sh .git/hooks/pre-commit
 
+# In nested modules, only packages with test files run, because some of those modules build
+# only on Linux (govet covers them). Scenario tests need a live cluster and run from their
+# run-test scripts.
 .PHONY: test
 test:
 	go test -v ./...
+	for dir in $$(find . -name go.mod -not -path './go.mod' -not -path './vendor/*' -not -path '*/.*' | xargs -n1 dirname | sort); do \
+		echo "go test: $$dir"; \
+		( cd "$$dir" && pkgs=$$(go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./...) || exit 1; \
+			pkgs=$$(echo "$$pkgs" | grep -v /tests/e2e/scenarios/); \
+			[ -z "$$pkgs" ] || go test -v $$pkgs ) || exit 1; \
+	done
 
 .PHONY: test-windows
 test-windows:
@@ -318,6 +327,10 @@ verify-goimports:
 .PHONY: govet
 govet:
 	go vet ./...
+	for dir in $$(find . -name go.mod -not -path './go.mod' -not -path './vendor/*' -not -path '*/.*' | xargs -n1 dirname | sort); do \
+		echo "go vet: $$dir"; \
+		( cd "$$dir" && go vet ./... ) || exit 1; \
+	done
 
 # --------------------------------------------------
 # Continuous integration targets

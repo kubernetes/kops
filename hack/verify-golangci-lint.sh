@@ -44,6 +44,10 @@ if [[ "$#" -gt 0 ]]; then
   golangci-lint run "$@" >&2 || res=$?
 else
   golangci-lint run ./... >&2 || res=$?
+  while IFS= read -r dir; do
+    echo "running golangci-lint in ${dir}" >&2
+    (cd "${dir}" && golangci-lint run --config "${KOPS_ROOT}/.golangci.yaml" ./...) >&2 || res=$?
+  done < <(find . -name go.mod -not -path './go.mod' -not -path './vendor/*' -not -path '*/.*' -exec dirname {} \; | sort)
 fi
 
 # print a message based on the result
