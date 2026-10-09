@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha2_test
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -56,12 +57,10 @@ func toV1alpha2(t *testing.T, spec kops.ClusterSpec) *v1alpha2.ClusterSpec {
 }
 
 // toInternal converts a v1alpha2 spec back to the internal type. It drops
-// spec.authentication.oidc, which v1alpha2 declares `json:"-"` and types as the internal
-// *kops.OIDCAuthenticationSpec, so a real decode never carries one; the generated
-// conversion copies that pointer straight across, which would otherwise hand the
-// assertion back the very object the test passed in. The AuthenticationSpec is copied
-// rather than modified in place, because the by-value spec still shares that pointer
-// with the caller.
+// spec.authentication.oidc, as in a spec written by a kOps that only stored the legacy
+// kube-apiserver OIDC flags, so that the tests exercise the promotion of those flags.
+// The AuthenticationSpec is copied rather than modified in place, because the by-value
+// spec still shares that pointer with the caller.
 func toInternal(t *testing.T, spec v1alpha2.ClusterSpec) *kops.ClusterSpec {
 	t.Helper()
 
@@ -212,10 +211,11 @@ func TestConvertInstanceGroupRootVolume(t *testing.T) {
 }
 
 // TestConvertOIDC covers the promotion of the legacy kube-apiserver OIDC flags into
-// spec.authentication.oidc. wantExternal pins the v1alpha2 encoding itself, which is the
-// backward compatibility contract every stored cluster spec depends on: a symmetric
-// change to the separators or the loss of the sort would round trip fine while
-// reinterpreting every spec already on disk.
+// spec.authentication.oidc, which is how a spec written by an older kOps is read.
+// wantExternal pins the v1alpha2 encoding itself, which is the backward compatibility
+// contract every stored cluster spec depends on: a symmetric change to the separators
+// or the loss of the sort would round trip fine while reinterpreting every spec already
+// on disk.
 func TestConvertOIDC(t *testing.T) {
 	for _, tc := range []struct {
 		name         string
@@ -246,9 +246,9 @@ func TestConvertOIDC(t *testing.T) {
 			},
 		},
 		{
-			// This documents a known defect, not desired behaviour: groupsClaims is
-			// stored comma joined in a single flag, so a claim containing a comma comes
-			// back as two claims.
+			// The legacy flags cannot represent this: groupsClaims is stored comma
+			// joined in a single flag, so a claim containing a comma comes back as two
+			// claims. spec.authentication.oidc does, see TestConvertOIDCThroughJSON.
 			name: "a groups claim containing a comma is split in two",
 			in: kops.OIDCAuthenticationSpec{
 				ClientID:     ptr.To("kubernetes"),
@@ -264,7 +264,7 @@ func TestConvertOIDC(t *testing.T) {
 			},
 		},
 		{
-			// Likewise a known defect: requiredClaims is stored as a list of
+			// Likewise for the legacy flags: requiredClaims is stored as a list of
 			// "key=value" flags, so an equals sign in a key moves into the value.
 			name: "a required claim key containing an equals sign moves into the value",
 			in: kops.OIDCAuthenticationSpec{
@@ -302,14 +302,63 @@ func TestConvertOIDC(t *testing.T) {
 	}
 }
 
-// TestConvertOIDCFlagsWinOverInMemorySpec pins the precedence when both OIDC sources are
-// populated. This is only reachable in memory, because v1alpha2 declares
-// spec.authentication.oidc as `json:"-"`.
-func TestConvertOIDCFlagsWinOverInMemorySpec(t *testing.T) {
+// TestConvertOIDCThroughJSON round trips the OIDC settings through the serialized
+// v1alpha2 form, the way the state store does. spec.authentication.oidc keeps the claims
+// the legacy flags cannot represent, and the flags are still written so that an older
+// kOps reading the spec finds the settings.
+func TestConvertOIDCThroughJSON(t *testing.T) {
+	oidc := kops.OIDCAuthenticationSpec{
+		ClientID:       ptr.To("kubernetes"),
+		IssuerURL:      ptr.To("https://example.com"),
+		GroupsClaims:   []string{"a,b"},
+		RequiredClaims: map[string]string{"a=b": "c"},
+	}
+
+	external := &v1alpha2.Cluster{}
+	if err := testScheme().Convert(&kops.Cluster{Spec: kops.ClusterSpec{Authentication: &kops.AuthenticationSpec{OIDC: oidc.DeepCopy()}}}, external, nil); err != nil {
+		t.Fatalf("converting to v1alpha2: %v", err)
+	}
+	data, err := json.Marshal(external)
+	if err != nil {
+		t.Fatalf("encoding v1alpha2: %v", err)
+	}
+	decoded := &v1alpha2.Cluster{}
+	if err := json.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("decoding v1alpha2: %v", err)
+	}
+
+	wantFlags := v1alpha2.KubeAPIServerConfig{
+		OIDCClientID:      ptr.To("kubernetes"),
+		OIDCIssuerURL:     ptr.To("https://example.com"),
+		OIDCGroupsClaim:   ptr.To("a,b"),
+		OIDCRequiredClaim: []string{"a=b=c"},
+	}
+	if decoded.Spec.KubeAPIServer == nil {
+		t.Fatal("expected the legacy OIDC flags to be written to spec.kubeAPIServer")
+	}
+	if diff := cmp.Diff(wantFlags, *decoded.Spec.KubeAPIServer); diff != "" {
+		t.Errorf("spec.kubeAPIServer (-want +got):\n%s", diff)
+	}
+
+	back := &kops.Cluster{}
+	if err := testScheme().Convert(decoded, back, nil); err != nil {
+		t.Fatalf("converting to internal: %v", err)
+	}
+	if back.Spec.Authentication == nil || back.Spec.Authentication.OIDC == nil {
+		t.Fatal("expected spec.authentication.oidc to be populated")
+	}
+	if diff := cmp.Diff(oidc, *back.Spec.Authentication.OIDC); diff != "" {
+		t.Errorf("oidc round trip (-want +got):\n%s", diff)
+	}
+}
+
+// TestConvertOIDCSpecWinsOverFlags pins the precedence when both OIDC sources are
+// populated: spec.authentication.oidc is lossless, so the legacy flags are ignored.
+func TestConvertOIDCSpecWinsOverFlags(t *testing.T) {
 	external := &v1alpha2.Cluster{
 		Spec: v1alpha2.ClusterSpec{
 			Authentication: &v1alpha2.AuthenticationSpec{
-				OIDC: &kops.OIDCAuthenticationSpec{ClientID: ptr.To("in-memory")},
+				OIDC: &v1alpha2.OIDCAuthenticationSpec{ClientID: ptr.To("from-spec")},
 			},
 			KubeAPIServer: &v1alpha2.KubeAPIServerConfig{OIDCClientID: ptr.To("from-flags")},
 		},
@@ -322,7 +371,7 @@ func TestConvertOIDCFlagsWinOverInMemorySpec(t *testing.T) {
 	if out.Spec.Authentication == nil || out.Spec.Authentication.OIDC == nil {
 		t.Fatal("expected spec.authentication.oidc to be populated")
 	}
-	if diff := cmp.Diff(ptr.To("from-flags"), out.Spec.Authentication.OIDC.ClientID); diff != "" {
+	if diff := cmp.Diff(ptr.To("from-spec"), out.Spec.Authentication.OIDC.ClientID); diff != "" {
 		t.Errorf("authentication.oidc.clientID (-want +got):\n%s", diff)
 	}
 }
