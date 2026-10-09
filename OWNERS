@@ -15,14 +15,12 @@ emeritus_approvers:
   - johngmyers
   - kashifsaadat
   - mikesplain
+  - olemarkus
   - rdrgmnzs
+  - zetaab
 approvers:
   - hakman
   - justinsb
-  - olemarkus
   - rifelpet
-  - zetaab
 reviewers:
   - hakman
-  - olemarkus
-  - zetaab
