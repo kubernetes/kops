@@ -19,15 +19,19 @@ package kops
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/blang/semver/v4"
 
 	"k8s.io/kops/tests/e2e/pkg/util"
 )
 
 // DownloadKops will download the kops binary from the version marker URL
 // Returning the URL to use for KOPS_BASE_URL
+// Markers contain either an absolute artifact URL or a version relative to the marker's directory.
 // Example markerURL: https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt
 func DownloadKops(markerURL, downloadPath, kopsVersion string) (string, error) {
 	var b bytes.Buffer
@@ -39,7 +43,11 @@ func DownloadKops(markerURL, downloadPath, kopsVersion string) (string, error) {
 		if err := util.HTTPGETWithHeaders(markerURL, nil, &b); err != nil {
 			return "", err
 		}
-		kopsBaseURL = strings.TrimSpace(b.String())
+		baseURL, err := kopsBaseURLFromMarker(markerURL, b.String())
+		if err != nil {
+			return "", err
+		}
+		kopsBaseURL = baseURL
 	}
 
 	kopsFile, err := os.Create(downloadPath)
@@ -58,4 +66,26 @@ func DownloadKops(markerURL, downloadPath, kopsVersion string) (string, error) {
 		return "", err
 	}
 	return kopsBaseURL, nil
+}
+
+// kopsBaseURLFromMarker preserves legacy absolute URLs and resolves version-only markers relative
+// to their directory.
+func kopsBaseURLFromMarker(markerURL, contents string) (string, error) {
+	contents = strings.TrimSpace(contents)
+	marker, err := url.Parse(contents)
+	if err != nil {
+		return "", fmt.Errorf("invalid kops marker %q: %w", markerURL, err)
+	}
+	if marker.IsAbs() {
+		return contents, nil
+	}
+	if _, err := semver.Parse(strings.TrimPrefix(contents, "v")); err != nil {
+		return "", fmt.Errorf("invalid kops version in marker %q: %w", markerURL, err)
+	}
+	baseURL, err := url.Parse(markerURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid kops marker URL %q: %w", markerURL, err)
+	}
+	// Resolve against the requested URL so CDN users also fetch artifacts through the CDN.
+	return baseURL.ResolveReference(marker).String(), nil
 }
