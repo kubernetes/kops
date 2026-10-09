@@ -184,7 +184,7 @@ func (d *deployer) writeEnvFile(ctx context.Context) error {
 	}
 
 	data := strings.Join(env, "\n") + "\n"
-	if err := os.WriteFile(d.EnvFile, []byte(data), 0o644); err != nil {
+	if err := os.WriteFile(d.EnvFile, []byte(data), 0o600); err != nil {
 		return fmt.Errorf("error writing env file %q: %v", d.EnvFile, err)
 	}
 	return nil

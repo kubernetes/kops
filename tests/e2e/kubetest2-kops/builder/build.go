@@ -128,7 +128,7 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		return nil, fmt.Errorf("failed to Mkdir(%q): %w", metaDir, err)
 	}
 	p := filepath.Join(metaDir, "kops-base-url")
-	if err := os.WriteFile(p, []byte(results.KopsBaseURL), 0o644); err != nil {
+	if err := os.WriteFile(p, []byte(results.KopsBaseURL), 0o600); err != nil {
 		return nil, fmt.Errorf("failed to WriteFile(%q): %w", p, err)
 	}
 	klog.Infof("wrote file %q with %q", p, results.KopsBaseURL)

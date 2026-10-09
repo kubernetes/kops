@@ -302,7 +302,7 @@ func (h *ValidatorHarness) dumpResource(ctx context.Context, ns string, resource
 		return fmt.Errorf("failed to dump %s in namespace %s: %v (stderr: %s)", resourceType, ns, err, stderr.String())
 	}
 
-	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o644); err != nil {
+	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("failed to write %s dump to %s: %w", resourceType, outputPath, err)
 	}
 
@@ -325,7 +325,7 @@ func (h *ValidatorHarness) kubectlDescribeResource(ctx context.Context, ns strin
 		return fmt.Errorf("failed to kubectl describe %s in namespace %s: %v (stderr: %s)", resourceType, ns, err, stderr.String())
 	}
 
-	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o644); err != nil {
+	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("failed to write %s describe output to %s: %w", resourceType, outputPath, err)
 	}
 
@@ -364,7 +364,7 @@ func (h *ValidatorHarness) dumpPodLogs(ctx context.Context, ns string, clusterIn
 			continue
 		}
 		logPath := filepath.Join(podLogsDir, podName+".log")
-		if err := os.WriteFile(logPath, logOut.Bytes(), 0o644); err != nil {
+		if err := os.WriteFile(logPath, logOut.Bytes(), 0o600); err != nil {
 			errs = append(errs, fmt.Errorf("failed to write logs for pod %s to %s: %w", podName, logPath, err))
 		}
 	}

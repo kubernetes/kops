@@ -144,7 +144,7 @@ func (t *Terraform) Backup() error {
 		if err != nil {
 			return fmt.Errorf("failed to read %s: %v", f, err)
 		}
-		err = os.WriteFile(path.Join(t.artifactsDir, f), contents, 0644)
+		err = os.WriteFile(path.Join(t.artifactsDir, f), contents, 0o600)
 		if err != nil {
 			return fmt.Errorf("failed to write %s: %v", f, err)
 		}

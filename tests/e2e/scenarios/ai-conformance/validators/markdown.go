@@ -95,7 +95,7 @@ func (o *MarkdownOutput) renderHTML() error {
 	htmlOut.WriteString("</body>\n</html>\n")
 
 	htmlPath := strings.TrimSuffix(o.outputPath, ".md") + ".html"
-	if err := os.WriteFile(htmlPath, htmlOut.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(htmlPath, htmlOut.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("writing HTML file: %w", err)
 	}
 
