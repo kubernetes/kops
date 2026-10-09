@@ -283,6 +283,7 @@ func TestEnvExportsSSHKeyAndUser(t *testing.T) {
 				SSHUser:           tc.sshUser,
 				SSHPrivateKeyPath: tc.privateKey,
 				BuildOptions:      &builder.BuildOptions{},
+				stateStoreName:    "memfs://tests",
 			}
 
 			actual := map[string]string{}
