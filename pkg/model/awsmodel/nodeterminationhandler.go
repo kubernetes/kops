@@ -44,11 +44,12 @@ var (
 	_ fi.CloudupModelBuilder = &NodeTerminationHandlerBuilder{}
 	_ fi.HasDeletions        = &NodeTerminationHandlerBuilder{}
 
+	asgLifecycleEvent = event{
+		name:    "ASGLifecycle",
+		pattern: `{"source":["aws.autoscaling"],"detail-type":["EC2 Instance-terminate Lifecycle Action"]}`,
+	}
+
 	fixedEvents = []event{
-		{
-			name:    "ASGLifecycle",
-			pattern: `{"source":["aws.autoscaling"],"detail-type":["EC2 Instance-terminate Lifecycle Action"]}`,
-		},
 		{
 			name:    "SpotInterruption",
 			pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Spot Instance Interruption Warning"]}`,
@@ -75,9 +76,30 @@ type NodeTerminationHandlerBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
+func (b *NodeTerminationHandlerBuilder) karpenterEnabled() bool {
+	return b.Cluster.Spec.Karpenter != nil && b.Cluster.Spec.Karpenter.Enabled
+}
+
+func (b *NodeTerminationHandlerBuilder) rebalanceDrainingEnabled() bool {
+	nth := b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
+	return nth != nil && fi.ValueOf(nth.EnableRebalanceDraining)
+}
+
+func (b *NodeTerminationHandlerBuilder) events() []event {
+	if b.karpenterEnabled() {
+		return append(append([]event(nil), fixedEvents...), rebalanceEvent)
+	}
+
+	events := append([]event{asgLifecycleEvent}, fixedEvents...)
+	if b.rebalanceDrainingEnabled() {
+		events = append(events, rebalanceEvent)
+	}
+	return events
+}
+
 func (b *NodeTerminationHandlerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Manager == kops.InstanceManagerCloudGroup {
+		if ig.Spec.Manager == kops.InstanceManagerCloudGroup && !b.karpenterEnabled() {
 			err := b.configureASG(c, ig)
 			if err != nil {
 				return err
@@ -113,7 +135,7 @@ func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.CloudupModelBuilderCo
 }
 
 func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) error {
-	queueName := model.QueueNamePrefix(b.ClusterName()) + "-nth"
+	queueName := model.InterruptionQueueName(b.ClusterName())
 
 	policy := iam.NewPolicy(b.ClusterName(), b.AWSPartition, b.Region)
 	arn := arn.ARN{
@@ -151,12 +173,7 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) 
 
 	clusterNamePrefix := awsup.GetClusterName40(clusterName)
 
-	events := append([]event(nil), fixedEvents...)
-	if b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.EnableRebalanceDraining) {
-		events = append(events, rebalanceEvent)
-	}
-
-	for _, event := range events {
+	for _, event := range b.events() {
 		// build rule
 		ruleName := aws.String(clusterNamePrefix + "-" + event.name)
 		pattern := event.pattern
@@ -188,7 +205,7 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) 
 }
 
 func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.CloudupModelBuilderContext, cloud fi.Cloud) error {
-	if b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.EnableRebalanceDraining) {
+	if b.karpenterEnabled() || b.rebalanceDrainingEnabled() {
 		return nil
 	}
 

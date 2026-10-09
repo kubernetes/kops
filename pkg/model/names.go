@@ -242,3 +242,7 @@ func QueueNamePrefix(clusterName string) string {
 	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
 	return truncate.TruncateString(safeClusterName, truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
 }
+
+func InterruptionQueueName(clusterName string) string {
+	return QueueNamePrefix(clusterName) + "-nth"
+}

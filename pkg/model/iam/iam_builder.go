@@ -1238,6 +1238,11 @@ func AddKarpenterPermissions(p *Policy, useCustomInstanceProfiles bool, useCusto
 		"pricing:GetProducts",
 		"ssm:GetParameter",
 	)
+	p.clusterTaggedAction.Insert(
+		"sqs:DeleteMessage",
+		"sqs:GetQueueUrl",
+		"sqs:ReceiveMessage",
+	)
 
 	instanceARN := fmt.Sprintf("arn:%s:ec2:*:*:instance/*", p.partition)
 	launchTemplateARN := fmt.Sprintf("arn:%s:ec2:*:*:launch-template/*", p.partition)
