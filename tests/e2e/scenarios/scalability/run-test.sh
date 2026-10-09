@@ -72,6 +72,16 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--dns=none")
 fi
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
+  if [[ -z "${GCE_VOLUME_TYPE:-}" ]]; then
+    case "${CONTROL_PLANE_SIZE:-}" in
+      n1-*|n2-*|n2d-*|e2-*)
+        GCE_VOLUME_TYPE="pd-ssd"
+        ;;
+      *)
+        GCE_VOLUME_TYPE="hyperdisk-balanced"
+        ;;
+    esac
+  fi
   create_args+=("--zones=us-east1-b,us-east1-c,us-east1-d")
   create_args+=("--node-size=${NODE_SIZE:-e2-medium}")
   create_args+=("--node-volume-size=30")
@@ -83,10 +93,12 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--set spec.networking.subnets[0].cidr=10.128.0.0/15")
   create_args+=("--set spec.networking.serviceClusterIPRange=10.130.0.0/15")
   create_args+=("--set spec.networking.nonMasqueradeCIDR=10.64.0.0/10")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000")
+  if [[ "${GCE_VOLUME_TYPE}" == hyperdisk-* ]]; then
+    create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
+    create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000")
+  fi
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=120")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=hyperdisk-balanced")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=${GCE_VOLUME_TYPE}")
 fi
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
@@ -201,9 +213,11 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   else
     KUBETEST2_ARGS+=("--boskos-resource-type=${BOSKOS_RESOURCE_TYPE:-scalability-project}")
   fi
-  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=hyperdisk-balanced")
-  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.iops=10000")
-  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.throughput=1000")
+  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=${GCE_VOLUME_TYPE}")
+  if [[ "${GCE_VOLUME_TYPE}" == hyperdisk-* ]]; then
+    KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.iops=10000")
+    KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.throughput=1000")
+  fi
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.associatePublicIP=true")
 elif [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=io2")
