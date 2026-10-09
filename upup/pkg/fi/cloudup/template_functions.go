@@ -496,6 +496,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["KarpenterEC2NodeClass"] = tf.KarpenterEC2NodeClass
 	dest["KarpenterInstanceGroups"] = tf.KarpenterInstanceGroups
 	dest["KarpenterNodePool"] = tf.KarpenterNodePool
+	dest["InterruptionQueueName"] = func() string {
+		return model.InterruptionQueueName(tf.ClusterName())
+	}
 
 	return nil
 }
