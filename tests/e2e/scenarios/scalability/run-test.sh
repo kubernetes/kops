@@ -48,6 +48,7 @@ KOPS_CONTROLLER_MANAGER_QPS="${KOPS_CONTROLLER_MANAGER_QPS:-500}"
 KOPS_CONTROLLER_MANAGER_BURST="${KOPS_CONTROLLER_MANAGER_BURST:-500}"
 KOPS_APISERVER_MAX_REQUESTS_INFLIGHT="${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT:-640}"
 ETCD_QUOTA_BACKEND_BYTES="${ETCD_QUOTA_BACKEND_BYTES:-8589934592}"
+ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL="${ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL:-5s}"
 echo "KOPS_SCHEDULER_QPS=${KOPS_SCHEDULER_QPS} KOPS_SCHEDULER_BURST=${KOPS_SCHEDULER_BURST}"
 echo "KOPS_CONTROLLER_MANAGER_QPS=${KOPS_CONTROLLER_MANAGER_QPS} KOPS_CONTROLLER_MANAGER_BURST=${KOPS_CONTROLLER_MANAGER_BURST}"
 echo "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT=${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT}"
@@ -97,6 +98,9 @@ create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://0.0.0
 create_args+=("--set spec.etcdClusters[1].manager.listenMetricsURLs=http://0.0.0.0:2384")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${ETCD_QUOTA_BACKEND_BYTES}")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
+if [[ -n "${ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL}" ]]; then
+  create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL=${ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL}")
+fi
 create_args+=("--set spec.etcdClusters[0].manager.listenClientHTTPURLs=http://localhost:2385")
 create_args+=("--set spec.etcdClusters[1].manager.listenClientHTTPURLs=http://localhost:2386")
 if [[ -n "${ETCD_VERSION:-}" ]]; then
