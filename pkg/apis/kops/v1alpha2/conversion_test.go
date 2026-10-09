@@ -352,6 +352,33 @@ func TestConvertOIDCThroughJSON(t *testing.T) {
 	}
 }
 
+// TestConvertOIDCLegacyFlagsThroughJSON decodes a spec as an older kOps writes it, with
+// the OIDC settings only in the legacy kube-apiserver flags, and checks that they are
+// still promoted into spec.authentication.oidc.
+func TestConvertOIDCLegacyFlagsThroughJSON(t *testing.T) {
+	data := []byte(`{"spec":{"kubeAPIServer":{"oidcClientID":"kubernetes","oidcGroupsClaim":"groups,roles","oidcRequiredClaim":["hd=example.com"]}}}`)
+	decoded := &v1alpha2.Cluster{}
+	if err := json.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("decoding v1alpha2: %v", err)
+	}
+
+	out := &kops.Cluster{}
+	if err := testScheme().Convert(decoded, out, nil); err != nil {
+		t.Fatalf("converting to internal: %v", err)
+	}
+	want := kops.OIDCAuthenticationSpec{
+		ClientID:       ptr.To("kubernetes"),
+		GroupsClaims:   []string{"groups", "roles"},
+		RequiredClaims: map[string]string{"hd": "example.com"},
+	}
+	if out.Spec.Authentication == nil || out.Spec.Authentication.OIDC == nil {
+		t.Fatal("expected spec.authentication.oidc to be promoted from the legacy flags")
+	}
+	if diff := cmp.Diff(want, *out.Spec.Authentication.OIDC); diff != "" {
+		t.Errorf("oidc (-want +got):\n%s", diff)
+	}
+}
+
 // TestConvertOIDCSpecWinsOverFlags pins the precedence when both OIDC sources are
 // populated: spec.authentication.oidc is lossless, so the legacy flags are ignored.
 func TestConvertOIDCSpecWinsOverFlags(t *testing.T) {
