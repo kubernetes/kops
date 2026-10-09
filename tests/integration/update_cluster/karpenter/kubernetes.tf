@@ -250,6 +250,66 @@ resource "aws_autoscaling_group" "nodes-minimal-example-com" {
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-example-com.id]
 }
 
+resource "aws_cloudwatch_event_rule" "minimal-example-com-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-InstanceScheduledChange_event_pattern")
+  name          = "minimal.example.com-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-InstanceScheduledChange"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-example-com-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-InstanceStateChange_event_pattern")
+  name          = "minimal.example.com-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-InstanceStateChange"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-example-com-RebalanceRecommendation" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-RebalanceRecommendation_event_pattern")
+  name          = "minimal.example.com-RebalanceRecommendation"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-RebalanceRecommendation"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-example-com-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-SpotInterruption_event_pattern")
+  name          = "minimal.example.com-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-SpotInterruption"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-RebalanceRecommendation-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-RebalanceRecommendation.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-SpotInterruption.id
+}
+
 resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
@@ -991,6 +1051,17 @@ resource "aws_security_group_rule" "from-nodes-minimal-example-com-ingress-udp-1
   source_security_group_id = aws_security_group.nodes-minimal-example-com.id
   to_port                  = 65535
   type                     = "ingress"
+}
+
+resource "aws_sqs_queue" "minimal-example-com-nth" {
+  message_retention_seconds = 300
+  name                      = "minimal-example-com-nth"
+  policy                    = file("${path.module}/data/aws_sqs_queue_minimal-example-com-nth_policy")
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal-example-com-nth"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-test-1a-minimal-example-com" {
