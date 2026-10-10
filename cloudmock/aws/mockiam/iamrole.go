@@ -18,7 +18,6 @@ package mockiam
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -99,7 +98,14 @@ func (m *MockIAM) DeleteRole(ctx context.Context, request *iam.DeleteRoleInput, 
 	id := aws.ToString(request.RoleName)
 	o := m.Roles[id]
 	if o == nil {
-		return nil, fmt.Errorf("role %q not found", id)
+		return nil, &iamtypes.NoSuchEntityException{}
+	}
+	for _, ip := range m.InstanceProfiles {
+		for _, role := range ip.Roles {
+			if aws.ToString(role.RoleName) == id {
+				return nil, &iamtypes.DeleteConflictException{}
+			}
+		}
 	}
 	delete(m.Roles, id)
 
@@ -123,4 +129,30 @@ func (m *MockIAM) ListAttachedRolePolicies(ctx context.Context, request *iam.Lis
 	}
 
 	return &iam.ListAttachedRolePoliciesOutput{}, nil
+}
+
+func (m *MockIAM) DetachRolePolicy(ctx context.Context, request *iam.DetachRolePolicyInput, optFns ...func(*iam.Options)) (*iam.DetachRolePolicyOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("DetachRolePolicy: %v", request)
+
+	role := aws.ToString(request.RoleName)
+
+	found := false
+	var newPolicies []iamtypes.AttachedPolicy
+	for _, policy := range m.AttachedPolicies[role] {
+		if aws.ToString(policy.PolicyArn) == aws.ToString(request.PolicyArn) {
+			found = true
+			continue
+		}
+		newPolicies = append(newPolicies, policy)
+	}
+
+	if !found {
+		return nil, &iamtypes.NoSuchEntityException{}
+	}
+	m.AttachedPolicies[role] = newPolicies
+
+	return &iam.DetachRolePolicyOutput{}, nil
 }
