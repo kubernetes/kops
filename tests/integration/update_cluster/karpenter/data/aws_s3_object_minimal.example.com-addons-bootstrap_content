@@ -53,7 +53,7 @@ spec:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: 220a6633c8107aef485db1345a13e6684b146593d18ac4a0bb721535a15e995d
+    manifestHash: a68676b329c2bf27bcc703dc0078243cd1f51b711c5b30d109de3c5d764f7e52
     name: karpenter.sh
     prune:
       kinds:
@@ -84,10 +84,12 @@ spec:
       - group: apps
         kind: StatefulSet
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
-      - group: karpenter.k8s.aws
+      - fieldSelector: metadata.name!=karpenter-nodes-default,metadata.name!=karpenter-nodes-single-machinetype
+        group: karpenter.k8s.aws
         kind: EC2NodeClass
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
-      - group: karpenter.sh
+      - fieldSelector: metadata.name!=karpenter-nodes-default,metadata.name!=karpenter-nodes-single-machinetype
+        group: karpenter.sh
         kind: NodePool
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
       - group: policy

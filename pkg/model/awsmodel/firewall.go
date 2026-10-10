@@ -379,9 +379,10 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 
 	done := make(map[string]bool)
 
-	// Build groups that specify a SecurityGroupOverride
+	// Build groups that specify a SecurityGroupOverride. Security groups and their rules are
+	// shared by all instance groups of a role, including those not being updated.
 	allOverrides := true
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.Spec.Role != role {
 			continue
 		}

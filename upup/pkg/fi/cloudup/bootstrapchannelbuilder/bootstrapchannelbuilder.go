@@ -578,9 +578,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
+	// The addons needed by some instance groups are included even when those instance groups
+	// are not being updated, because the addons are applied to the whole cluster.
 	nvidia := b.Cluster.Spec.Containerd.NvidiaGPU
 	igNvidia := false
-	for _, ig := range b.KopsModelContext.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(ig.Spec.Containerd.NvidiaGPU.Enabled) {
 			igNvidia = true
 			break
@@ -605,7 +607,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	}
 
 	igGVisor := false
-	for _, ig := range b.KopsModelContext.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.HasGVisor() {
 			igGVisor = true
 			break
