@@ -117,3 +117,8 @@ Contributions are welcome! Before submitting a pull request, please open an issu
 
 For investigating E2E CI job failures — including locating artifacts, diagnosing root causes, and finding correlations across failing jobs — see [docs/e2e-failure-troubleshooting.md](docs/e2e-failure-troubleshooting.md).
 
+## Updating Third-Party Dependencies
+
+For updating any pinned third-party dependency — Go modules, addon manifests, node components,
+GitHub Actions, e2e scenario charts, and the regeneration/verification each one requires — see
+[docs/dependency-updates.md](docs/dependency-updates.md).
