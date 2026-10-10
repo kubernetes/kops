@@ -17,8 +17,6 @@ limitations under the License.
 package install
 
 import (
-	"strings"
-
 	corev1 "k8s.io/api/core/v1"
 	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/kops/pkg/apis/kops"
@@ -138,38 +136,6 @@ func v1alpha2FuzzerFuncs(_ runtimeserializer.CodecFactory) []any {
 		func(spec *kops.KubeAPIServerConfig, c randfill.Continue) {
 			c.FillNoCustom(spec)
 			fixupKubeAPIServer(spec)
-		},
-		func(spec *kops.OIDCAuthenticationSpec, c randfill.Continue) {
-			c.FillNoCustom(spec)
-
-			// v1alpha2 flattens the OIDC settings into the kube-apiserver flags, and
-			// only reconstructs spec.authentication.oidc when at least one is set.
-			if spec.ClientID == nil {
-				spec.ClientID = ptr.To(c.String(0))
-			}
-
-			// GroupsClaims is stored comma-joined in a single flag, so an individual
-			// claim may not contain a comma. An empty list joins to "", which splits
-			// back to a single empty claim rather than to an empty list, so normalize
-			// it to unset.
-			for i, claim := range spec.GroupsClaims {
-				spec.GroupsClaims[i] = strings.ReplaceAll(claim, ",", "")
-			}
-			if len(spec.GroupsClaims) == 0 {
-				spec.GroupsClaims = nil
-			}
-
-			// RequiredClaims is stored as a list of "key=value" flags, so a key may
-			// not contain an equals sign. Unlike GroupsClaims it needs no empty-to-nil
-			// normalization: omitempty drops an empty slice, and Semantic.DeepEqual
-			// equates nil with empty, whereas a non-nil *string is not dropped.
-			if spec.RequiredClaims != nil {
-				claims := make(map[string]string, len(spec.RequiredClaims))
-				for k, v := range spec.RequiredClaims {
-					claims[strings.ReplaceAll(k, "=", "")] = v
-				}
-				spec.RequiredClaims = claims
-			}
 		},
 		func(spec *kops.InstanceGroupSpec, c randfill.Continue) {
 			c.FillNoCustom(spec)

@@ -248,6 +248,54 @@ spec:
                     type: object
                   kopeio:
                     type: object
+                  oidc:
+                    description: |-
+                      OIDC is stored here as well as in the legacy kubeAPIServer.oidc* flags,
+                      because the flags encode groupsClaims and requiredClaims as delimited
+                      strings and cannot represent a claim containing the delimiter.
+                    properties:
+                      clientID:
+                        description: |-
+                          ClientID is the client ID for the OpenID Connect client. Must be set
+                          if issuerURL is set.
+                        type: string
+                      groupsClaims:
+                        description: |-
+                          GroupsClaims are the names of the custom OpenID Connect claims for
+                          specifying user groups (optional).
+                        items:
+                          type: string
+                        type: array
+                      groupsPrefix:
+                        description: |-
+                          GroupsPrefix is the prefix prepended to group claims to prevent
+                          clashes with existing names (such as 'system:' groups).
+                        type: string
+                      issuerURL:
+                        description: |-
+                          IssuerURL is the URL of the OpenID issuer. Only the HTTPS scheme will
+                          be accepted.
+                          If set, will be used to verify the OIDC JSON Web Token (JWT).
+                        type: string
+                      requiredClaims:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          RequiredClaims are key/value pairs that describe required claims in the ID Token.
+                          If set, the claims are verified to be present in the ID Token with corresponding values.
+                        type: object
+                      usernameClaim:
+                        description: |-
+                          UsernameClaim is the OpenID claim to use as the username.
+                          Note that claims other than the default ('sub') are not guaranteed to be
+                          unique and immutable.
+                        type: string
+                      usernamePrefix:
+                        description: |-
+                          UsernamePrefix is the prefix prepended to username claims to prevent
+                          clashes with existing names (such as 'system:' users).
+                        type: string
+                    type: object
                 type: object
               authorization:
                 description: Authorization field controls how the cluster is configured

@@ -100,7 +100,10 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	}
 	out.ConfigStore.Secrets = in.SecretStore
 	out.ConfigStore.Keypairs = in.KeyStore
-	if in.KubeAPIServer != nil {
+	// spec.authentication.oidc carries the OIDC settings losslessly, so the legacy
+	// kube-apiserver flags are only promoted when it is absent, as in a spec
+	// written by an older kOps.
+	if in.KubeAPIServer != nil && (in.Authentication == nil || in.Authentication.OIDC == nil) {
 		kube := in.KubeAPIServer
 		if kube.OIDCClientID != nil ||
 			kube.OIDCGroupsClaim != nil ||
@@ -109,10 +112,8 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			kube.OIDCRequiredClaim != nil ||
 			kube.OIDCUsernameClaim != nil ||
 			kube.OIDCUsernamePrefix != nil {
-			// Build the settings before publishing them. The generated conversion
-			// copies the OIDC pointer straight across, so out.Authentication.OIDC can
-			// still be the caller's struct; writing into it would mutate the input,
-			// and returning an error partway would leave it half rewritten.
+			// Build the settings before publishing them, so that returning an error
+			// partway does not leave out.Authentication.OIDC half rewritten.
 			oidc := &kops.OIDCAuthenticationSpec{
 				ClientID:       kube.OIDCClientID,
 				GroupsPrefix:   kube.OIDCGroupsPrefix,
@@ -405,6 +406,8 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			out.AdditionalPolicies[k] = v
 		}
 	}
+	// The OIDC settings are also written to the legacy kube-apiserver flags, so
+	// that an older kOps reading this spec still finds them.
 	if in.Authentication != nil && in.Authentication.OIDC != nil {
 		if out.KubeAPIServer == nil {
 			out.KubeAPIServer = &KubeAPIServerConfig{}
