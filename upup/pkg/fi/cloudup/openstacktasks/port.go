@@ -18,6 +18,7 @@ package openstacktasks
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -119,12 +120,31 @@ func getActualAllowedAddressPairs(port *ports.Port, find *Port) []ports.AddressP
 	return allowedAddressPairs
 }
 
+// securityGroupIDsEqual compares two ID-sorted lists of SecurityGroup tasks by ID.
+func securityGroupIDsEqual(a, e []*SecurityGroup) bool {
+	if len(a) != len(e) {
+		return false
+	}
+	for i := range a {
+		if fi.ValueOf(a[i].ID) != fi.ValueOf(e[i].ID) {
+			return false
+		}
+	}
+	return true
+}
+
 func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
+	portSecurityGroupIDs := map[string]struct{}{}
+	for _, sgid := range port.SecurityGroups {
+		portSecurityGroupIDs[sgid] = struct{}{}
+	}
+
 	additionalSecurityGroupIDs := map[string]struct{}{}
+	var actualAdditionalSecurityGroups []string
 	if find != nil {
-		for _, sg := range find.AdditionalSecurityGroups {
+		for _, sgName := range find.AdditionalSecurityGroups {
 			opt := secgroup.ListOpts{
-				Name: sg,
+				Name: sgName,
 			}
 			gs, err := cloud.ListSecurityGroups(opt)
 			if err != nil {
@@ -133,7 +153,12 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 			if len(gs) == 0 {
 				continue
 			}
-			additionalSecurityGroupIDs[gs[0].ID] = struct{}{}
+			sgID := gs[0].ID
+			if _, ok := portSecurityGroupIDs[sgID]; !ok {
+				continue
+			}
+			additionalSecurityGroupIDs[sgID] = struct{}{}
+			actualAdditionalSecurityGroups = append(actualAdditionalSecurityGroups, sgName)
 		}
 	}
 	sgs := []*SecurityGroup{}
@@ -197,7 +222,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 	if find != nil {
 		find.ID = actual.ID
 		actual.InstanceGroupName = find.InstanceGroupName
-		actual.AdditionalSecurityGroups = find.AdditionalSecurityGroups
+		actual.AdditionalSecurityGroups = actualAdditionalSecurityGroups
 		actual.WellKnownServices = find.WellKnownServices
 	}
 	return actual, nil
@@ -290,6 +315,31 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 			})
 			if err != nil {
 				return fmt.Errorf("error updating port: %v", err)
+			}
+		}
+		// Compare against the actual state rather than inspecting changes: BuildChanges
+		// copies the expected value into changes, so a list the user emptied out is
+		// indistinguishable there from one that did not change at all.
+		if !slices.Equal(a.AdditionalSecurityGroups, e.AdditionalSecurityGroups) || !securityGroupIDsEqual(a.SecurityGroups, e.SecurityGroups) {
+			klog.V(2).Infof("Updating security groups for Port with name: %q", fi.ValueOf(e.Name))
+			sgs := make([]string, 0, len(e.SecurityGroups)+len(e.AdditionalSecurityGroups))
+			for _, sg := range e.SecurityGroups {
+				sgs = append(sgs, fi.ValueOf(sg.ID))
+			}
+			for _, sgName := range e.AdditionalSecurityGroups {
+				gs, err := t.Cloud.ListSecurityGroups(secgroup.ListOpts{Name: sgName})
+				if err != nil {
+					return fmt.Errorf("error looking up additional security group %q: %v", sgName, err)
+				}
+				if len(gs) == 0 {
+					return fmt.Errorf("additional SecurityGroup not found for name %s", sgName)
+				}
+				sgs = append(sgs, gs[0].ID)
+			}
+			if _, err := t.Cloud.UpdatePort(fi.ValueOf(a.ID), ports.UpdateOpts{
+				SecurityGroups: &sgs,
+			}); err != nil {
+				return fmt.Errorf("error updating port security groups: %v", err)
 			}
 		}
 	}
