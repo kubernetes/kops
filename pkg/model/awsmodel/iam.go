@@ -492,6 +492,10 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, 
 			for _, tag := range roleOutput.Role.Tags {
 				if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
 					if _, ok := context.Tasks["IAMRole/"+fi.ValueOf(role.RoleName)]; !ok {
+						if _, ok := context.Tasks["IAMInstanceProfile/"+fi.ValueOf(role.RoleName)]; ok {
+							klog.Warningf("Not deleting IAM role %q because its IAM instance profile is still in use", fi.ValueOf(role.RoleName))
+							continue
+						}
 						context.AddTask(&awstasks.IAMRole{
 							ID:        role.RoleId,
 							Name:      role.RoleName,
