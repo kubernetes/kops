@@ -91,20 +91,25 @@ func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {
 	return gce.TagForRole(c.Cluster.ObjectMeta.Name, role)
 }
 
-// HasAPIServerOnlyInstanceGroups returns true if the cluster has any APIServer-only instance groups.
-func (c *GCEModelContext) HasAPIServerOnlyInstanceGroups() bool {
+// HasAPIServerInstanceGroups returns true if the cluster has any instance group carrying the
+// APIServer role that something connects to remotely, and which therefore carries the APIServer
+// network tag. Groups whose API server is only reached on localhost are excluded, so that
+// firewall rules do not reference a tag no instance has.
+func (c *GCEModelContext) HasAPIServerInstanceGroups() bool {
 	for _, ig := range c.InstanceGroups {
-		if ig.Spec.Role.HasAPIServer() {
+		if ig.Spec.Role.HasAPIServer() && ig.ServesRemoteAPIServer() {
 			return true
 		}
 	}
 	return false
 }
 
-// HasEtcdOnlyInstanceGroups returns true if the cluster has any Etcd-only instance groups.
-func (c *GCEModelContext) HasEtcdOnlyInstanceGroups() bool {
+// HasDedicatedEtcdInstanceGroups returns true if the cluster runs etcd on instances that do not
+// also run an API server. Those API servers have to reach etcd over the network, so etcd needs
+// an address of its own rather than being available on localhost.
+func (c *GCEModelContext) HasDedicatedEtcdInstanceGroups() bool {
 	for _, ig := range c.InstanceGroups {
-		if ig.IsEtcdOnly() {
+		if ig.RunsEtcd() && !ig.RunsAPIServer() {
 			return true
 		}
 	}
@@ -117,7 +122,7 @@ func (c *GCEModelContext) HasEtcdOnlyInstanceGroups() bool {
 // APIServer instance groups.
 func (c *GCEModelContext) GCETagsForAPIServerTargets() []string {
 	tags := []string{c.GCETagForRole(kops.InstanceGroupRoleControlPlane)}
-	if c.HasAPIServerOnlyInstanceGroups() {
+	if c.HasAPIServerInstanceGroups() {
 		tags = append(tags, c.GCETagForRole(kops.InstanceGroupRoleAPIServer))
 	}
 	return tags
@@ -183,7 +188,7 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 		}
 	}
 
-	role := ig.Spec.Role
+	role := ig.Spec.Role.PrimaryRole()
 
 	name := ""
 	switch role {

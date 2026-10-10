@@ -17,6 +17,7 @@ limitations under the License.
 package kops
 
 import (
+	"slices"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -82,36 +83,145 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleKubeControllerManager,
 }
 
+// RoleSeparator separates the individual roles in a composite InstanceGroupRole value,
+// for example "APIServer,Scheduler".
+const RoleSeparator = ","
+
+// Roles returns the set of roles this value carries.
+//
+// An InstanceGroupRole is a comma-separated list, so that a single InstanceGroup can take on
+// several control-plane roles (for example an IG running kube-scheduler alongside the API
+// server it talks to). Entries are trimmed and deduplicated. Recognised roles come first, in
+// the canonical order of AllInstanceGroupRoles, so that "Scheduler,APIServer" and
+// "APIServer,Scheduler" normalize identically; unrecognised entries are kept, in input order,
+// after the recognised ones, so validation can report them.
+func (r InstanceGroupRole) Roles() []InstanceGroupRole {
+	var known, unknown []InstanceGroupRole
+	seen := make(map[InstanceGroupRole]bool)
+
+	for _, field := range strings.Split(string(r), RoleSeparator) {
+		role := InstanceGroupRole(strings.TrimSpace(field))
+		if role == "" || seen[role] {
+			continue
+		}
+		seen[role] = true
+		if slices.Contains(AllInstanceGroupRoles, role) {
+			known = append(known, role)
+		} else {
+			unknown = append(unknown, role)
+		}
+	}
+
+	slices.SortStableFunc(known, func(a, b InstanceGroupRole) int {
+		return slices.Index(AllInstanceGroupRoles, a) - slices.Index(AllInstanceGroupRoles, b)
+	})
+
+	return append(known, unknown...)
+}
+
+// HasRole reports whether this value carries the given role.
+func (r InstanceGroupRole) HasRole(role InstanceGroupRole) bool {
+	// Fast path for the overwhelmingly common single-role case. It also keeps the behaviour of
+	// unrecognised values byte-identical to a direct comparison.
+	if !strings.Contains(string(r), RoleSeparator) {
+		return r == role
+	}
+	return slices.Contains(r.Roles(), role)
+}
+
+// PrimaryRole returns the single most significant role this value carries, using the canonical
+// order of AllInstanceGroupRoles. Use it only where exactly one role can be represented, such
+// as naming a cloud resource, selecting an IAM identity, or choosing a state-store path; for
+// behavioural decisions prefer the Has* helpers, which consider every role.
+func (r InstanceGroupRole) PrimaryRole() InstanceGroupRole {
+	roles := r.Roles()
+	if len(roles) == 0 {
+		return ""
+	}
+	return roles[0]
+}
+
 func (r InstanceGroupRole) HasControlPlane() bool {
-	return r == InstanceGroupRoleControlPlane
+	return r.HasRole(InstanceGroupRoleControlPlane)
 }
 
 func (r InstanceGroupRole) HasNode() bool {
-	return r == InstanceGroupRoleNode
+	return r.HasRole(InstanceGroupRoleNode)
 }
 
 func (r InstanceGroupRole) HasBastion() bool {
-	return r == InstanceGroupRoleBastion
+	return r.HasRole(InstanceGroupRoleBastion)
 }
 
 func (r InstanceGroupRole) HasAPIServer() bool {
-	return r == InstanceGroupRoleAPIServer
+	return r.HasRole(InstanceGroupRoleAPIServer)
 }
 
 func (r InstanceGroupRole) HasEtcd() bool {
-	return r == InstanceGroupRoleEtcd
+	return r.HasRole(InstanceGroupRoleEtcd)
 }
 
 func (r InstanceGroupRole) HasScheduler() bool {
-	return r == InstanceGroupRoleScheduler
+	return r.HasRole(InstanceGroupRoleScheduler)
 }
 
 func (r InstanceGroupRole) HasKubeControllerManager() bool {
-	return r == InstanceGroupRoleKubeControllerManager
+	return r.HasRole(InstanceGroupRoleKubeControllerManager)
 }
 
 func (r InstanceGroupRole) IsControlPlaneType() bool {
 	return r.HasControlPlane() || r.HasAPIServer() || r.HasEtcd() || r.HasScheduler() || r.HasKubeControllerManager()
+}
+
+// WellKnownService names a cluster endpoint that an instance group can serve.
+//
+// This is instance group membership: which endpoints route traffic to this group. It is related
+// to, but distinct from, the WellKnownService values in pkg/wellknownservices, which name the
+// addresses a cluster advertises. The API server appears here twice, because a group can serve
+// the endpoint clients outside the cluster use without serving the one used inside it, or the
+// other way around.
+type WellKnownService string
+
+const (
+	// WellKnownServiceKubeAPIServerExternal is the API server endpoint used by clients outside
+	// the cluster, typically a public load balancer.
+	WellKnownServiceKubeAPIServerExternal WellKnownService = "kube-apiserver-external"
+	// WellKnownServiceKubeAPIServerInternal is the API server endpoint used by clients inside
+	// the cluster, including the nodes themselves.
+	WellKnownServiceKubeAPIServerInternal WellKnownService = "kube-apiserver-internal"
+	// WellKnownServiceKopsController is the endpoint where kops-controller listens.
+	WellKnownServiceKopsController WellKnownService = "kops-controller"
+	// WellKnownServiceEtcdMain is the endpoint where the main etcd cluster listens.
+	WellKnownServiceEtcdMain WellKnownService = "etcd-main"
+)
+
+// AllWellKnownServices is a slice of all valid WellKnownService values
+var AllWellKnownServices = []WellKnownService{
+	WellKnownServiceKubeAPIServerExternal,
+	WellKnownServiceKubeAPIServerInternal,
+	WellKnownServiceKopsController,
+	WellKnownServiceEtcdMain,
+}
+
+// ClusterComponent names a cluster component that kOps schedules onto a node rather than
+// running as a static pod, and which therefore has to be placed explicitly.
+type ClusterComponent string
+
+const (
+	ClusterComponentCloudControllerManager ClusterComponent = "cloud-controller-manager"
+	ClusterComponentKopsController         ClusterComponent = "kops-controller"
+	ClusterComponentKopsChannel            ClusterComponent = "kops-channel"
+	ClusterComponentCertManager            ClusterComponent = "cert-manager"
+	ClusterComponentCAPIManager            ClusterComponent = "capi-manager"
+)
+
+// AllClusterComponents is a slice of all valid ClusterComponent values
+var AllClusterComponents = []ClusterComponent{
+	ClusterComponentCloudControllerManager,
+	ClusterComponentKopsController,
+	ClusterComponentKopsChannel,
+	ClusterComponentCertManager,
+	ClusterComponentCAPIManager,
 }
 
 const (
@@ -138,7 +248,16 @@ type InstanceGroupSpec struct {
 	// Manager determines what is managing the node lifecycle
 	Manager InstanceManager `json:"manager,omitempty"`
 	// Role determines the role of instances in this instance group.
+	// This is a comma-separated list, so one instance group can take on several
+	// control-plane roles, for example "APIServer,Scheduler".
 	Role InstanceGroupRole `json:"role,omitempty"`
+	// ServesWellKnownServices lists the cluster endpoints that should route traffic to this
+	// instance group. When unset it is derived from the roles; see
+	// InstanceGroup.ServedWellKnownServices.
+	ServesWellKnownServices []WellKnownService `json:"servesWellKnownServices,omitempty"`
+	// HostedComponents lists the cluster components that kOps schedules onto nodes, rather than
+	// running as static pods, which should be placed on this instance group.
+	HostedComponents []ClusterComponent `json:"hostedComponents,omitempty"`
 	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
 	// MinSize is the minimum size of the pool
@@ -404,49 +523,104 @@ func (g *InstanceGroup) IsControlPlaneType() bool {
 	}
 }
 
-// IsAPIServerOnly checks if instanceGroup runs only the API Server
+// IsRoleOnly reports whether the given role is the only role this instanceGroup carries.
+//
+// Prefer the Runs* helpers for deciding what a group should run; a group that carries
+// additional roles still runs this one. IsRoleOnly is for the narrower question of whether a
+// group is dedicated to a single role, for example when deciding whether it needs to reach a
+// component over the network rather than on localhost.
+func (g *InstanceGroup) IsRoleOnly(role InstanceGroupRole) bool {
+	roles := g.Spec.Role.Roles()
+	return len(roles) == 1 && roles[0] == role
+}
+
+// IsAPIServerOnly checks if the API Server is the only role of this instanceGroup
 func (g *InstanceGroup) IsAPIServerOnly() bool {
-	switch {
-	case g.Spec.Role.HasAPIServer():
-		return true
-	default:
-		return false
-	}
+	return g.IsRoleOnly(InstanceGroupRoleAPIServer)
 }
 
-// hasAPIServer checks if instanceGroup runs an API Server
+// RunsAPIServer checks if instanceGroup runs an API Server
 func (g *InstanceGroup) RunsAPIServer() bool {
-	return g.IsControlPlane() || g.IsAPIServerOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasAPIServer()
 }
 
-// IsEtcdOnly checks if instanceGroup runs only Etcd
+// IsEtcdOnly checks if Etcd is the only role of this instanceGroup
 func (g *InstanceGroup) IsEtcdOnly() bool {
-	return g.Spec.Role.HasEtcd()
+	return g.IsRoleOnly(InstanceGroupRoleEtcd)
 }
 
-// HasEtcd checks if instanceGroup runs Etcd
+// RunsEtcd checks if instanceGroup runs Etcd
 func (g *InstanceGroup) RunsEtcd() bool {
-	return g.IsControlPlane() || g.IsEtcdOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasEtcd()
 }
 
-// IsSchedulerOnly checks if instanceGroup runs only Scheduler
+// IsSchedulerOnly checks if Scheduler is the only role of this instanceGroup
 func (g *InstanceGroup) IsSchedulerOnly() bool {
-	return g.Spec.Role.HasScheduler()
+	return g.IsRoleOnly(InstanceGroupRoleScheduler)
 }
 
-// HasScheduler checks if instanceGroup runs Scheduler
+// RunsScheduler checks if instanceGroup runs Scheduler
 func (g *InstanceGroup) RunsScheduler() bool {
-	return g.IsControlPlane() || g.IsSchedulerOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasScheduler()
 }
 
-// IsKubeControllerManagerOnly checks if instanceGroup runs only KubeControllerManager
+// IsKubeControllerManagerOnly checks if KubeControllerManager is the only role of this instanceGroup
 func (g *InstanceGroup) IsKubeControllerManagerOnly() bool {
-	return g.Spec.Role.HasKubeControllerManager()
+	return g.IsRoleOnly(InstanceGroupRoleKubeControllerManager)
 }
 
 // RunsKubeControllerManager checks if instanceGroup runs KubeControllerManager
 func (g *InstanceGroup) RunsKubeControllerManager() bool {
-	return g.IsControlPlane() || g.IsKubeControllerManagerOnly()
+	return g.Spec.Role.HasControlPlane() || g.Spec.Role.HasKubeControllerManager()
+}
+
+// ServedWellKnownServices returns the cluster endpoints that should route traffic to this
+// instance group.
+//
+// When spec.servesWellKnownServices is unset the set is derived from the group's roles, so that
+// clusters predating the field keep their behaviour. Because the field is omitempty an
+// explicitly empty list cannot be told apart from an unset one; that is not a limitation in
+// practice, because the derived value for the one case that needs it -- an API server that
+// exists only to serve the kube-scheduler or kube-controller-manager running beside it -- is
+// already the empty set.
+func (g *InstanceGroup) ServedWellKnownServices() []WellKnownService {
+	if g.Spec.ServesWellKnownServices != nil {
+		return g.Spec.ServesWellKnownServices
+	}
+
+	role := g.Spec.Role
+
+	// An API server co-located with the scheduler or controller-manager is there for that
+	// component alone, reachable on localhost, so nothing should be routed to it.
+	localOnlyAPIServer := role.HasAPIServer() &&
+		(role.HasScheduler() || role.HasKubeControllerManager())
+
+	var services []WellKnownService
+	if role.HasControlPlane() || (role.HasAPIServer() && !localOnlyAPIServer) {
+		services = append(services,
+			WellKnownServiceKubeAPIServerExternal,
+			WellKnownServiceKubeAPIServerInternal,
+			WellKnownServiceKopsController)
+	}
+	if role.HasControlPlane() || role.HasEtcd() {
+		services = append(services, WellKnownServiceEtcdMain)
+	}
+	return services
+}
+
+// ServesWellKnownService reports whether the given cluster endpoint should route traffic to
+// this instance group.
+func (g *InstanceGroup) ServesWellKnownService(service WellKnownService) bool {
+	return slices.Contains(g.ServedWellKnownServices(), service)
+}
+
+// ServesRemoteAPIServer reports whether anything off the instance connects to this group's API
+// server. An API server that exists only for the kube-scheduler or kube-controller-manager
+// running beside it is reached on localhost, so it needs neither a load balancer nor a firewall
+// opening of its own.
+func (g *InstanceGroup) ServesRemoteAPIServer() bool {
+	return g.ServesWellKnownService(WellKnownServiceKubeAPIServerExternal) ||
+		g.ServesWellKnownService(WellKnownServiceKubeAPIServerInternal)
 }
 
 // HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.
@@ -471,7 +645,7 @@ func (g *InstanceGroup) IsBastion() bool {
 
 // IsKarpenterManaged checks if instanceGroup is a worker node group managed by Karpenter.
 func (g *InstanceGroup) IsKarpenterManaged() bool {
-	return g.Spec.Manager == InstanceManagerKarpenter && g.Spec.Role == InstanceGroupRoleNode
+	return g.Spec.Manager == InstanceManagerKarpenter && g.Spec.Role.HasNode()
 }
 
 func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
@@ -481,13 +655,28 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 }
 
+// ToLowerString returns a lowercase form of the role, safe for use in GCE label keys and
+// values, cloud resource names and state-store paths.
+//
+// Single-role values keep their historic spelling exactly. Composite values join the
+// individual roles with an underscore, in canonical order; a hyphen would be ambiguous
+// because "control-plane" already contains one.
 func (r InstanceGroupRole) ToLowerString() string {
-	switch {
-	case r.HasControlPlane():
-		return "control-plane"
-	default:
-		return strings.ToLower(string(r))
+	roles := r.Roles()
+	if len(roles) <= 1 {
+		switch {
+		case r.HasControlPlane():
+			return "control-plane"
+		default:
+			return strings.ToLower(strings.TrimSpace(string(r)))
+		}
 	}
+
+	parts := make([]string, 0, len(roles))
+	for _, role := range roles {
+		parts = append(parts, role.ToLowerString())
+	}
+	return strings.Join(parts, "_")
 }
 
 // LoadBalancer defines a load balancer

@@ -181,33 +181,52 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	info := &nodeidentity.Info{}
 	// info.InstanceID TODO: InstanceID is only used by the provider?
 
-	tagToRole := make(map[string]kops.InstanceGroupRole)
-	for _, role := range kops.AllInstanceGroupRoles {
-		tag := gce.TagForRole(i.clusterName, role)
-		tagToRole[tag] = role
-	}
-
-	labels := make(map[string]string)
-	for _, tag := range instance.Tags.Items {
-		role, found := tagToRole[tag]
-		if found {
-			switch role {
-			case kops.InstanceGroupRoleControlPlane:
-				labels[nodelabels.RoleLabelControlPlane20] = ""
-			case kops.InstanceGroupRoleNode:
-				labels[nodelabels.RoleLabelNode16] = ""
-			case kops.InstanceGroupRoleAPIServer:
-				labels[nodelabels.RoleLabelAPIServer16] = ""
-			default:
-				klog.Warningf("unknown node role %q for server %q", role, instance.SelfLink)
-			}
-		}
-	}
+	labels := nodeLabelsForTags(i.clusterName, instance.Tags.Items, instance.SelfLink)
 	if igName != "" {
 		labels[kops.NodeLabelInstanceGroup] = igName
 	}
 	info.Labels = labels
 	return info, nil
+}
+
+// nodeLabelsForTags maps an instance's network tags to the node role labels kops-controller
+// should apply.
+//
+// kOps puts one tag on the instance per role of its instance group, so an instance group carrying
+// several roles, such as a kube-scheduler alongside the API server it talks to, gets the label for
+// each of them.
+func nodeLabelsForTags(clusterName string, tags []string, selfLink string) map[string]string {
+	tagToRole := make(map[string]kops.InstanceGroupRole)
+	for _, role := range kops.AllInstanceGroupRoles {
+		tagToRole[gce.TagForRole(clusterName, role)] = role
+	}
+
+	labels := make(map[string]string)
+	for _, tag := range tags {
+		role, found := tagToRole[tag]
+		if !found {
+			continue
+		}
+		switch role {
+		case kops.InstanceGroupRoleControlPlane:
+			labels[nodelabels.RoleLabelControlPlane20] = ""
+		case kops.InstanceGroupRoleNode:
+			labels[nodelabels.RoleLabelNode16] = ""
+		case kops.InstanceGroupRoleAPIServer:
+			labels[nodelabels.RoleLabelAPIServer16] = ""
+		case kops.InstanceGroupRoleEtcd:
+			labels[nodelabels.RoleLabelEtcd] = ""
+		case kops.InstanceGroupRoleScheduler:
+			labels[nodelabels.RoleLabelScheduler] = ""
+		case kops.InstanceGroupRoleKubeControllerManager:
+			labels[nodelabels.RoleLabelKubeControllerManager] = ""
+		case kops.InstanceGroupRoleBastion:
+			// Bastions are not cluster members, so they have no node label.
+		default:
+			klog.Warningf("unknown node role %q for server %q", role, selfLink)
+		}
+	}
+	return labels
 }
 
 // getInstance queries GCE for the instance with the specified name, returning an error if not found

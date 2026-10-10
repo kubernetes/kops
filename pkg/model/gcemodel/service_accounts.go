@@ -64,7 +64,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Email:       link.Email,
 			Lifecycle:   b.Lifecycle,
 		}
-		switch ig.Spec.Role {
+		switch ig.Spec.Role.PrimaryRole() {
 		case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleControlPlane:
 			serviceAccount.Description = new("kubernetes control-plane instances")
 		case kops.InstanceGroupRoleNode:
@@ -76,7 +76,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 		c.AddTask(serviceAccount)
 
-		role := ig.Spec.Role
+		role := ig.Spec.Role.PrimaryRole()
 		if role.HasAPIServer() {
 			// Because these share a serviceaccount, we share a role
 			role = kops.InstanceGroupRoleControlPlane

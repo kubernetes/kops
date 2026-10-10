@@ -23,6 +23,7 @@ import (
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -85,6 +86,153 @@ func TestDeepValidate_SplitControlPlane_MissingComponent(t *testing.T) {
 	// Missing Scheduler!
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
 	expectErrorFromDeepValidate(t, c, groups, "must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubeControllerManager, and Scheduler InstanceGroups")
+}
+
+// TestDeepValidate_CompositeRole_RequiresGCE checks the cloud gate on composite roles. Only GCE
+// wires up the per-role tags, load balancer membership and addressing a split control plane
+// needs, so elsewhere a composite role has to be refused rather than silently ignored.
+func TestDeepValidate_CompositeRole_RequiresGCE(t *testing.T) {
+	featureflag.ParseFlags("+ExperimentalRoles")
+	defer featureflag.ParseFlags("-ExperimentalRoles")
+
+	c := buildDefaultCluster(t)
+	var groups []*kopsapi.InstanceGroup
+	// A complete split control plane, with the scheduler sharing a group with an API server.
+	groups = append(groups, buildMinimalInstanceGroup("apiserver", "APIServer,Scheduler", "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
+	expectErrorFromDeepValidate(t, c, groups, "combines several roles, which is only supported on GCE")
+}
+
+// TestDeepValidate_WellKnownServiceCoverage checks that the cluster refuses to come up when
+// nothing serves an endpoint it cannot work without.
+func TestDeepValidate_WellKnownServiceCoverage(t *testing.T) {
+	c := buildDefaultCluster(t)
+	var groups []*kopsapi.InstanceGroup
+
+	apiserver := buildMinimalInstanceGroup("apiserver", kopsapi.InstanceGroupRoleAPIServer, "subnet-us-test-1a")
+	// The only API server in the cluster, serving nothing: no internal endpoint for the nodes.
+	apiserver.Spec.ServesWellKnownServices = []kopsapi.WellKnownService{}
+
+	groups = append(groups, apiserver)
+	groups = append(groups, buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("scheduler", kopsapi.InstanceGroupRoleScheduler, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
+
+	expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup serves the \"kube-apiserver-internal\" endpoint")
+}
+
+// TestDeepValidate_WellKnownServiceCoverage_Split checks the split-out shape the composite
+// control plane needs: one API server group fronting external clients, another serving the
+// cluster internally and hosting kops-controller.
+func TestDeepValidate_WellKnownServiceCoverage_Split(t *testing.T) {
+	c := buildDefaultCluster(t)
+	var groups []*kopsapi.InstanceGroup
+
+	external := buildMinimalInstanceGroup("external", kopsapi.InstanceGroupRoleAPIServer, "subnet-us-test-1a")
+	external.Spec.ServesWellKnownServices = []kopsapi.WellKnownService{
+		kopsapi.WellKnownServiceKubeAPIServerExternal,
+	}
+	internal := buildMinimalInstanceGroup("internal", kopsapi.InstanceGroupRoleAPIServer, "subnet-us-test-1a")
+	internal.Spec.ServesWellKnownServices = []kopsapi.WellKnownService{
+		kopsapi.WellKnownServiceKubeAPIServerInternal,
+		kopsapi.WellKnownServiceKopsController,
+	}
+
+	groups = append(groups, external, internal)
+	groups = append(groups, buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("scheduler", kopsapi.InstanceGroupRoleScheduler, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
+
+	if err := validation.DeepValidate(c, groups, true, vfs.Context, nil); err != nil {
+		t.Fatalf("Expected no error from DeepValidate for a split API server, got %v", err)
+	}
+}
+
+// TestDeepValidate_HostedComponentCoverage checks that a cluster placing the scheduled
+// components explicitly cannot leave one of them homeless. kOps places them by node label, so a
+// component nothing claims is simply never scheduled, which is a cluster that silently never
+// finishes coming up.
+func TestDeepValidate_HostedComponentCoverage(t *testing.T) {
+	build := func(components []kopsapi.ClusterComponent) []*kopsapi.InstanceGroup {
+		apiserver := buildMinimalInstanceGroup("apiserver", kopsapi.InstanceGroupRoleAPIServer, "subnet-us-test-1a")
+		apiserver.Spec.HostedComponents = components
+		return []*kopsapi.InstanceGroup{
+			apiserver,
+			buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, "subnet-us-test-1a"),
+			buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, "subnet-us-test-1a"),
+			buildMinimalInstanceGroup("scheduler", kopsapi.InstanceGroupRoleScheduler, "subnet-us-test-1a"),
+			buildMinimalNodeInstanceGroup("subnet-us-test-1a"),
+		}
+	}
+
+	// buildDefaultCluster runs an external cloud-controller-manager, as any current cluster does,
+	// so a complete claim set includes it.
+	complete := []kopsapi.ClusterComponent{
+		kopsapi.ClusterComponentKopsChannel,
+		kopsapi.ClusterComponentKopsController,
+		kopsapi.ClusterComponentCloudControllerManager,
+	}
+
+	t.Run("complete", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		if err := validation.DeepValidate(c, build(complete), true, vfs.Context, nil); err != nil {
+			t.Fatalf("Expected no error from DeepValidate, got %v", err)
+		}
+	})
+
+	t.Run("missing kops-controller", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		groups := build([]kopsapi.ClusterComponent{
+			kopsapi.ClusterComponentKopsChannel,
+			kopsapi.ClusterComponentCloudControllerManager,
+		})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"kops-controller\" component")
+	})
+
+	t.Run("missing kops-channel", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		groups := build([]kopsapi.ClusterComponent{
+			kopsapi.ClusterComponentKopsController,
+			kopsapi.ClusterComponentCloudControllerManager,
+		})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"kops-channel\" component")
+	})
+
+	t.Run("explicitly empty on one group still counts as in use", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		// The field is set, but claims nothing: the cluster would install the addons and never
+		// schedule them.
+		groups := build([]kopsapi.ClusterComponent{})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"kops-channel\" component")
+	})
+
+	t.Run("cloud-controller-manager required when the cluster runs one", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		groups := build([]kopsapi.ClusterComponent{
+			kopsapi.ClusterComponentKopsChannel,
+			kopsapi.ClusterComponentKopsController,
+		})
+		expectErrorFromDeepValidate(t, c, groups, "no InstanceGroup hosts the \"cloud-controller-manager\" component")
+	})
+
+	t.Run("cert-manager required when enabled", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		c.Spec.CertManager = &kopsapi.CertManagerConfig{Enabled: new(true)}
+		expectErrorFromDeepValidate(t, c, build(complete), "no InstanceGroup hosts the \"cert-manager\" component")
+	})
+
+	t.Run("components the cluster will not install need no home", func(t *testing.T) {
+		c := buildDefaultCluster(t)
+		// cert-manager disabled, so not claiming it is fine. capi-manager is never required.
+		c.Spec.CertManager = &kopsapi.CertManagerConfig{Enabled: new(false)}
+		if err := validation.DeepValidate(c, build(complete), true, vfs.Context, nil); err != nil {
+			t.Fatalf("Expected no error from DeepValidate, got %v", err)
+		}
+	})
 }
 
 func TestDeepValidate_NoNodeZones(t *testing.T) {

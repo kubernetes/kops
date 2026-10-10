@@ -156,6 +156,43 @@ func TestConvertControlPlaneNaming(t *testing.T) {
 	}
 }
 
+// TestConvertInstanceGroupRoleMasterNaming covers the "Master" <-> "ControlPlane" rename on
+// spec.role. Role is a comma-separated list, so the token has to be substituted in place:
+// rewriting the whole value would drop the other roles of a composite control-plane group.
+func TestConvertInstanceGroupRoleMasterNaming(t *testing.T) {
+	for _, tc := range []struct {
+		internal     kops.InstanceGroupRole
+		wantExternal v1alpha2.InstanceGroupRole
+	}{
+		{internal: kops.InstanceGroupRoleControlPlane, wantExternal: "Master"},
+		{internal: kops.InstanceGroupRoleNode, wantExternal: "Node"},
+		{internal: kops.InstanceGroupRoleAPIServer, wantExternal: "APIServer"},
+		{internal: "ControlPlane,Etcd", wantExternal: "Master,Etcd"},
+		{internal: "Etcd,ControlPlane", wantExternal: "Etcd,Master"},
+		{internal: "APIServer,Scheduler", wantExternal: "APIServer,Scheduler"},
+	} {
+		t.Run(string(tc.internal), func(t *testing.T) {
+			internal := &kops.InstanceGroup{Spec: kops.InstanceGroupSpec{Role: tc.internal}}
+
+			external := &v1alpha2.InstanceGroup{}
+			if err := testScheme().Convert(internal, external, nil); err != nil {
+				t.Fatalf("converting to v1alpha2: %v", err)
+			}
+			if external.Spec.Role != tc.wantExternal {
+				t.Errorf("to v1alpha2: role = %q, want %q", external.Spec.Role, tc.wantExternal)
+			}
+
+			back := &kops.InstanceGroup{}
+			if err := testScheme().Convert(external, back, nil); err != nil {
+				t.Fatalf("converting to internal: %v", err)
+			}
+			if back.Spec.Role != tc.internal {
+				t.Errorf("round trip: role = %q, want %q", back.Spec.Role, tc.internal)
+			}
+		})
+	}
+}
+
 // TestConvertInstanceGroupRootVolume covers the flattening of spec.rootVolume into the
 // individual v1alpha2 rootVolume* fields.
 func TestConvertInstanceGroupRootVolume(t *testing.T) {

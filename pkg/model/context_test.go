@@ -89,3 +89,119 @@ func TestCloudTagsForInstanceGroup_Taints(t *testing.T) {
 		})
 	}
 }
+
+// TestServesWellKnownService covers the cluster-aware resolution of endpoint membership, in
+// particular the historic behaviour that applies while no instance group configures the field.
+func TestServesWellKnownService(t *testing.T) {
+	ig := func(name string, role kops.InstanceGroupRole, services []kops.WellKnownService) *kops.InstanceGroup {
+		g := &kops.InstanceGroup{}
+		g.ObjectMeta.Name = name
+		g.Spec.Role = role
+		g.Spec.ServesWellKnownServices = services
+		return g
+	}
+
+	const external = kops.WellKnownServiceKubeAPIServerExternal
+	const internal = kops.WellKnownServiceKubeAPIServerInternal
+	const kopsController = kops.WellKnownServiceKopsController
+	const etcdMain = kops.WellKnownServiceEtcdMain
+
+	grid := []struct {
+		name   string
+		groups []*kops.InstanceGroup
+		// want maps instance group name to the endpoints it should serve.
+		want map[string][]kops.WellKnownService
+	}{
+		{
+			name: "plain cluster: the control plane serves everything",
+			groups: []*kops.InstanceGroup{
+				ig("master", kops.InstanceGroupRoleControlPlane, nil),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]kops.WellKnownService{
+				"master": {external, internal, kopsController, etcdMain},
+				"nodes":  {},
+			},
+		},
+		{
+			// The historic rule from #18496: a dedicated API server group displaces the
+			// control plane on the externally reachable endpoint, which the role-derived
+			// default cannot express on its own.
+			name: "dedicated API server displaces the control plane externally",
+			groups: []*kops.InstanceGroup{
+				ig("master", kops.InstanceGroupRoleControlPlane, nil),
+				ig("apiserver", kops.InstanceGroupRoleAPIServer, nil),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]kops.WellKnownService{
+				"master":    {internal, kopsController, etcdMain},
+				"apiserver": {external, internal, kopsController},
+				"nodes":     {},
+			},
+		},
+		{
+			name: "configuring any group makes the field authoritative",
+			groups: []*kops.InstanceGroup{
+				ig("master", kops.InstanceGroupRoleControlPlane, nil),
+				ig("apiserver", kops.InstanceGroupRoleAPIServer, []kops.WellKnownService{internal}),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]kops.WellKnownService{
+				// No longer displaced, because the historic rule no longer applies.
+				"master":    {external, internal, kopsController, etcdMain},
+				"apiserver": {internal},
+				"nodes":     {},
+			},
+		},
+		{
+			name: "split control plane with an external and an internal API server",
+			groups: []*kops.InstanceGroup{
+				ig("external", kops.InstanceGroupRoleAPIServer, []kops.WellKnownService{external}),
+				ig("internal", kops.InstanceGroupRoleAPIServer, []kops.WellKnownService{internal, kopsController}),
+				ig("etcd", kops.InstanceGroupRoleEtcd, nil),
+				ig("scheduler", "APIServer,Scheduler", nil),
+				ig("kcm", "APIServer,KubeControllerManager", nil),
+				ig("nodes", kops.InstanceGroupRoleNode, nil),
+			},
+			want: map[string][]kops.WellKnownService{
+				"external": {external},
+				"internal": {internal, kopsController},
+				"etcd":     {etcdMain},
+				// The co-located API servers are reached on localhost only.
+				"scheduler": {},
+				"kcm":       {},
+				"nodes":     {},
+			},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			b := &KopsModelContext{
+				AllInstanceGroups: g.groups,
+				InstanceGroups:    g.groups,
+			}
+
+			for _, instanceGroup := range g.groups {
+				want, ok := g.want[instanceGroup.Name]
+				if !ok {
+					t.Fatalf("test case does not cover instance group %q", instanceGroup.Name)
+				}
+
+				for _, service := range kops.AllWellKnownServices {
+					expected := false
+					for _, w := range want {
+						if w == service {
+							expected = true
+						}
+					}
+					got := b.ServesWellKnownService(instanceGroup, service)
+					if got != expected {
+						t.Errorf("%s: ServesWellKnownService(%q) = %v, want %v",
+							instanceGroup.Name, service, got, expected)
+					}
+				}
+			}
+		})
+	}
+}
