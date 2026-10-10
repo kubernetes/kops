@@ -18,6 +18,7 @@ package tester
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -40,6 +41,8 @@ import (
 // Tester wraps kubetest2's ginkgo tester with additional functionality
 type Tester struct {
 	*ginkgo.Tester
+
+	ConfigureBastion bool `desc:"Configure KUBE_SSH_BASTION from a control-plane instance's external IP."`
 
 	kopsCluster        *api.Cluster
 	kopsInstanceGroups []*api.InstanceGroup
@@ -96,6 +99,59 @@ func hasFlag(args string, flag string) bool {
 
 func (t *Tester) getKopsVersion() (string, error) {
 	return kops.GetVersion("kops")
+}
+
+func (t *Tester) setKubeBastion() error {
+	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return err
+	}
+	igs, err := t.getKopsInstanceGroups()
+	if err != nil {
+		return err
+	}
+	controlPlaneGroups := sets.NewString()
+	for _, ig := range igs {
+		if ig.Spec.Role == "Master" {
+			controlPlaneGroups.Insert(ig.Name)
+			if cluster.Spec.LegacyCloudProvider == "gce" {
+				for _, zone := range ig.Spec.Zones {
+					controlPlaneGroups.Insert(gce.NameForInstanceGroupManager(cluster.Name, ig.Name, zone))
+				}
+			}
+		}
+	}
+	if controlPlaneGroups.Len() == 0 {
+		return fmt.Errorf("no control-plane instance groups found in cluster %q", cluster.Name)
+	}
+
+	cmd := exec.Command("kops", "get", "instances", "--name", cluster.Name, "-ojson")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("querying instances for cluster %q: %w; stderr=%s", cluster.Name, err, strings.TrimSpace(stderr.String()))
+	}
+	var instances []struct {
+		ID            string `json:"id"`
+		InstanceGroup string `json:"instanceGroup"`
+		ExternalIP    string `json:"externalIP"`
+		InternalIP    string `json:"internalIP"`
+	}
+	if err := json.Unmarshal(output, &instances); err != nil {
+		return fmt.Errorf("parsing instances JSON: %w", err)
+	}
+	for _, instance := range instances {
+		if !controlPlaneGroups.Has(instance.InstanceGroup) {
+			continue
+		}
+		if instance.ExternalIP != "" {
+			os.Setenv("KUBE_SSH_BASTION", instance.ExternalIP)
+			return nil
+		}
+		return fmt.Errorf("control-plane instance %q has no IP address", instance.ID)
+	}
+	return fmt.Errorf("no control-plane instances found in cluster %q", cluster.Name)
 }
 
 func (t *Tester) getKopsCluster() (*api.Cluster, error) {
@@ -504,6 +560,12 @@ func (t *Tester) execute() error {
 
 	if err := t.addHostFlag(); err != nil {
 		return err
+	}
+
+	if t.ConfigureBastion {
+		if err := t.setKubeBastion(); err != nil {
+			return err
+		}
 	}
 
 	if err := t.addProviderFlag(); err != nil {
