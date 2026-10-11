@@ -47,7 +47,7 @@ jobs:
 
       - name: Archive production artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: tests-e2e-scenarios-bare-metal
           path: /tmp/artifacts/
@@ -85,7 +85,7 @@ jobs:
           ARTIFACTS: /tmp/artifacts
       - name: Archive production artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: tests-e2e-scenarios-bare-metal-ipv6
           path: /tmp/artifacts/
