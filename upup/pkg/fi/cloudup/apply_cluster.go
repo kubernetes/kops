@@ -533,7 +533,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	if err != nil {
 		return nil, err
 	}
-	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, encryptionConfigSecretHash)
+	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, modelContext.AllInstanceGroups, assetBuilder, encryptionConfigSecretHash)
 	if err != nil {
 		return nil, err
 	}

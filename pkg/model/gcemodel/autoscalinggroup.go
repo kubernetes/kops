@@ -71,7 +71,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			volumeThroughput = fi.ValueOf(ig.Spec.RootVolume.Throughput)
 		}
 		if volumeSize == 0 {
-			volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+			volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role.PrimaryRole())
 			if err != nil {
 				return nil, err
 			}
@@ -181,7 +181,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 		}
 		t.StackType = &stackType
 
-		nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role, false)
+		nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role.PrimaryRole(), false)
 		if err != nil {
 			return nil, err
 		}
@@ -207,34 +207,34 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			t.Metadata["ssh-keys"] = fi.NewStringResource(strings.Join(gFmtKeys, "\n"))
 		}
 
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		// An instance group can carry several roles, so this is additive: tag the instance for
+		// every role it carries, and grant the union of the scopes those roles need.
+		grantDNSScope := false
+		for _, role := range ig.Spec.Role.Roles() {
+			// Network tags exist so that other instances and load balancers can reach this one.
+			// An API server nothing connects to remotely needs no tag, and tagging it would put
+			// it behind the firewall rules that open the API server port to the cluster and to
+			// the API access CIDRs.
+			if role.HasAPIServer() && !ig.ServesRemoteAPIServer() {
+				continue
+			}
+			t.Tags = append(t.Tags, b.GCETagForRole(role))
+
+			switch role {
+			case kops.InstanceGroupRoleControlPlane:
+				// Keep the legacy "master" tag, which existing firewall rules still reference.
+				t.Tags = append(t.Tags, b.GCETagForRole("master"))
+				grantDNSScope = true
+
+			case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleEtcd, kops.InstanceGroupRoleKubeControllerManager:
+				grantDNSScope = true
+			}
+		}
+
+		if grantDNSScope {
 			// Grant DNS permissions
 			// TODO: migrate to IAM permissions instead of oldschool scopes?
 			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleControlPlane))
-			t.Tags = append(t.Tags, b.GCETagForRole("master"))
-
-		case kops.InstanceGroupRoleAPIServer:
-			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleAPIServer))
-
-		case kops.InstanceGroupRoleNode:
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
-
-		case kops.InstanceGroupRoleBastion:
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
-
-		case kops.InstanceGroupRoleEtcd:
-			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleEtcd))
-
-		case kops.InstanceGroupRoleScheduler:
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleScheduler))
-
-		case kops.InstanceGroupRoleKubeControllerManager:
-			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleKubeControllerManager))
 		}
 
 		if gce.UsesIPAliases(b.Cluster) {
@@ -338,14 +338,6 @@ func SplitCountAcrossZones(count int, zones []string) map[string]int {
 }
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	clusterHasApiServerOnly := false
-	for _, ig := range b.InstanceGroups {
-		if ig.IsAPIServerOnly() {
-			clusterHasApiServerOnly = true
-			break
-		}
-	}
-
 	for _, ig := range b.InstanceGroups {
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
@@ -385,12 +377,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				ListManagedInstancesResults: "PAGINATED",
 			}
 
-			// Attach API server instances to load balancer if we're using one
-			// Do not attach API server instances from the control plane if we
-			// have an APIServer only IG declared. We are assuming that APIServer
-			// only IG is a front end and other APIServers are dedicated for
-			// internal use
-			if ig.IsAPIServerOnly() || (!clusterHasApiServerOnly && ig.IsControlPlane()) {
+			// Attach the instances that serve the externally reachable API server endpoint to
+			// the public load balancer.
+			if b.ServesWellKnownService(ig, kops.WellKnownServiceKubeAPIServerExternal) {
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
 					if lbSpec != nil {

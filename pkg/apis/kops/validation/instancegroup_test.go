@@ -26,6 +26,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 )
 
 func s(v string) *string {
@@ -1116,5 +1117,307 @@ func TestValidateInstanceGroupKubeletCgroupDriver(t *testing.T) {
 		}
 		errs := ValidateInstanceGroup(ig, nil, false)
 		testErrors(t, g.CgroupDriver, errs, g.ExpectedErrors)
+	}
+}
+
+// TestValidateInstanceGroupCompositeRoles covers spec.role as a list: which combinations are
+// allowed, and the feature flag that gates them.
+func TestValidateInstanceGroupCompositeRoles(t *testing.T) {
+	grid := []struct {
+		Description    string
+		Role           kops.InstanceGroupRole
+		FeatureFlag    bool
+		ExpectedErrors []string
+	}{
+		{
+			Description: "single role needs no feature flag",
+			Role:        kops.InstanceGroupRoleAPIServer,
+		},
+		{
+			Description:    "composite role requires the feature flag",
+			Role:           "APIServer,Scheduler",
+			ExpectedErrors: []string{"Forbidden::spec.role"},
+		},
+		{
+			Description: "composite role with the feature flag",
+			Role:        "APIServer,Scheduler",
+			FeatureFlag: true,
+		},
+		{
+			Description: "API server with kube-controller-manager",
+			Role:        "APIServer,KubeControllerManager",
+			FeatureFlag: true,
+		},
+		{
+			Description: "API server with etcd",
+			Role:        "APIServer,Etcd",
+			FeatureFlag: true,
+		},
+		{
+			Description: "ordering does not matter",
+			Role:        "Scheduler,APIServer",
+			FeatureFlag: true,
+		},
+		{
+			// Duplicates collapse to a single role, so this is not composite at all.
+			Description: "duplicate role is not composite",
+			Role:        "APIServer,APIServer",
+		},
+		{
+			Description:    "Node does not combine",
+			Role:           "Node,Scheduler",
+			FeatureFlag:    true,
+			ExpectedErrors: []string{"Forbidden::spec.role"},
+		},
+		{
+			Description:    "Bastion does not combine",
+			Role:           "Bastion,APIServer",
+			FeatureFlag:    true,
+			ExpectedErrors: []string{"Forbidden::spec.role"},
+		},
+		{
+			// ControlPlane already means every control-plane component.
+			Description:    "ControlPlane does not combine",
+			Role:           "ControlPlane,Etcd",
+			FeatureFlag:    true,
+			ExpectedErrors: []string{"Forbidden::spec.role"},
+		},
+		{
+			Description:    "unrecognised role is reported",
+			Role:           "APIServer,Nonsense",
+			FeatureFlag:    true,
+			ExpectedErrors: []string{"Unsupported value::spec.role"},
+		},
+		{
+			Description:    "empty role is still required",
+			Role:           "",
+			ExpectedErrors: []string{"Required value::spec.role"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.Description, func(t *testing.T) {
+			if g.FeatureFlag {
+				featureflag.ParseFlags("+ExperimentalRoles")
+				defer featureflag.ParseFlags("-ExperimentalRoles")
+			}
+
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Role = g.Role
+			// A control-plane group has extra requirements of its own, which are not what this
+			// test is about.
+			ig.Spec.Subnets = []string{"subnet-1"}
+
+			errList := ValidateInstanceGroup(ig, nil, true)
+			testErrors(t, g.Description, errList, g.ExpectedErrors)
+		})
+	}
+}
+
+func TestValidateServesWellKnownServices(t *testing.T) {
+	grid := []struct {
+		Description    string
+		Role           kops.InstanceGroupRole
+		Services       []kops.WellKnownService
+		ExpectedErrors []string
+	}{
+		{
+			Description: "API server serving both endpoints",
+			Role:        kops.InstanceGroupRoleAPIServer,
+			Services: []kops.WellKnownService{
+				kops.WellKnownServiceKubeAPIServerExternal,
+				kops.WellKnownServiceKubeAPIServerInternal,
+			},
+		},
+		{
+			Description: "internal only, the shape a split control plane needs",
+			Role:        kops.InstanceGroupRoleAPIServer,
+			Services: []kops.WellKnownService{
+				kops.WellKnownServiceKubeAPIServerInternal,
+				kops.WellKnownServiceKopsController,
+			},
+		},
+		{
+			Description: "etcd serving etcd",
+			Role:        kops.InstanceGroupRoleEtcd,
+			Services:    []kops.WellKnownService{kops.WellKnownServiceEtcdMain},
+		},
+		{
+			Description: "explicitly serving nothing",
+			Role:        kops.InstanceGroupRoleScheduler,
+			Services:    []kops.WellKnownService{},
+		},
+		{
+			Description:    "unknown service",
+			Role:           kops.InstanceGroupRoleAPIServer,
+			Services:       []kops.WellKnownService{"not-a-service"},
+			ExpectedErrors: []string{"Unsupported value::spec.servesWellKnownServices[0]"},
+		},
+		{
+			Description: "duplicate service",
+			Role:        kops.InstanceGroupRoleAPIServer,
+			Services: []kops.WellKnownService{
+				kops.WellKnownServiceKubeAPIServerInternal,
+				kops.WellKnownServiceKubeAPIServerInternal,
+			},
+			ExpectedErrors: []string{"Duplicate value::spec.servesWellKnownServices[1]"},
+		},
+		{
+			Description:    "etcd group cannot serve the API server",
+			Role:           kops.InstanceGroupRoleEtcd,
+			Services:       []kops.WellKnownService{kops.WellKnownServiceKubeAPIServerInternal},
+			ExpectedErrors: []string{"Forbidden::spec.servesWellKnownServices[0]"},
+		},
+		{
+			Description:    "API server group cannot serve etcd it does not run",
+			Role:           kops.InstanceGroupRoleAPIServer,
+			Services:       []kops.WellKnownService{kops.WellKnownServiceEtcdMain},
+			ExpectedErrors: []string{"Forbidden::spec.servesWellKnownServices[0]"},
+		},
+		{
+			Description:    "node cannot serve kops-controller",
+			Role:           kops.InstanceGroupRoleNode,
+			Services:       []kops.WellKnownService{kops.WellKnownServiceKopsController},
+			ExpectedErrors: []string{"Forbidden::spec.servesWellKnownServices[0]"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.Description, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Role = g.Role
+			ig.Spec.ServesWellKnownServices = g.Services
+
+			errList := ValidateInstanceGroup(ig, nil, true)
+			testErrors(t, g.Description, errList, g.ExpectedErrors)
+		})
+	}
+}
+
+func TestValidateHostedComponents(t *testing.T) {
+	grid := []struct {
+		Description    string
+		Role           kops.InstanceGroupRole
+		Components     []kops.ClusterComponent
+		ExpectedErrors []string
+	}{
+		{
+			Description: "the internal API server group hosts the cluster components",
+			Role:        kops.InstanceGroupRoleAPIServer,
+			Components: []kops.ClusterComponent{
+				kops.ClusterComponentCloudControllerManager,
+				kops.ClusterComponentKopsController,
+				kops.ClusterComponentKopsChannel,
+				kops.ClusterComponentCertManager,
+				kops.ClusterComponentCAPIManager,
+			},
+		},
+		{
+			Description: "unset is fine",
+			Role:        kops.InstanceGroupRoleAPIServer,
+		},
+		{
+			Description:    "unknown component",
+			Role:           kops.InstanceGroupRoleAPIServer,
+			Components:     []kops.ClusterComponent{"not-a-component"},
+			ExpectedErrors: []string{"Unsupported value::spec.hostedComponents[0]"},
+		},
+		{
+			Description: "duplicate component",
+			Role:        kops.InstanceGroupRoleAPIServer,
+			Components: []kops.ClusterComponent{
+				kops.ClusterComponentKopsController,
+				kops.ClusterComponentKopsController,
+			},
+			ExpectedErrors: []string{"Duplicate value::spec.hostedComponents[1]"},
+		},
+		{
+			Description:    "worker nodes cannot host cluster components",
+			Role:           kops.InstanceGroupRoleNode,
+			Components:     []kops.ClusterComponent{kops.ClusterComponentKopsController},
+			ExpectedErrors: []string{"Forbidden::spec.hostedComponents"},
+		},
+		{
+			Description:    "bastions cannot host cluster components",
+			Role:           kops.InstanceGroupRoleBastion,
+			Components:     []kops.ClusterComponent{kops.ClusterComponentKopsChannel},
+			ExpectedErrors: []string{"Forbidden::spec.hostedComponents"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.Description, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Role = g.Role
+			ig.Spec.HostedComponents = g.Components
+
+			errList := ValidateInstanceGroup(ig, nil, true)
+			testErrors(t, g.Description, errList, g.ExpectedErrors)
+		})
+	}
+}
+
+// TestValidateInstanceGroupRoleCombinationsCloud covers the cloud gate directly, including the
+// GCE case that is accepted. The end-to-end GCE path is covered by the update_cluster
+// integration tests.
+func TestValidateInstanceGroupRoleCombinationsCloud(t *testing.T) {
+	grid := []struct {
+		Description string
+		Cloud       kops.CloudProviderID
+		Role        kops.InstanceGroupRole
+		ExpectError bool
+	}{
+		{
+			Description: "composite role on GCE",
+			Cloud:       kops.CloudProviderGCE,
+			Role:        "APIServer,Scheduler",
+		},
+		{
+			Description: "composite role on AWS",
+			Cloud:       kops.CloudProviderAWS,
+			Role:        "APIServer,Scheduler",
+			ExpectError: true,
+		},
+		{
+			Description: "composite role on Azure",
+			Cloud:       kops.CloudProviderAzure,
+			Role:        "APIServer,KubeControllerManager",
+			ExpectError: true,
+		},
+		{
+			Description: "single role on AWS is unaffected",
+			Cloud:       kops.CloudProviderAWS,
+			Role:        kops.InstanceGroupRoleAPIServer,
+		},
+		{
+			Description: "duplicate role is not composite",
+			Cloud:       kops.CloudProviderAWS,
+			Role:        "APIServer,APIServer",
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.Description, func(t *testing.T) {
+			cluster := &kops.Cluster{}
+			switch g.Cloud {
+			case kops.CloudProviderGCE:
+				cluster.Spec.CloudProvider.GCE = &kops.GCESpec{}
+			case kops.CloudProviderAWS:
+				cluster.Spec.CloudProvider.AWS = &kops.AWSSpec{}
+			case kops.CloudProviderAzure:
+				cluster.Spec.CloudProvider.Azure = &kops.AzureSpec{}
+			}
+
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Role = g.Role
+
+			err := validateInstanceGroupRoleCombinations(cluster, []*kops.InstanceGroup{ig})
+			if g.ExpectError && err == nil {
+				t.Errorf("expected an error for %s on %s", g.Role, g.Cloud)
+			}
+			if !g.ExpectError && err != nil {
+				t.Errorf("unexpected error for %s on %s: %v", g.Role, g.Cloud, err)
+			}
+		})
 	}
 }
