@@ -86,7 +86,6 @@ definition: |
   StartLimitInterval=0
   KillMode=process
   User=root
-  CPUAccounting=true
   MemoryAccounting=true
 
   [Install]
