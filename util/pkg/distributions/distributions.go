@@ -48,6 +48,7 @@ var (
 	DistributionUbuntu2404 = Distribution{packageFormat: "deb", project: "ubuntu", id: "noble", version: 24.04}
 	DistributionUbuntu2510 = Distribution{packageFormat: "deb", project: "ubuntu", id: "questing", version: 25.10}
 	DistributionUbuntu2604 = Distribution{packageFormat: "deb", project: "ubuntu", id: "resolute", version: 26.04}
+	DistributionUbuntu2610 = Distribution{packageFormat: "deb", project: "ubuntu", id: "stonking", version: 26.10}
 
 	// Redhat-family distros
 	DistributionRhel8           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
