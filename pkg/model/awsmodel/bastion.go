@@ -44,8 +44,10 @@ type BastionModelBuilder struct {
 var _ fi.CloudupModelBuilder = &BastionModelBuilder{}
 
 func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
+	// The bastions are reached through the load balancer and security groups built here,
+	// including when the bastion instance groups are not being updated.
 	var bastionInstanceGroups []*kops.InstanceGroup
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.Spec.Role.HasBastion() {
 			bastionInstanceGroups = append(bastionInstanceGroups, ig)
 		}
@@ -443,7 +445,7 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 }
 
 func useIPv6ForBastion(b *BastionModelBuilder) bool {
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		for _, igSubnetName := range ig.Spec.Subnets {
 			for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
 				if igSubnetName != clusterSubnet.Name {

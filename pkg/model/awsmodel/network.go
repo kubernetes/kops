@@ -264,7 +264,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				klog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
 			}
 
-			for _, ig := range b.InstanceGroups {
+			// Karpenter selects the subnets of its instance groups by these tags,
+			// including when the instance groups are not being updated.
+			for _, ig := range b.AllInstanceGroups {
 				if ig.Spec.Manager == kops.InstanceManagerKarpenter {
 					for _, igSubnetName := range ig.Spec.Subnets {
 						if subnetSpec.Name == igSubnetName {

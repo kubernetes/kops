@@ -339,7 +339,7 @@ func SplitCountAcrossZones(count int, zones []string) map[string]int {
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	clusterHasApiServerOnly := false
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.IsAPIServerOnly() {
 			clusterHasApiServerOnly = true
 			break
