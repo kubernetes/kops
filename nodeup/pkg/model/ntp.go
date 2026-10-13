@@ -79,12 +79,13 @@ func (b *NTPBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	return nil
 }
 
+// buildChronydConf builds the chrony configuration for a leap-smearing NTP host,
+// so it deliberately sets no leapsectz or leapseclist directive.
 func (b *NTPBuilder) buildChronydConf(path string, host string) *nodetasks.File {
 	conf := `# Built by kOps - do NOT edit
 
 pool ` + host + ` prefer iburst
 driftfile /var/lib/chrony/drift
-leapsectz right/UTC
 logdir /var/log/chrony
 makestep 1.0 3
 maxupdateskew 100.0
