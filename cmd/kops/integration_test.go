@@ -24,10 +24,13 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -35,6 +38,8 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/pki"
@@ -326,6 +331,17 @@ func TestMinimalIPv6NoSubnetPrefix(t *testing.T) {
 func TestMinimalWarmPool(t *testing.T) {
 	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").
 		runTestTerraformAWS(t)
+}
+
+// TestMinimalWarmPoolPartialUpdate checks that updating only the control plane keeps the permissions
+// that the nodes in warm pools need to complete their lifecycle hooks.
+func TestMinimalWarmPoolPartialUpdate(t *testing.T) {
+	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").
+		runTestPartialUpdate(t, kops.CloudProviderAWS, partialUpdateTest{
+			instanceGroupRoles: controlPlaneRoles,
+			clusterResources:   []string{"aws_iam_instance_profile", "aws_iam_role", "aws_iam_role_policy"},
+			clusterDataFiles:   []string{"aws_iam_role_policy_nodes.minimal-warmpool.example.com_policy"},
+		})
 }
 
 // TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -1086,6 +1102,190 @@ func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
 	h.MockKopsVersion(integrationTestKopsVersion)
 
 	i.runTest(t, ctx, h, "", "", nil)
+}
+
+// controlPlaneRoles are the instance group roles that the first step of "kops reconcile cluster" updates.
+var controlPlaneRoles = []string{
+	string(kops.InstanceGroupRoleAPIServer),
+	string(kops.InstanceGroupRoleControlPlane),
+}
+
+// partialUpdateTest describes an update of only some instance groups.
+type partialUpdateTest struct {
+	name string
+
+	// instanceGroups or instanceGroupRoles select the instance groups to update.
+	instanceGroups     []string
+	instanceGroupRoles []string
+
+	// clusterResources are the types of terraform resources that do not belong to a single
+	// instance group, so the partial update must render all of them.
+	clusterResources []string
+	// clusterDataFiles are the data files that do not belong to a single instance group,
+	// so the partial update must render all of them.
+	clusterDataFiles []string
+
+	// changedDataFiles are the data files that the partial update renders differently by design,
+	// which checkChangedDataFiles checks instead.
+	changedDataFiles      []string
+	checkChangedDataFiles func(t *testing.T, expectedDataDir, actualDataDir string)
+}
+
+// runTestPartialUpdate updates only some instance groups, as "kops update cluster --instance-group"
+// does. Everything it renders must match the expected output of the full update.
+func (i *integrationTest) runTestPartialUpdate(t *testing.T, cloudProvider kops.CloudProviderID, p partialUpdateTest) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
+	ctx := testcontext.ForTest(t)
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion(integrationTestKopsVersion)
+	switch cloudProvider {
+	case kops.CloudProviderAWS:
+		h.SetupMockAWS()
+	case kops.CloudProviderGCE:
+		h.SetupMockGCE()
+	default:
+		t.Fatalf("unsupported cloud provider %q", cloudProvider)
+	}
+
+	var stdout bytes.Buffer
+	i.srcDir = updateClusterTestBase + i.srcDir
+	factory := i.setupCluster(t, ctx, "in-"+i.version+".yaml", stdout)
+
+	options := &UpdateClusterOptions{}
+	options.InitDefaults()
+	options.Target = "terraform"
+	options.OutDir = path.Join(h.TempDir, "out")
+	options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
+	options.CreateKubecfg = false
+	options.IgnoreKubeletVersionSkew = true
+	options.ClusterName = i.clusterName
+	options.InstanceGroups = p.instanceGroups
+	options.InstanceGroupRoles = p.instanceGroupRoles
+	if _, err := RunUpdateCluster(ctx, factory, &stdout, options); err != nil {
+		t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
+	}
+
+	// The output is compared without golden.AssertMatchesFile, because hack/update-expected.sh
+	// would overwrite the full update's output with it.
+	expectedResources := readTerraformResources(t, filepath.Join(i.srcDir, "kubernetes.tf"))
+	actualResources := readTerraformResources(t, filepath.Join(h.TempDir, "out", "kubernetes.tf"))
+	for _, address := range slices.Sorted(maps.Keys(actualResources)) {
+		expected, found := expectedResources[address]
+		if !found {
+			t.Errorf("resource %q is not rendered by the full update", address)
+		} else if actual := actualResources[address]; actual != expected {
+			t.Errorf("resource %q differs from the full update:\n%s", address, diff.FormatDiff(expected, actual))
+		}
+	}
+	for _, address := range slices.Sorted(maps.Keys(expectedResources)) {
+		resourceType, _, _ := strings.Cut(address, ".")
+		if _, found := actualResources[address]; !found && slices.Contains(p.clusterResources, resourceType) {
+			t.Errorf("resource %q is not rendered", address)
+		}
+	}
+
+	expectedDataDir := filepath.Join(i.srcDir, "data")
+	actualDataDir := filepath.Join(h.TempDir, "out", "data")
+	actualDataFilenames := readDirFilenames(t, actualDataDir)
+	for _, filename := range actualDataFilenames {
+		if slices.Contains(p.changedDataFiles, filename) {
+			continue
+		}
+		expected, err := os.ReadFile(filepath.Join(expectedDataDir, filename))
+		if err != nil {
+			t.Errorf("data file %q is not rendered by the full update: %v", filename, err)
+			continue
+		}
+		actual, err := os.ReadFile(filepath.Join(actualDataDir, filename))
+		if err != nil {
+			t.Fatalf("failed to read data file %q: %v", filename, err)
+		}
+		e, a := strings.TrimSpace(string(expected)), strings.TrimSpace(string(actual))
+		if strings.HasSuffix(filename, "_user_data") {
+			if e, err = normalizeUserData(e); err != nil {
+				t.Fatalf("invalid expected user-data %q: %v", filename, err)
+			}
+			if a, err = normalizeUserData(a); err != nil {
+				t.Fatalf("invalid actual user-data %q: %v", filename, err)
+			}
+		}
+		if a != e {
+			t.Errorf("data file %q differs from the full update:\n%s", filename, diff.FormatDiff(e, a))
+		}
+	}
+	for _, filename := range p.clusterDataFiles {
+		if !slices.Contains(actualDataFilenames, filename) {
+			t.Errorf("data file %q is not rendered", filename)
+		}
+	}
+
+	// Rendering only the instance groups being updated is the purpose of the partial update:
+	// the nodeup config of an instance group, if it has one, is rendered only when it is updated.
+	cluster, err := GetCluster(ctx, factory, i.clusterName)
+	if err != nil {
+		t.Fatalf("error getting cluster: %v", err)
+	}
+	clientset, err := factory.KopsClient()
+	if err != nil {
+		t.Fatalf("error getting clientset: %v", err)
+	}
+	instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, cluster)
+	if err != nil {
+		t.Fatalf("error reading instance groups: %v", err)
+	}
+	expectedDataFilenames := readDirFilenames(t, expectedDataDir)
+	notUpdating := 0
+	for _, ig := range instanceGroups {
+		updating := slices.Contains(p.instanceGroups, ig.ObjectMeta.Name) || slices.Contains(p.instanceGroupRoles, string(ig.Spec.Role))
+		if !updating {
+			notUpdating++
+		}
+		filename := "aws_s3_object_nodeupconfig-" + ig.ObjectMeta.Name + "_content"
+		if !slices.Contains(expectedDataFilenames, filename) {
+			continue
+		}
+		if rendered := slices.Contains(actualDataFilenames, filename); rendered != updating {
+			t.Errorf("nodeup config of instance group %q: rendered=%v, but updating=%v", ig.ObjectMeta.Name, rendered, updating)
+		}
+	}
+	if notUpdating == 0 {
+		t.Errorf("all instance groups are being updated")
+	}
+
+	if p.checkChangedDataFiles != nil {
+		p.checkChangedDataFiles(t, expectedDataDir, actualDataDir)
+	}
+}
+
+// terraformResourceHeader matches the first line of a resource in the terraform output of kOps,
+// which ends with a "}" line.
+var terraformResourceHeader = regexp.MustCompile(`^resource "([^"]+)" "([^"]+)" \{$`)
+
+// readTerraformResources returns the resources in a terraform file written by kOps, by address.
+func readTerraformResources(t *testing.T, filename string) map[string]string {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read terraform file: %v", err)
+	}
+
+	resources := make(map[string]string)
+	lines := strings.Split(string(data), "\n")
+	for start := 0; start < len(lines); start++ {
+		match := terraformResourceHeader.FindStringSubmatch(lines[start])
+		if match == nil {
+			continue
+		}
+		end := start
+		for end < len(lines) && lines[end] != "}" {
+			end++
+		}
+		resources[match[1]+"."+match[2]] = strings.Join(lines[start:end+1], "\n")
+		start = end
+	}
+	return resources
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
