@@ -99,7 +99,7 @@ spec:
       k8s-addon: gcp-cloud-controller.addons.k8s.io
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.15.yaml
-    manifestHash: 9aa5d075a1f7472afc1030d3958fa65a11510e55a7d36251a94f1b8c773232b1
+    manifestHash: 2cf30cabddc12a82501adc58c15ddb2aa5c671ba993585f9a2e45731fb8cfe6a
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:
