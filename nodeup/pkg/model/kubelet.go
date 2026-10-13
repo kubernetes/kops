@@ -590,7 +590,9 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "StartLimitInterval", "0")
 	manifest.Set("Service", "KillMode", "process")
 	manifest.Set("Service", "User", "root")
-	manifest.Set("Service", "CPUAccounting", "true")
+	// Enable the memory controller so kubelet can read stats for its own cgroup.
+	// CPU stats need no such opt-in on cgroup v2; systemd 258 dropped CPUAccounting=
+	// and later versions log a warning if the option is present.
 	manifest.Set("Service", "MemoryAccounting", "true")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
