@@ -1431,7 +1431,11 @@ func assertAddonObjectsKept(t *testing.T, expectedDataDir, actualDataDir, cluste
 			t.Errorf("addon %q in the bootstrap channel differs from the full update", name)
 		}
 	}
-	pruneSpec := actualChannel[addonName].Prune
+	addon := actualChannel[addonName]
+	if addon == nil {
+		t.Fatalf("addon %q is not in the bootstrap channel", addonName)
+	}
+	pruneSpec := addon.Prune
 	if pruneSpec == nil {
 		t.Fatalf("addon %q is not pruned by the bootstrap channel", addonName)
 	}
