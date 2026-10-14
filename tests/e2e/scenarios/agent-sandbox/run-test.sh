@@ -71,7 +71,9 @@ case "${CLOUD_PROVIDER}" in
     OVERRIDES="${OVERRIDES} --control-plane-volume-type=pd-ssd"
     ;;
   aws)
-    export ZONES="${ZONES:-us-east-1a}"
+    # No default zone: kubetest2-kops picks a zone that offers both instance
+    # types, in a random region per run, so a capacity shortage in one zone
+    # does not fail every run. Set ZONES to pin one.
     STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c7i.8xlarge}"
     STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.2xlarge}"
     # gp3, kOps' AWS default, is an SSD with a 3000 IOPS baseline at any size.

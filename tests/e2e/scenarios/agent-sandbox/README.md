@@ -94,12 +94,16 @@ neither cloud has a 22 vCPU size like `c3-standard-22`.
 
 | | GCE | AWS | Azure |
 |---|---|---|---|
-| `ZONES` | `us-central1-a` | `us-east-1a` | `eastus-1` |
+| `ZONES` | `us-central1-a` | chosen per run | `eastus-1` |
 | `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-22` | `c7i.8xlarge` | `Standard_D32s_v5` |
 | `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8s_v5` |
 | `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` | `Premium_LRS` |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
 | Small profile `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-8` | `c7i.2xlarge` | `Standard_D8s_v5` |
+
+On AWS no zone is pinned: kubetest2-kops picks a zone that offers both instance types, in a
+random region per run, so a capacity shortage in one zone does not fail every run. Set `ZONES`
+to pin one.
 
 On GCE the worker roots are `pd-ssd` because pod launch is fsync-bound on `pd-standard`
 (kOps' GCE default), and the `c3` control-plane family does not support `pd-standard` boot
