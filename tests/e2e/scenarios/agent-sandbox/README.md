@@ -65,13 +65,11 @@ By default the script builds kOps from the current tree and stages it in GCS. To
 latest kOps CI build instead, set `JOB_TYPE=periodic`.
 
 The full upstream periodic profile uses 20 workers. For a smaller run, use the upstream
-cilium presubmit profile, with a control plane of the same family as the full profile:
+cilium presubmit profile; with up to 3 workers the control plane defaults to the small size
+in the table below, as in the kOps presubmits:
 
 ```
 export STRESS_NODE_COUNT=3
-export STRESS_CONTROL_PLANE_SIZE=c3-standard-8      # gce
-export STRESS_CONTROL_PLANE_SIZE=c7i.2xlarge        # aws
-export STRESS_CONTROL_PLANE_SIZE=Standard_D8s_v5    # azure
 export STRESS_PHASES=fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:50-label:pct80
 ```
 
@@ -95,11 +93,11 @@ neither cloud has a 22 vCPU size like `c3-standard-22`.
 | | GCE | AWS | Azure |
 |---|---|---|---|
 | `ZONES` | `us-central1-a` | chosen per run | `eastus-1` |
-| `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-22` | `c7i.8xlarge` | `Standard_D32s_v5` |
+| `STRESS_CONTROL_PLANE_SIZE`, more than 3 workers | `c3-standard-22` | `c7i.8xlarge` | `Standard_D32s_v5` |
+| `STRESS_CONTROL_PLANE_SIZE`, up to 3 workers | `c3-standard-8` | `m7i.2xlarge` | `Standard_D8s_v5` |
 | `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8s_v5` |
 | `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` | `Premium_LRS` |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
-| Small profile `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-8` | `c7i.2xlarge` | `Standard_D8s_v5` |
 
 On AWS no zone is pinned: kubetest2-kops picks a zone that offers both instance types, in a
 random region per run, so a capacity shortage in one zone does not fail every run. Set `ZONES`
@@ -125,7 +123,7 @@ IOPS scale with size, and both `StandardSSD_LRS` and `Premium_LRS` cap at 500 IO
 | `IMAGE_PREFIX` / `IMAGE_TAG` | `registry.k8s.io/agent-sandbox/` / `AGENT_SANDBOX_VERSION` | Controller images to deploy |
 | `CONTROLLER_ARGS` | unset | Extra controller flags, e.g. `--enable-pprof-debug` |
 | `STRESS_NODE_COUNT` | `20` | Worker node count |
-| `STRESS_CONTROL_PLANE_SIZE` | per cloud, see above | Control-plane machine type |
+| `STRESS_CONTROL_PLANE_SIZE` | per cloud and worker count, see above | Control-plane machine type |
 | `STRESS_NODE_SIZE` | per cloud, see above | Worker machine type |
 | `STRESS_NODE_VOLUME_TYPE` | per cloud, see above | Worker root volume type |
 | `STRESS_NODE_VOLUME_SIZE` | `128` | Worker root volume size in GB |

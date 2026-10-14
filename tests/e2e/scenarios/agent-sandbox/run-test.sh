@@ -44,11 +44,17 @@ AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
 export IMAGE_PREFIX="${IMAGE_PREFIX:-registry.k8s.io/agent-sandbox/}"
 
 # Upstream periodic sizing: 20 n2-standard-8 workers behind a c3-standard-22
-# control plane. The upstream cilium presubmit runs STRESS_NODE_COUNT=3,
-# STRESS_CONTROL_PLANE_SIZE=c3-standard-8 and a shorter STRESS_PHASES list.
+# control plane. The upstream cilium presubmit runs STRESS_NODE_COUNT=3 behind
+# a c3-standard-8 control plane with a shorter STRESS_PHASES list; the kOps
+# presubmits set only the worker count, so the control plane follows it.
 # AWS and Azure use each cloud's closest shapes: 8 vCPU / 32 GiB workers like
 # n2-standard-8, and a 32 vCPU control plane as neither has a 22 vCPU size.
 STRESS_NODE_COUNT="${STRESS_NODE_COUNT:-20}"
+# control_plane_size <small> <large> picks the control-plane size for the
+# worker count: the small one for the 3-worker presubmit profile, else the large.
+control_plane_size() {
+  if (( STRESS_NODE_COUNT <= 3 )); then echo "$1"; else echo "$2"; fi
+}
 STRESS_NODE_CIDR_MASK_SIZE="${STRESS_NODE_CIDR_MASK_SIZE:-23}"
 STRESS_ETCD_QUOTA_BYTES="${STRESS_ETCD_QUOTA_BYTES:-8589934592}"
 STRESS_VALIDATE_WAIT="${STRESS_VALIDATE_WAIT:-25m}"
@@ -61,7 +67,7 @@ OVERRIDES="${OVERRIDES-}"
 case "${CLOUD_PROVIDER}" in
   gce)
     export ZONES="${ZONES:-us-central1-a}"
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-22}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-$(control_plane_size c3-standard-8 c3-standard-22)}"
     STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-n2-standard-8}"
     # Boskos projects do not allow IAM changes, so the VMs run as the default compute service account.
     OVERRIDES="${OVERRIDES} --gce-service-account=default"
@@ -74,14 +80,14 @@ case "${CLOUD_PROVIDER}" in
     # No default zone: kubetest2-kops picks a zone that offers both instance
     # types, in a random region per run, so a capacity shortage in one zone
     # does not fail every run. Set ZONES to pin one.
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c7i.8xlarge}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-$(control_plane_size m7i.2xlarge c7i.8xlarge)}"
     STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.2xlarge}"
     # gp3, kOps' AWS default, is an SSD with a 3000 IOPS baseline at any size.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
     ;;
   azure)
     export ZONES="${ZONES:-eastus-1}"
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-Standard_D32s_v5}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-$(control_plane_size Standard_D8s_v5 Standard_D32s_v5)}"
     STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8s_v5}"
     # Premium SSD, Azure's low-latency tier (kOps defaults to StandardSSD_LRS).
     # Azure disk IOPS scale with size: both tiers cap at 500 on a 128 GB root,
