@@ -1489,14 +1489,7 @@ func readManifestObjects(t *testing.T, filename string) map[string]*unstructured
 	}
 	unstructuredObjects := make(map[string]*unstructured.Unstructured)
 	for _, object := range objects {
-		b, err := object.MarshalJSON()
-		if err != nil {
-			t.Fatalf("failed to marshal object: %v", err)
-		}
-		u := &unstructured.Unstructured{}
-		if err := u.UnmarshalJSON(b); err != nil {
-			t.Fatalf("failed to parse object: %v", err)
-		}
+		u := object.ToUnstructured()
 		key := u.GroupVersionKind().GroupKind().String() + " " + path.Join(u.GetNamespace(), u.GetName())
 		unstructuredObjects[key] = u
 	}
