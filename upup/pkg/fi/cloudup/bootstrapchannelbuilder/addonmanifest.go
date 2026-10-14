@@ -139,15 +139,17 @@ func (a *AddonManifest) Normalize(c *fi.CloudupContext) error {
 }
 
 // protectedInstanceGroupNames returns the sorted names of the instance groups whose NodePools and
-// EC2NodeClasses must not be pruned: every Karpenter instance group, and every instance group that
-// is not being updated. The manifest only has the objects of the instance groups being updated, see
-// KarpenterInstanceGroups, and Karpenter terminates the nodes of a deleted NodePool.
+// EC2NodeClasses must not be pruned: every Karpenter instance group, and every node instance group
+// that is not being updated. The manifest only has the objects of the instance groups being
+// updated, see KarpenterInstanceGroups, and Karpenter terminates the nodes of a deleted NodePool.
 //
 // All Karpenter instance groups are protected, even in full updates, because kops-channels reads
 // the manifest by URL without checking its hash, so it can apply the manifest of one update with
-// the prune spec of another. Protecting the instance groups not being updated also keeps the
-// NodePool of an instance group moved to CloudGroup until it is updated. The objects of deleted
-// instance groups are still pruned.
+// the prune spec of another. Protecting the node instance groups not being updated also keeps the
+// NodePool of an instance group moved to CloudGroup until it is updated. Only node instance groups
+// can be managed by Karpenter, so the other roles are left out: their names would only make the
+// prune spec, and the addon hash, differ between updates that render the same manifest. The
+// objects of deleted instance groups are still pruned.
 func protectedInstanceGroupNames(modelContext *model.KopsModelContext) []string {
 	updating := sets.New[string]()
 	for _, ig := range modelContext.InstanceGroups {
@@ -155,7 +157,7 @@ func protectedInstanceGroupNames(modelContext *model.KopsModelContext) []string 
 	}
 	protected := sets.New[string]()
 	for _, ig := range modelContext.AllInstanceGroups {
-		if ig.IsKarpenterManaged() || !updating.Has(ig.Name) {
+		if ig.IsKarpenterManaged() || (ig.Spec.Role.HasNode() && !updating.Has(ig.Name)) {
 			protected.Insert(ig.Name)
 		}
 	}

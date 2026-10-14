@@ -145,9 +145,14 @@ func TestAddonManifestNormalizeProtectedInstanceGroups(t *testing.T) {
 			wantFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
 		},
 		{
+			name:              "node instance groups",
+			instanceGroups:    allInstanceGroups[1:],
+			wantFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
+		},
+		{
 			name:              "one Karpenter instance group",
 			instanceGroups:    allInstanceGroups[1:2],
-			wantFieldSelector: "metadata.name!=control-plane,metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
+			wantFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
 		},
 	}
 	for _, tc := range tests {
