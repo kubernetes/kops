@@ -25,10 +25,6 @@ import (
 
 func TestBuildPruneDirectivesSkipPruning(t *testing.T) {
 	manifest := []byte("apiVersion: karpenter.sh/v1\nkind: NodePool\nmetadata:\n  name: nodes-a\n")
-	karpenterKinds := []schema.GroupKind{
-		{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
-		{Group: "karpenter.sh", Kind: "NodePool"},
-	}
 
 	grid := []struct {
 		desc                    string
@@ -57,14 +53,14 @@ func TestBuildPruneDirectivesSkipPruning(t *testing.T) {
 				gk := schema.GroupKind{Group: kind.Group, Kind: kind.Kind}
 				pruned[gk] = true
 				expected := ""
-				if slices.Contains(karpenterKinds, gk) {
+				if slices.Contains(karpenterInstanceGroupKinds, gk) {
 					expected = g.expectedFieldSelector
 				}
 				if kind.FieldSelector != expected {
 					t.Errorf("field selector for %v = %q, want %q", gk, kind.FieldSelector, expected)
 				}
 			}
-			for _, gk := range karpenterKinds {
+			for _, gk := range karpenterInstanceGroupKinds {
 				if !pruned[gk] {
 					t.Errorf("%v is not pruned", gk)
 				}
