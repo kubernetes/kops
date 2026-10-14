@@ -37,3 +37,13 @@ func RandomZones(count int) ([]string, error) {
 
 	return chosenZones, nil
 }
+
+// MaxZoneNameLength returns the length of the longest zone name RandomZones can
+// return, for callers that size cluster names before a zone is chosen.
+func MaxZoneNameLength() int {
+	n := 0
+	for _, zone := range allZones {
+		n = max(n, len(zone))
+	}
+	return n
+}

@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/azure"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/target"
 	"k8s.io/kops/tests/e2e/pkg/util"
@@ -561,6 +562,26 @@ func (d *deployer) defaultClusterName() (string, error) {
 	if len(jobName) > gcpLimit && d.CloudProvider == "gce" {
 		jobName = jobName[:gcpLimit]
 		jobName = strings.TrimRight(jobName, "-")
+	}
+
+	// Azure VM scale set names are limited to 80 characters, and the longest one
+	// kops creates is the control-plane one: "control-plane-<zone>.masters.<cluster>".
+	// The zone is not chosen yet, so size for the longest zone that can be picked.
+	if d.CloudProvider == "azure" {
+		zoneLen := azure.MaxZoneNameLength()
+		if zones := extractZones(d.CreateArgs); len(zones) > 0 {
+			zoneLen = 0
+			for _, zone := range zones {
+				zoneLen = max(zoneLen, len(zone))
+			}
+		}
+		azureLimit := 80 - len("control-plane-") - zoneLen - len(".masters.")
+		if suffix != "" {
+			azureLimit -= len(suffix) + 1 // 1 for the dot
+		}
+		if len(jobName) > azureLimit {
+			jobName = strings.TrimRight(jobName[:azureLimit], "-")
+		}
 	}
 
 	if suffix != "" {

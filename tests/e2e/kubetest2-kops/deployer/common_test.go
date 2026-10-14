@@ -376,3 +376,65 @@ func TestResolveSSHUserFromClusterKeepsExistingUser(t *testing.T) {
 		})
 	}
 }
+
+func TestDefaultClusterName(t *testing.T) {
+	t.Setenv("JOB_TYPE", "presubmit")
+	t.Setenv("PULL_NUMBER", "18862")
+	t.Setenv("BUILD_ID", "1")
+	t.Setenv("KOPS_DNS_DOMAIN", "")
+
+	tests := []struct {
+		name          string
+		cloudProvider string
+		jobName       string
+		createArgs    string
+		want          string
+	}{
+		{
+			name:          "aws keeps the dns domain suffix",
+			cloudProvider: "aws",
+			jobName:       "pull-kops-aws-agent-sandbox-benchmark-systemd",
+			want:          "pr18862-kops-aws-agent-sandbox-benchmark-systemd.tests-kops-aws.k8s.io",
+		},
+		{
+			name:          "gce keeps names under the 63 character limit",
+			cloudProvider: "gce",
+			jobName:       "pull-kops-gce-agent-sandbox-benchmark-systemd",
+			want:          "pr18862-kops-gce-agent-sandbox-benchmark-systemd.k8s.local",
+		},
+		{
+			name:          "azure leaves short names alone",
+			cloudProvider: "azure",
+			jobName:       "pull-kops-e2e-azure-cni-cilium",
+			want:          "pr18862-kops-e2e-azure-cni-cilium",
+		},
+		{
+			// "control-plane-eastus-1.masters." is 31 characters, so 49 remain for the cluster name.
+			name:          "azure cuts the name so the control-plane VMSS name fits in 80 characters",
+			cloudProvider: "azure",
+			jobName:       "pull-kops-azure-agent-sandbox-benchmark-systemd",
+			createArgs:    "--networking=cilium --zones=eastus-1",
+			want:          "pr18862-kops-azure-agent-sandbox-benchmark-system",
+		},
+		{
+			// Without --zones the longest zone in the pool, uksouth-1, sets the budget: 48 characters.
+			name:          "azure sizes for the longest zone in the pool when no zone is given",
+			cloudProvider: "azure",
+			jobName:       "pull-kops-azure-agent-sandbox-benchmark-systemd",
+			want:          "pr18862-kops-azure-agent-sandbox-benchmark-syste",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("JOB_NAME", tc.jobName)
+			d := &deployer{CloudProvider: tc.cloudProvider, CreateArgs: tc.createArgs}
+			got, err := d.defaultClusterName()
+			if err != nil {
+				t.Fatalf("defaultClusterName() error: %v", err)
+			}
+			if got != tc.want {
+				t.Errorf("defaultClusterName() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
