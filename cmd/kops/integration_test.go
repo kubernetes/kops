@@ -37,17 +37,24 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -556,6 +563,29 @@ func TestExternalDNSIRSA(t *testing.T) {
 func TestKarpenter(t *testing.T) {
 	test := newIntegrationTest("minimal.example.com", "karpenter")
 	test.runTestTerraformAWS(t)
+}
+
+// TestKarpenterPartialUpdate checks that updating only some instance groups keeps the NodePools and
+// EC2NodeClasses of the other Karpenter instance groups, whose nodes Karpenter would terminate.
+func TestKarpenterPartialUpdate(t *testing.T) {
+	for _, p := range []partialUpdateTest{
+		{name: "control-plane", instanceGroupRoles: controlPlaneRoles},
+		{name: "karpenter-nodes-default", instanceGroups: []string{"karpenter-nodes-default"}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			// The subnets are selected by their instance group tags.
+			p.clusterResources = []string{"aws_subnet"}
+			p.changedDataFiles = []string{
+				"aws_s3_object_minimal.example.com-addons-bootstrap_content",
+				"aws_s3_object_minimal.example.com-addons-karpenter.sh-k8s-1.19_content",
+			}
+			p.checkChangedDataFiles = func(t *testing.T, expectedDataDir, actualDataDir string) {
+				assertAddonObjectsKept(t, expectedDataDir, actualDataDir, "minimal.example.com", "karpenter.sh", "k8s-1.19")
+			}
+			newIntegrationTest("minimal.example.com", "karpenter").
+				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
+		})
+	}
 }
 
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
@@ -1361,6 +1391,112 @@ func readTerraformResources(t *testing.T, filename string) map[string]string {
 		start = end
 	}
 	return resources
+}
+
+// assertAddonObjectsKept checks that the partial update renders the same objects as the full update
+// for the instance groups being updated, and that its prune spec keeps the others.
+func assertAddonObjectsKept(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string) {
+	expectedChannel := readBootstrapChannel(t, filepath.Join(expectedDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
+	actualChannel := readBootstrapChannel(t, filepath.Join(actualDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
+	if len(actualChannel) != len(expectedChannel) {
+		t.Errorf("bootstrap channel has %d addons, the full update has %d", len(actualChannel), len(expectedChannel))
+	}
+	for name, expected := range expectedChannel {
+		actual := actualChannel[name]
+		switch {
+		case actual == nil:
+			t.Fatalf("addon %q is not in the bootstrap channel", name)
+		case name != addonName && !reflect.DeepEqual(actual, expected):
+			t.Errorf("addon %q in the bootstrap channel differs from the full update", name)
+		}
+	}
+	pruneSpec := actualChannel[addonName].Prune
+	if pruneSpec == nil {
+		t.Fatalf("addon %q is not pruned by the bootstrap channel", addonName)
+	}
+
+	filename := "aws_s3_object_" + clusterName + "-addons-" + addonName + "-" + addonID + "_content"
+	expectedObjects := readManifestObjects(t, filepath.Join(expectedDataDir, filename))
+	actualObjects := readManifestObjects(t, filepath.Join(actualDataDir, filename))
+	for key, actual := range actualObjects {
+		if expected, found := expectedObjects[key]; !found {
+			t.Errorf("object %s is not in the full update's addon", key)
+		} else if !reflect.DeepEqual(actual, expected) {
+			t.Errorf("object %s differs from the full update's addon", key)
+		}
+	}
+
+	// Pruning deletes the objects of the kinds in the prune spec that match its selectors,
+	// and are not in the manifest; see channels.Pruner.
+	for _, key := range slices.Sorted(maps.Keys(expectedObjects)) {
+		if _, found := actualObjects[key]; found {
+			continue
+		}
+		object := expectedObjects[key]
+		for _, kind := range pruneSpec.Kinds {
+			if object.GroupVersionKind().GroupKind() != (schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
+				continue
+			}
+			if len(kind.Namespaces) != 0 && !slices.Contains(kind.Namespaces, object.GetNamespace()) {
+				continue
+			}
+			labelSelector, err := labels.Parse(kind.LabelSelector)
+			if err != nil {
+				t.Fatalf("failed to parse label selector %q: %v", kind.LabelSelector, err)
+			}
+			fieldSelector, err := fields.ParseSelector(kind.FieldSelector)
+			if err != nil {
+				t.Fatalf("failed to parse field selector %q: %v", kind.FieldSelector, err)
+			}
+			if labelSelector.Matches(labels.Set(object.GetLabels())) &&
+				fieldSelector.Matches(fields.Set{"metadata.name": object.GetName(), "metadata.namespace": object.GetNamespace()}) {
+				t.Errorf("object %s of the full update's addon would be pruned", key)
+			}
+		}
+	}
+}
+
+// readBootstrapChannel returns the addons of a bootstrap channel, by name.
+func readBootstrapChannel(t *testing.T, filename string) map[string]*channelsapi.AddonSpec {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read bootstrap channel: %v", err)
+	}
+	var channel channelsapi.Addons
+	if err := yaml.UnmarshalStrict(data, &channel); err != nil {
+		t.Fatalf("failed to parse bootstrap channel %q: %v", filename, err)
+	}
+	addons := make(map[string]*channelsapi.AddonSpec)
+	for _, addon := range channel.Spec.Addons {
+		addons[fi.ValueOf(addon.Name)] = addon
+	}
+	return addons
+}
+
+// readManifestObjects returns the objects in an addon manifest, by kind, namespace and name.
+func readManifestObjects(t *testing.T, filename string) map[string]*unstructured.Unstructured {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("failed to read manifest: %v", err)
+	}
+	objects, err := kubemanifest.LoadObjectsFrom(data)
+	if err != nil {
+		t.Fatalf("failed to parse manifest %q: %v", filename, err)
+	}
+	unstructuredObjects := make(map[string]*unstructured.Unstructured)
+	for _, object := range objects {
+		b, err := object.MarshalJSON()
+		if err != nil {
+			t.Fatalf("failed to marshal object: %v", err)
+		}
+		u := &unstructured.Unstructured{}
+		if err := u.UnmarshalJSON(b); err != nil {
+			t.Fatalf("failed to parse object: %v", err)
+		}
+		key := u.GroupVersionKind().GroupKind().String() + " " + path.Join(u.GetNamespace(), u.GetName())
+		unstructuredObjects[key] = u
+	}
+	return unstructuredObjects
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
