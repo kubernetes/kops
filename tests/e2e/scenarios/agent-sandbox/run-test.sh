@@ -15,10 +15,11 @@
 # limitations under the License.
 
 # Runs the kubernetes-sigs/agent-sandbox benchmark and stress test against a
-# kOps cluster on GCE. Upstream runs the same test in its benchmarks-kops-gcp-*
-# jobs with a pinned kOps release; this scenario runs it with the kOps build
-# under test, so kOps changes that affect pod launch throughput or
-# control-plane behaviour show up in presubmits.
+# kOps cluster on GCE (the default), AWS or Azure, selected by CLOUD_PROVIDER.
+# Upstream runs the same test in its benchmarks-kops-gcp-* jobs with a pinned
+# kOps release; this scenario runs it with the kOps build under test, so kOps
+# changes that affect pod launch throughput or control-plane behaviour show up
+# in presubmits.
 #
 # The cluster tuning mirrors test/benchmarks/scenarios/benchmarks-kops-gcp/run
 # in agent-sandbox, and the STRESS_* variables keep that script's names and
@@ -32,10 +33,9 @@ set -o pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}"
 
-export CLOUD_PROVIDER=gce
+export CLOUD_PROVIDER="${CLOUD_PROVIDER:-gce}"
 # CNI is the upstream job's name for the --networking value (cilium or kindnet in its CI).
 export NETWORKING="${CNI:-${NETWORKING:-cilium}}"
-export ZONES="${ZONES:-us-central1-a}"
 
 AGENT_SANDBOX_REPO="${AGENT_SANDBOX_REPO:-https://github.com/kubernetes-sigs/agent-sandbox}"
 AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
@@ -46,28 +46,63 @@ export IMAGE_PREFIX="${IMAGE_PREFIX:-registry.k8s.io/agent-sandbox/}"
 # Upstream periodic sizing: 20 n2-standard-8 workers behind a c3-standard-22
 # control plane. The upstream cilium presubmit runs STRESS_NODE_COUNT=3,
 # STRESS_CONTROL_PLANE_SIZE=c3-standard-8 and a shorter STRESS_PHASES list.
+# AWS and Azure use each cloud's closest shapes: 8 vCPU / 32 GiB workers like
+# n2-standard-8, and a 32 vCPU control plane as neither has a 22 vCPU size.
 STRESS_NODE_COUNT="${STRESS_NODE_COUNT:-20}"
-STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-22}"
-STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-pd-ssd}"
 STRESS_NODE_CIDR_MASK_SIZE="${STRESS_NODE_CIDR_MASK_SIZE:-23}"
 STRESS_ETCD_QUOTA_BYTES="${STRESS_ETCD_QUOTA_BYTES:-8589934592}"
 STRESS_VALIDATE_WAIT="${STRESS_VALIDATE_WAIT:-25m}"
+# kubetest2-kops would otherwise shrink the root volumes to 48GB (100GB for GCE
+# nodes); keep the kOps defaults the upstream job runs with, as GCE and Azure
+# disk IOPS scale with size.
+STRESS_NODE_VOLUME_SIZE="${STRESS_NODE_VOLUME_SIZE:-128}"
 
-# Boskos projects do not allow IAM changes, so the VMs run as the default compute service account.
-OVERRIDES="${OVERRIDES-} --gce-service-account=default"
+OVERRIDES="${OVERRIDES-}"
+case "${CLOUD_PROVIDER}" in
+  gce)
+    export ZONES="${ZONES:-us-central1-a}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-22}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-n2-standard-8}"
+    # Boskos projects do not allow IAM changes, so the VMs run as the default compute service account.
+    OVERRIDES="${OVERRIDES} --gce-service-account=default"
+    # Root volumes on pd-ssd: pod launch is fsync-bound on pd-standard, and the c3
+    # control-plane machine family does not support pd-standard boot disks.
+    STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-pd-ssd}"
+    OVERRIDES="${OVERRIDES} --control-plane-volume-type=pd-ssd"
+    ;;
+  aws)
+    export ZONES="${ZONES:-us-east-1a}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c7i.8xlarge}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.2xlarge}"
+    # gp3, kOps' AWS default, is an SSD with a 3000 IOPS baseline at any size.
+    STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
+    ;;
+  azure)
+    export ZONES="${ZONES:-eastus-1}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-Standard_D32s_v5}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8s_v5}"
+    # Premium SSD, Azure's low-latency tier (kOps defaults to StandardSSD_LRS).
+    # Azure disk IOPS scale with size: both tiers cap at 500 on a 128 GB root,
+    # so raise STRESS_NODE_VOLUME_SIZE if runs come out disk-bound.
+    STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-Premium_LRS}"
+    # kOps' Azure support is alpha and feature-gated, for every kops invocation.
+    export KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS:-Azure}"
+    ;;
+  *)
+    echo "Unsupported CLOUD_PROVIDER=${CLOUD_PROVIDER}: expected gce, aws or azure" >&2
+    exit 1
+    ;;
+esac
 OVERRIDES="${OVERRIDES} --control-plane-size=${STRESS_CONTROL_PLANE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-count=${STRESS_NODE_COUNT}"
-OVERRIDES="${OVERRIDES} --node-size=n2-standard-8"
-# Root volumes on pd-ssd: pod launch is fsync-bound on pd-standard, and the c3
-# control-plane machine family does not support pd-standard boot disks.
+OVERRIDES="${OVERRIDES} --node-size=${STRESS_NODE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-volume-type=${STRESS_NODE_VOLUME_TYPE}"
-OVERRIDES="${OVERRIDES} --control-plane-volume-type=pd-ssd"
-# kubetest2-kops would otherwise shrink the root volumes to 100GB/48GB; keep the
-# kOps defaults the upstream job runs with, as pd-ssd IOPS scale with size.
-OVERRIDES="${OVERRIDES} --node-volume-size=128"
+OVERRIDES="${OVERRIDES} --node-volume-size=${STRESS_NODE_VOLUME_SIZE}"
 OVERRIDES="${OVERRIDES} --control-plane-volume-size=64"
 # Let the stress tool scrape kube-controller-manager and kube-scheduler /metrics
-# anonymously through the apiserver pod proxy. The probe paths must be repeated
+# anonymously through the apiserver pod proxy. The ports are not reachable from
+# outside the cluster on any cloud: kOps' GCE firewall, AWS security groups and
+# Azure NSG expose only SSH and the API. The probe paths must be repeated
 # because setting the field replaces the default list the liveness probes use.
 for path in /healthz /readyz /livez /metrics; do
   OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.authorizationAlwaysAllowPaths=${path}"
