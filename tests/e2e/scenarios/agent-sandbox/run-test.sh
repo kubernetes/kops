@@ -86,9 +86,12 @@ case "${CLOUD_PROVIDER}" in
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
     ;;
   azure)
-    export ZONES="${ZONES:-eastus-1}"
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-$(control_plane_size Standard_D8s_v5 Standard_D32s_v5)}"
-    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8s_v5}"
+    # No default zone: kubetest2-kops picks from its uksouth pool, where the
+    # other kOps Azure jobs run and the CI subscription has quota. Ddsv5 rather
+    # than Dsv5: same CPUs and memory, but the subscription's Ddsv5 quota there
+    # is 250 cores against the 65-core default for Dsv5.
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-$(control_plane_size Standard_D8ds_v5 Standard_D32ds_v5)}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8ds_v5}"
     # Premium SSD, Azure's low-latency tier (kOps defaults to StandardSSD_LRS).
     # Azure disk IOPS scale with size: both tiers cap at 500 on a 128 GB root,
     # so raise STRESS_NODE_VOLUME_SIZE if runs come out disk-bound.

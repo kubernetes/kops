@@ -56,10 +56,10 @@ export AZURE_SUBSCRIPTION_ID=...
 export KOPS_STATE_STORE=azureblob://<storage-account>/<container>
 ```
 
-The subscription needs quota for the `Standard_D8s_v5` workers and the `Standard_D32s_v5`
-control plane in the zone: about 192 vCPUs for the full profile. The default zone is
-`eastus-1`; kubetest2-kops' own Azure e2e jobs run in `uksouth`, so set `ZONES=uksouth-1` if
-that is where the subscription's quota is.
+The subscription needs Ddsv5 quota for the `Standard_D8ds_v5` workers and the
+`Standard_D32ds_v5` control plane: 32 vCPUs for the 3-worker profile and 192 for the full one.
+No zone is pinned: kubetest2-kops picks from its uksouth pool, where the kOps CI subscription
+has that quota. Set `ZONES` to run elsewhere.
 
 By default the script builds kOps from the current tree and stages it in GCS. To test the
 latest kOps CI build instead, set `JOB_TYPE=periodic`.
@@ -92,16 +92,18 @@ neither cloud has a 22 vCPU size like `c3-standard-22`.
 
 | | GCE | AWS | Azure |
 |---|---|---|---|
-| `ZONES` | `us-central1-a` | chosen per run | `eastus-1` |
-| `STRESS_CONTROL_PLANE_SIZE`, more than 3 workers | `c3-standard-22` | `c7i.8xlarge` | `Standard_D32s_v5` |
-| `STRESS_CONTROL_PLANE_SIZE`, up to 3 workers | `c3-standard-8` | `m7i.2xlarge` | `Standard_D8s_v5` |
-| `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8s_v5` |
+| `ZONES` | `us-central1-a` | chosen per run | `uksouth-1` or `uksouth-2` |
+| `STRESS_CONTROL_PLANE_SIZE`, more than 3 workers | `c3-standard-22` | `c7i.8xlarge` | `Standard_D32ds_v5` |
+| `STRESS_CONTROL_PLANE_SIZE`, up to 3 workers | `c3-standard-8` | `m7i.2xlarge` | `Standard_D8ds_v5` |
+| `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8ds_v5` |
 | `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` | `Premium_LRS` |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
 
 On AWS no zone is pinned: kubetest2-kops picks a zone that offers both instance types, in a
 random region per run, so a capacity shortage in one zone does not fail every run. Set `ZONES`
-to pin one.
+to pin one. On Azure kubetest2-kops picks `uksouth-1` or `uksouth-2`, where every other kOps
+Azure job runs; the Ddsv5 sizes are the Dsv5 ones with an unused local disk, chosen because the
+CI subscription's Ddsv5 quota there is 250 cores against the 65-core default for Dsv5.
 
 On GCE the worker roots are `pd-ssd` because pod launch is fsync-bound on `pd-standard`
 (kOps' GCE default), and the `c3` control-plane family does not support `pd-standard` boot
