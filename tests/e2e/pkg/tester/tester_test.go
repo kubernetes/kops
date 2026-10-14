@@ -17,9 +17,11 @@ limitations under the License.
 package tester
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/urfave/sflags/gen/gpflag"
+	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
 
 func TestFlagParsing(t *testing.T) {
@@ -91,4 +93,61 @@ func TestHasFlag(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSetSkipRegexFlag(t *testing.T) {
+	cluster := &api.Cluster{
+		Spec: api.ClusterSpec{
+			KubernetesVersion:   "v1.35.0",
+			LegacyCloudProvider: "gce",
+			LegacyNetworking:    &api.NetworkingSpec{},
+			Subnets: []api.ClusterSubnetSpec{
+				{
+					Name: "us-east1-b",
+					Zone: "us-east1-b",
+					Type: api.SubnetTypePrivate,
+				},
+			},
+		},
+	}
+
+	t.Run("default when empty", func(t *testing.T) {
+		tester := NewDefaultTester()
+		tester.kopsCluster = cluster
+		tester.kopsInstanceGroups = []*api.InstanceGroup{}
+		if err := tester.setSkipRegexFlag(); err != nil {
+			t.Fatalf("setSkipRegexFlag() error: %v", err)
+		}
+		if !strings.Contains(tester.SkipRegex, "\\[Slow\\]") {
+			t.Errorf("expected default skipRegex to contain \\[Slow\\], got: %s", tester.SkipRegex)
+		}
+		if !strings.Contains(tester.SkipRegex, "should.be.mountable.when.non-attachable") {
+			t.Errorf("expected skipRegex to contain flexvolume skip, got: %s", tester.SkipRegex)
+		}
+		if !strings.Contains(tester.SkipRegex, "should.SSH.to.all.nodes.and.run.commands") {
+			t.Errorf("expected skipRegex to contain ssh skip, got: %s", tester.SkipRegex)
+		}
+	})
+
+	t.Run("unions caller regex with platform skips", func(t *testing.T) {
+		tester := NewDefaultTester()
+		tester.kopsCluster = cluster
+		tester.kopsInstanceGroups = []*api.InstanceGroup{}
+		tester.SkipRegex = "\\[Serial\\]|\\[Disruptive\\]"
+		if err := tester.setSkipRegexFlag(); err != nil {
+			t.Fatalf("setSkipRegexFlag() error: %v", err)
+		}
+		if strings.Contains(tester.SkipRegex, "\\[Slow\\]") {
+			t.Errorf("expected caller skipRegex to preserve omission of \\[Slow\\], got: %s", tester.SkipRegex)
+		}
+		if !strings.HasPrefix(tester.SkipRegex, "\\[Serial\\]|\\[Disruptive\\]|") {
+			t.Errorf("expected skipRegex to start with caller filter, got: %s", tester.SkipRegex)
+		}
+		if !strings.Contains(tester.SkipRegex, "should.be.mountable.when.non-attachable") {
+			t.Errorf("expected skipRegex to contain flexvolume skip, got: %s", tester.SkipRegex)
+		}
+		if !strings.Contains(tester.SkipRegex, "should.SSH.to.all.nodes.and.run.commands") {
+			t.Errorf("expected skipRegex to contain ssh skip, got: %s", tester.SkipRegex)
+		}
+	})
 }

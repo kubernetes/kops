@@ -29,8 +29,9 @@ const (
 )
 
 func (t *Tester) setSkipRegexFlag() error {
+	skipRegex := skipRegexBase
 	if t.SkipRegex != "" {
-		return nil
+		skipRegex = t.SkipRegex
 	}
 
 	cluster, err := t.getKopsCluster()
@@ -41,8 +42,6 @@ func (t *Tester) setSkipRegexFlag() error {
 	if err != nil {
 		return err
 	}
-
-	skipRegex := skipRegexBase
 
 	if k8sVersion.Minor < 35 {
 		// cpu.weight value changed in runc 1.3.2
