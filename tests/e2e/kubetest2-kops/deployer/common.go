@@ -566,16 +566,10 @@ func (d *deployer) defaultClusterName() (string, error) {
 
 	// Azure VM scale set names are limited to 80 characters, and the longest one
 	// kops creates is the control-plane one: "control-plane-<zone>.masters.<cluster>".
-	// The zone is not chosen yet, so size for the longest zone that can be picked.
+	// The name must come out the same for --up and --down, and --down does not see
+	// the create args, so size for the longest zone name rather than the one used.
 	if d.CloudProvider == "azure" {
-		zoneLen := azure.MaxZoneNameLength()
-		if zones := extractZones(d.CreateArgs); len(zones) > 0 {
-			zoneLen = 0
-			for _, zone := range zones {
-				zoneLen = max(zoneLen, len(zone))
-			}
-		}
-		azureLimit := 80 - len("control-plane-") - zoneLen - len(".masters.")
+		azureLimit := 80 - len("control-plane-") - azure.MaxZoneNameLength - len(".masters.")
 		if suffix != "" {
 			azureLimit -= len(suffix) + 1 // 1 for the dot
 		}

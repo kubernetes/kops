@@ -409,19 +409,19 @@ func TestDefaultClusterName(t *testing.T) {
 			want:          "pr18862-kops-e2e-azure-cni-cilium",
 		},
 		{
-			// "control-plane-eastus-1.masters." is 31 characters, so 49 remain for the cluster name.
+			// "control-plane-<20-character zone>.masters." leaves 37 characters for the cluster name.
 			name:          "azure cuts the name so the control-plane VMSS name fits in 80 characters",
 			cloudProvider: "azure",
 			jobName:       "pull-kops-azure-agent-sandbox-benchmark-systemd",
 			createArgs:    "--networking=cilium --zones=eastus-1",
-			want:          "pr18862-kops-azure-agent-sandbox-benchmark-system",
+			want:          "pr18862-kops-azure-agent-sandbox-benc",
 		},
 		{
-			// Without --zones the longest zone in the pool, uksouth-1, sets the budget: 48 characters.
-			name:          "azure sizes for the longest zone in the pool when no zone is given",
+			// --down runs without create args and must compute the same name as --up.
+			name:          "azure name does not depend on the zone passed at creation",
 			cloudProvider: "azure",
 			jobName:       "pull-kops-azure-agent-sandbox-benchmark-systemd",
-			want:          "pr18862-kops-azure-agent-sandbox-benchmark-syste",
+			want:          "pr18862-kops-azure-agent-sandbox-benc",
 		},
 	}
 	for _, tc := range tests {

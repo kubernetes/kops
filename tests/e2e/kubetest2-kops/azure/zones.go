@@ -38,12 +38,7 @@ func RandomZones(count int) ([]string, error) {
 	return chosenZones, nil
 }
 
-// MaxZoneNameLength returns the length of the longest zone name RandomZones can
-// return, for callers that size cluster names before a zone is chosen.
-func MaxZoneNameLength() int {
-	n := 0
-	for _, zone := range allZones {
-		n = max(n, len(zone))
-	}
-	return n
-}
+// MaxZoneNameLength bounds the length of a kops Azure zone name, "<region>-<n>".
+// The longest Azure region names, such as australiasoutheast, are 18 characters.
+// Callers size cluster names with it, so it must not depend on the zone chosen.
+const MaxZoneNameLength = 20
