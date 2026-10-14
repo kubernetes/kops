@@ -138,6 +138,13 @@ The other `STRESS_*` knobs (`STRESS_FILL_PER_NODE`, `STRESS_PROBE_COUNT`, `STRES
 `STRESS_NODE_CIDR_MASK_SIZE`, `STRESS_ETCD_QUOTA_BYTES`, `STRESS_KINDNET_NETWORK_POLICIES`) match
 the upstream script.
 
+### Patches to the agent-sandbox checkout
+
+`patches/` holds upstream fixes that the pinned agent-sandbox release does not have yet, as
+`git format-patch` files. They are applied to the clone after checkout; a patch that is already in
+the checked-out release is skipped, so it can be removed once the release has moved past it.
+They are not applied to a caller-provided `AGENT_SANDBOX_ROOT`.
+
 ### Output
 
 The stress tool's raw data, the controller log and the rendered HTML report are written to

@@ -1,0 +1,31 @@
+From 4750feb62bf1a4eba169c1aacd4d1b8f0e506ae7 Mon Sep 17 00:00:00 2001
+From: Ciprian Hacman <ciprian@hakman.dev>
+Date: Wed, 14 Oct 2026 19:55:50 +0300
+Subject: [PATCH] test/e2e: treat any cloud provider id as a real cluster
+
+IsKindCluster only recognized kind:// and gce:// provider ids and failed
+the test for anything else, so the benchmarks could not run on kOps
+clusters on AWS (aws:///...) or Azure (azure:///...). Only kind:// means
+kind; any other non-empty provider id is a real cluster.
+---
+ test/e2e/framework/client.go | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/test/e2e/framework/client.go b/test/e2e/framework/client.go
+index 57caa5e..0cbf699 100644
+--- a/test/e2e/framework/client.go
++++ b/test/e2e/framework/client.go
+@@ -776,10 +776,11 @@ func (cl *ClusterClient) IsKindCluster() bool {
+ 		if strings.HasPrefix(node.Spec.ProviderID, "kind://") {
+ 			return true
+ 		}
+-		if strings.HasPrefix(node.Spec.ProviderID, "gce://") {
++		// Any other provider id (gce://, aws://, azure://, ...) is a real cluster.
++		if node.Spec.ProviderID != "" {
+ 			return false
+ 		}
+-		cl.Logf("Unknown node provider id %q", node.Spec.ProviderID)
++		cl.Logf("Node %q has no provider id", node.Name)
+ 	}
+ 
+ 	cl.Fatalf("cannot determine if cluster is kind (no node with recognized providerID)")

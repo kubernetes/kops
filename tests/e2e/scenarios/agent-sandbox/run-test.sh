@@ -184,6 +184,17 @@ if [[ -z "${AGENT_SANDBOX_ROOT:-}" ]]; then
     AGENT_SANDBOX_VERSION=$(python3 dev/tools/latest-published-tag)
   fi
   git checkout --quiet "${AGENT_SANDBOX_VERSION}"
+  # Upstream fixes the pinned release does not have yet, as `git format-patch`
+  # files. A patch that is already in the release is skipped, so it can be
+  # removed at leisure once the release has moved past it.
+  for patch in "${REPO_ROOT}"/tests/e2e/scenarios/agent-sandbox/patches/*.patch; do
+    [[ -e "${patch}" ]] || continue
+    if git apply --reverse --check "${patch}" 2>/dev/null; then
+      echo "Already in ${AGENT_SANDBOX_VERSION}, skipping: ${patch##*/}"
+    else
+      git apply --verbose "${patch}"
+    fi
+  done
 fi
 cd "${AGENT_SANDBOX_ROOT}"
 # deploy-to-kube and test-e2e read IMAGE_PREFIX and IMAGE_TAG from the environment.
