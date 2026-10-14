@@ -18,10 +18,12 @@ package bootstrapchannelbuilder
 
 import (
 	"context"
+	"slices"
 	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/pkg/apis/kops"
@@ -182,7 +184,7 @@ func TestAddonManifestNormalizeProtectedInstanceGroups(t *testing.T) {
 			karpenterKinds := 0
 			for _, kind := range addon.addonSpec.Prune.Kinds {
 				want := ""
-				if kind.Kind == "EC2NodeClass" || kind.Kind == "NodePool" {
+				if slices.Contains(karpenterInstanceGroupKinds, schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
 					want = tc.wantFieldSelector
 					karpenterKinds++
 				}
