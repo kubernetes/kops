@@ -241,7 +241,7 @@ func TestAddonManifestNormalizeHashesKeptObjects(t *testing.T) {
 	// Only the control plane is updated, as in the first step of "kops reconcile cluster", so the
 	// manifest has no objects of the Karpenter instance groups, which are kept from pruning.
 	controlPlane := testInstanceGroup("control-plane", kops.InstanceGroupRoleControlPlane, kops.InstanceManagerCloudGroup)
-	build := func(kept []string) *channels.Addon {
+	build := func(t *testing.T, kept []string) *channels.Addon {
 		allInstanceGroups := []*kops.InstanceGroup{controlPlane}
 		for _, name := range kept {
 			allInstanceGroups = append(allInstanceGroups, testInstanceGroup(name, kops.InstanceGroupRoleNode, kops.InstanceManagerKarpenter))
@@ -293,7 +293,7 @@ func TestAddonManifestNormalizeHashesKeptObjects(t *testing.T) {
 	}
 	for _, g := range grid {
 		t.Run(g.desc, func(t *testing.T) {
-			update, err := build(g.next).GetRequiredUpdates(context.Background(), nil, nil, build(g.previous).ChannelVersion())
+			update, err := build(t, g.next).GetRequiredUpdates(context.Background(), nil, nil, build(t, g.previous).ChannelVersion())
 			if err != nil {
 				t.Fatalf("getting required updates: %v", err)
 			}
