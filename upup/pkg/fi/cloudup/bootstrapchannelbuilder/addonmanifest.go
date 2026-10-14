@@ -118,10 +118,14 @@ func (a *AddonManifest) Normalize(c *fi.CloudupContext) error {
 		return kind.FieldSelector != ""
 	})
 	if protectsObjects {
-		// kops-channels applies an addon only when its manifest hash changes. Protected objects may
-		// be missing from the manifest, so the prune spec is hashed with it: deleting their instance
-		// group must change the hash even if the manifest doesn't. Other addons keep the hash of
-		// the manifest alone.
+		// kops-channels applies and prunes an addon only when its id or manifest hash changes, see
+		// channels.ChannelVersion. Protected objects may be missing from the manifest, so the prune
+		// spec is hashed with it: deleting their instance group must change the hash even if the
+		// manifest doesn't. The field selector is the only prune directive that doesn't derive from
+		// the manifest: the kinds are fixed and the namespaces are those of its objects. Any other
+		// directive computed from the cluster state must be hashed too. Other addons keep the hash
+		// of the manifest alone, so that upgrading kOps doesn't re-apply them, which would also
+		// trigger their rolling updates, see NeedsRollingUpdate.
 		pruneSpec, err := json.Marshal(a.addonSpec.Prune)
 		if err != nil {
 			return fmt.Errorf("error serializing prune spec: %w", err)
