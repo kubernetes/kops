@@ -1,0 +1,47 @@
+From de8140a19a7942cd812743b65a49d69832ffd7af Mon Sep 17 00:00:00 2001
+From: Ciprian Hacman <ciprian@hakman.dev>
+Date: Wed, 14 Oct 2026 21:13:08 +0300
+Subject: [PATCH] test/e2e: bound the Chrome readiness wait and give its probe
+ a realistic timeout
+
+waitForChromeReady polled Chrome's debug port through a kubectl port-forward
+with a 200 ms HTTP timeout and no deadline. On a cluster far from the test
+runner the round trip through the API server exceeds 200 ms, so the probe
+never succeeded and the benchmark spun until the job timed out. Allow a few
+round trips and fail after 5 minutes instead.
+---
+ test/e2e/chromesandbox_test.go | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/test/e2e/chromesandbox_test.go b/test/e2e/chromesandbox_test.go
+index d1ea5a5..8d0972b 100644
+--- a/test/e2e/chromesandbox_test.go
++++ b/test/e2e/chromesandbox_test.go
+@@ -242,9 +242,15 @@ func waitForChromeReady(tc *framework.TestContext, podID types.NamespacedName) e
+ 
+ 	ctx := tc.Context()
+ 
+-	// Loop until we can query chrome for its version via the debug port
++	// Loop until we can query chrome for its version via the debug port. The pod
++	// is already Ready here, so bound the wait instead of spinning until the job
++	// times out when the probe can never succeed.
+ 	pollDuration := 100 * time.Millisecond
++	deadline := time.Now().Add(5 * time.Minute)
+ 	for {
++		if time.Now().After(deadline) {
++			return fmt.Errorf("chrome did not answer on the debug port within 5m")
++		}
+ 		select {
+ 		case <-ctx.Done():
+ 			return fmt.Errorf("context cancelled")
+@@ -277,7 +283,9 @@ func waitForChromeReady(tc *framework.TestContext, podID types.NamespacedName) e
+ // This is used to verify that Chrome is running inside the sandbox.
+ func getChromeInfo(ctx context.Context, u string) (string, error) {
+ 	httpClient := &http.Client{}
+-	httpClient.Timeout = 200 * time.Millisecond
++	// The request crosses a kubectl port-forward through the API server, so a
++	// budget of a few round trips is needed for clusters far from the test runner.
++	httpClient.Timeout = 5 * time.Second
+ 
+ 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
+ 	if err != nil {
