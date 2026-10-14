@@ -84,6 +84,7 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
     esac
   fi
   create_args+=("--zones=us-east1-b,us-east1-c,us-east1-d")
+  create_args+=("--control-plane-zones=${CONTROL_PLANE_ZONES:-us-east1-b}")
   create_args+=("--node-size=${NODE_SIZE:-e2-medium}")
   create_args+=("--node-volume-size=30")
   create_args+=("--control-plane-volume-size=1000")
