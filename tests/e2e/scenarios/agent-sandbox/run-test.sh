@@ -80,6 +80,10 @@ case "${CLOUD_PROVIDER}" in
     STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.2xlarge}"
     # gp3, kOps' AWS default, is an SSD with a 3000 IOPS baseline at any size.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
+    # Ubuntu 26.10, the image the kOps u2610 distro jobs run (pinned in
+    # test-infra's config/jobs/kubernetes/kops/pinned.list). kOps' own AWS
+    # default is still Ubuntu 24.04.
+    INSTANCE_IMAGE="${INSTANCE_IMAGE:-099720109477/ubuntu/images-testing/hvm-ssd-gp3/ubuntu-stonking-daily-amd64-server-20261011}"
     ;;
   azure)
     # No default zone: kubetest2-kops picks from its uksouth pool, where the
@@ -107,6 +111,9 @@ esac
 # nodes); keep the kOps defaults the upstream job runs with, as GCE and Azure
 # disk IOPS scale with size.
 STRESS_NODE_VOLUME_SIZE="${STRESS_NODE_VOLUME_SIZE:-128}"
+if [[ -n "${INSTANCE_IMAGE:-}" ]]; then
+  OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE}"
+fi
 OVERRIDES="${OVERRIDES} --control-plane-size=${STRESS_CONTROL_PLANE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-count=${STRESS_NODE_COUNT}"
 OVERRIDES="${OVERRIDES} --node-size=${STRESS_NODE_SIZE}"

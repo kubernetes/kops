@@ -98,6 +98,7 @@ neither cloud has a 22 vCPU size like `c3-standard-22`.
 | `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8ds_v5` |
 | `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` | `Premium_LRS` |
 | `STRESS_NODE_VOLUME_SIZE` | `128` | `128` | `1024` |
+| `INSTANCE_IMAGE` | kOps default (Ubuntu 24.04) | Ubuntu 26.10 daily `20261011` | kOps default (Ubuntu 24.04) |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
 
 On AWS no zone is pinned: kubetest2-kops picks a zone that offers both instance types, in a
@@ -122,6 +123,7 @@ with pod starts three to four times slower than on gp3. The Azure default is the
 | `CGROUP_DRIVER` | `systemd` | `cgroupfs` switches containerd and the kubelet off the systemd cgroup driver |
 | `ZONES` | per cloud, see above | Zone to create the cluster in |
 | `K8S_VERSION` | `stable` | Kubernetes version passed to kubetest2 |
+| `INSTANCE_IMAGE` | per cloud, see above | kOps `--image` for all instance groups; on AWS the Ubuntu 26.10 image the kOps u2610 jobs run |
 | `AGENT_SANDBOX_VERSION` | newest tag published on `registry.k8s.io` | agent-sandbox tag to check out and deploy |
 | `AGENT_SANDBOX_ROOT` | fresh clone in the workspace | Use an existing agent-sandbox checkout as is |
 | `IMAGE_PREFIX` / `IMAGE_TAG` | `registry.k8s.io/agent-sandbox/` / `AGENT_SANDBOX_VERSION` | Controller images to deploy |
