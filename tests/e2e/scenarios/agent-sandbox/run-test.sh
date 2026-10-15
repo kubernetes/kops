@@ -23,9 +23,9 @@
 #
 # The cluster tuning mirrors test/benchmarks/scenarios/benchmarks-kops-gcp/run
 # in agent-sandbox, and the STRESS_* variables keep that script's names and,
-# except the run-length knobs (STRESS_THROUGHPUT_MIN_SECONDS, STRESS_TIMEOUT,
-# STRESS_METRICS_INTERVAL), its defaults, so results are comparable with the
-# upstream jobs. The measurements
+# except the run-length knobs (STRESS_THROUGHPUT_MIN_SECONDS, STRESS_TIMEOUT),
+# its defaults, so results are comparable with the upstream jobs. The
+# measurements
 # behind each knob are documented in that script.
 
 set -o errexit
@@ -251,8 +251,9 @@ mkdir -p "${STRESS_OUTPUT_DIR}"
 # at which pinned cgroups started to slow pod starts elsewhere. Steady-state
 # throughput does not depend on the phase length. The run then takes about
 # 45 minutes and the job about 65 of its 150, so the tool's own timeout is
-# raised too, and metrics are scraped every 60s rather than 15s to keep the
-# scrape log at today's size, which the report's explorer loads in-browser.
+# raised too. The scrape log grows with it, to roughly 2.5 GB uncompressed,
+# which the report's Metric Explorer loads in the browser; the data keeps
+# its 15s resolution regardless, STRESS_METRICS_INTERVAL lowers it on demand.
 set +o errexit
 # STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass tool flags
 # verbatim (e.g. --client-connections=4 for the claims profile).
@@ -266,7 +267,7 @@ go run ./test/stress \
   --create-concurrency="${STRESS_CREATE_CONCURRENCY:-50}" \
   --claims-warm-count="${STRESS_CLAIMS_WARM:-300}" \
   --timeout="${STRESS_TIMEOUT:-90m}" \
-  --metrics-interval="${STRESS_METRICS_INTERVAL:-60s}" \
+  --metrics-interval="${STRESS_METRICS_INTERVAL:-15s}" \
   --output-dir="${STRESS_OUTPUT_DIR}" \
   ${STRESS_EXTRA_ARGS:-}
 stress_status=$?
