@@ -22,8 +22,9 @@
 # in presubmits.
 #
 # The cluster tuning mirrors test/benchmarks/scenarios/benchmarks-kops-gcp/run
-# in agent-sandbox, and the STRESS_* variables keep that script's names and
-# defaults, so results are comparable with the upstream jobs. The measurements
+# in agent-sandbox, and the STRESS_* variables keep that script's names and,
+# except STRESS_THROUGHPUT_MIN_SECONDS, its defaults, so results are
+# comparable with the upstream jobs. The measurements
 # behind each knob are documented in that script.
 
 set -o errexit
@@ -242,7 +243,11 @@ mkdir -p "${STRESS_OUTPUT_DIR}"
 # Phases are documented in test/stress/phase.go. The default list measures
 # launch latency and throughput on a mostly empty cluster, then repeats the
 # mif400 level at 80% pod utilization to separate launch-pipeline cost from
-# resident-pod scale cost.
+# resident-pod scale cost. Throughput phases run for at least 120s rather
+# than upstream's 45s: the extra pod churn per node (3-4k lifecycles per
+# worker on the 3-node profile instead of 1.5k) is what makes the dying
+# memory cgroup and kernel memory series trend readable, and steady-state
+# throughput does not depend on the phase length.
 set +o errexit
 # STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass tool flags
 # verbatim (e.g. --client-connections=4 for the claims profile).
@@ -252,7 +257,7 @@ go run ./test/stress \
   --fill-per-node="${STRESS_FILL_PER_NODE:-10}" \
   --probe-count="${STRESS_PROBE_COUNT:-30}" \
   --throughput-count="${STRESS_THROUGHPUT_COUNT:-500}" \
-  --throughput-min-seconds="${STRESS_THROUGHPUT_MIN_SECONDS:-45}" \
+  --throughput-min-seconds="${STRESS_THROUGHPUT_MIN_SECONDS:-120}" \
   --create-concurrency="${STRESS_CREATE_CONCURRENCY:-50}" \
   --claims-warm-count="${STRESS_CLAIMS_WARM:-300}" \
   --timeout="${STRESS_TIMEOUT:-30m}" \

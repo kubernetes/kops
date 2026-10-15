@@ -9,8 +9,9 @@ This scenario runs it with the kOps build under test, so kOps changes that affec
 launch throughput or control-plane behaviour show up in presubmits.
 
 The cluster tuning is the same as upstream's `test/benchmarks/scenarios/benchmarks-kops-gcp/run`,
-and the `STRESS_*` variables keep the same names and defaults, so results are comparable with
-the upstream jobs. The controller is deployed from the published `registry.k8s.io/agent-sandbox/`
+and the `STRESS_*` variables keep the same names and, except `STRESS_THROUGHPUT_MIN_SECONDS`,
+the same defaults, so results are comparable with the upstream jobs. The controller is deployed
+from the published `registry.k8s.io/agent-sandbox/`
 images, and the agent-sandbox checkout is pinned to the same release tag, so no images are built
 and no container registry is needed on any cloud.
 
@@ -134,13 +135,13 @@ with pod starts three to four times slower than on gp3. The Azure default is the
 | `STRESS_NODE_VOLUME_TYPE` | per cloud, see above | Worker root volume type |
 | `STRESS_NODE_VOLUME_SIZE` | per cloud, see above | Worker root volume size in GB |
 | `STRESS_PHASES` | upstream periodic phase list | Stress tool phases, see `test/stress/phase.go` upstream |
+| `STRESS_THROUGHPUT_MIN_SECONDS` | `120` (upstream: `45`) | Minimum length of each throughput phase; the longer churn makes the dying memory cgroup and kernel memory trends readable |
 | `STRESS_EXTRA_ARGS` | unset | Extra stress tool flags, passed verbatim |
 | `STRESS_VALIDATE_WAIT` | `25m` | Cluster validation timeout |
 
 The other `STRESS_*` knobs (`STRESS_FILL_PER_NODE`, `STRESS_PROBE_COUNT`, `STRESS_THROUGHPUT_COUNT`,
-`STRESS_THROUGHPUT_MIN_SECONDS`, `STRESS_CREATE_CONCURRENCY`, `STRESS_CLAIMS_WARM`, `STRESS_TIMEOUT`,
-`STRESS_NODE_CIDR_MASK_SIZE`, `STRESS_ETCD_QUOTA_BYTES`, `STRESS_KINDNET_NETWORK_POLICIES`) match
-the upstream script.
+`STRESS_CREATE_CONCURRENCY`, `STRESS_CLAIMS_WARM`, `STRESS_TIMEOUT`, `STRESS_NODE_CIDR_MASK_SIZE`,
+`STRESS_ETCD_QUOTA_BYTES`, `STRESS_KINDNET_NETWORK_POLICIES`) match the upstream script.
 
 ### Patches to the agent-sandbox checkout
 
