@@ -152,6 +152,10 @@ They are not applied to a caller-provided `AGENT_SANDBOX_ROOT`. Besides the two 
 node-exporter patch exports `/sys/fs/cgroup/cgroup.stat` as `node_cgroup_stat_<field>` gauges
 (`nr_dying_descendants`, and `nr_dying_subsys_memory` on 6.12+ kernels) and the `/proc/cgroups`
 count, so the stress tool's `metrics.jsonl` records how many memory cgroups pod churn leaves behind.
+The report patch lets the Metric Explorer page stack several queries separated by `;`, one chart
+per query on the same time axis, so those series can be read next to iowait, disk and memory
+from one link, for example
+`metrics.html#q=metric:=node_cgroup_stat_nr_dying_descendants ; metric:=node_cpu_seconds_total mode:iowait ; metric:=node_memory_Percpu_bytes`.
 
 ### Output
 
