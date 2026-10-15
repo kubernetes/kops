@@ -1,47 +1,96 @@
-From de8140a19a7942cd812743b65a49d69832ffd7af Mon Sep 17 00:00:00 2001
+From 48a1f907f18538176d6af245550e7fd57e8d507e Mon Sep 17 00:00:00 2001
 From: Ciprian Hacman <ciprian@hakman.dev>
 Date: Wed, 14 Oct 2026 21:13:08 +0300
 Subject: [PATCH] test/e2e: bound the Chrome readiness wait and give its probe
  a realistic timeout
 
-waitForChromeReady polled Chrome's debug port through a kubectl port-forward
-with a 200 ms HTTP timeout and no deadline. On a cluster far from the test
-runner the round trip through the API server exceeds 200 ms, so the probe
-never succeeded and the benchmark spun until the job timed out. Allow a few
-round trips and fail after 5 minutes instead.
+waitForChromeReady polled Chrome's debug port through a kubectl
+port-forward with a 200 ms HTTP timeout and no deadline of its own. Each
+probe connection opens two SPDY streams that each wait for the kubelet's
+reply before the HTTP exchange itself, so a probe costs at least three
+sequential round trips to the API server. From a prow runner in
+us-east-2 that is always more than 200 ms for kOps clusters in eu-west,
+and the probe never succeeded there.
+
+Nothing bounded the loop either: go test's -timeout is stopped before
+benchmarks run, so the benchmark spun until the CI job was killed after
+2.5 hours. Give the probe 5 s and derive a 5 minute deadline from the
+test context, which also cancels the port-forward and the request, and
+report the last probe error when it expires. The pod is already Ready at
+that point and its readiness probe fetches the same URL inside the pod,
+so one attempt normally suffices.
 ---
- test/e2e/chromesandbox_test.go | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ test/e2e/chromesandbox_test.go | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
 diff --git a/test/e2e/chromesandbox_test.go b/test/e2e/chromesandbox_test.go
-index d1ea5a5..8d0972b 100644
+index d1ea5a5..a400bc1 100644
 --- a/test/e2e/chromesandbox_test.go
 +++ b/test/e2e/chromesandbox_test.go
-@@ -242,9 +242,15 @@ func waitForChromeReady(tc *framework.TestContext, podID types.NamespacedName) e
+@@ -237,22 +237,44 @@ func runChromeSandbox(t *framework.TestContext) *ChromeSandboxMetrics {
+ 	return metrics
+ }
  
- 	ctx := tc.Context()
++const (
++	// chromeProbeTimeout bounds one GET of Chrome's /json/version through the
++	// kubectl port-forward. Each probe connection opens two SPDY streams that
++	// each wait for the kubelet's reply before the HTTP exchange itself, so a
++	// probe costs at least three sequential round trips to the API server; a
++	// 200 ms budget never succeeded from a runner ~90 ms away.
++	chromeProbeTimeout = 5 * time.Second
++	// chromeReadyTimeout bounds waitForChromeReady. go test's -timeout does not
++	// apply to benchmarks, so without a local bound a probe that never succeeds
++	// spins until the CI job is killed. The pod is already Ready and its
++	// readiness probe fetches the same URL inside the pod, so this only covers
++	// the network path and one attempt normally suffices.
++	chromeReadyTimeout = 5 * time.Minute
++)
++
+ func waitForChromeReady(tc *framework.TestContext, podID types.NamespacedName) error {
+ 	tc.Helper()
  
--	// Loop until we can query chrome for its version via the debug port
-+	// Loop until we can query chrome for its version via the debug port. The pod
-+	// is already Ready here, so bound the wait instead of spinning until the job
-+	// times out when the probe can never succeed.
+-	ctx := tc.Context()
++	ctx, cancel := context.WithTimeout(tc.Context(), chromeReadyTimeout)
++	defer cancel()
+ 
+ 	// Loop until we can query chrome for its version via the debug port
  	pollDuration := 100 * time.Millisecond
-+	deadline := time.Now().Add(5 * time.Minute)
++	var lastErr error
  	for {
-+		if time.Now().After(deadline) {
-+			return fmt.Errorf("chrome did not answer on the debug port within 5m")
-+		}
  		select {
  		case <-ctx.Done():
- 			return fmt.Errorf("context cancelled")
-@@ -277,7 +283,9 @@ func waitForChromeReady(tc *framework.TestContext, podID types.NamespacedName) e
+-			return fmt.Errorf("context cancelled")
++			err := fmt.Errorf("chrome did not answer on the debug port within %s: %w", chromeReadyTimeout, ctx.Err())
++			if lastErr != nil {
++				err = fmt.Errorf("%w; last probe error: %w", err, lastErr)
++			}
++			return err
+ 		default:
+ 			// We have to port-forward in the loop because port-forward exits when it sees an error
+ 			// https://github.com/kubernetes/kubectl/issues/1249
+ 			portForwardCtx, portForwardCancel := context.WithCancel(ctx)
+ 			if err := tc.PortForward(portForwardCtx, podID, 9222, 9222); err != nil {
++				lastErr = err
+ 				tc.Logf("failed to port forward: %s", err)
+ 				portForwardCancel()
+ 				time.Sleep(pollDuration)
+@@ -263,6 +285,7 @@ func waitForChromeReady(tc *framework.TestContext, podID types.NamespacedName) e
+ 			info, err := getChromeInfo(ctx, u)
+ 			portForwardCancel()
+ 			if err != nil {
++				lastErr = err
+ 				tc.Logf("failed to get chrome info: %s", err)
+ 				time.Sleep(pollDuration)
+ 				continue
+@@ -277,7 +300,7 @@ func waitForChromeReady(tc *framework.TestContext, podID types.NamespacedName) e
  // This is used to verify that Chrome is running inside the sandbox.
  func getChromeInfo(ctx context.Context, u string) (string, error) {
  	httpClient := &http.Client{}
 -	httpClient.Timeout = 200 * time.Millisecond
-+	// The request crosses a kubectl port-forward through the API server, so a
-+	// budget of a few round trips is needed for clusters far from the test runner.
-+	httpClient.Timeout = 5 * time.Second
++	httpClient.Timeout = chromeProbeTimeout
  
  	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
  	if err != nil {
+-- 
+2.54.0
+
