@@ -121,6 +121,12 @@ func getActualAllowedAddressPairs(port *ports.Port, find *Port) []ports.AddressP
 
 func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
 	additionalSecurityGroupIDs := map[string]struct{}{}
+	onPort := map[string]struct{}{}
+	for _, sgid := range port.SecurityGroups {
+		onPort[sgid] = struct{}{}
+	}
+	// Names copied from find hide a group that is not actually on the port.
+	var attachedAdditional []string
 	if find != nil {
 		for _, sg := range find.AdditionalSecurityGroups {
 			opt := secgroup.ListOpts{
@@ -134,6 +140,9 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 				continue
 			}
 			additionalSecurityGroupIDs[gs[0].ID] = struct{}{}
+			if _, ok := onPort[gs[0].ID]; ok {
+				attachedAdditional = append(attachedAdditional, sg)
+			}
 		}
 	}
 	sgs := []*SecurityGroup{}
@@ -197,7 +206,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 	if find != nil {
 		find.ID = actual.ID
 		actual.InstanceGroupName = find.InstanceGroupName
-		actual.AdditionalSecurityGroups = find.AdditionalSecurityGroups
+		actual.AdditionalSecurityGroups = attachedAdditional
 		actual.WellKnownServices = find.WellKnownServices
 	}
 	return actual, nil
@@ -283,11 +292,21 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 				}
 			}
 		}
+		update := ports.UpdateOpts{}
 		if changes.AllowedAddressPairs != nil {
 			klog.V(2).Infof("Updating allowed address pairs for Port with name: %q", fi.ValueOf(e.Name))
-			_, err := t.Cloud.UpdatePort(fi.ValueOf(a.ID), ports.UpdateOpts{
-				AllowedAddressPairs: &e.AllowedAddressPairs,
-			})
+			update.AllowedAddressPairs = &e.AllowedAddressPairs
+		}
+		if changes.SecurityGroups != nil || changes.AdditionalSecurityGroups != nil {
+			klog.V(2).Infof("Updating security groups for Port with name: %q", fi.ValueOf(e.Name))
+			sgs, err := securityGroupIDsForPort(t.Cloud, e)
+			if err != nil {
+				return err
+			}
+			update.SecurityGroups = &sgs
+		}
+		if update.AllowedAddressPairs != nil || update.SecurityGroups != nil {
+			_, err := t.Cloud.UpdatePort(fi.ValueOf(a.ID), update)
 			if err != nil {
 				return fmt.Errorf("error updating port: %v", err)
 			}
@@ -296,6 +315,24 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 	e.ID = a.ID
 	klog.V(2).Infof("Using an existing Openstack port, id=%s", fi.ValueOf(e.ID))
 	return nil
+}
+
+func securityGroupIDsForPort(cloud openstack.OpenstackCloud, e *Port) ([]string, error) {
+	sgs := make([]string, 0, len(e.SecurityGroups)+len(e.AdditionalSecurityGroups))
+	for _, sg := range e.SecurityGroups {
+		sgs = append(sgs, fi.ValueOf(sg.ID))
+	}
+	for _, name := range e.AdditionalSecurityGroups {
+		gs, err := cloud.ListSecurityGroups(secgroup.ListOpts{Name: name})
+		if err != nil {
+			return nil, fmt.Errorf("error listing security group %s: %v", name, err)
+		}
+		if len(gs) == 0 {
+			return nil, fmt.Errorf("Additional SecurityGroup not found for name %s", name)
+		}
+		sgs = append(sgs, gs[0].ID)
+	}
+	return sgs, nil
 }
 
 func portCreateOptsFromPortTask(t *openstack.OpenstackAPITarget, a, e, changes *Port) (ports.CreateOptsBuilder, error) {
