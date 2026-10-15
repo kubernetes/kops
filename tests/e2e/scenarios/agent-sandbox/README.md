@@ -97,6 +97,7 @@ neither cloud has a 22 vCPU size like `c3-standard-22`.
 | `STRESS_CONTROL_PLANE_SIZE`, up to 3 workers | `c3-standard-8` | `m7i.2xlarge` | `Standard_D8ds_v5` |
 | `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8ds_v5` |
 | `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` | `Premium_LRS` |
+| `STRESS_NODE_VOLUME_SIZE` | `128` | `128` | `1024` |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
 
 On AWS no zone is pinned: kubetest2-kops picks a zone that offers both instance types, in a
@@ -107,9 +108,10 @@ CI subscription's Ddsv5 quota there is 250 cores against the 65-core default for
 
 On GCE the worker roots are `pd-ssd` because pod launch is fsync-bound on `pd-standard`
 (kOps' GCE default), and the `c3` control-plane family does not support `pd-standard` boot
-disks. `gp3` is kOps' AWS default and has a 3000 IOPS baseline at any size. On Azure disk
-IOPS scale with size, and both `StandardSSD_LRS` and `Premium_LRS` cap at 500 IOPS on the
-128 GB root, so raise `STRESS_NODE_VOLUME_SIZE` if runs come out disk-bound.
+disks. `gp3` is kOps' AWS default and has a 3000 IOPS baseline at any size. On Azure Premium
+SSD IOPS scale with size: a 128 GB root is a P10 at 500 IOPS, which the 3-worker run saturated,
+with pod starts three to four times slower than on gp3. The Azure default is therefore a
+1024 GB P30 at 5000 IOPS and 200 MB/s, the same class as gp3.
 
 ### Variables
 
@@ -128,7 +130,7 @@ IOPS scale with size, and both `StandardSSD_LRS` and `Premium_LRS` cap at 500 IO
 | `STRESS_CONTROL_PLANE_SIZE` | per cloud and worker count, see above | Control-plane machine type |
 | `STRESS_NODE_SIZE` | per cloud, see above | Worker machine type |
 | `STRESS_NODE_VOLUME_TYPE` | per cloud, see above | Worker root volume type |
-| `STRESS_NODE_VOLUME_SIZE` | `128` | Worker root volume size in GB |
+| `STRESS_NODE_VOLUME_SIZE` | per cloud, see above | Worker root volume size in GB |
 | `STRESS_PHASES` | upstream periodic phase list | Stress tool phases, see `test/stress/phase.go` upstream |
 | `STRESS_EXTRA_ARGS` | unset | Extra stress tool flags, passed verbatim |
 | `STRESS_VALIDATE_WAIT` | `25m` | Cluster validation timeout |

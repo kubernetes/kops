@@ -58,10 +58,6 @@ control_plane_size() {
 STRESS_NODE_CIDR_MASK_SIZE="${STRESS_NODE_CIDR_MASK_SIZE:-23}"
 STRESS_ETCD_QUOTA_BYTES="${STRESS_ETCD_QUOTA_BYTES:-8589934592}"
 STRESS_VALIDATE_WAIT="${STRESS_VALIDATE_WAIT:-25m}"
-# kubetest2-kops would otherwise shrink the root volumes to 48GB (100GB for GCE
-# nodes); keep the kOps defaults the upstream job runs with, as GCE and Azure
-# disk IOPS scale with size.
-STRESS_NODE_VOLUME_SIZE="${STRESS_NODE_VOLUME_SIZE:-128}"
 
 OVERRIDES="${OVERRIDES-}"
 case "${CLOUD_PROVIDER}" in
@@ -93,9 +89,12 @@ case "${CLOUD_PROVIDER}" in
     STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-$(control_plane_size Standard_D8ds_v5 Standard_D32ds_v5)}"
     STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8ds_v5}"
     # Premium SSD, Azure's low-latency tier (kOps defaults to StandardSSD_LRS).
-    # Azure disk IOPS scale with size: both tiers cap at 500 on a 128 GB root,
-    # so raise STRESS_NODE_VOLUME_SIZE if runs come out disk-bound.
+    # Premium SSD IOPS scale with size: a 128 GB root is a P10 at 500 IOPS,
+    # which the 3-worker run saturated (96% busy, queue depth over 30, pod
+    # starts 3-4x slower than on gp3). 1024 GB is a P30 at 5000 IOPS and
+    # 200 MB/s, the same class as gp3.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-Premium_LRS}"
+    STRESS_NODE_VOLUME_SIZE="${STRESS_NODE_VOLUME_SIZE:-1024}"
     # kOps' Azure support is alpha and feature-gated, for every kops invocation.
     export KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS:-Azure}"
     ;;
@@ -104,6 +103,10 @@ case "${CLOUD_PROVIDER}" in
     exit 1
     ;;
 esac
+# kubetest2-kops would otherwise shrink the root volumes to 48GB (100GB for GCE
+# nodes); keep the kOps defaults the upstream job runs with, as GCE and Azure
+# disk IOPS scale with size.
+STRESS_NODE_VOLUME_SIZE="${STRESS_NODE_VOLUME_SIZE:-128}"
 OVERRIDES="${OVERRIDES} --control-plane-size=${STRESS_CONTROL_PLANE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-count=${STRESS_NODE_COUNT}"
 OVERRIDES="${OVERRIDES} --node-size=${STRESS_NODE_SIZE}"
