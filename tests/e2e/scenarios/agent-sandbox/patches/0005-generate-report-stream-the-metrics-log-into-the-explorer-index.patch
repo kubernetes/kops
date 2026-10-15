@@ -1,0 +1,182 @@
+From d80bc4153318b000278abbbb7de6afc0e178a9b0 Mon Sep 17 00:00:00 2001
+From: Ciprian Hacman <ciprian@hakman.dev>
+Date: Thu, 15 Oct 2026 14:05:15 +0300
+Subject: [PATCH] generate-report: stream the metrics log into the explorer
+ index
+
+loadMetricsLog buffered the whole decompressed log as one array before
+indexing it. A 45 minute stress run writes about 3 GB of samples, which
+crashes the browser tab, while the indexed series themselves are a few
+hundred MB. Decompress and parse the log as it streams in, carrying partial
+lines across chunks, and keep only the per-series arrays.
+
+Chunk sizes are the browser's choice: Safari delivers a cached response as
+one chunk and its DecompressionStream inflates that into one multi-GB
+output, which the text decoder cannot turn into a string, so the index came
+out empty there. Re-chunk to at most 1 MB into the decompressor and 8 MB
+into the decoder.
+---
+ .../static/metrics-explorer.js                | Bin 10254 -> 12704 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+diff --git a/test/stress/generate-report/static/metrics-explorer.js b/test/stress/generate-report/static/metrics-explorer.js
+index cde9648..b85d423 100644
+--- a/test/stress/generate-report/static/metrics-explorer.js
++++ b/test/stress/generate-report/static/metrics-explorer.js
+@@ -27,8 +27,10 @@
+ // raw buffer is discarded after indexing; the series arrays are the working
+ // set.
+ 
+-// loadMetricsLog fetches, gunzips if the bytes are gzip, and indexes the
+-// metrics log. startMs anchors each sample's offset-seconds. onProgress
++// loadMetricsLog fetches the metrics log, gunzips it if the bytes are gzip,
++// and indexes it while it streams in: the log of a long run is gigabytes of
++// text, so it is never held in memory whole, only the compact per-series
++// arrays survive. startMs anchors each sample's offset-seconds. onProgress
+ // (stage, detail) is called as loading advances.
+ async function loadMetricsLog(url, startMs, onProgress) {
+     const progress = onProgress || (() => {});
+@@ -45,18 +47,64 @@ async function loadMetricsLog(url, startMs, onProgress) {
+         }
+         resp = altResp;
+     }
+-    let buf = new Uint8Array(await resp.arrayBuffer());
+-    if (buf[0] === 0x1f && buf[1] === 0x8b) {
+-        progress('decompressing', '');
+-        const gunzip = new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip')));
+-        buf = new Uint8Array(await gunzip.arrayBuffer());
++    // Sniff the gzip magic from the first chunk, then hand the body on as a
++    // stream with that chunk put back in front.
++    const reader = resp.body.getReader();
++    const first = await reader.read();
++    const head = first.value || new Uint8Array(0);
++    let stream = new ReadableStream({
++        start(controller) {
++            if (head.length) controller.enqueue(head);
++            if (first.done) controller.close();
++        },
++        async pull(controller) {
++            const { done, value } = await reader.read();
++            if (done) controller.close(); else controller.enqueue(value);
++        },
++        cancel() { return reader.cancel(); },
++    });
++    // Chunk sizes are the browser's choice and Safari makes them huge: a
++    // cached response arrives as one chunk, and its DecompressionStream then
++    // inflates that chunk into one multi-GB output, which the text decoder
++    // cannot turn into a string. Re-chunk on both sides so the decompressor
++    // sees at most 1 MB at a time and the decoder at most 8 MB.
++    stream = stream.pipeThrough(rechunkStream(1 << 20));
++    if (head.length > 1 && head[0] === 0x1f && head[1] === 0x8b) {
++        stream = stream.pipeThrough(new DecompressionStream('gzip'));
++        stream = stream.pipeThrough(rechunkStream(8 << 20));
+     }
+-    return indexMetricsLog(buf, startMs, progress);
++    return indexMetricsStream(stream, startMs, progress);
+ }
+ 
+-// indexMetricsLog scans the buffer once, folding each sample into its
+-// series. Yields to the event loop periodically so the page stays live.
++// rechunkStream splits byte chunks larger than max into views of at most
++// max bytes, leaving smaller chunks untouched.
++function rechunkStream(max) {
++    return new TransformStream({
++        transform(chunk, controller) {
++            if (chunk.byteLength <= max) {
++                controller.enqueue(chunk);
++                return;
++            }
++            for (let i = 0; i < chunk.byteLength; i += max) {
++                controller.enqueue(chunk.subarray(i, Math.min(i + max, chunk.byteLength)));
++            }
++        },
++    });
++}
++
++// indexMetricsLog indexes an in-memory buffer; kept for callers that already
++// hold the bytes. It wraps the buffer in a one-chunk stream.
+ async function indexMetricsLog(buf, startMs, onProgress) {
++    const stream = new ReadableStream({
++        start(controller) { controller.enqueue(buf); controller.close(); },
++    });
++    return indexMetricsStream(stream, startMs, onProgress);
++}
++
++// indexMetricsStream reads the stream chunk by chunk, folding each complete
++// line into its series and carrying a partial trailing line over to the
++// next chunk. Yields to the event loop periodically so the page stays live.
++async function indexMetricsStream(stream, startMs, onProgress) {
+     const progress = onProgress || (() => {});
+     const decoder = new TextDecoder();
+     const series = [];
+@@ -65,33 +113,45 @@ async function indexMetricsLog(buf, startMs, onProgress) {
+     // memoize the string -> epoch-ms parse.
+     const tsCache = new Map();
+     let samples = 0;
++    let bytes = 0;
++    let lastYield = 0;
++    let carry = '';
+ 
+-    let start = 0;
+-    while (start < buf.length) {
+-        let end = buf.indexOf(0x0a, start); // '\n'
+-        if (end === -1) end = buf.length;
+-        if (end > start) {
+-            let rec;
+-            try {
+-                rec = JSON.parse(decoder.decode(buf.subarray(start, end)));
+-            } catch (err) {
+-                rec = null; // tolerate a truncated final line
+-            }
+-            if (rec && rec.metric && typeof rec.value === 'number') {
+-                let tMs = tsCache.get(rec.ts);
+-                if (tMs === undefined) {
+-                    tMs = Date.parse(rec.ts);
+-                    tsCache.set(rec.ts, tMs);
+-                }
+-                addSample(series, byKey, rec, (tMs - startMs) / 1000);
+-                samples++;
+-                if (samples % 100000 === 0) {
+-                    progress('indexing', `${samples.toLocaleString()} samples`);
+-                    await new Promise(resolve => setTimeout(resolve, 0));
+-                }
+-            }
++    const ingest = (line) => {
++        if (!line) return;
++        let rec;
++        try {
++            rec = JSON.parse(line);
++        } catch (err) {
++            return; // tolerate a truncated final line
++        }
++        if (!rec || !rec.metric || typeof rec.value !== 'number') return;
++        let tMs = tsCache.get(rec.ts);
++        if (tMs === undefined) {
++            tMs = Date.parse(rec.ts);
++            tsCache.set(rec.ts, tMs);
++        }
++        addSample(series, byKey, rec, (tMs - startMs) / 1000);
++        samples++;
++    };
++
++    const reader = stream.getReader();
++    for (;;) {
++        const { done, value } = await reader.read();
++        if (value) bytes += value.byteLength;
++        const text = carry + decoder.decode(value || new Uint8Array(0), { stream: !done });
++        const lines = text.split('\n');
++        carry = done ? '' : lines.pop();
++        for (const line of lines) ingest(line);
++        if (done) {
++            ingest(carry);
++            break;
++        }
++        if (samples - lastYield >= 100000) {
++            lastYield = samples;
++            progress('indexing', `${samples.toLocaleString()} samples, ${(bytes / 1048576).toFixed(0)} MB read`);
++            await new Promise(resolve => setTimeout(resolve, 0));
+         }
+-        start = end + 1;
+     }
+ 
+     // Families: one entry per metric name, spanning its series.

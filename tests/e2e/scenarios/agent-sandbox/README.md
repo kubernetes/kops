@@ -137,7 +137,7 @@ with pod starts three to four times slower than on gp3. The Azure default is the
 | `STRESS_PHASES` | upstream periodic phase list | Stress tool phases, see `test/stress/phase.go` upstream |
 | `STRESS_THROUGHPUT_MIN_SECONDS` | `600` (upstream: `45`) | Minimum length of each throughput phase; the churn (16-18k pod lifecycles per worker on the 3-node profile) makes the dying memory cgroup and kernel memory trends readable and reaches the count where pinned cgroups start to cost |
 | `STRESS_TIMEOUT` | `90m` (upstream: `30m`) | Stress tool run timeout; the four 600 s phases take about 45 minutes, the job about 65 of its 150 |
-| `STRESS_METRICS_INTERVAL` | `15s` | Prometheus scrape interval; the 45 minute run writes roughly 2.5 GB of samples uncompressed, which the report's Metric Explorer loads in the browser, so lower the rate if that page matters more than resolution |
+| `STRESS_METRICS_INTERVAL` | `15s` | Prometheus scrape interval; the 45 minute run writes about 3 GB of samples uncompressed (85 MB gzipped), which the report's Metric Explorer streams in about 30 s |
 | `STRESS_EXTRA_ARGS` | unset | Extra stress tool flags, passed verbatim |
 | `STRESS_VALIDATE_WAIT` | `25m` | Cluster validation timeout |
 
@@ -158,6 +158,8 @@ The report patch lets the Metric Explorer page stack several queries separated b
 per query on the same time axis, so those series can be read next to iowait, disk and memory
 from one link, for example
 `metrics.html#q=metric:=node_cgroup_stat_nr_dying_descendants ; metric:=node_cpu_seconds_total mode:iowait ; metric:=node_memory_Percpu_bytes`.
+A second report patch makes that page stream the scrape log instead of buffering it, which the logs of
+the 600 s runs otherwise crash the browser tab with.
 
 ### Output
 
