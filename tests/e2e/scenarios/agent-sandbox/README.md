@@ -11,9 +11,9 @@ launch throughput or control-plane behaviour show up in presubmits.
 The cluster tuning is the same as upstream's `test/benchmarks/scenarios/benchmarks-kops-gcp/run`,
 and the `STRESS_*` variables keep the same names and, except `STRESS_THROUGHPUT_MIN_SECONDS`,
 the same defaults, so results are comparable with the upstream jobs. The controller is deployed
-from the published `registry.k8s.io/agent-sandbox/`
-images, and the agent-sandbox checkout is pinned to the same release tag, so no images are built
-and no container registry is needed on any cloud.
+from the published `registry.k8s.io/agent-sandbox/` images, and the agent-sandbox checkout is
+pinned to the same release tag, so no images are built and no container registry is needed on
+any cloud.
 
 ### Running locally
 
