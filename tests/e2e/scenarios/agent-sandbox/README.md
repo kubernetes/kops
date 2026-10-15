@@ -147,7 +147,10 @@ the upstream script.
 `patches/` holds upstream fixes that the pinned agent-sandbox release does not have yet, as
 `git format-patch` files. They are applied to the clone after checkout; a patch that is already in
 the checked-out release is skipped, so it can be removed once the release has moved past it.
-They are not applied to a caller-provided `AGENT_SANDBOX_ROOT`.
+They are not applied to a caller-provided `AGENT_SANDBOX_ROOT`. Besides the two e2e fixes, the
+node-exporter patch exports `/sys/fs/cgroup/cgroup.stat` as `node_cgroup_stat_<field>` gauges
+(`nr_dying_descendants`, and `nr_dying_subsys_memory` on 6.12+ kernels) and the `/proc/cgroups`
+count, so the stress tool's `metrics.jsonl` records how many memory cgroups pod churn leaves behind.
 
 ### Output
 

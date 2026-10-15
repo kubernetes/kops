@@ -1,0 +1,98 @@
+From 182d037792143c1a450dfb48763c598c9093e00b Mon Sep 17 00:00:00 2001
+From: Ciprian Hacman <ciprian@hakman.dev>
+Date: Thu, 15 Oct 2026 08:36:18 +0300
+Subject: [PATCH] benchmarks-kops-gcp: export cgroup.stat from node-exporter
+
+Pod churn leaves memory cgroups behind whenever charged page cache still
+pins them after the pod is gone, and those dying cgroups cost kernel memory
+and slow cgroup operations until they are reclaimed. node-exporter has no
+collector for /sys/fs/cgroup/cgroup.stat, so add a sidecar that rewrites it
+as node_cgroup_stat_<field> gauges for the textfile collector every 15s
+(nr_dying_descendants, and nr_dying_subsys_memory on 6.12+ kernels), and
+enable the cgroups collector for the /proc/cgroups count, which includes
+cgroups removed but not yet freed. The stress tool scrapes the whole
+node-exporter endpoint, so both land in metrics.jsonl unchanged.
+---
+ .../benchmarks-kops-gcp/node-exporter.yaml    | 54 +++++++++++++++++++
+ 1 file changed, 54 insertions(+)
+
+diff --git a/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml b/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
+index 38d71b9..72cf3f1 100644
+--- a/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
++++ b/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
+@@ -23,6 +23,15 @@
+ # measure, so it must survive there: system-node-critical priority and a
+ # small dedicated CPU request keep it scheduled and running on a saturated
+ # node. Collectors are restricted to the cheap /proc + /sys ones we chart.
++#
++# cgroup accounting: pod churn leaves memory cgroups behind after their pods
++# are gone whenever charged page cache still pins them, and those dying
++# cgroups cost kernel memory and slow cgroup operations until they are
++# reclaimed. node-exporter has no collector for /sys/fs/cgroup/cgroup.stat,
++# so a sidecar rewrites it as node_cgroup_stat_<field> gauges for the
++# textfile collector every 15s (nr_dying_descendants; on 6.12+ kernels also
++# the per-controller nr_dying_subsys_memory). The cgroups collector adds the
++# /proc/cgroups count, which includes cgroups removed but not yet freed.
+ apiVersion: apps/v1
+ kind: DaemonSet
+ metadata:
+@@ -56,6 +65,9 @@ spec:
+             - --collector.meminfo
+             - --collector.diskstats
+             - --collector.loadavg
++            - --collector.cgroups
++            - --collector.textfile
++            - --collector.textfile.directory=/textfile
+           ports:
+             - name: metrics
+               containerPort: 9100
+@@ -85,7 +97,49 @@ spec:
+             - name: sys
+               mountPath: /host/sys
+               readOnly: true
++            - name: textfile
++              mountPath: /textfile
++              readOnly: true
++        # Same image as node-exporter (busybox based, already on the node), so
++        # the sidecar costs no extra pull. cgroup.stat is world-readable.
++        - name: cgroup-stat
++          image: quay.io/prometheus/node-exporter:v1.8.2
++          command:
++            - /bin/sh
++            - -c
++            - |
++              while true; do
++                if [ -r /host/sys/fs/cgroup/cgroup.stat ]; then
++                  awk '{ printf "# TYPE node_cgroup_stat_%s gauge\nnode_cgroup_stat_%s %s\n", $1, $1, $2 }' \
++                    /host/sys/fs/cgroup/cgroup.stat > /textfile/cgroup_stat.prom.tmp \
++                    && mv /textfile/cgroup_stat.prom.tmp /textfile/cgroup_stat.prom
++                fi
++                sleep 15
++              done
++          resources:
++            requests:
++              cpu: 5m
++              memory: 8Mi
++            limits:
++              memory: 16Mi
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            runAsNonRoot: true
++            runAsUser: 65534
++            runAsGroup: 65534
++            capabilities:
++              drop:
++                - ALL
++          volumeMounts:
++            - name: sys
++              mountPath: /host/sys
++              readOnly: true
++            - name: textfile
++              mountPath: /textfile
+       volumes:
++        - name: textfile
++          emptyDir: {}
+         - name: proc
+           hostPath:
+             path: /proc
