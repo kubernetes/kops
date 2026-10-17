@@ -28,7 +28,7 @@ kops update cluster [CLUSTER] [flags]
       --admin duration[=18h0m0s]       Also export a cluster admin user credential with the specified lifetime and add it to the cluster context
       --allow-kops-downgrade           Allow an older version of kOps to update the cluster than last used
       --api-server string              Override the API server URL without changing TLS or authentication settings
-      --create-kube-config             Will control automatically creating the kube config file on your local filesystem (default true)
+      --create-kube-config             Automatically export kubeconfig after updating (defaults to false with --use-kubeconfig; --admin, --user and --internal imply export) (default true)
   -h, --help                           help for cluster
       --ignore-kubelet-version-skew    Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running
       --instance-group strings         Instance groups to update (defaults to all if not specified)

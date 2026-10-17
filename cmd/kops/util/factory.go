@@ -166,7 +166,8 @@ func (f *Factory) getClusterInfo(cluster *kops.Cluster, options kubeconfig.Creat
 	defer f.mutex.Unlock()
 
 	key := cluster.ObjectMeta.Name
-	if clusterInfo, ok := f.clusters[key]; ok {
+	// A later phase may request different connectivity; do not reuse clients built with other options.
+	if clusterInfo, ok := f.clusters[key]; ok && clusterInfo.CreateKubecfgOptions == options {
 		return clusterInfo
 	}
 	clusterInfo := &clusterInfo{
@@ -181,6 +182,14 @@ func (f *Factory) getClusterInfo(cluster *kops.Cluster, options kubeconfig.Creat
 func (f *Factory) RESTConfig(ctx context.Context, cluster *kops.Cluster, options kubeconfig.CreateKubecfgOptions) (*rest.Config, error) {
 	clusterInfo := f.getClusterInfo(cluster, options)
 	return clusterInfo.RESTConfig(ctx)
+}
+
+// InvalidateClusterConnections makes subsequent clients discover the current
+// API endpoint after an infrastructure update. Clients already in use are unaffected.
+func (f *Factory) InvalidateClusterConnections(cluster *kops.Cluster) {
+	f.mutex.Lock()
+	defer f.mutex.Unlock()
+	delete(f.clusters, cluster.Name)
 }
 
 func (f *clusterInfo) RESTConfig(ctx context.Context) (*rest.Config, error) {

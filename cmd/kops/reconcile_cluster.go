@@ -129,7 +129,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 	if !c.Yes {
 		// A reconcile without --yes is the same as a dry run
 		opt := *c
-		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt); err != nil {
+		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt, options.CreateKubecfgOptions); err != nil {
 			return err
 		}
 		return nil
@@ -143,7 +143,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 			string(kops.InstanceGroupRoleControlPlane),
 		}
 		opt.Prune = false // Do not prune until after the last rolling update
-		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt); err != nil {
+		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt, options.CreateKubecfgOptions); err != nil {
 			return err
 		}
 	}
@@ -195,7 +195,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 		// Do all roles this time, though we only expect changes to node & bastion roles
 		opt.InstanceGroupRoles = nil
 		opt.Prune = false // Do not prune until after the last rolling update
-		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt); err != nil {
+		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt, options.CreateKubecfgOptions); err != nil {
 			return err
 		}
 	}
@@ -219,7 +219,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 		opt := *c
 		opt.InstanceGroupRoles = nil
 		opt.Prune = true
-		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt); err != nil {
+		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt, options.CreateKubecfgOptions); err != nil {
 			return err
 		}
 	}
