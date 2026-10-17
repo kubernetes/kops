@@ -60,7 +60,7 @@ kops rolling-update cluster [CLUSTER] [flags]
 
 ```
       --admin duration                    a cluster admin user credential with the specified lifetime (default 18h0m0s)
-      --api-server string                 Override the API server used when communicating with the cluster kube-apiserver
+      --api-server string                 Override the API server URL without changing TLS or authentication settings
       --bastion-interval duration         Time to wait between restarting bastions (default 15s)
       --cloudonly                         Perform rolling update without validating cluster status (will cause downtime)
       --control-plane-interval duration   Time to wait between restarting control plane nodes (default 15s)
@@ -74,7 +74,7 @@ kops rolling-update cluster [CLUSTER] [flags]
   -i, --interactive                       Prompt to continue after each instance is updated
       --node-interval duration            Time to wait between restarting worker nodes (default 15s)
       --post-drain-delay duration         Time to wait after draining each node (default 5s)
-      --use-kubeconfig                    Use the server endpoint from the local kubeconfig instead of inferring from cluster name
+      --use-kubeconfig                    Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings
       --validate-count int32              Number of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration       Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                               Perform rolling update immediately; without --yes rolling-update executes a dry-run

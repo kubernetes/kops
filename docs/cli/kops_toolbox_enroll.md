@@ -22,7 +22,7 @@ kops toolbox enroll [CLUSTER] [flags]
 ### Options
 
 ```
-      --api-server string       Override the API server used when communicating with the cluster kube-apiserver
+      --api-server string       Override the API server URL without changing TLS or authentication settings
       --build-host              only build the host resource, don't apply it or enroll the node
       --cluster string          Name of cluster to join
   -h, --help                    help for enroll
@@ -31,7 +31,7 @@ kops toolbox enroll [CLUSTER] [flags]
       --pod-cidr strings        IP Address range to use for pods that run on this node
       --ssh-port int            port for ssh (default 22)
       --ssh-user string         user for ssh (default "root")
-      --use-kubeconfig          Use the server endpoint from the local kubeconfig instead of inferring from cluster name
+      --use-kubeconfig          Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings
 ```
 
 ### Options inherited from parent commands

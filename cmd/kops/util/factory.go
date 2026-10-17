@@ -299,6 +299,8 @@ func (f *Factory) buildRESTConfig(ctx context.Context, cluster *kops.Cluster, op
 
 		if options.OverrideAPIServer != "" {
 			klog.Infof("overriding API server with %q", options.OverrideAPIServer)
+			// Preserve an explicit kubeconfig TLS identity. If ServerName is empty,
+			// the transport verifies the hostname in the overridden URL.
 			restConfig.Host = options.OverrideAPIServer
 		}
 

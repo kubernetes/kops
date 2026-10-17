@@ -30,14 +30,14 @@ kops delete instance INSTANCE|NODE [flags]
 ### Options
 
 ```
-      --api-server string             Override the API server used when communicating with the cluster kube-apiserver
+      --api-server string             Override the API server URL without changing TLS or authentication settings
       --cloudonly                     Perform deletion update without confirming progress with Kubernetes
       --fail-on-drain-error           Fail if draining a node fails (default true)
       --fail-on-validate-error        Fail if the cluster fails to validate (default true)
   -h, --help                          help for instance
       --post-drain-delay duration     Time to wait after draining each node (default 5s)
       --surge                         Surge by detaching the node from the ASG before deletion (default true)
-      --use-kubeconfig                Use the server endpoint from the local kubeconfig instead of inferring from cluster name
+      --use-kubeconfig                Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings
       --validate-count int32          Number of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration   Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                           Specify --yes to immediately delete the instance

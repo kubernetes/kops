@@ -19,9 +19,9 @@ kops get instances [CLUSTER] [flags]
 ### Options
 
 ```
-      --api-server string   Override the API server used when communicating with the cluster kube-apiserver
+      --api-server string   Override the API server URL without changing TLS or authentication settings
   -h, --help                help for instances
-      --use-kubeconfig      Use the server endpoint from the local kubeconfig instead of inferring from cluster name
+      --use-kubeconfig      Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings
 ```
 
 ### Options inherited from parent commands

@@ -27,7 +27,7 @@ kops update cluster [CLUSTER] [flags]
 ```
       --admin duration[=18h0m0s]       Also export a cluster admin user credential with the specified lifetime and add it to the cluster context
       --allow-kops-downgrade           Allow an older version of kOps to update the cluster than last used
-      --api-server string              Override the API server used when communicating with the cluster kube-apiserver
+      --api-server string              Override the API server URL without changing TLS or authentication settings
       --create-kube-config             Will control automatically creating the kube config file on your local filesystem (default true)
   -h, --help                           help for cluster
       --ignore-kubelet-version-skew    Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running
@@ -40,7 +40,7 @@ kops update cluster [CLUSTER] [flags]
       --prune                          Delete old revisions of cloud resources that were needed during an upgrade
       --ssh-public-key string          SSH public key to use (deprecated: use kops create secret instead)
       --target target                  Target - "direct", "terraform" (default direct)
-      --use-kubeconfig                 Use the server endpoint from the local kubeconfig instead of inferring from cluster name
+      --use-kubeconfig                 Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings
       --user string                    Existing user in kubeconfig file to use.  Implies --create-kube-config
   -y, --yes                            Create cloud resources, without --yes update is in dry run mode
 ```
