@@ -140,8 +140,9 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 
 	b := NewKubeconfigBuilder()
 
-	// Use the secondary load balancer port if a certificate is on the primary listener
-	if options.Admin != 0 && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" && cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+	// Use the secondary load balancer port if a certificate is on the primary listener,
+	// unless the API server URL was explicitly overridden.
+	if options.Admin != 0 && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" && cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork && options.OverrideAPIServer == "" {
 		server = server + ":8443"
 	}
 

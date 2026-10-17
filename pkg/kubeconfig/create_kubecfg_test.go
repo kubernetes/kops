@@ -19,6 +19,7 @@ package kubeconfig
 import (
 	"context"
 	"testing"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -456,6 +457,114 @@ func TestBuildKubecfg(t *testing.T) {
 			}
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf("BuildKubecfg() diff (+got, -want): %s", diff)
+			}
+		})
+	}
+}
+
+func TestBuildKubecfgNLBEndpoint(t *testing.T) {
+	originalPKIDefaultPrivateKeySize := pki.DefaultPrivateKeySize
+	pki.DefaultPrivateKeySize = 2048
+	defer func() {
+		pki.DefaultPrivateKeySize = originalPKIDefaultPrivateKeySize
+	}()
+
+	tests := []struct {
+		name           string
+		sslCertificate bool
+		admin          time.Duration
+		internal       bool
+		wantServer     string
+	}{
+		{
+			name:           "certificate with admin",
+			sslCertificate: true,
+			admin:          DefaultKubecfgAdminLifetime,
+			wantServer:     "https://elbHostName:8443",
+		},
+		{
+			name:           "certificate with admin and internal endpoint",
+			sslCertificate: true,
+			admin:          DefaultKubecfgAdminLifetime,
+			internal:       true,
+			wantServer:     "https://api.internal.testcluster:8443",
+		},
+		{
+			name:           "certificate without admin",
+			sslCertificate: true,
+			wantServer:     "https://testcluster.test.com",
+		},
+		{
+			name:           "certificate without admin and internal endpoint",
+			sslCertificate: true,
+			internal:       true,
+			wantServer:     "https://api.internal.testcluster",
+		},
+		{
+			name:       "no certificate with admin",
+			admin:      DefaultKubecfgAdminLifetime,
+			wantServer: "https://elbHostName",
+		},
+		{
+			name:       "no certificate with admin and internal endpoint",
+			admin:      DefaultKubecfgAdminLifetime,
+			internal:   true,
+			wantServer: "https://api.internal.testcluster",
+		},
+		{
+			name:       "no certificate without admin",
+			wantServer: "https://elbHostName",
+		},
+	}
+
+	endpoints := []struct {
+		name     string
+		override string
+	}{
+		{name: "generated"},
+		{name: "no port", override: "https://proxy.example.com"},
+		{name: "custom port", override: "https://proxy.example.com:9443"},
+		{name: "secondary port", override: "https://proxy.example.com:8443"},
+		{name: "path prefix", override: "https://proxy.example.com/prefix"},
+		{name: "custom port and path prefix", override: "https://proxy.example.com:9443/prefix"},
+		{name: "IPv6", override: "https://[2001:db8::1]:9443/prefix"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cluster := buildMinimalCluster("testcluster", "testcluster.test.com", tt.sslCertificate, true)
+			keyStore := fakeKeyStore{
+				FindKeysetFn: func(name string) (*fi.Keyset, error) {
+					return fakeKeyset(), nil
+				},
+			}
+			for _, endpoint := range endpoints {
+				t.Run(endpoint.name, func(t *testing.T) {
+					cloud := fakeStatusCloud{
+						GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+							if endpoint.override != "" || tt.internal {
+								t.Fatal("unexpected API ingress lookup for an explicit or internal endpoint")
+							}
+							return []fi.ApiIngressStatus{{Hostname: "elbHostName"}}, nil
+						},
+					}
+					options := CreateKubecfgOptions{
+						Admin:             tt.admin,
+						Internal:          tt.internal,
+						OverrideAPIServer: endpoint.override,
+					}
+					got, err := BuildKubecfg(context.Background(), cluster, keyStore, nil, cloud, options, "memfs://example-state-store")
+					if err != nil {
+						t.Fatalf("BuildKubecfg() error = %v", err)
+					}
+					wantServer := tt.wantServer
+					if endpoint.override != "" {
+						wantServer = endpoint.override
+					}
+					if got.Server != wantServer {
+						t.Errorf("BuildKubecfg().Server = %q, want %q", got.Server, wantServer)
+					}
+				})
 			}
 		})
 	}
