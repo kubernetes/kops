@@ -21,7 +21,8 @@ type PaginatedResponse[T any] struct {
 
 // handlePaginatedResults aggregates results from the given
 // paginated endpoint using the provided ListOptions and HTTP method.
-// nolint:funlen
+//
+//nolint:funlen
 func handlePaginatedResults[T any, O any](
 	ctx context.Context,
 	client *Client,

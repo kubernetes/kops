@@ -165,7 +165,8 @@ func init() {
 }
 
 // NewClient factory to create new Client struct.
-// nolint:funlen
+//
+//nolint:funlen
 func NewClient(hc *http.Client) (client Client, err error) {
 	if hc != nil {
 		client.httpClient = hc
@@ -527,7 +528,7 @@ func (c *Client) Transport() (*http.Transport, error) {
 
 // Generic helper to execute HTTP requests using the net/http package
 //
-// nolint:funlen, gocognit, nestif
+//nolint:funlen,gocognit
 func (c *Client) doRequest(ctx context.Context, method, endpoint string, params requestParams, paginationMutator *func(*http.Request) error) error {
 	var (
 		req  *http.Request
@@ -622,8 +623,11 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, params 
 			waitTime = c.retryMaxWaitTime
 		}
 
-		// Sleep for the calculated duration before retrying
-		time.Sleep(waitTime)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(waitTime):
+		}
 	}
 
 	return err
@@ -805,10 +809,10 @@ func formatBody(body string) (string, error) {
 func formatDate(dateStr string) (string, error) {
 	parsedTime, err := time.Parse(time.RFC1123, dateStr)
 	if err != nil {
-		return "", fmt.Errorf("error parsing date: %v", err)
+		return "", fmt.Errorf("error parsing date: %w", err)
 	}
 
-	formattedDate := parsedTime.In(time.Local).Format("2006-01-02T15:04:05-07:00") // nolint:gosmopolitan
+	formattedDate := parsedTime.In(time.Local).Format("2006-01-02T15:04:05-07:00") //nolint:gosmopolitan
 
 	return formattedDate, nil
 }

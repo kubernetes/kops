@@ -44,12 +44,10 @@ test-smoke:
 	cd test && make test-smoke TEST_TIMEOUT=$(TEST_TIMEOUT)
 
 build: vet lint
-	go build ./...
-	cd k8s && go build ./...
+	go build work
 
 vet:
-	go vet ./...
-	cd k8s && go vet ./...
+	go vet work
 
 lint:
 ifeq ($(SKIP_LINT), 1)

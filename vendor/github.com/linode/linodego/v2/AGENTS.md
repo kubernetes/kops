@@ -14,7 +14,8 @@
 - Faster focused default: run `go test ./...` at the repo root for root-module unit coverage only, then run focused tests in `test/` or `k8s/` as needed.
 - Unit tests excluding integration playback: `make test-unit`; pass focused args as `make TEST_ARGS="-run TestName" test-unit`.
 - Integration fixture playback: `make test-int`; focused playback: `make TEST_ARGS="-run TestListVolumes" test-int`.
-- K8s module verification: `cd k8s && go test ./...` or use root `make build`/`make vet`, which enter `k8s/` explicitly.
+- Workspace-wide vet/build: root `make vet`/`make build` run `go vet work`/`go build work` (Go 1.25) so all workspace modules are checked in one command. `make tidy` stays per-module.
+- K8s module tests: `cd k8s && go test ./...`.
 - Tidy all modules after dependency changes: `make tidy`.
 
 ## Lint And Formatting

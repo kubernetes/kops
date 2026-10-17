@@ -49,6 +49,7 @@ const (
 	CapabilityObjectStorageAccessKeyRegions    RegionCapability = "Object Storage Access Key Regions"
 	CapabilityObjectStorageEndpointTypes       RegionCapability = "Object Storage Endpoint Types"
 	CapabilityPlacementGroup                   RegionCapability = "Placement Group"
+	CapabilityPremiumNodeBalancer              RegionCapability = "Premium NodeBalancers"
 	CapabilityPremiumPlans                     RegionCapability = "Premium Plans"
 	CapabilityQuadraT1UVPU                     RegionCapability = "NETINT Quadra T1U"
 	CapabilitySMTPEnabled                      RegionCapability = "SMTP Enabled"
@@ -100,8 +101,9 @@ type RegionMonitors struct {
 // RegionPlacementGroupLimits contains information about the
 // placement group limits for the current user in the current region.
 type RegionPlacementGroupLimits struct {
-	MaximumPGsPerCustomer int `json:"maximum_pgs_per_customer"`
-	MaximumLinodesPerPG   int `json:"maximum_linodes_per_pg"`
+	MaximumPGsPerCustomer       int `json:"maximum_pgs_per_customer"`
+	MaximumLinodesPerPG         int `json:"maximum_linodes_per_pg"`
+	MaximumLinodesPerFlexiblePG int `json:"maximum_linodes_per_flexible_pg"`
 }
 
 // ListRegions lists Regions. This endpoint is cached by default.
