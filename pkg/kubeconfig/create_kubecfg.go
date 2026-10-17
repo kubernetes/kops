@@ -44,8 +44,8 @@ type CreateKubecfgOptions struct {
 	// User is the user to use in the kubeconfig
 	User string
 
-	// OverrideAPIServer overrides the API endpoint to use in the kubeconfig
-	// This takes precedence over the Internal option (if set)
+	// OverrideAPIServer overrides the API endpoint without changing TLS identity,
+	// trust roots or authentication. This takes precedence over Internal (if set).
 	OverrideAPIServer string
 
 	// Internal is whether to use the internal API endpoint
@@ -76,9 +76,9 @@ func (o *CreateKubecfgOptions) AddFlagsForExport(flagset *pflag.FlagSet) {
 // These are the flags that are used when building an internal connection to the cluster.
 // If forExport is true, the flagset is used for the export command, and we don't want to expose the use-kubeconfig flag.
 func (o *CreateKubecfgOptions) addCommonFlags(flagset *pflag.FlagSet, forExport bool) {
-	flagset.StringVar(&o.OverrideAPIServer, "api-server", o.OverrideAPIServer, "Override the API server used when communicating with the cluster kube-apiserver")
+	flagset.StringVar(&o.OverrideAPIServer, "api-server", o.OverrideAPIServer, "Override the API server URL without changing TLS or authentication settings")
 	if !forExport {
-		flagset.BoolVar(&o.UseKubeconfig, "use-kubeconfig", o.UseKubeconfig, "Use the server endpoint from the local kubeconfig instead of inferring from cluster name")
+		flagset.BoolVar(&o.UseKubeconfig, "use-kubeconfig", o.UseKubeconfig, "Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings")
 	}
 }
 
@@ -147,6 +147,9 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 
 	b.Context = clusterName
 	b.Server = server
+	// The destination may be a load balancer DNS name, IP or tunnel address absent
+	// from the API certificate. Keep verifying the cluster identity even with an
+	// endpoint override; custom TLS identities are supported by --use-kubeconfig.
 	b.TLSServerName = cluster.APIInternalName()
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
