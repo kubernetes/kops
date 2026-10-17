@@ -299,9 +299,16 @@ func (p *AzureBlobPath) ReadTree(ctx context.Context) ([]Path, error) {
 		return nil, err
 	}
 
+	// List below the key as a directory, like the S3 and GCS paths do: a bare
+	// prefix would also match sibling keys that merely start with the same name.
+	prefix := p.key
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
+	}
+
 	var paths []Path
 	pager := client.NewListBlobsFlatPager(p.container, &azblob.ListBlobsFlatOptions{
-		Prefix: to.Ptr(p.key),
+		Prefix: to.Ptr(prefix),
 	})
 	for pager.More() {
 		resp, err := pager.NextPage(ctx)

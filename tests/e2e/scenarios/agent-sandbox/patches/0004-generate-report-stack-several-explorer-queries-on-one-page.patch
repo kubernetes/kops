@@ -1,0 +1,149 @@
+From cbd03deaf9ed34144309009402312e60d2df95ff Mon Sep 17 00:00:00 2001
+From: Ciprian Hacman <ciprian@hakman.dev>
+Date: Thu, 15 Oct 2026 10:01:22 +0300
+Subject: [PATCH] generate-report: stack several explorer queries on one page
+
+The metric explorer shows one metric per page, so correlating, say,
+dying memory cgroups with iowait and per-cpu memory meant one browser tab
+per metric. Let ";" separate independent queries: each becomes a panel
+with its own chart (or metric list when it matches several metrics),
+stacked on the page against the same time axis and phase marks. Clicks
+inside a panel narrow only that panel, and the URL hash keeps the whole
+set, so a correlation view is one shareable link.
+---
+ .../generate-report/templates/metrics.html    | 90 ++++++++++++++++---
+ 1 file changed, 78 insertions(+), 12 deletions(-)
+
+diff --git a/test/stress/generate-report/templates/metrics.html b/test/stress/generate-report/templates/metrics.html
+index 8b1bf19..b4645fd 100644
+--- a/test/stress/generate-report/templates/metrics.html
++++ b/test/stress/generate-report/templates/metrics.html
+@@ -40,7 +40,9 @@
+         its raw samples) — back out by editing the query. Counter-style metrics
+         (<code>_total</code>/<code>_count</code>/<code>_sum</code>/<code>_bucket</code>) plot as
+         per-second rates by default — untick "rate" for raw cumulative values. Dashed blue lines mark
+-        phase starts.
++        phase starts. Separate queries with <code>;</code> to stack one panel per query on this page:
++        each part uses the same grammar, the charts share the time axis and phase marks, clicks inside
++        a panel narrow only that panel, and the URL hash keeps the whole set.
+     </div>
+     <div id="mx-results" class="watch-results"></div>
+     <div style="text-align: center; margin-top: 12px;">
+@@ -151,16 +153,67 @@
+         runSearch();
+     }
+ 
+-    // lockMetric pins one metric exactly, keeping any field/label filters
+-    // already in the query (their raw tokens) but dropping bare text and
+-    // previous metric: terms — those were for finding the metric.
+-    function lockMetric(metric) {
+-        const kept = (searchEl.value || '').trim().split(/\s+/).filter(tok => {
++    // lockMetricTokens pins one metric exactly within a query, keeping any
++    // field/label filters already there (their raw tokens) but dropping bare
++    // text and previous metric: terms — those were for finding the metric.
++    function lockMetricTokens(queryText, metric) {
++        const kept = (queryText || '').trim().split(/\s+/).filter(tok => {
+             const sep = tok.indexOf(':');
+             if (sep <= 0 || sep === tok.length - 1) return false;
+             return tok.slice(0, sep).toLowerCase() !== 'metric';
+         });
+-        setQuery([`metric:=${metric}`, ...kept].join(' '));
++        return [`metric:=${metric}`, ...kept].join(' ');
++    }
++
++    function lockMetric(metric) {
++        setQuery(lockMetricTokens(searchEl.value, metric));
++    }
++
++    // Panels: ";" separates independent queries, each rendered as its own
++    // chart (or metric list) and stacked on the page, so several metrics can
++    // be read against the same time axis. The hash carries the whole set.
++    function splitPanels(q) {
++        return (q || '').split(';').map(part => part.trim()).filter(Boolean);
++    }
++
++    let panelGroups = [];   // panel mode: search result per panel index
++
++    function setSubQuery(p, q) {
++        const parts = splitPanels(searchEl.value);
++        parts[p] = q;
++        setQuery(parts.join(' ; '));
++    }
++
++    function renderPanels(parts) {
++        panelGroups = parts.map(part => searchMetricSeries(log, part));
++        const matched = panelGroups.reduce((n, gs) => n + gs.reduce((m, g) => m + g.indices.length, 0), 0);
++        statusEl.textContent = `${parts.length} panels, ${matched.toLocaleString()} / ${log.series.length.toLocaleString()} series`;
++        parts.forEach((part, p) => {
++            const gs = panelGroups[p];
++            let note;
++            if (gs.length === 1) {
++                note = `${escapeHtml(gs[0].metric)} ${badge('info', gs[0].counter ? 'counter' : 'gauge')}`;
++            } else if (gs.length === 0) {
++                note = badge('warning', 'no match');
++            } else {
++                note = badge('warning', `${gs.length.toLocaleString()} metrics match — click one to lock it into this panel`);
++            }
++            const panel = document.createElement('div');
++            panel.className = 'watch-row mx-panel';
++            panel.dataset.p = String(p);
++            panel.style.marginTop = '14px';
++            panel.innerHTML = `<div class="watch-row-head mx-panel-head"><span class="mx-metric">${escapeHtml(part)}</span> ${note}</div>`;
++            const detail = document.createElement('div');
++            detail.className = 'watch-row-detail';
++            panel.appendChild(detail);
++            resultsEl.appendChild(panel);
++            if (gs.length === 1) {
++                renderDetail(detail, gs[0]);
++            } else if (gs.length > 1) {
++                detail.innerHTML = gs.slice(0, RENDER_CHUNK).map((g, gi) => groupHtml(g, gi)).join('');
++            }
++        });
++        moreEl.hidden = true;
+     }
+ 
+     function runSearch() {
+@@ -169,10 +222,16 @@
+             const chart = Chart.getChart(canvas);
+             if (chart) chart.destroy();
+         }
+-        groups = searchMetricSeries(log, searchEl.value);
+-        const matched = groups.reduce((n, g) => n + g.indices.length, 0);
+         resultsEl.innerHTML = '';
+         rendered = 0;
++        const parts = splitPanels(searchEl.value);
++        if (parts.length > 1) {
++            groups = [];
++            renderPanels(parts);
++            return;
++        }
++        groups = searchMetricSeries(log, parts[0] || '');
++        const matched = groups.reduce((n, g) => n + g.indices.length, 0);
+         statusEl.textContent = `${groups.length.toLocaleString()} metrics, ${matched.toLocaleString()} / ${log.series.length.toLocaleString()} series`;
+         if (groups.length === 1) {
+             // The query pins down one metric: show it expanded, no list.
+@@ -265,14 +324,21 @@
+     // metric, a series row locks the whole series.
+     function activate(e) {
+         if (window.getSelection().toString()) return;
++        const panel = e.target.closest('.mx-panel');
++        const p = panel ? Number(panel.dataset.p) : null;
+         const seriesRow = e.target.closest('tr[data-s]');
+         if (seriesRow) {
+-            setQuery(lockTerms(log.series[Number(seriesRow.dataset.s)]));
++            const q = lockTerms(log.series[Number(seriesRow.dataset.s)]);
++            if (p === null) setQuery(q); else setSubQuery(p, q);
+             return;
+         }
+         const head = e.target.closest('.watch-row-head');
+-        if (head) {
+-            lockMetric(groups[Number(head.closest('.watch-row').dataset.g)].metric);
++        if (!head || head.classList.contains('mx-panel-head')) return;
++        const gi = Number(head.closest('.watch-row').dataset.g);
++        if (p === null) {
++            lockMetric(groups[gi].metric);
++        } else {
++            setSubQuery(p, lockMetricTokens(splitPanels(searchEl.value)[p], panelGroups[p][gi].metric));
+         }
+     }
+ 
