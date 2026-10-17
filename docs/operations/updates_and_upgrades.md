@@ -72,6 +72,14 @@ For more detail about the command change in kOps 1.31, see [docs/tutorial/upgrad
 
 Upgrade uses the latest Kubernetes version considered stable by kOps, defined in `https://github.com/kubernetes/kops/blob/master/channels/stable`.
 
+### Custom API connections
+
+Use `--use-kubeconfig` with `kops update cluster` or `kops reconcile cluster` to use the local kubeconfig context named for the cluster, including its authentication, TLS and proxy settings. `--api-server` overrides the endpoint used for API requests, including the control plane version check.
+
+With `kops update cluster --use-kubeconfig`, automatic kubeconfig export is disabled by default so that custom connection settings are preserved. To intentionally export configuration, specify `--create-kube-config=true`. As before, `--admin`, `--user` and `--internal` also imply export, even when `--create-kube-config=false` is supplied. An export can overwrite the existing endpoint and TLS settings. Reconcile does not export kubeconfig.
+
+Without `--use-kubeconfig`, API connections are generated from the cluster state and do not require a local kubeconfig. If the control plane version check fails, update retains its existing behavior of assuming the configured Kubernetes version; this permits initial cluster creation before the API is available.
+
 
 ### Terraform Users
 

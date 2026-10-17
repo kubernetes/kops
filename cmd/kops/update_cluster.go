@@ -74,7 +74,7 @@ type UpdateClusterOptions struct {
 
 // CoreUpdateClusterOptions holds the core options for the update cluster command,
 // which are shared with the reconcile cluster command.
-// The fields _not_ shared with the reconcile cluster command are the ones in CreateKubecfgOptions.
+// Connection options are passed separately through CreateKubecfgOptions.
 type CoreUpdateClusterOptions struct {
 	Yes bool
 
@@ -154,6 +154,10 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			// Reusing local connectivity should not overwrite it unless an export is requested.
+			if options.UseKubeconfig && !cmd.Flags().Changed("create-kube-config") {
+				options.CreateKubecfg = false
+			}
 			// Terraform treats omitted resources as deletions, so only render a complete configuration.
 			if options.Target == cloudup.TargetTerraform && (len(options.InstanceGroups) != 0 || len(options.InstanceGroupRoles) != 0) {
 				return fmt.Errorf("cannot use --target=terraform with --instance-group or --instance-group-roles; generate the full configuration and use terraform apply -target instead")
@@ -172,7 +176,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.MarkFlagDirname("out")
-	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
+	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Automatically export kubeconfig after updating (defaults to false with --use-kubeconfig; --admin, --user and --internal imply export)")
 	cmd.Flags().DurationVar(&options.Admin, "admin", options.Admin, "Also export a cluster admin user credential with the specified lifetime and add it to the cluster context")
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.User, "user", options.User, "Existing user in kubeconfig file to use.  Implies --create-kube-config")
@@ -218,10 +222,11 @@ type UpdateClusterResults struct {
 	Cluster *kops.Cluster
 }
 
-func RunCoreUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CoreUpdateClusterOptions) (*UpdateClusterResults, error) {
+func RunCoreUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CoreUpdateClusterOptions, connectionOptions kubeconfig.CreateKubecfgOptions) (*UpdateClusterResults, error) {
 	opt := &UpdateClusterOptions{}
 	opt.CoreUpdateClusterOptions = *c
 	opt.Reconcile = false
+	opt.CreateKubecfgOptions = connectionOptions
 	opt.CreateKubecfgOptions.CreateKubecfg = false
 	return RunUpdateCluster(ctx, f, out, opt)
 }
@@ -364,7 +369,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 
 	minControlPlaneRunningVersion := cluster.Spec.KubernetesVersion
 	if !c.IgnoreKubeletVersionSkew {
-		minControlPlaneRunningVersion, err = checkControlPlaneRunningVersion(ctx, cluster.ObjectMeta.Name, minControlPlaneRunningVersion)
+		minControlPlaneRunningVersion, err = checkControlPlaneRunningVersion(ctx, f, cluster, c.CreateKubecfgOptions)
 		if err != nil {
 			klog.V(2).Infof("error checking control plane running version, assuming no k8s upgrade in progress: %v", err)
 		} else {
@@ -391,6 +396,11 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 	applyResults, err := applyCmd.Run(ctx)
 	if err != nil {
 		return results, err
+	}
+	if targetName == cloudup.TargetDirect && !c.UseKubeconfig {
+		// The version check may have cached a fallback or old load balancer
+		// endpoint. Reconcile must rediscover connectivity after applying changes.
+		f.InvalidateClusterConnections(cluster)
 	}
 
 	results.Target = applyCmd.Target
@@ -420,7 +430,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		firstRun = !hasKubeconfig
 
 		if c.CreateKubecfgOptions.UseKubeconfig {
-			klog.Infof("hint: passing --create-kube-config=true causes the kubeconfig to be overwritten, you may not want to use this flag with --use-kubeconfig=false")
+			klog.Infof("Exporting kubeconfig will overwrite the local connection settings selected by --use-kubeconfig")
 		}
 
 		klog.Infof("Exporting kubeconfig for cluster")
@@ -638,11 +648,10 @@ func matchInstanceGroupRoles(roles []string) predicates.Predicate[*kops.Instance
 }
 
 // checkControlPlaneRunningVersion returns the minimum control plane running version
-func checkControlPlaneRunningVersion(ctx context.Context, clusterName string, version string) (string, error) {
-	configLoadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		configLoadingRules,
-		&clientcmd.ConfigOverrides{CurrentContext: clusterName}).ClientConfig()
+func checkControlPlaneRunningVersion(ctx context.Context, f *util.Factory, cluster *kops.Cluster, options kubeconfig.CreateKubecfgOptions) (string, error) {
+	clusterName := cluster.Name
+	version := cluster.Spec.KubernetesVersion
+	config, err := f.RESTConfig(ctx, cluster, options)
 	if err != nil {
 		return version, fmt.Errorf("cannot load kubecfg settings for %q: %v", clusterName, err)
 	}
