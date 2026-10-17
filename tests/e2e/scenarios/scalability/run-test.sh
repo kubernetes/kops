@@ -90,7 +90,7 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--control-plane-volume-size=1000")
   create_args+=("--gce-service-account=default")
   create_args+=("--topology=private")
-  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251001}")
+  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261016}")
   create_args+=("--set spec.networking.podCIDR=10.64.0.0/10")
   create_args+=("--set spec.networking.subnets[0].cidr=10.128.0.0/15")
   create_args+=("--set spec.networking.serviceClusterIPRange=10.130.0.0/15")
@@ -116,6 +116,7 @@ if [[ -n "${ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL}" ]]; then
 fi
 create_args+=("--set spec.etcdClusters[0].manager.listenClientHTTPURLs=http://localhost:2385")
 create_args+=("--set spec.etcdClusters[1].manager.listenClientHTTPURLs=http://localhost:2386")
+create_args+=("--set spec.updatePolicy=external")
 if [[ -n "${ETCD_VERSION:-}" ]]; then
   create_args+=("--set spec.etcdClusters[*].version=${ETCD_VERSION}")
 fi
