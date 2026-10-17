@@ -75,6 +75,7 @@ func TestInstanceModelBuilderBuildUsesIGSubnetAndAllowsZeroSize(t *testing.T) {
 	if err := networkBuilder.Build(context); err != nil {
 		t.Fatalf("NetworkModelBuilder.Build returned error: %v", err)
 	}
+	addFirewallPrerequisites(t, context, modelContext)
 
 	builder := &InstanceModelBuilder{
 		LinodeModelContext: &LinodeModelContext{KopsModelContext: modelContext},
@@ -103,6 +104,9 @@ func TestInstanceModelBuilderBuildUsesIGSubnetAndAllowsZeroSize(t *testing.T) {
 	if got, want := fi.ValueOf(instanceTask.RequirePublicInterface), true; got != want {
 		t.Fatalf("unexpected RequirePublicInterface: got %t, want %t", got, want)
 	}
+	if got, want := fi.ValueOf(instanceTask.PublicFirewall.Name), linodeFirewallName(cluster.Name, linodeFirewallRoleNodes); got != want {
+		t.Fatalf("unexpected public firewall: got %q, want %q", got, want)
+	}
 	if instanceTask.UserData == nil {
 		t.Fatalf("expected userdata resource")
 	}
@@ -116,7 +120,6 @@ func TestInstanceModelBuilderBuildUsesIGSubnetAndAllowsZeroSize(t *testing.T) {
 	if instanceTask.AuthorizedKeys[0] != secondInstanceTask.AuthorizedKeys[0] {
 		t.Fatalf("expected instance groups to share the SSH key task")
 	}
-
 	sshKeyTaskCount := 0
 	for _, task := range context.Tasks {
 		if _, ok := task.(*linodetasks.SSHKey); ok {
@@ -160,13 +163,15 @@ func TestInstanceModelBuilderBuildRejectsMultipleIGSubnets(t *testing.T) {
 	if err := networkBuilder.Build(context); err != nil {
 		t.Fatalf("NetworkModelBuilder.Build returned error: %v", err)
 	}
+	modelContext := contextModel(cluster, []*kops.InstanceGroup{ig})
+	addFirewallPrerequisites(t, context, modelContext)
 
 	builder := &InstanceModelBuilder{
-		LinodeModelContext: &LinodeModelContext{KopsModelContext: contextModel(cluster, []*kops.InstanceGroup{ig})},
+		LinodeModelContext: &LinodeModelContext{KopsModelContext: modelContext},
 		Lifecycle:          fi.LifecycleSync,
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			Lifecycle:        fi.LifecycleSync,
-			KopsModelContext: contextModel(cluster, []*kops.InstanceGroup{ig}),
+			KopsModelContext: modelContext,
 		},
 	}
 
@@ -214,13 +219,15 @@ func TestInstanceModelBuilderBuildDerivesPrivateSubnetInterfacePolicy(t *testing
 	if err := networkBuilder.Build(context); err != nil {
 		t.Fatalf("NetworkModelBuilder.Build returned error: %v", err)
 	}
+	modelContext := contextModel(cluster, []*kops.InstanceGroup{ig})
+	addFirewallPrerequisites(t, context, modelContext)
 
 	builder := &InstanceModelBuilder{
-		LinodeModelContext: &LinodeModelContext{KopsModelContext: contextModel(cluster, []*kops.InstanceGroup{ig})},
+		LinodeModelContext: &LinodeModelContext{KopsModelContext: modelContext},
 		Lifecycle:          fi.LifecycleSync,
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			Lifecycle:        fi.LifecycleSync,
-			KopsModelContext: contextModel(cluster, []*kops.InstanceGroup{ig}),
+			KopsModelContext: modelContext,
 		},
 	}
 
@@ -231,6 +238,9 @@ func TestInstanceModelBuilderBuildDerivesPrivateSubnetInterfacePolicy(t *testing
 	instanceTask := findInstanceTask(t, context, ig.Name)
 	if got, want := fi.ValueOf(instanceTask.RequirePublicInterface), false; got != want {
 		t.Fatalf("unexpected RequirePublicInterface: got %t, want %t", got, want)
+	}
+	if instanceTask.PublicFirewall != nil {
+		t.Fatalf("expected private instance group to omit public firewall")
 	}
 }
 
@@ -368,6 +378,17 @@ func addBootstrapPrerequisites(context *fi.CloudupModelBuilderContext) {
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	})
+}
+
+func addFirewallPrerequisites(t *testing.T, context *fi.CloudupModelBuilderContext, modelContext *model.KopsModelContext) {
+	t.Helper()
+	builder := &FirewallModelBuilder{
+		LinodeModelContext: &LinodeModelContext{KopsModelContext: modelContext},
+		Lifecycle:          fi.LifecycleSync,
+	}
+	if err := builder.Build(context); err != nil {
+		t.Fatalf("FirewallModelBuilder.Build returned error: %v", err)
+	}
 }
 
 func findInstanceTask(t *testing.T, context *fi.CloudupModelBuilderContext, name string) *linodetasks.Instance {
