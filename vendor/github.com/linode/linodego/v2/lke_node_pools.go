@@ -161,8 +161,8 @@ func (l LKENodePool) GetCreateOptions() (o LKENodePoolCreateOptions) {
 
 	if l.Isolation != nil {
 		o.Isolation = &LKENodePoolIsolationCreateOptions{
-			PublicIPv4: Pointer(l.Isolation.PublicIPv4),
-			PublicIPv6: Pointer(l.Isolation.PublicIPv6),
+			PublicIPv4: new(l.Isolation.PublicIPv4),
+			PublicIPv6: new(l.Isolation.PublicIPv6),
 		}
 	}
 
