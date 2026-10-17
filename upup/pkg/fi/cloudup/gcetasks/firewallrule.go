@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	compute "google.golang.org/api/compute/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -41,10 +42,10 @@ type FirewallRule struct {
 	Lifecycle fi.Lifecycle
 
 	Network      *Network
-	SourceTags   []string
-	SourceRanges []string
-	TargetTags   []string
-	Allowed      []string
+	SourceTags   sets.Set[string]
+	SourceRanges sets.Set[string]
+	TargetTags   sets.Set[string]
+	Allowed      sets.Set[string]
 
 	// Disabled: Denotes whether the firewall rule is disabled. When set to
 	// true, the firewall rule is not enforced and the network behaves as if
@@ -74,12 +75,21 @@ func (e *FirewallRule) Find(c *fi.CloudupContext) (*FirewallRule, error) {
 	actual := &FirewallRule{}
 	actual.Name = &r.Name
 	actual.Network = &Network{Name: new(lastComponent(r.Network))}
-	actual.TargetTags = r.TargetTags
-	actual.SourceRanges = r.SourceRanges
-	actual.SourceTags = r.SourceTags
+	if len(r.TargetTags) > 0 {
+		actual.TargetTags = sets.New(r.TargetTags...)
+	}
+	if len(r.SourceRanges) > 0 {
+		actual.SourceRanges = sets.New(r.SourceRanges...)
+	}
+	if len(r.SourceTags) > 0 {
+		actual.SourceTags = sets.New(r.SourceTags...)
+	}
 	actual.Disabled = r.Disabled
 	for _, a := range r.Allowed {
-		actual.Allowed = append(actual.Allowed, serializeFirewallAllowed(a))
+		if actual.Allowed == nil {
+			actual.Allowed = sets.New[string]()
+		}
+		actual.Allowed.Insert(serializeFirewallAllowed(a))
 	}
 
 	// Ignore "system" fields
@@ -114,7 +124,7 @@ func (e *FirewallRule) Normalize(c *fi.CloudupContext) error {
 
 	// Make sure we've split the ipv4 / ipv6 addresses.
 	// A single firewall rule can't mix ipv4 and ipv6 addresses, so we split them into two rules.
-	for _, sourceRange := range e.SourceRanges {
+	for sourceRange := range e.SourceRanges {
 		_, cidr, err := net.ParseCIDR(sourceRange)
 		if err != nil {
 			return fmt.Errorf("sourceRange %q is not valid: %w", sourceRange, err)
@@ -182,7 +192,7 @@ func serializeFirewallAllowed(r *compute.FirewallAllowed) string {
 func (e *FirewallRule) mapToGCE(project string) (*compute.Firewall, error) {
 	var allowed []*compute.FirewallAllowed
 	if e.Allowed != nil {
-		for _, a := range e.Allowed {
+		for _, a := range sets.List(e.Allowed) {
 			p, err := parseFirewallAllowed(a)
 			if err != nil {
 				return nil, err
@@ -193,9 +203,9 @@ func (e *FirewallRule) mapToGCE(project string) (*compute.Firewall, error) {
 	firewall := &compute.Firewall{
 		Name:         *e.Name,
 		Network:      e.Network.URL(project),
-		SourceTags:   e.SourceTags,
-		SourceRanges: e.SourceRanges,
-		TargetTags:   e.TargetTags,
+		SourceTags:   sets.List(e.SourceTags),
+		SourceRanges: sets.List(e.SourceRanges),
+		TargetTags:   sets.List(e.TargetTags),
 		Allowed:      allowed,
 		Disabled:     e.Disabled,
 	}

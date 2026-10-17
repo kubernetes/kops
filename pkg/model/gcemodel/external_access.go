@@ -19,6 +19,7 @@ package gcemodel
 import (
 	"strconv"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
@@ -57,23 +58,23 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		}
 		b.AddFirewallRulesTasks(c, "ssh-external-to-bastion", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
-			Allowed:      []string{"tcp:22"},
-			SourceRanges: b.Cluster.Spec.SSHAccess,
+			TargetTags:   sets.New(b.GCETagForRole(kops.InstanceGroupRoleBastion)),
+			Allowed:      sets.New("tcp:22"),
+			SourceRanges: sets.New(b.Cluster.Spec.SSHAccess...),
 			Network:      network,
 		})
 		b.AddFirewallRulesTasks(c, "bastion-to-master-ssh", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
-			TargetTags: append(b.GCETagsForAPIServerTargets(), b.GCETagForRole("Master")),
-			Allowed:    []string{"tcp:22"},
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			TargetTags: sets.New(b.GCETagsForAPIServerTargets()...).Insert(b.GCETagForRole("Master")),
+			Allowed:    sets.New("tcp:22"),
+			SourceTags: sets.New(b.GCETagForRole(kops.InstanceGroupRoleBastion)),
 			Network:    network,
 		})
 		b.AddFirewallRulesTasks(c, "bastion-to-node-ssh", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:    []string{"tcp:22"},
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			TargetTags: sets.New(b.GCETagForRole(kops.InstanceGroupRoleNode)),
+			Allowed:    sets.New("tcp:22"),
+			SourceTags: sets.New(b.GCETagForRole(kops.InstanceGroupRoleBastion)),
 			Network:    network,
 		})
 	} else {
@@ -83,22 +84,21 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		}
 		b.AddFirewallRulesTasks(c, "ssh-external-to-master", &gcetasks.FirewallRule{
 			Lifecycle: b.Lifecycle,
-			TargetTags: append(
-				b.GCETagsForAPIServerTargets(),
+			TargetTags: sets.New(b.GCETagsForAPIServerTargets()...).Insert(
 				b.GCETagForRole(kops.InstanceGroupRoleEtcd),
 				b.GCETagForRole(kops.InstanceGroupRoleScheduler),
 				b.GCETagForRole(kops.InstanceGroupRoleKubeControllerManager),
 				b.GCETagForRole("Master")),
-			Allowed:      []string{"tcp:22"},
-			SourceRanges: b.Cluster.Spec.SSHAccess,
+			Allowed:      sets.New("tcp:22"),
+			SourceRanges: sets.New(b.Cluster.Spec.SSHAccess...),
 			Network:      network,
 		})
 
 		b.AddFirewallRulesTasks(c, "ssh-external-to-node", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:      []string{"tcp:22"},
-			SourceRanges: b.Cluster.Spec.SSHAccess,
+			TargetTags:   sets.New(b.GCETagForRole(kops.InstanceGroupRoleNode)),
+			Allowed:      sets.New("tcp:22"),
+			SourceRanges: sets.New(b.Cluster.Spec.SSHAccess...),
 			Network:      network,
 		})
 	}
@@ -117,12 +117,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		}
 		b.AddFirewallRulesTasks(c, "nodeport-external-to-node", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed: []string{
-				"tcp:" + nodePortRangeString,
-				"udp:" + nodePortRangeString,
-			},
-			SourceRanges: b.Cluster.Spec.NodePortAccess,
+			TargetTags: sets.New(b.GCETagForRole(kops.InstanceGroupRoleNode)),
+			Allowed: sets.New(
+				"tcp:"+nodePortRangeString,
+				"udp:"+nodePortRangeString,
+			),
+			SourceRanges: sets.New(b.Cluster.Spec.NodePortAccess...),
 			Network:      network,
 		})
 	}
@@ -140,9 +140,9 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		}
 		b.AddFirewallRulesTasks(c, "kubernetes-master-https", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
-			TargetTags:   append(b.GCETagsForAPIServerTargets(), b.GCETagForRole("Master")),
-			Allowed:      []string{"tcp:443"},
-			SourceRanges: b.Cluster.Spec.API.Access,
+			TargetTags:   sets.New(b.GCETagsForAPIServerTargets()...).Insert(b.GCETagForRole("Master")),
+			Allowed:      sets.New("tcp:443"),
+			SourceRanges: sets.New(b.Cluster.Spec.API.Access...),
 			Network:      network,
 		})
 
@@ -152,9 +152,9 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
 				Family:       gcetasks.AddressFamilyIPv4, // ip alias is always ipv4
-				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
-				TargetTags:   b.GCETagsForAPIServerTargets(),
-				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
+				SourceRanges: sets.New(b.Cluster.Spec.Networking.PodCIDR),
+				TargetTags:   sets.New(b.GCETagsForAPIServerTargets()...),
+				Allowed:      sets.New("tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)),
 			})
 		}
 	}
