@@ -1,0 +1,16 @@
+{
+  "Statement": [
+    {
+      "Action": "sqs:SendMessage",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "events.amazonaws.com",
+          "sqs.amazonaws.com"
+        ]
+      },
+      "Resource": "arn:aws-test:sqs:us-test-1:123456789012:minimal-example-com-nth"
+    }
+  ],
+  "Version": "2012-10-17"
+}

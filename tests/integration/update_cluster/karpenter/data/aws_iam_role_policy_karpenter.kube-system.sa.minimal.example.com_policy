@@ -185,6 +185,20 @@
       ],
       "Effect": "Allow",
       "Resource": "*"
+    },
+    {
+      "Action": [
+        "sqs:DeleteMessage",
+        "sqs:GetQueueUrl",
+        "sqs:ReceiveMessage"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
     }
   ],
   "Version": "2012-10-17"
