@@ -170,6 +170,16 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			"net.ipv4.conf.lxc*.rp_filter=0",
 			"net.ipv4.conf.cilium_*.rp_filter=0",
 			"")
+
+		if fi.ValueOf(b.NodeupConfig.Networking.Cilium.EnableBBR) {
+			sysctls = append(sysctls,
+				"# BBR congestion control for Cilium Bandwidth Manager.",
+				"# Requires Linux kernel >= 5.18 on the node.",
+				"# See https://docs.cilium.io/en/stable/network/kubernetes/bandwidth-manager/",
+				"net.core.default_qdisc=fq",
+				"net.ipv4.tcp_congestion_control=bbr",
+				"")
+		}
 	}
 
 	sysctls = append(sysctls, b.NodeupConfig.SysctlParameters...)
