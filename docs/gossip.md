@@ -1,7 +1,7 @@
 # Gossip DNS
 
-!!! warning
-    Gossip DNS support was removed in kOps 1.37. Existing gossip clusters must [migrate to None-DNS](#migrating-from-gossip-to-none-dns) using kOps 1.36 before upgrading to kOps 1.37. See [issue #18240](https://github.com/kubernetes/kops/issues/18240) for background and discussion.
+> [!WARNING]
+> Gossip DNS support was removed in kOps 1.37. Existing gossip clusters must [migrate to None-DNS](#migrating-from-gossip-to-none-dns) using kOps 1.36 before upgrading to kOps 1.37. See [issue #18240](https://github.com/kubernetes/kops/issues/18240) for background and discussion.
 
 Gossip-based clusters use a peer-to-peer network, instead of externally hosted DNS, to propagate the Kubernetes API address. Before None-DNS, this was the only way to run a cluster without an externally hosted DNS zone, for example in AWS regions without Route 53, such as the China and GovCloud ones.
 

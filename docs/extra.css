@@ -8,7 +8,75 @@
 	display: none;
 }
 
-.md-content {
-  /* Needed so that content doesn't overflow under right sidebar (and not be copyable) */
+/* Wrap long CLI strings/URLs so they don't overflow mdBook's content column. */
+.content {
   overflow-wrap: break-word;
+}
+
+/* Keep links readable against both Navy's page and sidebar backgrounds. */
+.navy {
+  --links: #6cb6e8;
+  --sidebar-active: #6cb6e8;
+}
+
+.sidebar-section {
+  margin-block: 0.35em;
+}
+
+.sidebar-section > details > summary {
+  color: var(--sidebar-fg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  font-weight: 600;
+  line-height: 1.5;
+  list-style: none;
+  padding-block: 0.35em;
+}
+
+.sidebar-section > details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar-section > details > summary::after,
+.chapter button.chapter-fold-toggle::after {
+  content: "";
+  display: block;
+  width: 0.4em;
+  height: 0.4em;
+  flex-shrink: 0;
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  opacity: 0.68;
+  transform: rotate(-45deg);
+}
+
+.sidebar-section > details > summary::after {
+  margin-inline: 10px;
+}
+
+.sidebar-section > details[open] > summary::after,
+.chapter button.chapter-fold-toggle[aria-expanded="true"]::after {
+  transform: rotate(45deg);
+}
+
+.sidebar-section > details > summary:hover,
+.sidebar-section > details:has(a.active) > summary {
+  color: var(--sidebar-active);
+}
+
+.chapter button.chapter-fold-toggle {
+  background: none;
+  border: 0;
+  color: var(--sidebar-fg);
+  font: inherit;
+  opacity: 1;
+}
+
+.sidebar-section summary:focus-visible,
+.chapter-fold-toggle:focus-visible {
+  outline: 2px solid var(--sidebar-active);
+  outline-offset: 2px;
 }

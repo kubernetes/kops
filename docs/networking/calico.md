@@ -123,7 +123,9 @@ It is possible to configure Calico to use Typha by editing a cluster and adding 
 ```
 
 ### Configuring the eBPF dataplane
-{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.19 | k8s 1.16 |
 
 Calico supports using an [eBPF dataplane](https://docs.projectcalico.org/about/about-ebpf) as an alternative to the standard Linux dataplane (which is based on iptables). While the standard dataplane focuses on compatibility by relying on kube-proxy and your own iptables rules, the eBPF dataplane focuses on performance, latency, and improving user experience with features that aren’t possible in the standard dataplane. As part of that, the eBPF dataplane replaces kube-proxy with an eBPF implementation. The main “user experience” feature is to preserve the source IP address of traffic from outside the cluster when traffic hits a node port; this makes the server-side logs and network policy much more useful on that path.
 
@@ -154,7 +156,9 @@ You can further tune Calico's eBPF dataplane with additional options, such as en
 **Note:** Transitioning to or from Calico's eBPF dataplane in an existing cluster is disruptive. kOps cannot orchestrate this transition automatically today.
 
 ### Configuring WireGuard (IPv4 only)
-{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.19 | k8s 1.16 |
 
 In IPv4 clusters, Calico supports WireGuard to encrypt pod-to-pod traffic. If you enable this options, WireGuard encryption is automatically enabled for all nodes. At the moment, kOps installs WireGuard automatically only when the host OS is *Ubuntu*. For other OSes, WireGuard has to be part of the base image or installed via a hook.
 

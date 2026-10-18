@@ -52,7 +52,9 @@ spec:
 ```
 
 ### EC2NodeClass and NodePool
-{{ kops_feature_table(kops_added_default='1.36') }}
+| Introduced |
+| :-: |
+| kOps 1.36 |
 
 kOps generates one `EC2NodeClass` and one `NodePool` for each AWS node InstanceGroup with `spec.manager: Karpenter`.
 The generated objects use the InstanceGroup name, are delivered by the `karpenter.sh` addon, and are pruned when the InstanceGroup is removed.
@@ -78,7 +80,9 @@ Supported image selector forms are:
 * `<owner>/<name>`
 
 ### Instance requirements
-{{ kops_feature_table(kops_added_default='1.37') }}
+| Introduced |
+| :-: |
+| kOps 1.37 |
 
 By default, the generated `NodePool` requires one of the instance types listed in `spec.machineType` and `spec.mixedInstancesPolicy.instances`.
 To let Karpenter choose instance types based on a capacity range, set `spec.mixedInstancesPolicy.instanceRequirements`:
@@ -110,7 +114,9 @@ Karpenter NodePools can include both GPU and non-GPU instance types.
 When using kOps-managed NVIDIA support, use a dedicated GPU-only InstanceGroup because kOps applies GPU labels and taints to the entire NodePool.
 
 ## Karpenter-managed InstanceGroups
-{{ kops_feature_table(kops_added_default='1.36') }}
+| Introduced |
+| :-: |
+| kOps 1.36 |
 
 A Karpenter-managed InstanceGroup controls the bootstrap script. kOps ensures the correct AWS security groups, subnets, permissions, and Karpenter resource definitions.
 

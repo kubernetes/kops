@@ -2,7 +2,9 @@
 
 ## kOps managed device driver
 
-{{ kops_feature_table(kops_added_default='1.22') }}
+| Introduced |
+| :-: |
+| kOps 1.22 |
 
 kOps can install nvidia device drivers, plugin, and runtime, as well as configure containerd to make use of the runtime.
 
