@@ -231,7 +231,8 @@ func (client Client) WaitForLKEClusterConditions(
 // WaitForEventFinished waits for an entity action to reach the 'finished' state
 // before returning.
 // If the event indicates a failure both the failed event and the error will be returned.
-// nolint
+//
+//nolint:funlen,gocognit,goconst,wsl_v5
 func (client Client) WaitForEventFinished(
 	ctx context.Context,
 	id any,
@@ -605,7 +606,7 @@ func (client Client) WaitForResourceFree(
 
 	filterStr, err := apiFilter.MarshalJSON()
 	if err != nil {
-		return fmt.Errorf("failed to create filter: %s", err)
+		return fmt.Errorf("failed to create filter: %w", err)
 	}
 
 	ticker := newTicker(&client)
@@ -629,7 +630,7 @@ func (client Client) WaitForResourceFree(
 				Filter: string(filterStr),
 			})
 			if err != nil {
-				return fmt.Errorf("failed to list events: %s", err)
+				return fmt.Errorf("failed to list events: %w", err)
 			}
 
 			if !checkIsBusy(events) {
@@ -637,7 +638,7 @@ func (client Client) WaitForResourceFree(
 			}
 
 		case <-ctx.Done():
-			return fmt.Errorf("failed to wait for resource free: %s", ctx.Err())
+			return fmt.Errorf("failed to wait for resource free: %w", ctx.Err())
 		}
 	}
 }
