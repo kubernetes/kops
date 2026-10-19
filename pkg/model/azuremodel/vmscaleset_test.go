@@ -19,6 +19,7 @@ package azuremodel
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -28,56 +29,83 @@ import (
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 func TestVMScaleSetModelBuilder_Build(t *testing.T) {
-	b := VMScaleSetModelBuilder{
-		AzureModelContext: newTestAzureModelContext(),
-		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
-			Lifecycle: fi.LifecycleSync,
-			KopsModelContext: &model.KopsModelContext{
-				IAMModelContext: iam.IAMModelContext{
-					Cluster: &kops.Cluster{
-						Spec: kops.ClusterSpec{
-							Networking: kops.NetworkingSpec{},
+	for _, resourceGroup := range []string{"", "shared"} {
+		t.Run("resource group="+resourceGroup, func(t *testing.T) {
+			b := VMScaleSetModelBuilder{
+				AzureModelContext: newTestAzureModelContext(),
+				BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+					Lifecycle: fi.LifecycleSync,
+					KopsModelContext: &model.KopsModelContext{
+						IAMModelContext: iam.IAMModelContext{
+							Cluster: &kops.Cluster{
+								Spec: kops.ClusterSpec{
+									Networking: kops.NetworkingSpec{},
+								},
+							},
 						},
 					},
 				},
-			},
-		},
-	}
-	c := &fi.CloudupModelBuilderContext{
-		Tasks: make(map[string]fi.CloudupTask),
-	}
+			}
+			b.Cluster.Spec.CloudProvider.Azure.ResourceGroupName = resourceGroup
+			b.Cluster.Name = strings.Repeat("long-cluster-name-", 5) + "example.com"
+			controlPlane := newTestInstanceGroup()
+			controlPlane.Name = "control-plane-eastus-1"
+			controlPlane.Spec.Role = kops.InstanceGroupRoleControlPlane
+			b.InstanceGroups = append(b.InstanceGroups, controlPlane)
+			c := &fi.CloudupModelBuilderContext{
+				Tasks: make(map[string]fi.CloudupTask),
+			}
 
-	caTask := &fitasks.Keypair{
-		Name:    new(fi.CertificateIDCA),
-		Subject: "cn=kubernetes",
-		Type:    "ca",
-	}
-	c.AddTask(caTask)
-	etcdCaTask := &fitasks.Keypair{
-		Name:    new("etcd-clients-ca"),
-		Subject: "cn=etcd-clients-ca",
-		Type:    "ca",
-	}
-	c.AddTask(etcdCaTask)
-	for _, cert := range []string{
-		"kubelet",
-		"kube-proxy",
-	} {
-		c.AddTask(&fitasks.Keypair{
-			Name:    new(cert),
-			Subject: "cn=" + cert,
-			Signer:  caTask,
-			Type:    "client",
+			caTask := &fitasks.Keypair{
+				Name:    new(fi.CertificateIDCA),
+				Subject: "cn=kubernetes",
+				Type:    "ca",
+			}
+			c.AddTask(caTask)
+			etcdCaTask := &fitasks.Keypair{
+				Name:    new("etcd-clients-ca"),
+				Subject: "cn=etcd-clients-ca",
+				Type:    "ca",
+			}
+			c.AddTask(etcdCaTask)
+			for _, cert := range []string{
+				"kubelet",
+				"kube-proxy",
+				"apiserver-aggregator-ca",
+				"service-account",
+			} {
+				c.AddTask(&fitasks.Keypair{
+					Name:    new(cert),
+					Subject: "cn=" + cert,
+					Signer:  caTask,
+					Type:    "client",
+				})
+			}
+
+			err := b.Build(c)
+			if err != nil {
+				t.Fatalf("unexpected error %s", err)
+			}
+			for _, ig := range b.InstanceGroups {
+				logicalName := b.AutoscalingGroupName(ig)
+				vmss, ok := c.Tasks["VMScaleSet/"+logicalName].(*azuretasks.VMScaleSet)
+				if !ok {
+					t.Fatalf("missing VMScaleSet task %q", logicalName)
+				}
+				if got := fi.ValueOf(vmss.Tags[azure.InstanceGroupNameTag]); got != ig.Name {
+					t.Errorf("instance-group tag = %q, want %q", got, ig.Name)
+				}
+				if fi.ValueOf(vmss.ComputerNamePrefix) != ig.Name {
+					t.Errorf("ComputerNamePrefix = %q, want %q", fi.ValueOf(vmss.ComputerNamePrefix), ig.Name)
+				}
+			}
 		})
-	}
-
-	err := b.Build(c)
-	if err != nil {
-		t.Errorf("unexpected error %s", err)
 	}
 }
 

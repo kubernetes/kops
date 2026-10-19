@@ -22,6 +22,7 @@ import (
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -91,6 +92,11 @@ type terraformAzureVMScaleSet struct {
 }
 
 func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VMScaleSet) error {
+	// Terraform derives names from configuration, without Azure discovery.
+	name := fi.ValueOf(e.Tags[azure.InstanceGroupNameTag])
+	if fi.ValueOf(e.ResourceGroup.Shared) {
+		name = fi.ValueOf(e.Name)
+	}
 	if e.StorageProfile == nil || e.StorageProfile.VirtualMachineScaleSetStorageProfile == nil {
 		return fmt.Errorf("storage profile is required for VMScaleSet %q", fi.ValueOf(e.Name))
 	}
@@ -103,7 +109,7 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 	upgradeMode := string(compute.UpgradeModeManual)
 	disablePasswordAuthentication := true
 	tf := &terraformAzureVMScaleSet{
-		Name:                          e.Name,
+		Name:                          new(name),
 		ResourceGroupName:             e.ResourceGroup.terraformName(),
 		Location:                      new(t.Cloud.Region()),
 		SKU:                           e.SKUName,
@@ -138,13 +144,13 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		tf.UserData = userData
 	}
 
-	ipConfig, err := e.terraformIPConfiguration(t)
+	ipConfig, err := e.terraformIPConfiguration(t, name)
 	if err != nil {
 		return err
 	}
 	tf.NetworkInterface = []*terraformAzureVMScaleSetNetworkInterface{
 		{
-			Name:                e.Name,
+			Name:                new(name),
 			Primary:             new(true),
 			IPForwardingEnabled: new(true),
 			IPConfiguration: []*terraformAzureVMScaleSetIPConfiguration{
@@ -169,13 +175,13 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 	return t.RenderResource("azurerm_linux_virtual_machine_scale_set", fi.ValueOf(e.Name), tf)
 }
 
-func (vmss *VMScaleSet) terraformIPConfiguration(t *terraform.TerraformTarget) (*terraformAzureVMScaleSetIPConfiguration, error) {
+func (vmss *VMScaleSet) terraformIPConfiguration(t *terraform.TerraformTarget, name string) (*terraformAzureVMScaleSetIPConfiguration, error) {
 	subnetID, err := vmss.Subnet.terraformID(t)
 	if err != nil {
 		return nil, err
 	}
 	cfg := &terraformAzureVMScaleSetIPConfiguration{
-		Name:                        vmss.Name,
+		Name:                        new(name),
 		Primary:                     new(true),
 		SubnetID:                    subnetID,
 		ApplicationSecurityGroupIDs: applicationSecurityGroupIDs(vmss.ApplicationSecurityGroups),
@@ -183,7 +189,7 @@ func (vmss *VMScaleSet) terraformIPConfiguration(t *terraform.TerraformTarget) (
 	if fi.ValueOf(vmss.RequirePublicIP) {
 		version := string(network.IPVersionIPv4)
 		cfg.PublicIPAddress = &terraformAzureVMScaleSetPublicIPAddress{
-			Name:    vmss.Name,
+			Name:    new(name),
 			Version: &version,
 		}
 	}

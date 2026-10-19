@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
@@ -428,12 +429,13 @@ var _ azure.VMScaleSetsClient = (*MockVMScaleSetsClient)(nil)
 // CreateOrUpdate creates or updates a VM Scale Set.
 func (c *MockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error) {
 	// Ignore resourceGroupName for simplicity.
-	if _, ok := c.VMSSes[vmScaleSetName]; ok {
-		return nil, fmt.Errorf("update not supported")
-	}
 	parameters.Name = &vmScaleSetName
 	parameters.ID = &vmScaleSetName
-	parameters.Identity.PrincipalID = to.Ptr(uuid.New().String())
+	if existing := c.VMSSes[vmScaleSetName]; existing != nil {
+		parameters.Identity.PrincipalID = existing.Identity.PrincipalID
+	} else {
+		parameters.Identity.PrincipalID = to.Ptr(uuid.New().String())
+	}
 	c.VMSSes[vmScaleSetName] = &parameters
 	return &parameters, nil
 }
@@ -449,11 +451,12 @@ func (c *MockVMScaleSetsClient) List(ctx context.Context, resourceGroupName stri
 
 // Get Returns a specified VM Scale Set.
 func (c *MockVMScaleSetsClient) Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
-	vmss, ok := c.VMSSes[vmssName]
-	if !ok {
-		return nil, nil
+	for name, vmss := range c.VMSSes {
+		if strings.EqualFold(name, vmssName) {
+			return vmss, nil
+		}
 	}
-	return vmss, nil
+	return nil, nil
 }
 
 // Delete deletes a specified VM Scale Set.

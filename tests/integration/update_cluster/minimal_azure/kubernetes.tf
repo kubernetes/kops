@@ -121,21 +121,21 @@ resource "azurerm_linux_virtual_machine_scale_set" "control-plane-eastus-1-maste
   }
   instances = 1
   location  = "eastus"
-  name      = "control-plane-eastus-1.masters.minimal-azure.example.com"
+  name      = "control-plane-eastus-1"
   network_interface {
     ip_configuration {
       application_security_group_ids         = [azurerm_application_security_group.control-plane-minimal-azure-example-com.id]
       load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.api-minimal-azure-example-com-backend-pool.id]
-      name                                   = "control-plane-eastus-1.masters.minimal-azure.example.com"
+      name                                   = "control-plane-eastus-1"
       primary                                = true
       public_ip_address {
-        name    = "control-plane-eastus-1.masters.minimal-azure.example.com"
+        name    = "control-plane-eastus-1"
         version = "IPv4"
       }
       subnet_id = azurerm_subnet.eastus.id
     }
     ip_forwarding_enabled = true
-    name                  = "control-plane-eastus-1.masters.minimal-azure.example.com"
+    name                  = "control-plane-eastus-1"
     primary               = true
   }
   os_disk {
@@ -175,20 +175,20 @@ resource "azurerm_linux_virtual_machine_scale_set" "nodes-minimal-azure-example-
   }
   instances = 1
   location  = "eastus"
-  name      = "nodes.minimal-azure.example.com"
+  name      = "nodes"
   network_interface {
     ip_configuration {
       application_security_group_ids = [azurerm_application_security_group.nodes-minimal-azure-example-com.id]
-      name                           = "nodes.minimal-azure.example.com"
+      name                           = "nodes"
       primary                        = true
       public_ip_address {
-        name    = "nodes.minimal-azure.example.com"
+        name    = "nodes"
         version = "IPv4"
       }
       subnet_id = azurerm_subnet.eastus.id
     }
     ip_forwarding_enabled = true
-    name                  = "nodes.minimal-azure.example.com"
+    name                  = "nodes"
     primary               = true
   }
   os_disk {
