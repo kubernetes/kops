@@ -630,6 +630,12 @@ spec:
                     description: FeatureGates is set of key=value pairs that describe
                       feature gates for alpha/experimental features.
                     type: object
+                  flagOverride:
+                    description: |-
+                      FlagOverride overrides the complete command-line arguments (DAEMON_ARGS) passed to the kubelet binary.
+                      Useful when running an alternative kubelet implementation (such as Virtual Kubelet or Krustlet) that
+                      does not accept standard upstream kubelet flags.
+                    type: string
                   hairpinMode:
                     description: |-
                       How should the kubelet configure the container bridge for hairpin packets.
@@ -770,6 +776,23 @@ spec:
                       this node.
                     format: int32
                     type: integer
+                  packages:
+                    description: Packages overrides the URL and hash for the kubelet
+                      binary package.
+                    properties:
+                      hashAmd64:
+                        description: HashAmd64 overrides the hash for the AMD64 package.
+                        type: string
+                      hashArm64:
+                        description: HashArm64 overrides the hash for the ARM64 package.
+                        type: string
+                      urlAmd64:
+                        description: UrlAmd64 overrides the URL for the AMD64 package.
+                        type: string
+                      urlArm64:
+                        description: UrlArm64 overrides the URL for the ARM64 package.
+                        type: string
+                    type: object
                   podCIDR:
                     description: |-
                       PodCIDR is the CIDR to use for pod IP addresses, only used in standalone mode.

@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // InstanceGroup is a subset of the full Cluster and InstanceGroup functionality,
@@ -33,6 +34,9 @@ type InstanceGroup interface {
 
 	// InstallCNIAssets returns true if CNI network plugins need to be installed
 	InstallCNIAssets() bool
+
+	// KubeletSpec returns the merged KubeletConfigSpec for the instance group.
+	KubeletSpec() *kops.KubeletConfigSpec
 
 	// RawClusterSpec returns the cluster spec for the instance group.
 	// If possible, prefer abstracted methods over accessing this data directly.
@@ -72,6 +76,19 @@ func (m *instanceGroupModel) GetCloudProvider() kops.CloudProviderID {
 
 func (m *instanceGroupModel) InstallCNIAssets() bool {
 	return m.cluster.InstallCNIAssets()
+}
+
+func (m *instanceGroupModel) KubeletSpec() *kops.KubeletConfigSpec {
+	kubeletSpec := &kops.KubeletConfigSpec{}
+	if m.ig != nil && m.ig.IsControlPlane() {
+		reflectutils.JSONMergeStruct(kubeletSpec, m.cluster.Spec.ControlPlaneKubelet)
+	} else {
+		reflectutils.JSONMergeStruct(kubeletSpec, m.cluster.Spec.Kubelet)
+	}
+	if m.ig != nil {
+		reflectutils.JSONMergeStruct(kubeletSpec, m.ig.Spec.Kubelet)
+	}
+	return kubeletSpec
 }
 
 func (m *instanceGroupModel) RawClusterSpec() *kops.ClusterSpec {

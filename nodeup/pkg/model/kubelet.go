@@ -22,7 +22,9 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -48,6 +50,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do/dometadata"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
 	kubeletv1 "k8s.io/kubelet/config/v1"
 	kubelet "k8s.io/kubelet/config/v1beta1"
@@ -113,6 +116,35 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	{
+		// We always create the directory, avoids circular dependency on a bind-mount
+		c.EnsureTask(&nodetasks.File{
+			Path: filepath.Dir(b.KubeletKubeConfig()), // e.g. "/var/lib/kubelet"
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
+
+		{
+			var kubeconfig fi.Resource
+			if b.canSignCertificates() {
+				kubeconfig, err = b.buildControlPlaneKubeletKubeconfig(c)
+			} else {
+				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
+			}
+			if err != nil {
+				return err
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:           b.KubeletKubeConfig(),
+				Contents:       kubeconfig,
+				Type:           nodetasks.FileType_File,
+				Mode:           s("0400"),
+				BeforeServices: []string{kubeletService},
+			})
+		}
+	}
+
+	{
 		// Set the provider ID to help speed node registration on large clusters
 		var providerID string
 		if b.CloudProvider() == kops.CloudProviderAWS {
@@ -161,16 +193,9 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	{
-		// @TODO Extract to common function?
-		assetName := "kubelet"
-		assetPath := ""
-		// @TODO make Find call to an interface, we cannot mock out this function because it finds a file on disk
-		asset, err := b.Assets.Find(assetName, assetPath)
+		asset, err := b.findKubeletAsset(kubeletConfig)
 		if err != nil {
-			return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
-		}
-		if asset == nil {
-			return fmt.Errorf("unable to locate asset %q", assetName)
+			return err
 		}
 
 		c.AddTask(&nodetasks.File{
@@ -187,34 +212,6 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 				return err
 			}
 			c.EnsureTask(t)
-		}
-	}
-	{
-		// We always create the directory, avoids circular dependency on a bind-mount
-		c.EnsureTask(&nodetasks.File{
-			Path: filepath.Dir(b.KubeletKubeConfig()), // e.g. "/var/lib/kubelet"
-			Type: nodetasks.FileType_Directory,
-			Mode: s("0755"),
-		})
-
-		{
-			var kubeconfig fi.Resource
-			if b.canSignCertificates() {
-				kubeconfig, err = b.buildControlPlaneKubeletKubeconfig(c)
-			} else {
-				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
-			}
-			if err != nil {
-				return err
-			}
-
-			c.AddTask(&nodetasks.File{
-				Path:           b.KubeletKubeConfig(),
-				Contents:       kubeconfig,
-				Type:           nodetasks.FileType_File,
-				Mode:           s("0400"),
-				BeforeServices: []string{kubeletService},
-			})
 		}
 	}
 
@@ -448,6 +445,43 @@ func (b *KubeletBuilder) kubeletPath() string {
 	return b.binaryPath() + "/kubelet"
 }
 
+func (b *KubeletBuilder) findKubeletAsset(kubeletConfig *kops.KubeletConfigSpec) (fi.Resource, error) {
+	assetName := "kubelet"
+	if kubeletConfig.Packages != nil {
+		var customURL string
+		switch b.Architecture {
+		case architectures.ArchitectureAmd64:
+			if kubeletConfig.Packages.UrlAmd64 != nil && kubeletConfig.Packages.HashAmd64 != nil {
+				customURL = *kubeletConfig.Packages.UrlAmd64
+			}
+		case architectures.ArchitectureArm64:
+			if kubeletConfig.Packages.UrlArm64 != nil && kubeletConfig.Packages.HashArm64 != nil {
+				customURL = *kubeletConfig.Packages.UrlArm64
+			}
+		}
+		if customURL != "" {
+			if u, err := url.Parse(customURL); err == nil {
+				base := path.Base(u.Path)
+				if base != "" && base != "." && base != "/" && !strings.HasSuffix(base, ".tar.gz") && !strings.HasSuffix(base, ".tgz") {
+					if asset, err := b.Assets.Find(base, ""); err == nil && asset != nil {
+						return asset, nil
+					}
+				}
+			}
+		}
+	}
+
+	assetPath := ""
+	asset, err := b.Assets.Find(assetName, assetPath)
+	if err != nil {
+		return nil, fmt.Errorf("trying to locate asset %q: %v", assetName, err)
+	}
+	if asset == nil {
+		return nil, fmt.Errorf("unable to locate asset %q", assetName)
+	}
+	return asset, nil
+}
+
 // getECRCredentialProviderPath returns the path of the ECR Credentials Provider based on distro and archiecture
 func (b *KubeletBuilder) getECRCredentialProviderPath() string {
 	return b.binaryPath() + "/ecr-credential-provider"
@@ -473,31 +507,36 @@ func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfi
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
 func (b *KubeletBuilder) buildSystemdEnvironmentFile(ctx context.Context, kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
-	// TODO: Dump the separate file for flags - just complexity!
-	flags, err := flagbuilder.BuildFlags(kubeletConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error building kubelet flags: %v", err)
-	}
-
-	if b.UsesSecondaryIP() {
-		localIP, err := b.GetMetadataLocalIP(ctx)
+	var flags string
+	if kubeletConfig.FlagOverride != nil {
+		flags = *kubeletConfig.FlagOverride
+	} else {
+		var err error
+		flags, err = flagbuilder.BuildFlags(kubeletConfig)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error building kubelet flags: %v", err)
 		}
-		if localIP != "" {
-			flags += " --node-ip=" + localIP
+
+		if b.UsesSecondaryIP() {
+			localIP, err := b.GetMetadataLocalIP(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if localIP != "" {
+				flags += " --node-ip=" + localIP
+			}
 		}
-	}
 
-	if b.IsIPv6Only() {
-		flags += " --node-ip=::"
-	}
+		if b.IsIPv6Only() {
+			flags += " --node-ip=::"
+		}
 
-	flags += " --config=" + kubeletConfigFilePath
+		flags += " --config=" + kubeletConfigFilePath
 
-	if b.UseExternalKubeletCredentialProvider() {
-		flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
-		flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
+		if b.UseExternalKubeletCredentialProvider() {
+			flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
+			flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
+		}
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
