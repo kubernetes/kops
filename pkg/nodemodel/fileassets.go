@@ -50,8 +50,15 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 	for _, arch := range architectures.GetSupported() {
 		kubernetesAssets[arch] = []*assets.MirroredAsset{}
 
+		kubeletAsset, err := wellknownassets.FindKubeletAsset(ig, assetBuilder, arch, baseURL)
+		if err != nil {
+			return nil, err
+		}
+		if kubeletAsset != nil {
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(kubeletAsset))
+		}
+
 		k8sAssetsNames := []string{
-			fmt.Sprintf("/bin/linux/%s/kubelet", arch),
 			fmt.Sprintf("/bin/linux/%s/kubectl", arch),
 		}
 

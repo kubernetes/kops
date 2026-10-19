@@ -114,8 +114,13 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "containerd", "gvisor"), "gVisor can only be enabled on instance groups with role Node"))
 	}
 
-	if g.Spec.Kubelet != nil && g.Spec.Kubelet.CgroupDriver != "" {
-		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "kubelet", "cgroupDriver"), &g.Spec.Kubelet.CgroupDriver, []string{"systemd", "cgroupfs"})...)
+	if g.Spec.Kubelet != nil {
+		if g.Spec.Kubelet.CgroupDriver != "" {
+			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "kubelet", "cgroupDriver"), &g.Spec.Kubelet.CgroupDriver, []string{"systemd", "cgroupfs"})...)
+		}
+		if g.Spec.Kubelet.Packages != nil {
+			allErrs = append(allErrs, validateKubeletPackagesConfig(g.Spec.Kubelet.Packages, field.NewPath("spec", "kubelet", "packages"))...)
+		}
 	}
 
 	if strict && g.Spec.Image == "" {

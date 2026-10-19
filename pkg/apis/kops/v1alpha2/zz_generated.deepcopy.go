@@ -4556,6 +4556,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.Packages != nil {
+		in, out := &in.Packages, &out.Packages
+		*out = new(PackagesConfig)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 

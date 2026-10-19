@@ -923,6 +923,23 @@ spec:
     seccompDefault: true
 ```
 
+### Custom Packages
+{{ kops_feature_table(kops_added_default='1.38') }}
+
+It is possible to use a custom build or pre-release `kubelet` binary by specifying its URL and sha256 hash on the Cluster (`spec.kubelet.packages`) or on an InstanceGroup (`spec.kubelet.packages`):
+
+```yaml
+spec:
+  kubelet:
+    packages:
+      urlAmd64: https://cdn.example.com/k8s/v1.32.0/bin/linux/amd64/kubelet
+      hashAmd64: ab1c67fbcbdddbe481e48a55cf0ef9a86b38b166b5079e0010737fd87d7454bb
+```
+
+The URL must point to a binary named `kubelet`. kOps installs exactly the binary you specify, so it is your responsibility to keep the custom kubelet within the Kubernetes [version skew policy](https://kubernetes.io/releases/version-skew-policy/) relative to the control plane, including while the control plane is being upgraded.
+
+During a control plane upgrade, kOps keeps other nodes on the kubelet version that the control plane is currently running, whereas a custom package in `spec.kubelet.packages` is not held back. When upgrading to a new Kubernetes version with a custom kubelet binary, upgrade the control plane first (`spec.controlPlaneKubelet.packages` together with `spec.kubernetesVersion`), and then update the remaining nodes (`spec.kubelet.packages` or InstanceGroup-level `spec.kubelet.packages`).
+
 ## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/

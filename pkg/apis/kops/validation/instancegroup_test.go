@@ -1147,3 +1147,51 @@ func TestValidateInstanceGroupKubeletCgroupDriver(t *testing.T) {
 		testErrors(t, g.CgroupDriver, errs, g.ExpectedErrors)
 	}
 }
+
+func TestValidateInstanceGroupKubeletPackages(t *testing.T) {
+	grid := []struct {
+		Description    string
+		Packages       *kops.PackagesConfig
+		ExpectedErrors []string
+	}{
+		{
+			Description: "valid amd64 package",
+			Packages: &kops.PackagesConfig{
+				UrlAmd64:  new("https://example.com/amd64/kubelet"),
+				HashAmd64: new("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Description: "missing hash",
+			Packages: &kops.PackagesConfig{
+				UrlAmd64: new("https://example.com/amd64/kubelet"),
+			},
+			ExpectedErrors: []string{"Required value::spec.kubelet.packages.hashAmd64"},
+		},
+		{
+			Description: "invalid filename",
+			Packages: &kops.PackagesConfig{
+				UrlAmd64:  new("https://example.com/amd64/kubelet-custom"),
+				HashAmd64: new("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+			},
+			ExpectedErrors: []string{"Invalid value::spec.kubelet.packages.urlAmd64"},
+		},
+	}
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "nodes",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role: kops.InstanceGroupRoleNode,
+				Kubelet: &kops.KubeletConfigSpec{
+					Packages: g.Packages,
+				},
+			},
+		}
+		errs := ValidateInstanceGroup(ig, nil, false)
+		testErrors(t, g.Description, errs, g.ExpectedErrors)
+	}
+}
