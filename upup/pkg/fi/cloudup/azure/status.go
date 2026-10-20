@@ -120,9 +120,13 @@ func (c *azureCloudImplementation) GetCloudGroups(
 	warnUnmatched bool,
 	nodes []v1.Node,
 ) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	igsByName, err := keyedByName(instancegroups, cluster.Name)
+	igsByLegacyName, err := keyedByLegacyName(instancegroups, cluster.Name)
 	if err != nil {
 		return nil, err
+	}
+	igsByName := make(map[string]*kops.InstanceGroup)
+	for _, ig := range igsByLegacyName {
+		igsByName[ig.Name] = ig
 	}
 
 	ctx := context.TODO()
@@ -139,12 +143,25 @@ func (c *azureCloudImplementation) GetCloudGroups(
 			continue
 		}
 
-		ig, ok := igsByName[*vmss.Name]
-		if !ok {
+		var ig *kops.InstanceGroup
+		if igName := fi.ValueOf(vmss.Tags[InstanceGroupNameTag]); igName != "" {
+			ig = igsByName[igName]
+		} else {
+			name := strings.ToLower(fi.ValueOf(vmss.Name))
+			ig = igsByLegacyName[name]
+			if ig == nil {
+				ig = igsByName[name]
+			}
+		}
+		if ig == nil {
 			if warnUnmatched {
 				klog.Warningf("Found VM Scale Set with no corresponding instance group %q", *vmss.Name)
 			}
 			continue
+		}
+
+		if _, ok := groups[ig.Name]; ok {
+			return nil, fmt.Errorf("found multiple VM Scale Sets matching instance group %q", ig.Name)
 		}
 
 		cig, err := c.buildCloudInstanceGroup(ctx, cluster, ig, vmss, nodeMap)
@@ -198,16 +215,13 @@ func (c *azureCloudImplementation) buildCloudInstanceGroup(
 }
 
 func isOwnedByCluster(vmss *compute.VirtualMachineScaleSet, clusterName string) bool {
-	for k, v := range vmss.Tags {
-		if k == TagClusterName && *v == clusterName {
-			return true
-		}
-	}
-	return false
+	tag := vmss.Tags[TagClusterName]
+	return tag != nil && *tag == clusterName
 }
 
-// keyedByName creates a map of instance groups keyed by VM Scale Set names.
-func keyedByName(instancegroups []*kops.InstanceGroup, clusterName string) (map[string]*kops.InstanceGroup, error) {
+// keyedByLegacyName keeps legacy VMSS names separate from instance group names,
+// because a valid instance group name can equal another group's legacy VMSS name.
+func keyedByLegacyName(instancegroups []*kops.InstanceGroup, clusterName string) (map[string]*kops.InstanceGroup, error) {
 	m := map[string]*kops.InstanceGroup{}
 	for _, ig := range instancegroups {
 		var name string

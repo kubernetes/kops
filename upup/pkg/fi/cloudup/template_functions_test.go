@@ -736,3 +736,43 @@ func TestGetClusterAutoscalerNodeGroupsWhenUpdatingSomeInstanceGroups(t *testing
 		})
 	}
 }
+
+func TestGetClusterAutoscalerNodeGroupsAzure(t *testing.T) {
+	for _, tc := range []struct {
+		name          string
+		igName        string
+		azureName     string
+		resourceGroup string
+		excluded      bool
+	}{
+		{name: "managed resource group", igName: "nodes", azureName: "nodes"},
+		{name: "dotted instance group", igName: "nodes.special", azureName: "nodes.special"},
+		{name: "shared resource group", igName: "nodes", azureName: "nodes.cluster.example.com", resourceGroup: "shared"},
+		{name: "excluded instance group", igName: "nodes", azureName: "nodes", excluded: true},
+		{name: "excluded instance group in shared resource group", igName: "nodes", azureName: "nodes.cluster.example.com", resourceGroup: "shared", excluded: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// Naming must work without an Azure client or VMSS tasks, for every target.
+			tf := &TemplateFunctions{}
+			tf.Cluster = &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{Name: "cluster.example.com"},
+				Spec:       kops.ClusterSpec{CloudProvider: kops.CloudProviderSpec{Azure: &kops.AzureSpec{ResourceGroupName: tc.resourceGroup}}},
+			}
+			tf.AllInstanceGroups = []*kops.InstanceGroup{{
+				ObjectMeta: metav1.ObjectMeta{Name: tc.igName},
+				Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode, MinSize: new(int32(1)), MaxSize: new(int32(1))},
+			}}
+			if !tc.excluded {
+				tf.InstanceGroups = tf.AllInstanceGroups
+			}
+			groups, err := tf.GetClusterAutoscalerNodeGroups()
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := ClusterAutoscalerNodeGroup{MinSize: 1, MaxSize: 1, Other: tc.azureName}
+			if groups[tc.igName] != want {
+				t.Errorf("got %+v, want %+v", groups[tc.igName], want)
+			}
+		})
+	}
+}

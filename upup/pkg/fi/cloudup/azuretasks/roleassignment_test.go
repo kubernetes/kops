@@ -73,7 +73,7 @@ func TestRoleAssignmentFind(t *testing.T) {
 		t.Fatalf("failed to create: %s", err)
 	}
 	vmss := &VMScaleSet{
-		Name:          to.Ptr(vmssName),
+		Name:          to.Ptr(vmssName + ".cluster.example.com"),
 		PrincipalID:   resp.Identity.PrincipalID,
 		ResourceGroup: rg,
 	}
@@ -117,7 +117,8 @@ func TestRoleAssignmentFind(t *testing.T) {
 		t.Fatalf("failed to create: %s", err)
 	}
 
-	// Find again.
+	// The dependency already supplied the principal ID; no second VMSS lookup is needed.
+	cloud.VMScaleSetsClient = nil
 	actual, err = ra.Find(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -130,6 +131,10 @@ func TestRoleAssignmentFind(t *testing.T) {
 	}
 	if a, e := *actual.RoleDefID, roleDefID; a != e {
 		t.Errorf("unexpected Role def ID: expected %s, but got %s", e, a)
+	}
+	changes := &RoleAssignment{}
+	if fi.BuildChanges(actual, ra, changes) {
+		t.Fatalf("unchanged Role Assignment has changes: %+v", changes)
 	}
 }
 

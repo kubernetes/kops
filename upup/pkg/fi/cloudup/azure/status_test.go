@@ -434,3 +434,79 @@ func TestGetCloudGroupsNeedsUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestGetCloudGroupsVMScaleSetNames(t *testing.T) {
+	const clusterName = "my-cluster"
+	for _, test := range []struct {
+		name        string
+		vmssNames   []string
+		igTag       *string
+		owner       *string
+		extraIGName string
+		wantCount   int
+		wantError   bool
+	}{
+		{name: "short", vmssNames: []string{"nodes"}, owner: to.Ptr(clusterName), wantCount: 1},
+		{name: "legacy", vmssNames: []string{"nodes.my-cluster"}, owner: to.Ptr(clusterName), wantCount: 1},
+		{name: "legacy name with different casing", vmssNames: []string{"Nodes.My-Cluster"}, owner: to.Ptr(clusterName), wantCount: 1},
+		{name: "tagged", vmssNames: []string{"custom-name"}, igTag: to.Ptr("nodes"), owner: to.Ptr(clusterName), wantCount: 1},
+		{name: "tag takes precedence", vmssNames: []string{"nodes"}, igTag: to.Ptr("unknown"), owner: to.Ptr(clusterName)},
+		{name: "tag must not match a legacy alias", vmssNames: []string{"custom-name"}, igTag: to.Ptr("nodes.my-cluster"), owner: to.Ptr(clusterName)},
+		{name: "valid overlapping IG names", vmssNames: []string{"custom-name"}, igTag: to.Ptr("nodes"), owner: to.Ptr(clusterName), extraIGName: "nodes.my-cluster", wantCount: 1},
+		{name: "legacy name overlapping an IG name", vmssNames: []string{"nodes.my-cluster"}, owner: to.Ptr(clusterName), extraIGName: "nodes.my-cluster", wantCount: 1},
+		{name: "empty IG tag uses legacy name", vmssNames: []string{"nodes.my-cluster"}, igTag: to.Ptr(""), owner: to.Ptr(clusterName), wantCount: 1},
+		{name: "foreign cluster", vmssNames: []string{"nodes"}, igTag: to.Ptr("nodes"), owner: to.Ptr("other-cluster")},
+		{name: "missing ownership", vmssNames: []string{"nodes"}},
+		{name: "duplicate short and legacy", vmssNames: []string{"nodes", "nodes.my-cluster"}, owner: to.Ptr(clusterName), wantError: true},
+		{name: "duplicate tags", vmssNames: []string{"first", "second"}, igTag: to.Ptr("nodes"), owner: to.Ptr(clusterName), wantError: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			vmsses := &mockVMScaleSetsClient{}
+			for _, name := range test.vmssNames {
+				vmsses.vmsses = append(vmsses.vmsses, &compute.VirtualMachineScaleSet{
+					Name: to.Ptr(name),
+					Tags: map[string]*string{TagClusterName: test.owner, InstanceGroupNameTag: test.igTag},
+					SKU:  &compute.SKU{Capacity: to.Ptr[int64](1)},
+				})
+			}
+			vmName := test.vmssNames[0] + "_0"
+			c := &azureCloudImplementation{
+				vmscaleSetsClient:   vmsses,
+				vmscaleSetVMsClient: &mockVMScaleSetVMsClient{vms: []*compute.VirtualMachineScaleSetVM{{Name: to.Ptr(vmName)}}},
+			}
+			cluster := &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{Name: clusterName},
+				Spec:       kops.ClusterSpec{CloudProvider: kops.CloudProviderSpec{Azure: &kops.AzureSpec{ResourceGroupName: "my-rg"}}},
+			}
+			ig := &kops.InstanceGroup{ObjectMeta: metav1.ObjectMeta{Name: "nodes"}, Spec: kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode}}
+			igs := []*kops.InstanceGroup{ig}
+			if test.extraIGName != "" {
+				igs = append(igs, &kops.InstanceGroup{ObjectMeta: metav1.ObjectMeta{Name: test.extraIGName}, Spec: kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode}})
+			}
+			nodes := []v1.Node{{
+				ObjectMeta: metav1.ObjectMeta{Name: "nodes000000"},
+				Spec:       v1.NodeSpec{ProviderID: "azure:///subscriptions/sub/resourceGroups/my-rg/providers/Microsoft.Compute/virtualMachineScaleSets/" + test.vmssNames[0] + "/virtualMachines/0"},
+			}}
+			expectedNode := &nodes[0]
+			groups, err := c.GetCloudGroups(cluster, igs, false, nodes)
+			if (err != nil) != test.wantError {
+				t.Fatalf("GetCloudGroups error = %v, want error %v", err, test.wantError)
+			}
+			if test.wantError {
+				return
+			}
+			if len(groups) != test.wantCount {
+				t.Fatalf("got %d groups, want %d", len(groups), test.wantCount)
+			}
+			if test.wantCount > 0 {
+				group := groups[ig.Name]
+				if group == nil || group.HumanName != test.vmssNames[0] || group.InstanceGroup != ig {
+					t.Fatalf("unexpected cloud instance group: %+v", group)
+				}
+				if len(group.Ready) != 1 || group.Ready[0].Node != expectedNode {
+					t.Fatalf("VM was not associated with its Kubernetes node: %+v", group.Ready)
+				}
+			}
+		})
+	}
+}

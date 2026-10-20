@@ -535,7 +535,8 @@ func (d *deployer) defaultClusterName() (string, error) {
 			// Use the k8s.local KOPS_DNS_DOMAIN as the cluster name suffix.
 			suffix = dnsDomain
 		} else {
-			// With --dns=none and the domain is not needed.
+			// Omit other domain suffixes to keep cluster names short. Upgrade tests
+			// can start with pre-1.38 kOps, which includes cluster names in VMSS names.
 			suffix = ""
 		}
 	default:

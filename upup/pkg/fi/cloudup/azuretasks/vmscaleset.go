@@ -19,9 +19,12 @@ package azuretasks
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/klog/v2"
@@ -32,6 +35,7 @@ import (
 // VMScaleSet is an Azure VM Scale Set.
 // +kops:fitask
 type VMScaleSet struct {
+	// Name is the logical name used for task links and Terraform resource addresses.
 	Name      *string
 	Lifecycle fi.Lifecycle
 
@@ -59,6 +63,10 @@ type VMScaleSet struct {
 	Tags        map[string]*string
 	Zones       []*string
 	PrincipalID *string
+
+	// actualName carries the discovered name to RenderAzure, even when Find returns
+	// nil for a failed VMSS.
+	actualName string
 }
 
 var _ fi.CloudupTaskNormalize = (*VMScaleSet)(nil)
@@ -86,7 +94,7 @@ var (
 	_ fi.CompareWithID = &VMScaleSet{}
 )
 
-// CompareWithID returns the Name of the VM Scale Set.
+// CompareWithID returns the logical task name.
 func (s *VMScaleSet) CompareWithID() *string {
 	return s.Name
 }
@@ -94,13 +102,31 @@ func (s *VMScaleSet) CompareWithID() *string {
 // Find discovers the VMScaleSet in the cloud provider.
 func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 	cloud := c.T.Cloud.(azure.AzureCloud)
-	found, err := cloud.VMScaleSet().Get(context.TODO(), *s.ResourceGroup.Name, *s.Name)
-	if err != nil && !strings.Contains(err.Error(), "NotFound") {
-		return nil, err
+	clusterName := fi.ValueOf(s.Tags[azure.TagClusterName])
+	igName := fi.ValueOf(s.Tags[azure.InstanceGroupNameTag])
+	legacyName := fi.ValueOf(s.Name)
+	s.actualName = ""
+	var found *compute.VirtualMachineScaleSet
+	// Try the short name first, then the legacy cluster-qualified name.
+	for _, name := range []string{igName, legacyName} {
+		set, err := cloud.VMScaleSet().Get(context.TODO(), *s.ResourceGroup.Name, name)
+		if err != nil {
+			var responseError *azcore.ResponseError
+			if errors.As(err, &responseError) && responseError.StatusCode == http.StatusNotFound {
+				continue
+			}
+			return nil, err
+		}
+		if set == nil || fi.ValueOf(set.Tags[azure.TagClusterName]) != clusterName {
+			continue
+		}
+		found = set
+		break
 	}
 	if found == nil {
 		return nil, nil
 	}
+	s.actualName = fi.ValueOf(found.Name)
 
 	if found.ID == nil {
 		return nil, fmt.Errorf("found VMSS without ID")
@@ -109,7 +135,7 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 		return nil, fmt.Errorf("found VMSS without properties")
 	}
 	if fi.ValueOf(found.Properties.ProvisioningState) == "Failed" {
-		klog.Warningf("found VMSS %q in failed provisioning state", *s.Name)
+		klog.Warningf("found VMSS %q in failed provisioning state", s.actualName)
 		return nil, nil
 	}
 	if found.Properties.VirtualMachineProfile == nil {
@@ -266,13 +292,18 @@ func (s *VMScaleSet) CheckChanges(a, e, changes *VMScaleSet) error {
 
 // RenderAzure creates or updates a VM Scale Set.
 func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScaleSet) error {
-	if a == nil {
-		klog.Infof("Creating a new VM Scale Set with name: %s", fi.ValueOf(e.Name))
-	} else {
-		klog.Infof("Updating a VM Scale Set with name: %s", fi.ValueOf(e.Name))
+	name := e.actualName
+	if name == "" {
+		name = fi.ValueOf(e.Tags[azure.InstanceGroupNameTag])
+		if fi.ValueOf(e.ResourceGroup.Shared) {
+			name = fi.ValueOf(e.Name)
+		}
 	}
-
-	name := *e.Name
+	if a == nil {
+		klog.Infof("Creating a new VM Scale Set with name: %s", name)
+	} else {
+		klog.Infof("Updating a VM Scale Set with name: %s", name)
+	}
 
 	var customData *string
 	if e.UserData != nil {

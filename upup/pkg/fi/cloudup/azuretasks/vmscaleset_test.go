@@ -21,13 +21,17 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 func TestSubnetIDParse(t *testing.T) {
@@ -63,7 +67,7 @@ func TestLoadBalancerIDParse(t *testing.T) {
 
 func newTestVMScaleSet() *VMScaleSet {
 	return &VMScaleSet{
-		Name:      to.Ptr("vmss"),
+		Name:      to.Ptr("vmss." + testClusterName),
 		Lifecycle: fi.LifecycleSync,
 		ResourceGroup: &ResourceGroup{
 			Name: to.Ptr("rg"),
@@ -85,8 +89,11 @@ func newTestVMScaleSet() *VMScaleSet {
 		AdminUser:          to.Ptr("admin"),
 		SSHPublicKey:       to.Ptr("ssh"),
 		UserData:           fi.NewStringResource("custom"),
-		Tags:               map[string]*string{},
-		Zones:              []*string{to.Ptr("zone1")},
+		Tags: map[string]*string{
+			azure.TagClusterName:       new(testClusterName),
+			azure.InstanceGroupNameTag: new("vmss"),
+		},
+		Zones: []*string{to.Ptr("zone1")},
 	}
 }
 
@@ -99,11 +106,11 @@ func TestVMScaleSetRenderAzure(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
-	actual := cloud.VMScaleSetsClient.VMSSes[*expected.Name]
+	actual := cloud.VMScaleSetsClient.VMSSes["vmss"]
 	if a, e := *actual.Location, cloud.Region(); a != e {
 		t.Fatalf("unexpected location: expected %s, but got %s", e, a)
 	}
-	if a, e := *actual.Name, *expected.Name; a != e {
+	if a, e := *actual.Name, "vmss"; a != e {
 		t.Errorf("unexpected name: expected %s, but got %s", e, a)
 	}
 	// Check other major fields.
@@ -147,8 +154,12 @@ func TestVMScaleSetFind(t *testing.T) {
 		Name: to.Ptr("rg"),
 	}
 	vmss := &VMScaleSet{
-		Name:          to.Ptr("vmss"),
+		Name:          to.Ptr("vmss." + testClusterName),
 		ResourceGroup: rg,
+		Tags: map[string]*string{
+			azure.TagClusterName:       new(testClusterName),
+			azure.InstanceGroupNameTag: new("vmss"),
+		},
 	}
 	// Find will return nothing if there is no VM ScaleSet created.
 	actual, err := vmss.Find(ctx)
@@ -260,6 +271,7 @@ func TestVMScaleSetFind(t *testing.T) {
 		Identity: &compute.VirtualMachineScaleSetIdentity{
 			Type: to.Ptr(compute.ResourceIdentityTypeSystemAssigned),
 		},
+		Tags:  vmss.Tags,
 		Zones: []*string{to.Ptr("zone1")},
 	}
 	if _, err := cloud.VMScaleSet().CreateOrUpdate(context.Background(), *rg.Name, *vmss.Name, vmssParameters); err != nil {
@@ -311,6 +323,7 @@ func TestVMScaleSetRun(t *testing.T) {
 	}
 
 	vmss := newTestVMScaleSet()
+	delete(vmss.Tags, azure.TagClusterName)
 	err := vmss.Normalize(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -320,7 +333,8 @@ func TestVMScaleSetRun(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	expectedTags := map[string]*string{
-		azure.TagClusterName: new(testClusterName),
+		azure.TagClusterName:       new(testClusterName),
+		azure.InstanceGroupNameTag: new("vmss"),
 	}
 	if a, e := vmss.Tags, expectedTags; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected tags: expected %+v, but got %+v", e, a)
@@ -364,4 +378,298 @@ func TestVMScaleSetCheckChanges(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestVMScaleSetNaming(t *testing.T) {
+	const clusterName = "pr18879-kops-azure-upgrade-dns-none"
+	for _, tc := range []struct {
+		name         string
+		igName       string
+		legacyName   string
+		existingName string
+		shared       bool
+		failed       bool
+	}{
+		{name: "new nodes", igName: "nodes", legacyName: "nodes." + clusterName},
+		{name: "new control plane", igName: "control-plane-eastus-1", legacyName: "control-plane-eastus-1.masters." + clusterName},
+		{name: "existing nodes", igName: "nodes", legacyName: "nodes." + clusterName, existingName: "nodes." + clusterName},
+		{name: "failed legacy nodes", igName: "nodes", legacyName: "nodes." + clusterName, existingName: "nodes." + clusterName, failed: true},
+		{name: "existing control plane", igName: "control-plane-eastus-1", legacyName: "control-plane-eastus-1.masters." + clusterName, existingName: "control-plane-eastus-1.masters." + clusterName},
+		{name: "existing 69-character control plane", igName: "control-plane-uksouth-2-1", legacyName: "control-plane-uksouth-2-1.masters." + clusterName, existingName: "control-plane-uksouth-2-1.masters." + clusterName},
+		{name: "existing short name", igName: "nodes", legacyName: "nodes." + clusterName, existingName: "nodes"},
+		{name: "dotted instance group", igName: "nodes.special", legacyName: "nodes.special." + clusterName},
+		{name: "new shared resource group", igName: "nodes", legacyName: "nodes." + clusterName, shared: true},
+		{name: "existing shared resource group", igName: "nodes", legacyName: "nodes." + clusterName, existingName: "nodes." + clusterName, shared: true},
+		{name: "shared resource group with short name", igName: "nodes", legacyName: "nodes." + clusterName, existingName: "nodes", shared: true},
+		{name: "shared resource group control plane", igName: "control-plane-eastus-1", legacyName: "control-plane-eastus-1.masters." + clusterName, shared: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cloud := NewMockAzureCloud("eastus")
+			apiTarget := azure.NewAzureAPITarget(cloud)
+			newTask := func() *VMScaleSet {
+				s := newTestVMScaleSet()
+				s.Name = new(tc.legacyName)
+				s.ResourceGroup.Shared = new(tc.shared)
+				s.Subnet.ID = new((&azure.SubnetID{
+					SubscriptionID:     cloud.SubscriptionID(),
+					ResourceGroupName:  *s.ResourceGroup.Name,
+					VirtualNetworkName: *s.VirtualNetwork.Name,
+					SubnetName:         *s.Subnet.Name,
+				}).String())
+				s.Tags = map[string]*string{
+					azure.TagClusterName:       new(clusterName),
+					azure.InstanceGroupNameTag: new(tc.igName),
+				}
+				s.StorageProfile.VirtualMachineScaleSetStorageProfile = &compute.VirtualMachineScaleSetStorageProfile{
+					OSDisk: &compute.VirtualMachineScaleSetOSDisk{},
+				}
+				return s
+			}
+			wantName := tc.igName
+			if tc.shared {
+				wantName = tc.legacyName
+			}
+			if tc.existingName != "" {
+				wantName = tc.existingName
+				existing := newTask()
+				// Seed the exact physical name using the shared-group naming convention.
+				existing.Name = new(tc.existingName)
+				existing.ResourceGroup.Shared = new(true)
+				if err := existing.RenderAzure(apiTarget, nil, existing, nil); err != nil {
+					t.Fatal(err)
+				}
+				if tc.failed {
+					cloud.VMScaleSetsClient.VMSSes[tc.existingName].Properties.ProvisioningState = new("Failed")
+				}
+			}
+
+			// Terraform names depend only on whether the resource group is shared,
+			// even when a legacy VMSS exists. Resource addresses stay unchanged.
+			tfTask := newTask()
+			// A nil client ensures Terraform cannot query Azure for the VMSS name.
+			tfCloud := &vmScaleSetLookupCloud{AzureCloud: cloud}
+			tfTarget := terraform.NewTerraformTarget(tfCloud, "", t.TempDir(), nil)
+			if err := tfTask.RenderTerraform(tfTarget, nil, tfTask, nil); err != nil {
+				t.Fatal(err)
+			}
+			resources, err := tfTarget.GetResourcesByType()
+			if err != nil {
+				t.Fatal(err)
+			}
+			tf := resources["azurerm_linux_virtual_machine_scale_set"][strings.ReplaceAll(tc.legacyName, ".", "-")].(*terraformAzureVMScaleSet)
+			ni := tf.NetworkInterface[0]
+			ip := ni.IPConfiguration[0]
+			wantTerraformName := tc.igName
+			if tc.shared {
+				wantTerraformName = tc.legacyName
+			}
+			for _, name := range []*string{tf.Name, ni.Name, ip.Name, ip.PublicIPAddress.Name} {
+				if fi.ValueOf(name) != wantTerraformName {
+					t.Errorf("Terraform name = %q, want %q", fi.ValueOf(name), wantTerraformName)
+				}
+			}
+
+			// The API target must create or update the same VMSS, without adding a duplicate.
+			desired := newTask()
+			desired.Capacity = new(int64(11))
+			ctx := &fi.CloudupContext{T: fi.CloudupSubContext{Cloud: cloud}, Target: apiTarget}
+			if err := desired.Run(ctx); err != nil {
+				t.Fatal(err)
+			}
+			sets := cloud.VMScaleSetsClient.VMSSes
+			if len(sets) != 1 || sets[wantName] == nil {
+				t.Fatalf("expected only VMSS %q, got %v", wantName, sets)
+			}
+			actual := sets[wantName]
+			if fi.ValueOf(actual.SKU.Capacity) != 11 {
+				t.Errorf("capacity = %d, want 11", fi.ValueOf(actual.SKU.Capacity))
+			}
+			niName := actual.Properties.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations[0].Name
+			if fi.ValueOf(niName) != wantName {
+				t.Errorf("NIC name = %q, want %q", fi.ValueOf(niName), wantName)
+			}
+
+			// A repeated apply must leave the existing resource untouched.
+			repeated := newTask()
+			repeated.Capacity = new(int64(11))
+			if err := repeated.Run(ctx); err != nil {
+				t.Fatal(err)
+			}
+			if sets[wantName] != actual {
+				t.Error("repeated apply updated the VM Scale Set")
+			}
+		})
+	}
+}
+
+func TestVMScaleSetFindAndRenderNaming(t *testing.T) {
+	clusterName := "cluster.example.com"
+	legacyName := "nodes." + clusterName
+	for _, tc := range []struct {
+		name              string
+		sets              []*compute.VirtualMachineScaleSet
+		legacyName        string
+		shared            bool
+		getErrors         map[string]error
+		want              string
+		wantFound         bool
+		wantErr           string
+		wantGets          []string
+		deleteBeforeRetry bool
+	}{
+		{name: "new scale set", want: "nodes"},
+		{name: "long cluster name", legacyName: "nodes." + strings.Repeat("long-cluster-", 8) + "example.com", want: "nodes"},
+		{name: "shared resource group with another cluster", shared: true, sets: []*compute.VirtualMachineScaleSet{
+			{Name: new("nodes.other.example.com"), Tags: map[string]*string{azure.TagClusterName: new("other.example.com"), azure.InstanceGroupNameTag: new("nodes")}},
+		}, want: legacyName},
+		{name: "shared resource group with foreign short name", shared: true, sets: []*compute.VirtualMachineScaleSet{
+			{Name: new("nodes"), Tags: map[string]*string{azure.TagClusterName: new("other.example.com"), azure.InstanceGroupNameTag: new("nodes")}},
+		}, want: legacyName},
+		{name: "legacy without IG tag", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.TagClusterName: new(clusterName)}},
+		}, wantFound: true, want: legacyName},
+		{name: "shared resource group legacy without IG tag", shared: true, sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.TagClusterName: new(clusterName)}},
+		}, wantFound: true, want: legacyName},
+		{name: "legacy removed before retry", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("nodes")}},
+		}, deleteBeforeRetry: true, want: "nodes", wantGets: []string{"nodes", legacyName, "nodes", legacyName}},
+		{name: "unrelated scale set", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new("other"), Tags: map[string]*string{azure.TagClusterName: new("other-cluster")}},
+		}, want: "nodes"},
+		{name: "short name with different IG tag", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new("nodes"), Tags: map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("other")}},
+		}, wantFound: true, want: "nodes", wantGets: []string{"nodes"}},
+		{name: "short name without IG tag", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new("nodes"), Tags: map[string]*string{azure.TagClusterName: new(clusterName)}},
+		}, wantFound: true, want: "nodes", wantGets: []string{"nodes"}},
+		{name: "legacy without cluster tag", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.InstanceGroupNameTag: new("nodes")}},
+		}, want: "nodes"},
+		{name: "legacy with different IG tag", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("other")}},
+		}, wantFound: true, want: legacyName},
+		{name: "legacy name with different casing", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(strings.ToUpper(legacyName)), Tags: map[string]*string{azure.TagClusterName: new(clusterName)}},
+		}, wantFound: true, want: strings.ToUpper(legacyName)},
+		{name: "legacy name with unrelated short name", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("nodes")}},
+			{Name: new("nodes"), Tags: map[string]*string{azure.TagClusterName: new("other-cluster")}},
+		}, wantFound: true, want: legacyName},
+		{name: "short name takes precedence", sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("nodes")}},
+			{Name: new("nodes"), Tags: map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("nodes")}},
+		}, wantFound: true, want: "nodes", wantGets: []string{"nodes"}},
+		{name: "missing scale set", getErrors: map[string]error{
+			"nodes": fmt.Errorf("getting VMSS: %w", &azcore.ResponseError{StatusCode: http.StatusNotFound, ErrorCode: "ResourceNotFound"}),
+		}, sets: []*compute.VirtualMachineScaleSet{
+			{Name: new(legacyName), Tags: map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("nodes")}},
+		}, wantFound: true, want: legacyName},
+		{name: "missing resource group", getErrors: map[string]error{
+			"nodes":    &azcore.ResponseError{StatusCode: http.StatusNotFound, ErrorCode: "ResourceGroupNotFound"},
+			legacyName: &azcore.ResponseError{StatusCode: http.StatusNotFound, ErrorCode: "ResourceGroupNotFound"},
+		}, want: "nodes"},
+		{name: "authorization failure", getErrors: map[string]error{
+			"nodes": &azcore.ResponseError{StatusCode: http.StatusForbidden, ErrorCode: "AuthorizationFailed"},
+		}, wantErr: "AuthorizationFailed", wantGets: []string{"nodes"}},
+		{name: "legacy lookup failure", getErrors: map[string]error{
+			legacyName: &azcore.ResponseError{StatusCode: http.StatusInternalServerError, ErrorCode: "InternalServerError"},
+		}, wantErr: "InternalServerError"},
+		{name: "bad request", getErrors: map[string]error{
+			"nodes": &azcore.ResponseError{StatusCode: http.StatusBadRequest, ErrorCode: "InvalidParameter"},
+		}, wantErr: "InvalidParameter", wantGets: []string{"nodes"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cloud := NewMockAzureCloud("eastus")
+			for _, set := range tc.sets {
+				existing := newTestVMScaleSet()
+				existing.Name = set.Name
+				existing.Tags = set.Tags
+				existing.ResourceGroup.Shared = new(true)
+				if err := existing.RenderAzure(azure.NewAzureAPITarget(cloud), nil, existing, nil); err != nil {
+					t.Fatal(err)
+				}
+			}
+			task := newTestVMScaleSet()
+			task.Name = new(legacyName)
+			if tc.legacyName != "" {
+				task.Name = new(tc.legacyName)
+			}
+			task.ResourceGroup.Shared = new(tc.shared)
+			task.Tags = map[string]*string{azure.TagClusterName: new(clusterName), azure.InstanceGroupNameTag: new("nodes")}
+			client := &vmScaleSetLookupClient{MockVMScaleSetsClient: cloud.VMScaleSetsClient, getErrors: tc.getErrors}
+			lookupCloud := &vmScaleSetLookupCloud{AzureCloud: cloud, client: client}
+			ctx := &fi.CloudupContext{T: fi.CloudupSubContext{Cloud: lookupCloud}}
+			actual, err := task.Find(ctx)
+			if tc.deleteBeforeRetry {
+				if err != nil || actual == nil {
+					t.Fatalf("expected existing VMSS before retry, got %v, %v", actual, err)
+				}
+				delete(cloud.VMScaleSetsClient.VMSSes, legacyName)
+				actual, err = task.Find(ctx)
+				if actual != nil {
+					t.Fatalf("expected no VMSS after deletion, got %v", actual)
+				}
+			}
+			wantGets := tc.wantGets
+			if wantGets == nil {
+				wantGets = []string{"nodes", *task.Name}
+			}
+			if !reflect.DeepEqual(client.gets, wantGets) {
+				t.Errorf("VMSS lookups = %v, want %v", client.gets, wantGets)
+			}
+			if tc.wantErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tc.wantErr) {
+					t.Fatalf("expected error containing %q, got %v", tc.wantErr, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if (actual != nil) != tc.wantFound {
+				t.Fatalf("Find returned %v, want found=%t", actual, tc.wantFound)
+			}
+			// Rendering must use the discovery result or the configured creation name without another GET.
+			client.denyGets = true
+			task.Capacity = new(int64(11))
+			if err := task.RenderAzure(azure.NewAzureAPITarget(lookupCloud), actual, task, nil); err != nil {
+				t.Fatal(err)
+			}
+			set := cloud.VMScaleSetsClient.VMSSes[tc.want]
+			if set == nil || fi.ValueOf(set.SKU.Capacity) != 11 {
+				t.Errorf("VMSS %q was not created or updated to the desired capacity", tc.want)
+			}
+			if !reflect.DeepEqual(client.gets, wantGets) {
+				t.Errorf("rendering added VMSS lookups: got %v, want %v", client.gets, wantGets)
+			}
+		})
+	}
+}
+
+type vmScaleSetLookupCloud struct {
+	azure.AzureCloud
+	client azure.VMScaleSetsClient
+}
+
+func (c *vmScaleSetLookupCloud) VMScaleSet() azure.VMScaleSetsClient {
+	return c.client
+}
+
+type vmScaleSetLookupClient struct {
+	*MockVMScaleSetsClient
+	getErrors map[string]error
+	gets      []string
+	denyGets  bool
+}
+
+func (c *vmScaleSetLookupClient) Get(ctx context.Context, resourceGroupName, name string) (*compute.VirtualMachineScaleSet, error) {
+	c.gets = append(c.gets, name)
+	if c.denyGets {
+		return nil, fmt.Errorf("unexpected VMSS GET during rendering: %s", name)
+	}
+	if err := c.getErrors[name]; err != nil {
+		return nil, err
+	}
+	return c.MockVMScaleSetsClient.Get(ctx, resourceGroupName, name)
 }

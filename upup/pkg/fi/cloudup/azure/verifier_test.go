@@ -27,6 +27,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/kops/pkg/bootstrap"
 )
 
@@ -85,7 +87,8 @@ func TestVerifyToken(t *testing.T) {
 		{"subscription mismatch", azuremetadata.AzureAuthenticationTokenPrefix + wrongSubResourceID + " " + invalidPKCS7, nil, ""},
 		{"resource group mismatch", azuremetadata.AzureAuthenticationTokenPrefix + wrongRGResourceID + " " + invalidPKCS7, nil, ""},
 		{"unsupported resource type", azuremetadata.AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Network/networkInterfaces/nic-1 " + invalidPKCS7, nil, "unsupported resource type"},
-		{"vmss cluster mismatch", azuremetadata.AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/nodes.other-cluster/virtualMachines/1 " + invalidPKCS7, nil, "does not match cluster name"},
+		{"short vmss reaches attestation", azuremetadata.AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/nodes/virtualMachines/1 " + invalidPKCS7, nil, "parsing PKCS7 signature"},
+		{"legacy vmss reaches attestation", azuremetadata.AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/nodes.cluster/virtualMachines/1 " + invalidPKCS7, nil, "parsing PKCS7 signature"},
 		{"invalid PKCS7", azuremetadata.AzureAuthenticationTokenPrefix + matchingResourceID + " " + invalidPKCS7, nil, ""},
 	}
 
@@ -150,5 +153,56 @@ func TestVerifyToken_SignedSubscriptionMismatch(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "attested subscriptionId") {
 		t.Fatalf("expected error containing %q, got %v", "attested subscriptionId", err)
+	}
+}
+
+func TestExtractNodeIdentity(t *testing.T) {
+	caCert, leafCert, leafKey := testPKI(t)
+	rootPool := x509.NewCertPool()
+	rootPool.AddCert(caCert)
+	body := []byte("node identity challenge")
+	now := time.Now().UTC()
+	signature := testSignature(t, attestedData{
+		VMId:           "signed-vm-id",
+		SubscriptionId: "sub",
+		Nonce:          nonceForBody(body),
+		TimeStamp: attestedTimeStamp{
+			CreatedOn: now.Add(-time.Minute).Format(attestedDocumentTimeFormat),
+			ExpiresOn: now.Add(time.Hour).Format(attestedDocumentTimeFormat),
+		},
+	}, leafCert, leafKey, caCert)
+	attestation := &attestationVerifier{rootCertPool: rootPool}
+	data, err := attestation.verifyAttestedDocument(signature, body)
+	if err != nil {
+		t.Fatalf("verifying signed identity: %v", err)
+	}
+	for _, test := range []struct {
+		name      string
+		vmID      string
+		tags      map[string]*string
+		wantError string
+	}{
+		{name: "matching identity", vmID: "signed-vm-id", tags: map[string]*string{TagClusterName: to.Ptr("cluster"), InstanceGroupNameTag: to.Ptr("nodes")}},
+		{name: "missing cluster", vmID: "signed-vm-id", tags: map[string]*string{InstanceGroupNameTag: to.Ptr("nodes")}, wantError: "does not belong to cluster"},
+		{name: "nil cluster", vmID: "signed-vm-id", tags: map[string]*string{TagClusterName: nil, InstanceGroupNameTag: to.Ptr("nodes")}, wantError: "does not belong to cluster"},
+		{name: "foreign cluster", vmID: "signed-vm-id", tags: map[string]*string{TagClusterName: to.Ptr("other"), InstanceGroupNameTag: to.Ptr("nodes")}, wantError: "does not belong to cluster"},
+		{name: "mismatched VMID", vmID: "different-vm-id", tags: map[string]*string{TagClusterName: to.Ptr("cluster"), InstanceGroupNameTag: to.Ptr("nodes")}, wantError: "attested vmId"},
+		{name: "missing instance group", vmID: "signed-vm-id", tags: map[string]*string{TagClusterName: to.Ptr("cluster")}, wantError: "determining IG name"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			nodeName, igName, err := extractNodeIdentity(data, "VMSS VM", to.Ptr(test.vmID), &compute.OSProfile{ComputerName: to.Ptr("Nodes000000")}, test.tags, "cluster")
+			if test.wantError != "" {
+				if err == nil || !strings.Contains(err.Error(), test.wantError) {
+					t.Fatalf("got error %v, want %q", err, test.wantError)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("extracting node identity: %v", err)
+			}
+			if nodeName != "nodes000000" || igName != "nodes" {
+				t.Fatalf("got node %q, instance group %q", nodeName, igName)
+			}
+		})
 	}
 }

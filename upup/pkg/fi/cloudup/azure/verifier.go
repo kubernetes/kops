@@ -132,11 +132,7 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 		return nil, fmt.Errorf("resource ID resource group %q does not match verifier resource group %q", res.ResourceGroupName, a.client.resourceGroup)
 	}
 	switch resourceType {
-	case vmResourceType:
-	case vmssVMResourceType:
-		if !strings.HasSuffix(res.Parent.Name, "."+a.clusterName) {
-			return nil, fmt.Errorf("resource ID VMSS name %q does not match cluster name %q", res.Parent.Name, a.clusterName)
-		}
+	case vmResourceType, vmssVMResourceType:
 	default:
 		return nil, fmt.Errorf("unsupported resource type %q", resourceType)
 	}
@@ -169,7 +165,7 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 		if vm.Properties == nil {
 			return nil, fmt.Errorf("determining VMID for %s", desc)
 		}
-		nodeName, igName, err = extractNodeIdentity(data, desc, vm.Properties.VMID, vm.Properties.OSProfile, vm.Tags)
+		nodeName, igName, err = extractNodeIdentity(data, desc, vm.Properties.VMID, vm.Properties.OSProfile, vm.Tags, a.clusterName)
 		if err != nil {
 			return nil, err
 		}
@@ -197,7 +193,7 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 		if vm.Properties == nil {
 			return nil, fmt.Errorf("determining VMID for %s", desc)
 		}
-		nodeName, igName, err = extractNodeIdentity(data, desc, vm.Properties.VMID, vm.Properties.OSProfile, vm.Tags)
+		nodeName, igName, err = extractNodeIdentity(data, desc, vm.Properties.VMID, vm.Properties.OSProfile, vm.Tags, a.clusterName)
 		if err != nil {
 			return nil, err
 		}
@@ -235,10 +231,9 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	return result, nil
 }
 
-// extractNodeIdentity cross-verifies the attested vmId against the Azure API vmId for the claimed resource and
-// extracts the node name and instance group from the API object. desc is a human-readable resource description
-// used in errors and logs.
-func extractNodeIdentity(data *attestedData, desc string, apiVMID *string, osProfile *compute.OSProfile, tags map[string]*string) (nodeName, igName string, err error) {
+// extractNodeIdentity verifies the attested vmId and cluster ownership against Azure API data,
+// then extracts the node name and instance group. desc identifies the resource in errors and logs.
+func extractNodeIdentity(data *attestedData, desc string, apiVMID *string, osProfile *compute.OSProfile, tags map[string]*string, clusterName string) (nodeName, igName string, err error) {
 	if apiVMID == nil {
 		return "", "", fmt.Errorf("determining VMID for %s", desc)
 	}
@@ -248,6 +243,10 @@ func extractNodeIdentity(data *attestedData, desc string, apiVMID *string, osPro
 	klog.V(4).Infof("Azure verifier for %s cross-verifying vmId: attested=%q api=%q", desc, data.VMId, *apiVMID)
 	if data.VMId != *apiVMID {
 		return "", "", fmt.Errorf("attested vmId %q does not match %s (API vmId %q)", data.VMId, desc, *apiVMID)
+	}
+	// Cluster ownership comes from Azure tags; VMSS names need not contain the cluster name.
+	if clusterTag := tags[TagClusterName]; clusterTag == nil || *clusterTag != clusterName {
+		return "", "", fmt.Errorf("%s does not belong to cluster %q", desc, clusterName)
 	}
 	if osProfile == nil || osProfile.ComputerName == nil || *osProfile.ComputerName == "" {
 		return "", "", fmt.Errorf("determining ComputerName for %s", desc)

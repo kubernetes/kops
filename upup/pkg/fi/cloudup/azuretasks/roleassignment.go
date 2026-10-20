@@ -28,7 +28,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
-	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/google/uuid"
 )
 
@@ -82,8 +81,7 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		if ra.Properties == nil {
 			continue
 		}
-		// Use a name constructed by VMSS and Role definition ID to find a Role Assignment. We cannot use ra.Name
-		// as it is set to a randomly generated GUID.
+		// Match the VMSS managed identity and role definition; role assignment names are GUIDs.
 		l := strings.Split(*ra.Properties.RoleDefinitionID, "/")
 		roleDefID := l[len(l)-1]
 		if *ra.Properties.PrincipalID == principalID && roleDefID == *r.RoleDefID {
@@ -95,32 +93,13 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		return nil, nil
 	}
 
-	// Query VM Scale Sets and find one that has matching Principal ID.
-	vs, err := cloud.VMScaleSet().List(context.TODO(), *r.VMScaleSet.ResourceGroup.Name)
-	if err != nil {
-		return nil, err
-	}
-	var foundVMSS *compute.VirtualMachineScaleSet
-	for _, v := range vs {
-		if v.Identity == nil {
-			continue
-		}
-		if *v.Identity.PrincipalID == principalID {
-			foundVMSS = v
-			break
-		}
-	}
-	if foundVMSS == nil {
-		return nil, fmt.Errorf("corresponding VM Scale Set not found for Role Assignment: %s", *found.ID)
-	}
-
 	r.ID = found.ID
 	return &RoleAssignment{
 		Name:      r.Name,
 		Lifecycle: r.Lifecycle,
 		Scope:     found.Properties.Scope,
 		VMScaleSet: &VMScaleSet{
-			Name: foundVMSS.Name,
+			Name: r.VMScaleSet.Name,
 		},
 		ID:        found.ID,
 		RoleDefID: to.Ptr(filepath.Base(*found.Properties.RoleDefinitionID)),

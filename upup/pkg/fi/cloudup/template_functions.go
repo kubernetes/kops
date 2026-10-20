@@ -1170,6 +1170,12 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() (map[string]Cluste
 				// also used as the region argument by the Hetzner cloud provider.
 				region := ig.Spec.Subnets[0]
 				group.Other = fmt.Sprintf("%s:%s:%s", ig.Spec.MachineType, region, ig.Name)
+			} else if cluster.GetCloudProvider() == kops.CloudProviderAzure {
+				// Autoscaler derives names from configuration, without legacy discovery.
+				group.Other = ig.Name
+				if cluster.IsSharedAzureResourceGroup() {
+					group.Other = tf.AutoscalingGroupName(ig)
+				}
 			} else {
 				group.Other = ig.Name + "." + cluster.Name
 			}
