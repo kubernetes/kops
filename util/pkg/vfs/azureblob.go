@@ -251,21 +251,7 @@ func (p *AzureBlobPath) RemoveAll(ctx context.Context) error {
 }
 
 func (p *AzureBlobPath) RemoveAllVersions(ctx context.Context) error {
-	klog.V(8).Infof("Removing ALL file versions: %s", p)
-
-	tree, err := p.ReadTree(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, blobPath := range tree {
-		err := blobPath.Remove(ctx)
-		if err != nil {
-			return fmt.Errorf("removing file %s: %w", blobPath, err)
-		}
-	}
-
-	return nil
+	return p.Remove(ctx)
 }
 
 // ReadDir lists the blobs under the current Path.
@@ -299,9 +285,17 @@ func (p *AzureBlobPath) ReadTree(ctx context.Context) ([]Path, error) {
 		return nil, err
 	}
 
+	// List the blobs below the key, like the S3 and GCS paths do. A bare prefix
+	// would also match siblings that only share the leading characters, e.g.
+	// "cluster-state/foo" would list "cluster-state/foobar/config".
+	prefix := p.key
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
+	}
+
 	var paths []Path
 	pager := client.NewListBlobsFlatPager(p.container, &azblob.ListBlobsFlatOptions{
-		Prefix: to.Ptr(p.key),
+		Prefix: to.Ptr(prefix),
 	})
 	for pager.More() {
 		resp, err := pager.NextPage(ctx)
