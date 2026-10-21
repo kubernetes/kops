@@ -40,6 +40,9 @@ export AWS_REGION=us-east-1
 # Avoid chunking in S3 uploads (not supported by our mock yet)
 aws configure --profile metal set s3.multipart_threshold 64GB
 
+# Avoid aws-chunked uploads (not supported by our mock yet)
+aws configure --profile metal set request_checksum_calculation when_required
+
 export UPLOAD_DEST=s3://kops-dev-build/
 aws --version
 aws s3 ls "${UPLOAD_DEST}" || aws s3 mb "${UPLOAD_DEST}" || return
