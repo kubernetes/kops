@@ -1263,4 +1263,7 @@ type LoadBalancerControllerSpec struct {
 	// MemoryLimit, memory limit compute resource for AWS Load Balancer Controller.
 	// Default: 500Mi
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
+	// DefaultLoadBalancerScheme specifies the default scheme for the load balancer.
+	// Default: "internet-facing"
+	DefaultLoadBalancerScheme *string `json:"defaultLoadBalancerScheme,omitempty"`
 }

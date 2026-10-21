@@ -4699,6 +4699,11 @@ func (in *LoadBalancerControllerSpec) DeepCopyInto(out *LoadBalancerControllerSp
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.DefaultLoadBalancerScheme != nil {
+		in, out := &in.DefaultLoadBalancerScheme, &out.DefaultLoadBalancerScheme
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

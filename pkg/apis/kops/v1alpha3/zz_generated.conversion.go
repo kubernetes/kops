@@ -6669,6 +6669,7 @@ func autoConvert_v1alpha3_LoadBalancerControllerSpec_To_kops_LoadBalancerControl
 	out.CPULimit = in.CPULimit
 	out.MemoryRequest = in.MemoryRequest
 	out.MemoryLimit = in.MemoryLimit
+	out.DefaultLoadBalancerScheme = in.DefaultLoadBalancerScheme
 	return nil
 }
 
@@ -6687,6 +6688,7 @@ func autoConvert_kops_LoadBalancerControllerSpec_To_v1alpha3_LoadBalancerControl
 	out.CPULimit = in.CPULimit
 	out.MemoryRequest = in.MemoryRequest
 	out.MemoryLimit = in.MemoryLimit
+	out.DefaultLoadBalancerScheme = in.DefaultLoadBalancerScheme
 	return nil
 }
 
