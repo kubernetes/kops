@@ -33,8 +33,11 @@ func (d *deployer) Down() error {
 		return err
 	}
 
-	// There is no point running the rest of this function if the cluster doesn't exist
-	cluster, _ := kops.GetCluster(d.KopsBinaryPath, d.ClusterName, nil, false)
+	// There is no point running the rest of this function if the cluster doesn't exist.
+	// The lookup needs d.env() like every other kops call: the deployer may compute the
+	// state store itself, and the job does not always export KOPS_STATE_STORE. Without it
+	// the lookup fails, and a cluster leaked by an earlier run is never deleted.
+	cluster, _ := kops.GetCluster(d.KopsBinaryPath, d.ClusterName, d.env(), false)
 	if cluster == nil {
 		return nil
 	}
