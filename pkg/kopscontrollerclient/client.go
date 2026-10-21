@@ -35,8 +35,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Client struct {
@@ -126,7 +126,7 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	}
 
 	var response *http.Response
-	done, err := vfs.RetryWithBackoff(backoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(backoff, func() (bool, error) {
 		httpReq, reqErr := http.NewRequestWithContext(ctx, "POST", bootstrapURL.String(), bytes.NewReader(reqBytes))
 		if reqErr != nil {
 			return false, reqErr

@@ -23,7 +23,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2"
 	az "github.com/gophercloud/gophercloud/v2/openstack/compute/v2/availabilityzones"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/try"
 )
 
 func (c *openstackCloud) ListAvailabilityZones(serviceClient *gophercloud.ServiceClient) (azList []az.AvailabilityZone, err error) {
@@ -31,7 +31,7 @@ func (c *openstackCloud) ListAvailabilityZones(serviceClient *gophercloud.Servic
 }
 
 func listAvailabilityZones(c OpenstackCloud, serviceClient *gophercloud.ServiceClient) (azList []az.AvailabilityZone, err error) {
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		azPage, err := az.List(serviceClient).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("failed to list storage availability zones: %v", err)

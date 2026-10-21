@@ -40,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
@@ -291,7 +292,7 @@ func (p *SwiftPath) getClient(ctx context.Context) (*gophercloud.ServiceClient, 
 }
 
 func (p *SwiftPath) Remove(ctx context.Context) error {
-	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
 		client, err := p.getClient(ctx)
 		if err != nil {
 			return false, err
@@ -341,7 +342,7 @@ func (p *SwiftPath) RemoveAll(ctx context.Context) error {
 			objects = nil
 		}
 
-		done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
+		done, err := try.RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
 			client, err := p.getClient(ctx)
 			if err != nil {
 				return false, err
@@ -383,7 +384,7 @@ func (p *SwiftPath) Join(relativePath ...string) Path {
 }
 
 func (p *SwiftPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
-	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
 		client, err := p.getClient(ctx)
 		if err != nil {
 			return false, err
@@ -427,7 +428,7 @@ func (p *SwiftPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL)
 	defer createFileLockSwift.Unlock()
 
 	// Check if exists.
-	if _, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
+	if _, err := try.RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
 		klog.V(4).Infof("Getting file %q", p)
 
 		_, err := swiftobject.Get(ctx, client, p.bucket, p.key, swiftobject.GetOpts{}).Extract()
@@ -455,7 +456,7 @@ func (p *SwiftPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL)
 func (p *SwiftPath) createBucket() error {
 	ctx := context.TODO()
 
-	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
 		client, err := p.getClient(ctx)
 		if err != nil {
 			return false, err
@@ -484,7 +485,7 @@ func (p *SwiftPath) createBucket() error {
 // ReadFile implements Path::ReadFile
 func (p *SwiftPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
-	done, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
 		b.Reset()
 		_, err := p.WriteTo(&b)
 		if err != nil {
@@ -535,7 +536,7 @@ func (p *SwiftPath) readPath(opt swiftobject.ListOpts) ([]Path, error) {
 	ctx := context.TODO()
 
 	var ret []Path
-	done, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
 		client, err := p.getClient(ctx)
 		if err != nil {
 			return false, err

@@ -37,6 +37,7 @@ import (
 	"google.golang.org/api/option"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/try"
 )
 
 // VFSContext is a 'context' for VFS, that is normally a singleton
@@ -251,7 +252,7 @@ func (c *VFSContext) readAWSMetadata(ctx context.Context, path string) ([]byte, 
 func (c *VFSContext) readHTTPLocation(httpURL string, httpHeaders map[string]string, opts vfsOptions) ([]byte, error) {
 	var body []byte
 
-	done, err := RetryWithBackoff(opts.backoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(opts.backoff, func() (bool, error) {
 		klog.V(4).Infof("Performing HTTP request: GET %s", httpURL)
 		req, err := http.NewRequest("GET", httpURL, nil)
 		if err != nil {
@@ -294,50 +295,6 @@ func (c *VFSContext) readHTTPLocation(httpURL string, httpHeaders map[string]str
 	} else {
 		// Shouldn't happen - we always return a non-nil error with false
 		return nil, wait.ErrWaitTimeout
-	}
-}
-
-// nextBackoffDuration grows duration by backoff.Factor, clamped to backoff.Cap when one is set.
-// An uncapped backoff with a large Steps count grows without bound, which strands a caller for
-// far longer than the condition it is waiting on takes to become true.
-func nextBackoffDuration(duration time.Duration, backoff wait.Backoff) time.Duration {
-	next := time.Duration(float64(duration) * backoff.Factor)
-	if backoff.Cap > 0 && next > backoff.Cap {
-		return backoff.Cap
-	}
-	return next
-}
-
-// RetryWithBackoff runs until a condition function returns true, or until Steps attempts have been taken
-// As compared to wait.ExponentialBackoff, this function returns the results from the function on the final attempt
-func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (bool, error) {
-	duration := backoff.Duration
-	i := 0
-	for {
-		if i != 0 {
-			adjusted := duration
-			if backoff.Jitter > 0.0 {
-				adjusted = wait.Jitter(duration, backoff.Jitter)
-			}
-			time.Sleep(adjusted)
-			duration = nextBackoffDuration(duration, backoff)
-		}
-
-		i++
-
-		done, err := condition()
-		if done {
-			return done, err
-		}
-		noMoreRetries := i >= backoff.Steps
-		if !noMoreRetries && err != nil {
-			klog.V(2).Infof("retrying after error %v", err)
-		}
-
-		if noMoreRetries {
-			klog.V(2).Infof("hit maximum retries %d with error %v", i, err)
-			return done, err
-		}
 	}
 }
 

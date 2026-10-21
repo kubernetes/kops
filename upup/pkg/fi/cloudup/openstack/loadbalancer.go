@@ -30,7 +30,7 @@ import (
 	v2pools "github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/pools"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/try"
 )
 
 // memberBackoff is the backoff strategy for openstack updating members in loadbalancer pool
@@ -50,7 +50,7 @@ func createPoolMonitor(c OpenstackCloud, opts monitors.CreateOpts) (poolMonitor 
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		poolMonitor, err = monitors.Create(context.TODO(), c.LoadBalancerClient(), opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("failed to create pool monitor: %v", err)
@@ -74,7 +74,7 @@ func listMonitors(c OpenstackCloud, opts monitors.ListOpts) (monitorList []monit
 	if c.LoadBalancerClient() == nil {
 		return monitorList, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := monitors.List(c.LoadBalancerClient(), opts).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("failed to list monitors: %s", err)
@@ -102,7 +102,7 @@ func deleteMonitor(c OpenstackCloud, monitorID string) error {
 	if c.LoadBalancerClient() == nil {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := monitors.Delete(context.TODO(), c.LoadBalancerClient(), monitorID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting pool: %v", err)
@@ -130,7 +130,7 @@ func deletePool(c OpenstackCloud, poolID string) error {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := v2pools.Delete(context.TODO(), c.LoadBalancerClient(), poolID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting pool: %v", err)
@@ -158,7 +158,7 @@ func deleteListener(c OpenstackCloud, listenerID string) error {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := listeners.Delete(context.TODO(), c.LoadBalancerClient(), listenerID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting listener: %v", err)
@@ -186,7 +186,7 @@ func deleteLB(c OpenstackCloud, lbID string, opts loadbalancers.DeleteOpts) erro
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := loadbalancers.Delete(context.TODO(), c.LoadBalancerClient(), lbID, opts).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting loadbalancer: %v", err)
@@ -215,7 +215,7 @@ func createLB(c OpenstackCloud, opt loadbalancers.CreateOptsBuilder) (*loadbalan
 	}
 
 	var i *loadbalancers.LoadBalancer
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		v, err := loadbalancers.Create(context.TODO(), c.LoadBalancerClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating loadbalancer: %v", err)
@@ -241,7 +241,7 @@ func getLB(c OpenstackCloud, loadbalancerID string) (lb *loadbalancers.LoadBalan
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		lb, err = loadbalancers.Get(context.TODO(), c.LoadBalancerClient(), loadbalancerID).Extract()
 		if err != nil {
 			return false, err
@@ -268,7 +268,7 @@ func listLBs(c OpenstackCloud, opt loadbalancers.ListOptsBuilder) (lbs []loadbal
 		return lbs, nil
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := loadbalancers.List(c.LoadBalancerClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("failed to list loadbalancers: %s", err)
@@ -297,7 +297,7 @@ func getLBStats(c OpenstackCloud, loadbalancerID string) (stats *loadbalancers.S
 		return stats, nil
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		stats, err = loadbalancers.GetStats(context.TODO(), c.LoadBalancerClient(), loadbalancerID).Extract()
 		if err != nil {
 			return false, fmt.Errorf("Error getting load balancer stats %v", err)
@@ -322,7 +322,7 @@ func getPool(c OpenstackCloud, poolID string) (pool *v2pools.Pool, err error) {
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		pool, err = v2pools.Get(context.TODO(), c.LoadBalancerClient(), poolID).Extract()
 		if err != nil {
 			return false, err
@@ -347,7 +347,7 @@ func getPoolMember(c OpenstackCloud, poolID string, memberID string) (member *v2
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		member, err = v2pools.GetMember(context.TODO(), c.LoadBalancerClient(), poolID, memberID).Extract()
 		if err != nil {
 			return false, err
@@ -372,7 +372,7 @@ func updateMemberInPool(c OpenstackCloud, poolID string, memberID string, opts v
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(memberBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(memberBackoff, func() (bool, error) {
 		association, err = v2pools.UpdateMember(context.TODO(), c.LoadBalancerClient(), poolID, memberID, opts).Extract()
 		if err != nil {
 			// member not found anymore
@@ -406,7 +406,7 @@ func associateToPool(c OpenstackCloud, server *servers.Server, poolID string, op
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		association, err = v2pools.GetMember(context.TODO(), c.LoadBalancerClient(), poolID, server.ID).Extract()
 		if err != nil || association == nil {
 			// Pool association does not exist.  Create it
@@ -437,7 +437,7 @@ func createPool(c OpenstackCloud, opts v2pools.CreateOpts) (pool *v2pools.Pool, 
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		pool, err = v2pools.Create(context.TODO(), c.LoadBalancerClient(), opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("failed to create pool: %v", err)
@@ -462,7 +462,7 @@ func listPoolMembers(c OpenstackCloud, poolID string, opts v2pools.ListMembersOp
 		return memberList, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		memberPage, err := v2pools.ListMembers(c.LoadBalancerClient(), poolID, opts).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("failed to list members: %v", err)
@@ -491,7 +491,7 @@ func listPools(c OpenstackCloud, opts v2pools.ListOpts) (poolList []v2pools.Pool
 		return poolList, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		poolPage, err := v2pools.List(c.LoadBalancerClient(), opts).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("failed to list pools: %v", err)
@@ -520,7 +520,7 @@ func listListeners(c OpenstackCloud, opts listeners.ListOpts) (listenerList []li
 		return listenerList, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		listenerPage, err := listeners.List(c.LoadBalancerClient(), opts).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("failed to list listeners: %v", err)
@@ -549,7 +549,7 @@ func createListener(c OpenstackCloud, opts listeners.CreateOpts) (listener *list
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		listener, err = listeners.Create(context.TODO(), c.LoadBalancerClient(), opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("unabled to create listener: %v", err)

@@ -22,8 +22,8 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 func (c *openstackCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error) {
@@ -33,7 +33,7 @@ func (c *openstackCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Sub
 func listSubnets(c OpenstackCloud, opt subnets.ListOptsBuilder) ([]subnets.Subnet, error) {
 	var s []subnets.Subnet
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := subnets.List(c.NetworkingClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing subnets: %v", err)
@@ -61,7 +61,7 @@ func (c *openstackCloud) GetSubnet(subnetID string) (*subnets.Subnet, error) {
 
 func getSubnet(c OpenstackCloud, subnetID string) (*subnets.Subnet, error) {
 	var subnet *subnets.Subnet
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		sub, err := subnets.Get(context.TODO(), c.NetworkingClient(), subnetID).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error retrieving subnet: %v", err)
@@ -85,7 +85,7 @@ func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.S
 func createSubnet(c OpenstackCloud, opt subnets.CreateOptsBuilder) (*subnets.Subnet, error) {
 	var s *subnets.Subnet
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		v, err := subnets.Create(context.TODO(), c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating subnet: %v", err)
@@ -107,7 +107,7 @@ func (c *openstackCloud) DeleteSubnet(subnetID string) error {
 }
 
 func deleteSubnet(c OpenstackCloud, subnetID string) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := subnets.Delete(context.TODO(), c.NetworkingClient(), subnetID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting subnet: %v", err)

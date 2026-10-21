@@ -34,7 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/try"
 )
 
 const (
@@ -99,7 +99,7 @@ func waitForStatusActive(c OpenstackCloud, serverID string, timeout *time.Durati
 func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, schedulerHints servers.SchedulerHintOptsBuilder, portID string) (*servers.Server, error) {
 	var server *servers.Server
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 
 		v, err := servers.Create(context.TODO(), c.ComputeClient(), opt, schedulerHints).Extract()
 		if err != nil {
@@ -146,7 +146,7 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 
 func listServerFloatingIPs(c OpenstackCloud, instanceID string, floatingEnabled bool) ([]*string, error) {
 	var result []*string
-	_, err := vfs.RetryWithBackoff(floatingBackoff, func() (bool, error) {
+	_, err := try.RetryWithBackoff(floatingBackoff, func() (bool, error) {
 		server, err := c.GetInstance(instanceID)
 		if err != nil {
 			return true, fmt.Errorf("failed to find server with id (\"%s\"): %v", instanceID, err)
@@ -193,7 +193,7 @@ func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
 }
 
 func deleteInstanceWithID(c OpenstackCloud, instanceID string) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := servers.Delete(context.TODO(), c.ComputeClient(), instanceID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting instance: %s", err)
@@ -322,7 +322,7 @@ func (c *openstackCloud) GetInstance(id string) (*servers.Server, error) {
 func getInstance(c OpenstackCloud, id string) (*servers.Server, error) {
 	var server *servers.Server
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		instance, err := servers.Get(context.TODO(), c.ComputeClient(), id).Extract()
 		if err != nil {
 			return false, err
@@ -346,7 +346,7 @@ func (c *openstackCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.S
 func listInstances(c OpenstackCloud, opt servers.ListOptsBuilder) ([]servers.Server, error) {
 	var instances []servers.Server
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := servers.List(c.ComputeClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing servers %v: %v", opt, err)

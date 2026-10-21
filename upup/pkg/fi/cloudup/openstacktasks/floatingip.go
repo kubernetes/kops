@@ -24,10 +24,10 @@ import (
 	l3floatingip "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 // +kops:fitask
@@ -55,7 +55,7 @@ var readBackoff = wait.Backoff{
 // this function tries to find l3 floating, and retries x times to find that. In some cases the floatingip is not in place in first request
 func findL3Floating(cloud openstack.OpenstackCloud, opts l3floatingip.ListOpts) ([]l3floatingip.FloatingIP, error) {
 	var result []l3floatingip.FloatingIP
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		fips, err := cloud.ListL3FloatingIPs(opts)
 		if err != nil {
 			return false, fmt.Errorf("Failed to list L3 floating ip: %v", err)

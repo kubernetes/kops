@@ -35,6 +35,7 @@ import (
 	"google.golang.org/api/iterator"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -121,7 +122,7 @@ func (p *GSPath) String() string {
 }
 
 func (p *GSPath) Remove(ctx context.Context) error {
-	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
 		client, err := p.getStorageClient(ctx)
 		if err != nil {
 			return false, err
@@ -180,7 +181,7 @@ func (p *GSPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) err
 		return err
 	}
 
-	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
 		var objectACL []storage.ACLRule
 		if acl != nil {
 			gsACL, ok := acl.(*GSAcl)
@@ -252,7 +253,7 @@ func (p *GSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 // ReadFile implements Path::ReadFile
 func (p *GSPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
-	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
 		b.Reset()
 		_, err := p.WriteToWithContext(ctx, &b)
 		if err != nil {
@@ -307,7 +308,7 @@ func (p *GSPath) ReadDir() ([]Path, error) {
 	ctx := context.TODO()
 
 	var ret []Path
-	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
 		prefix := p.key
 		if !strings.HasSuffix(prefix, "/") {
 			prefix += "/"
@@ -360,7 +361,7 @@ func (p *GSPath) ReadDir() ([]Path, error) {
 // ReadTree implements Path::ReadTree
 func (p *GSPath) ReadTree(ctx context.Context) ([]Path, error) {
 	var ret []Path
-	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
 		// No delimiter for recursive search
 		prefix := p.key
 		if prefix != "" && !strings.HasSuffix(prefix, "/") {

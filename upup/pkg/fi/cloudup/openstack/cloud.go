@@ -56,6 +56,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -800,7 +801,7 @@ func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi
 }
 
 func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi.ApiIngressStatus, err error) {
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		instances, err := c.ListInstances(servers.ListOpts{})
 		if err != nil {
 			return false, fmt.Errorf("GetApiIngressStatus: Failed to list control plane nodes: %v", err)

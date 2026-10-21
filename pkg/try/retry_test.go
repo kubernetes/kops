@@ -1,5 +1,5 @@
 /*
-Copyright 2026 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package vfs
+package try
 
 import (
+	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -90,5 +92,32 @@ func TestRetryWithBackoffRespectsCap(t *testing.T) {
 	}
 	if attempts != 8 {
 		t.Errorf("condition called %d times, want 8", attempts)
+	}
+}
+
+func TestRetryWithBackoffReturnsErrorAfterStepsExhausted(t *testing.T) {
+	backoff := wait.Backoff{
+		Duration: 1 * time.Millisecond,
+		Factor:   2,
+		Steps:    3,
+	}
+
+	attempts := 0
+	finalErr := errors.New("final attempt error")
+	done, err := RetryWithBackoff(backoff, func() (bool, error) {
+		attempts++
+		if attempts == 3 {
+			return false, finalErr
+		}
+		return false, fmt.Errorf("transient error on attempt %d", attempts)
+	})
+	if done {
+		t.Errorf("RetryWithBackoff returned done=true, want false")
+	}
+	if !errors.Is(err, finalErr) {
+		t.Errorf("RetryWithBackoff returned err=%v, want %v", err, finalErr)
+	}
+	if attempts != 3 {
+		t.Errorf("condition called %d times, want 3", attempts)
 	}
 }

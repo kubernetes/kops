@@ -25,7 +25,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/pagination"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/try"
 )
 
 func (c *openstackCloud) AppendTag(resource string, id string, tag string) error {
@@ -33,7 +33,7 @@ func (c *openstackCloud) AppendTag(resource string, id string, tag string) error
 }
 
 func appendTag(c OpenstackCloud, resource string, id string, tag string) error {
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		err := attributestags.Add(context.TODO(), c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
 			return false, fmt.Errorf("error appending tag %s: %v", tag, err)
@@ -54,7 +54,7 @@ func (c *openstackCloud) DeleteTag(resource string, id string, tag string) error
 }
 
 func deleteTag(c OpenstackCloud, resource string, id string, tag string) error {
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		err := attributestags.Delete(context.TODO(), c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
 			return false, fmt.Errorf("error deleting tag %s: %v", tag, err)
@@ -76,7 +76,7 @@ func (c *openstackCloud) FindNetworkBySubnetID(subnetID string) (*networks.Netwo
 
 func findNetworkBySubnetID(c OpenstackCloud, subnetID string) (*networks.Network, error) {
 	var rslt *networks.Network
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		subnet, err := c.GetSubnet(subnetID)
 		if err != nil {
 			return false, fmt.Errorf("error retrieving subnet with id %s: %v", subnetID, err)
@@ -105,7 +105,7 @@ func (c *openstackCloud) GetNetwork(id string) (*networks.Network, error) {
 
 func getNetwork(c OpenstackCloud, id string) (*networks.Network, error) {
 	var network *networks.Network
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		r, err := networks.Get(context.TODO(), c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error retrieving network with id %s: %v", id, err)
@@ -129,7 +129,7 @@ func (c *openstackCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.
 func listNetworks(c OpenstackCloud, opt networks.ListOptsBuilder) ([]networks.Network, error) {
 	var ns []networks.Network
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := networks.List(c.NetworkingClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing networks: %v", err)
@@ -161,7 +161,7 @@ func getExternalNetwork(c OpenstackCloud, networkName string) (net *networks.Net
 		external.NetworkExternalExt
 	}
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		err = networks.List(c.NetworkingClient(), networks.ListOpts{}).EachPage(context.TODO(), func(ctx context.Context, page pagination.Page) (bool, error) {
 			var externalNetwork []NetworkWithExternalExt
 			err := networks.ExtractNetworksInto(page, &externalNetwork)
@@ -198,7 +198,7 @@ func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*network
 func createNetwork(c OpenstackCloud, opt networks.CreateOptsBuilder) (*networks.Network, error) {
 	var n *networks.Network
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		r, err := networks.Create(context.TODO(), c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating network: %v", err)
@@ -220,7 +220,7 @@ func (c *openstackCloud) DeleteNetwork(networkID string) error {
 }
 
 func deleteNetwork(c OpenstackCloud, networkID string) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := networks.Delete(context.TODO(), c.NetworkingClient(), networkID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting network: %v", err)
