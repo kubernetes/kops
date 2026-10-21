@@ -21,7 +21,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v7"
 )
 
 // SubnetsClient is a client for managing subnets.

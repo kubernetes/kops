@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	armcompute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	armcompute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"k8s.io/kops/pkg/apis/kops"
