@@ -274,6 +274,7 @@ func responseLaunchTemplateData(req *ec2types.RequestLaunchTemplateData) *ec2typ
 				Groups:                         x.Groups,
 				Ipv6AddressCount:               x.Ipv6AddressCount,
 				NetworkInterfaceId:             x.NetworkInterfaceId,
+				PrimaryIpv6:                    x.PrimaryIpv6,
 				PrivateIpAddress:               x.PrivateIpAddress,
 				PrivateIpAddresses:             x.PrivateIpAddresses,
 				SecondaryPrivateIpAddressCount: x.SecondaryPrivateIpAddressCount,
