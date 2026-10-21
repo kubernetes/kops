@@ -176,6 +176,9 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=120")
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=io2")
+  create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true")
+  create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.defaultLoadBalancerScheme=internet-facing")
+  create_args+=("--set=cluster.spec.certManager.enabled=true")
 
 fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
@@ -282,6 +285,14 @@ if [[ -z "${KOPS_CL2_TEST_CONFIG}" && "${CLOUD_PROVIDER}" == "gce" ]]; then
 fi
 
 if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
+  TEST_PACKAGE_ARGS=()
+  if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kubernetes" ]]; then
+    TEST_PACKAGE_ARGS+=("--use-built-binaries=true")
+  else
+    TEST_PACKAGE_ARGS+=("--test-package-url=https://dl.k8s.io")
+    TEST_PACKAGE_ARGS+=("--test-package-dir=ci")
+    TEST_PACKAGE_ARGS+=("--test-package-marker=${K8S_VERSION##*/}")
+  fi
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
     --metadata=variant="${EXPERIMENT_VARIANT:-base}" \
@@ -289,9 +300,7 @@ if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
     --create-args="${create_args[*]}" \
     --test=kops \
     -- \
-    --test-package-url=https://dl.k8s.io \
-    --test-package-dir=ci \
-    --test-package-marker=latest.txt \
+    "${TEST_PACKAGE_ARGS[@]}" \
     --skip-regex="${SKIP_REGEX-\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]}" \
     --parallel=40
 else
