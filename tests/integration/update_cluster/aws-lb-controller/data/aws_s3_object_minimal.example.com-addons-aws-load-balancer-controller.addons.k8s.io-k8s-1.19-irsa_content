@@ -735,7 +735,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: v1beta1
+    name: v1
     schema:
       openAPIV3Schema:
         description: ListenerRuleConfiguration is the Schema for the ListenerRuleConfiguration
@@ -1170,6 +1170,448 @@ spec:
     storage: true
     subresources:
       status: {}
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    deprecated: true
+    deprecationWarning: gateway.k8s.aws/v1beta1 ListenerRuleConfiguration is deprecated;
+      use gateway.k8s.aws/v1 instead
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: ListenerRuleConfiguration is the Schema for the ListenerRuleConfiguration
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ListenerRuleConfigurationSpec defines the desired state of
+              ListenerRuleConfiguration
+            properties:
+              actions:
+                description: |-
+                  Actions defines the set of actions to be performed when conditions match.
+                  This CRD implementation currently supports only  authenticate-oidc, authenticate-cognito, and fixed-response action types fully and forward and redirect actions partially
+
+                  For other fields in forward and redirect actions, please use the standard Gateway API HTTPRoute or other route resources, which provide
+                  native support for those conditions through the Gateway API specification.
+
+                  At most one authentication action can be specified (either authenticate-oidc or authenticate-cognito).
+                items:
+                  description: Action defines an action for a listener rule
+                  properties:
+                    authenticateCognitoConfig:
+                      description: Information for an authenticate-cognito action
+                      properties:
+                        authenticationRequestExtraParams:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            The query parameters (up to 10) to include in the redirect request to the
+                            authorization endpoint.
+                          maxProperties: 10
+                          type: object
+                        onUnauthenticatedRequest:
+                          default: authenticate
+                          description: The behavior if the user is not authenticated.
+                            The following are possible
+                          enum:
+                          - deny
+                          - allow
+                          - authenticate
+                          type: string
+                        scope:
+                          default: openid
+                          description: |-
+                            The set of user claims to be requested from the IdP. The default is openid .
+
+                            To verify which scope values your IdP supports and how to separate multiple
+                            values, see the documentation for your IdP.
+                          type: string
+                        sessionCookieName:
+                          default: AWSELBAuthSessionCookie
+                          description: |-
+                            The name of the cookie used to maintain session information. The default is
+                            AWSELBAuthSessionCookie.
+                          type: string
+                        sessionTimeout:
+                          default: 604800
+                          description: |-
+                            The maximum duration of the authentication session, in seconds. The default is
+                            604800 seconds (7 days).
+                          format: int64
+                          maximum: 604800
+                          minimum: 1
+                          type: integer
+                        userPoolArn:
+                          description: The Amazon Resource Name (ARN) of the Amazon
+                            Cognito user pool.
+                          type: string
+                        userPoolClientId:
+                          description: The ID of the Amazon Cognito user pool client.
+                          type: string
+                        userPoolDomain:
+                          description: |-
+                            The domain prefix or fully-qualified domain name of the Amazon Cognito user
+                            pool.
+                          type: string
+                      required:
+                      - userPoolArn
+                      - userPoolClientId
+                      - userPoolDomain
+                      type: object
+                    authenticateOIDCConfig:
+                      description: Information for an authenticate-oidc action
+                      properties:
+                        authenticationRequestExtraParams:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            The query parameters (up to 10) to include in the redirect request to the
+                            authorization endpoint.
+                          maxProperties: 10
+                          type: object
+                        authorizationEndpoint:
+                          description: |-
+                            The authorization endpoint of the IdP. This must be a full URL, including the
+                            HTTPS protocol, the domain, and the path.
+                          type: string
+                        issuer:
+                          description: |-
+                            The OIDC issuer identifier of the IdP. This must be a full URL, including the
+                            HTTPS protocol, the domain, and the path.
+                          type: string
+                        onUnauthenticatedRequest:
+                          default: authenticate
+                          description: The behavior if the user is not authenticated.
+                            The following are possible
+                          enum:
+                          - deny
+                          - allow
+                          - authenticate
+                          type: string
+                        scope:
+                          default: openid
+                          description: |-
+                            The set of user claims to be requested from the IdP. The default is openid .
+
+                            To verify which scope values your IdP supports and how to separate multiple
+                            values, see the documentation for your IdP.
+                          type: string
+                        secret:
+                          description: Secret holds OAuth 2.0 clientID and clientSecret.
+                            You need to create this secret and provide its name and
+                            namespace
+                          properties:
+                            name:
+                              description: Name is name of the secret
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        sessionCookieName:
+                          default: AWSELBAuthSessionCookie
+                          description: |-
+                            The name of the cookie used to maintain session information. The default is
+                            AWSELBAuthSessionCookie.
+                          type: string
+                        sessionTimeout:
+                          default: 604800
+                          description: |-
+                            The maximum duration of the authentication session, in seconds. The default is
+                            604800 seconds (7 days).
+                          format: int64
+                          maximum: 604800
+                          minimum: 1
+                          type: integer
+                        tokenEndpoint:
+                          description: |-
+                            The token endpoint of the IdP. This must be a full URL, including the HTTPS
+                            protocol, the domain, and the path.
+                          type: string
+                        useExistingClientSecret:
+                          description: |-
+                            Indicates whether to use the existing client secret when modifying a listener rule. If
+                            you are creating a listener rule, you can omit this parameter or set it to false.
+                          type: boolean
+                        userInfoEndpoint:
+                          description: |-
+                            The user info endpoint of the IdP. This must be a full URL, including the HTTPS
+                            protocol, the domain, and the path.
+                          type: string
+                      required:
+                      - authorizationEndpoint
+                      - issuer
+                      - secret
+                      - tokenEndpoint
+                      - userInfoEndpoint
+                      type: object
+                    fixedResponseConfig:
+                      description: Information for a fixed-response action
+                      properties:
+                        contentType:
+                          default: text/plain
+                          description: The content type of the fixed response.
+                          enum:
+                          - text/plain
+                          - text/css
+                          - text/html
+                          - application/javascript
+                          - application/json
+                          type: string
+                        messageBody:
+                          description: The message
+                          type: string
+                        statusCode:
+                          description: The HTTP response code (2XX, 4XX, or 5XX).
+                          format: int32
+                          type: integer
+                          x-kubernetes-validations:
+                          - message: StatusCode must be a valid HTTP status code in
+                              the 2XX, 4XX, or 5XX range
+                            rule: (self >= 200 && self <= 299) || (self >= 400 &&
+                              self <= 599)
+                      required:
+                      - statusCode
+                      type: object
+                    forwardConfig:
+                      description: Information for a forward action
+                      properties:
+                        targetGroupStickinessConfig:
+                          default: {}
+                          description: |-
+                            The target group stickiness for the rule.
+                            Note: ForwardActionConfig only supports target group stickiness configuration through CRD.
+                            All other forward action fields must be set through the Gateway API native way.
+                          properties:
+                            durationSeconds:
+                              default: 3600
+                              description: |-
+                                The time period, in seconds, during which requests from a client should be
+                                routed to the same target group. The range is 1-604800 seconds (7 days).
+                              format: int32
+                              maximum: 604800
+                              minimum: 1
+                              type: integer
+                            enabled:
+                              default: false
+                              description: Indicates whether target group stickiness
+                                is enabled.
+                              type: boolean
+                          type: object
+                      type: object
+                    jwtValidationConfig:
+                      description: Information for a jwt-validation action
+                      properties:
+                        additionalClaims:
+                          description: Any additional claims in the JWT that should
+                            be validated
+                          items:
+                            description: JwtValidationActionAdditionalClaim Information
+                              about an additional claim to validate.
+                            properties:
+                              format:
+                                description: The format of the claim value(s)
+                                enum:
+                                - single-string
+                                - string-array
+                                - space-separated-values
+                                type: string
+                              name:
+                                description: The name of the claim. You can't specify
+                                  exp, iss, nbf, or iat because we validate them by
+                                  default.
+                                minLength: 1
+                                type: string
+                              values:
+                                description: |-
+                                  The claim values. The maximum size of the list is 10. Each value can be up to 256 characters in length.
+                                  If the format is space-separated-values, the values can't include spaces.
+                                items:
+                                  maxLength: 256
+                                  type: string
+                                maxItems: 10
+                                minItems: 1
+                                type: array
+                            required:
+                            - format
+                            - name
+                            - values
+                            type: object
+                          type: array
+                        issuer:
+                          description: The issuer of the JWT. The maximum length is
+                            256 characters.
+                          maxLength: 256
+                          type: string
+                        jwksEndpoint:
+                          description: |-
+                            The JSON Web Key Set (JWKS) endpoint. This endpoint contains JSON Web Keys (JWK) that are used to validate signatures from the provider.
+                            This must be a full URL, including the HTTPS protocol, the domain, and the path. The maximum length is 256 characters.
+                          maxLength: 256
+                          type: string
+                      required:
+                      - issuer
+                      - jwksEndpoint
+                      type: object
+                    redirectConfig:
+                      description: Information for a redirect action
+                      properties:
+                        query:
+                          default: '#{query}'
+                          description: |-
+                            The query parameters, URL-encoded when necessary, but not percent-encoded. Do
+                            not include the leading "?", as it is automatically added. You can specify any
+                            of the reserved keywords.
+                            Note: RedirectActionConfig only supports setting the query parameter through CRD.
+                            All other redirect action fields must be set through the Gateway API native way.
+                          type: string
+                      type: object
+                    type:
+                      description: The type of action
+                      enum:
+                      - forward
+                      - fixed-response
+                      - redirect
+                      - authenticate-cognito
+                      - authenticate-oidc
+                      - jwt-validation
+                      type: string
+                  required:
+                  - type
+                  type: object
+                  x-kubernetes-validations:
+                  - message: forwardConfig must be specified only when type is 'forward'
+                    rule: 'has(self.type) && self.type == ''forward'' ? has(self.forwardConfig)
+                      : !has(self.forwardConfig)'
+                  - message: redirectConfig must be specified only when type is 'redirect'
+                    rule: 'has(self.type) && self.type == ''redirect'' ? has(self.redirectConfig)
+                      : !has(self.redirectConfig)'
+                  - message: fixedResponseConfig must be specified only when type
+                      is 'fixed-response'
+                    rule: 'has(self.type) && self.type == ''fixed-response'' ? has(self.fixedResponseConfig)
+                      : !has(self.fixedResponseConfig)'
+                  - message: authenticateCognitoConfig must be specified only when
+                      type is 'authenticate-cognito'
+                    rule: 'has(self.type) && self.type == ''authenticate-cognito''
+                      ? has(self.authenticateCognitoConfig) : !has(self.authenticateCognitoConfig)'
+                  - message: authenticateOIDCConfig must be specified only when type
+                      is 'authenticate-oidc'
+                    rule: 'has(self.type) && self.type == ''authenticate-oidc'' ?
+                      has(self.authenticateOIDCConfig) : !has(self.authenticateOIDCConfig)'
+                  - message: jwtValidationConfig must be specified only when type
+                      is 'jwt-validation'
+                    rule: 'has(self.type) && self.type == ''jwt-validation'' ? has(self.jwtValidationConfig)
+                      : !has(self.jwtValidationConfig)'
+                maxItems: 2
+                minItems: 1
+                type: array
+              conditions:
+                description: |-
+                  Conditions defines the circumstances under which the rule actions will be performed.
+                  This CRD implementation currently supports only the source-ip condition type
+
+                  For other condition types (such as path-pattern, host-header, http-header, etc.),
+                  please use the standard Gateway API HTTPRoute or other route resources, which provide
+                  native support for those conditions through the Gateway API specification.
+                items:
+                  description: Information about a condition for a listener rule
+                  properties:
+                    field:
+                      description: The field in the HTTP request
+                      enum:
+                      - source-ip
+                      type: string
+                    matchIndexes:
+                      description: |-
+                        Indexes of Match in a rule to apply source ip to
+                        If MatchIndexes is not provided, SourceIpConfig will be applied to all conditions where ListenerRuleConfiguration is used
+                      items:
+                        type: integer
+                      type: array
+                    sourceIPConfig:
+                      description: Information for a source IP condition
+                      properties:
+                        values:
+                          description: One or more source IP addresses, in CIDR format
+                          items:
+                            type: string
+                          minItems: 1
+                          type: array
+                      required:
+                      - values
+                      type: object
+                  required:
+                  - field
+                  type: object
+                  x-kubernetes-validations:
+                  - message: sourceIPConfig must be specified only when field is 'source-ip'
+                    rule: 'has(self.field) && self.field == ''source-ip'' ? has(self.sourceIPConfig)
+                      : !has(self.sourceIPConfig)'
+                minItems: 1
+                type: array
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags are the AWS resource tags to be applied to all AWS
+                  resources created for this rule.
+                type: object
+            type: object
+            x-kubernetes-validations:
+            - message: At least one action must be specified if actions field is present
+              rule: '!has(self.actions) || size(self.actions) > 0'
+            - message: Only forward, redirect, authenticate-oidc, authenticate-cognito,
+                jwt-validation, and fixed-response action types are supported
+              rule: '!has(self.actions) || self.actions.all(a, a.type == ''authenticate-oidc''
+                || a.type == ''authenticate-cognito'' || a.type == ''jwt-validation''
+                || a.type == ''fixed-response'' || a.type == ''forward'' || a.type
+                == ''redirect'')'
+            - message: At most one pre-routing action (authenticate-oidc, authenticate-cognito,
+                or jwt-validation) can be specified
+              rule: '!has(self.actions) || size(self.actions.filter(a, a.type == ''authenticate-oidc''
+                || a.type == ''authenticate-cognito'' || a.type == ''jwt-validation''))
+                <= 1'
+            - message: At most one routing action (fixed-response or forward or redirect)
+                can be specified
+              rule: '!has(self.actions) || size(self.actions.filter(a, a.type == ''fixed-response''
+                || a.type == ''forward'' || a.type == ''redirect'')) <= 1'
+          status:
+            description: ListenerRuleConfigurationStatus defines the observed state
+              of ListenerRuleConfiguration
+            properties:
+              accepted:
+                description: Accepted indicates whether ListenerRuleConfiguration
+                  is valid
+                type: boolean
+              message:
+                description: Message provides details about the current state
+                type: string
+              observedGeneration:
+                description: The observed generation of the rule configuration
+                format: int64
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
 
 ---
 
@@ -1196,6 +1638,357 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: LoadBalancerConfiguration is the Schema for the LoadBalancerConfiguration
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: LoadBalancerConfigurationSpec defines the desired state of
+              LoadBalancerConfiguration
+            properties:
+              customerOwnedIpv4Pool:
+                description: |-
+                  customerOwnedIpv4Pool [Application LoadBalancer]
+                  is the ID of the customer-owned address for Application Load Balancers on Outposts pool.
+                type: string
+              defaultTargetGroupConfiguration:
+                description: |-
+                  defaultTargetGroupConfiguration references a TargetGroupConfiguration by name in the same namespace as this LoadBalancerConfiguration.
+                  The referenced TGC provides default target group properties for all Service backends attached to the Gateway.
+                  Service-level TGCs override these defaults on a per-field basis.
+                properties:
+                  name:
+                    description: name is the name of the TargetGroupConfiguration
+                      resource in the same namespace as this LoadBalancerConfiguration.
+                    type: string
+                required:
+                - name
+                type: object
+              disableSecurityGroup:
+                description: |-
+                  disableSecurityGroup provisions a load balancer with no security groups.
+                  Allows an NLB to be provisioned with no security groups.
+                  [Network Load Balancer]
+                type: boolean
+              enableICMP:
+                description: |-
+                  EnableICMP [Network LoadBalancer]
+                  enables the creation of security group rules to the managed security group
+                  to allow explicit ICMP traffic for Path MTU discovery for IPv4 and dual-stack VPCs
+                type: boolean
+              enforceSecurityGroupInboundRulesOnPrivateLinkTraffic:
+                description: enforceSecurityGroupInboundRulesOnPrivateLinkTraffic
+                  Indicates whether to evaluate inbound security group rules for traffic
+                  sent to a Network Load Balancer through Amazon Web Services PrivateLink.
+                type: string
+              ipAddressType:
+                description: loadBalancerIPType defines what kind of load balancer
+                  to provision (ipv4, dual stack)
+                enum:
+                - ipv4
+                - dualstack
+                - dualstack-without-public-ipv4
+                type: string
+              ipv4IPAMPoolId:
+                description: |-
+                  IPv4IPAMPoolId [Application LoadBalancer]
+                  defines the IPAM pool ID used for IPv4 Addresses on the ALB.
+                type: string
+              listenerConfigurations:
+                description: listenerConfigurations is an optional list of configurations
+                  for each listener on LB
+                items:
+                  properties:
+                    alpnPolicy:
+                      default: None
+                      description: alpnPolicy an optional string that allows you to
+                        configure ALPN policies on your Load Balancer
+                      enum:
+                      - HTTP1Only
+                      - HTTP2Only
+                      - HTTP2Optional
+                      - HTTP2Preferred
+                      - None
+                      type: string
+                    certificates:
+                      description: certificates is the list of other certificates
+                        to add to the listener.
+                      items:
+                        type: string
+                      type: array
+                    defaultCertificate:
+                      description: defaultCertificate the cert arn to be used by default.
+                      type: string
+                    listenerAttributes:
+                      description: listenerAttributes defines the attributes for the
+                        listener
+                      items:
+                        description: ListenerAttribute defines listener attribute.
+                        properties:
+                          key:
+                            description: The key of the attribute.
+                            type: string
+                          value:
+                            description: The value of the attribute.
+                            type: string
+                        required:
+                        - key
+                        - value
+                        type: object
+                      type: array
+                    mutualAuthentication:
+                      description: mutualAuthentication defines the mutual authentication
+                        configuration information.
+                      properties:
+                        advertiseTrustStoreCaNames:
+                          description: Indicates whether trust store CA certificate
+                            names are advertised.
+                          enum:
+                          - "on"
+                          - "off"
+                          type: string
+                        ignoreClientCertificateExpiry:
+                          description: Indicates whether expired client certificates
+                            are ignored.
+                          type: boolean
+                        mode:
+                          description: The client certificate handling method. Options
+                            are off, passthrough or verify
+                          enum:
+                          - "off"
+                          - passthrough
+                          - verify
+                          type: string
+                        trustStore:
+                          description: The Name or ARN of the trust store.
+                          type: string
+                      required:
+                      - mode
+                      type: object
+                      x-kubernetes-validations:
+                      - message: trustStore is required when mutualAuthentication
+                          mode is 'verify'
+                        rule: '!(self.mode == ''verify'' && !has(self.trustStore))'
+                      - message: Mutual Authentication mode 'off' or 'passthrough'
+                          does not support 'trustStore'
+                        rule: '!(self.mode != ''verify'' && has(self.trustStore))'
+                      - message: Mutual Authentication mode 'off' or 'passthrough'
+                          does not support 'ignoreClientCertificateExpiry'
+                        rule: '!(self.mode != ''verify'' && has(self.ignoreClientCertificateExpiry))'
+                      - message: Mutual Authentication mode 'off' or 'passthrough'
+                          does not support 'advertiseTrustStoreCaNames'
+                        rule: '!(self.mode != ''verify'' && has(self.advertiseTrustStoreCaNames))'
+                    protocolPort:
+                      description: protocolPort is identifier for the listener on
+                        load balancer. It should be of the form PROTOCOL:PORT
+                      pattern: ^(HTTP|HTTPS|TLS|TCP|UDP|TCP_UDP)?:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3})?$
+                      type: string
+                    quicEnabled:
+                      description: quicEnabled enables QUIC protocol support for UDP
+                        listeners. When enabled, UDP listeners will be upgraded to
+                        QUIC protocol.
+                      type: boolean
+                    sslPolicy:
+                      description: sslPolicy is the security policy that defines which
+                        protocols and ciphers are supported for secure listeners [HTTPS
+                        or TLS listener].
+                      type: string
+                    targetGroupStickiness:
+                      description: targetGroupStickiness [Network LoadBalancer] enables
+                        sticky routing for requests when using a listener configured
+                        with weighted target groups.
+                      type: boolean
+                  required:
+                  - protocolPort
+                  type: object
+                type: array
+              loadBalancerAttributes:
+                description: LoadBalancerAttributes defines the attribute of LB
+                items:
+                  description: LoadBalancerAttribute defines LB attribute.
+                  properties:
+                    key:
+                      description: The key of the attribute.
+                      type: string
+                    value:
+                      description: The value of the attribute.
+                      type: string
+                  required:
+                  - key
+                  - value
+                  type: object
+                type: array
+              loadBalancerName:
+                description: loadBalancerName defines the name of the LB to provision.
+                  If unspecified, it will be automatically generated.
+                maxLength: 32
+                minLength: 1
+                type: string
+              loadBalancerSubnets:
+                description: |-
+                  loadBalancerSubnets is an optional list of subnet configurations to be used in the LB
+                  This value takes precedence over loadBalancerSubnetsSelector if both are selected.
+                items:
+                  description: SubnetConfiguration defines the subnet settings for
+                    a Load Balancer.
+                  properties:
+                    eipAllocation:
+                      description: eipAllocation [Network LoadBalancer] the EIP name
+                        for this subnet.
+                      type: string
+                    identifier:
+                      description: identifier [Application LoadBalancer / Network
+                        LoadBalancer] name or id for the subnet
+                      type: string
+                    ipv6Allocation:
+                      description: IPv6Allocation [Network LoadBalancer] the ipv6
+                        address to assign to this subnet.
+                      type: string
+                    privateIPv4Allocation:
+                      description: privateIPv4Allocation [Network LoadBalancer] the
+                        private ipv4 address to assign to this subnet.
+                      type: string
+                    sourceNatIPv6Prefix:
+                      description: SourceNatIPv6Prefix [Network LoadBalancer] The
+                        IPv6 prefix to use for source NAT. Specify an IPv6 prefix
+                        (/80 netmask) from the subnet CIDR block or auto_assigned
+                        to use an IPv6 prefix selected at random from the subnet CIDR
+                        block.
+                      type: string
+                  type: object
+                type: array
+              loadBalancerSubnetsSelector:
+                additionalProperties:
+                  items:
+                    type: string
+                  type: array
+                description: |-
+                  LoadBalancerSubnetsSelector specifies subnets in the load balancer's VPC where each
+                  tag specified in the map key contains one of the values in the corresponding
+                  value list.
+                type: object
+              manageBackendSecurityGroupRules:
+                description: |-
+                  ManageBackendSecurityGroupRules [Application / Network LoadBalancer]
+                  specifies whether you want the controller to configure security group rules on Node/Pod for traffic access
+                  when you specify securityGroups
+                type: boolean
+              mergingMode:
+                description: |-
+                  mergingMode defines the merge behavior when both the Gateway and GatewayClass have a defined LoadBalancerConfiguration.
+                  This field is only honored for the configuration attached to the GatewayClass.
+                enum:
+                - prefer-gateway
+                - prefer-gateway-class
+                type: string
+              minimumLoadBalancerCapacity:
+                description: MinimumLoadBalancerCapacity define the capacity reservation
+                  for LoadBalancers
+                properties:
+                  capacityUnits:
+                    description: The Capacity Units Value.
+                    format: int32
+                    type: integer
+                required:
+                - capacityUnits
+                type: object
+              scheme:
+                description: scheme defines the type of LB to provision. If unspecified,
+                  it will be automatically inferred.
+                enum:
+                - internal
+                - internet-facing
+                type: string
+              securityGroupPrefixes:
+                description: securityGroupPrefixes an optional list of prefixes that
+                  are allowed to access the LB.
+                items:
+                  type: string
+                type: array
+              securityGroups:
+                description: securityGroups an optional list of security group ids
+                  or names to apply to the LB
+                items:
+                  type: string
+                type: array
+              shieldConfiguration:
+                description: ShieldAdvanced define the AWS Shield settings for a Gateway
+                  [Application Load Balancer]
+                properties:
+                  enabled:
+                    description: Enabled whether Shield Advanced should be configured
+                      with the Gateway
+                    type: boolean
+                type: object
+              sourceRanges:
+                description: |-
+                  sourceRanges an optional list of CIDRs that are allowed to access the LB.
+                  IPv4 and IPv6 CIDRs are canonicalized. Defaults to 0.0.0.0/0 and ::/0.
+                items:
+                  type: string
+                type: array
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags the AWS Tags on all related resources to the gateway.
+                type: object
+              wafV2:
+                description: WAFv2 define the AWS WAFv2 settings for a Gateway [Application
+                  Load Balancer]
+                properties:
+                  webACL:
+                    description: ACL The WebACL to configure with the Gateway
+                    type: string
+                required:
+                - webACL
+                type: object
+            type: object
+          status:
+            description: LoadBalancerConfigurationStatus defines the observed state
+              of TargetGroupBinding
+            properties:
+              observedGatewayClassConfigurationGeneration:
+                description: The generation of the Gateway Configuration attached
+                  to the GatewayClass object.
+                format: int64
+                type: integer
+              observedGatewayConfigurationGeneration:
+                description: The generation of the Gateway Configuration attached
+                  to the Gateway object.
+                format: int64
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    deprecated: true
+    deprecationWarning: gateway.k8s.aws/v1beta1 LoadBalancerConfiguration is deprecated;
+      use gateway.k8s.aws/v1 instead
     name: v1beta1
     schema:
       openAPIV3Schema:
@@ -1498,8 +2291,9 @@ spec:
                     type: boolean
                 type: object
               sourceRanges:
-                description: sourceRanges an optional list of CIDRs that are allowed
-                  to access the LB.
+                description: |-
+                  sourceRanges an optional list of CIDRs that are allowed to access the LB.
+                  IPv4 and IPv6 CIDRs are canonicalized. Defaults to 0.0.0.0/0 and ::/0.
                 items:
                   type: string
                 type: array
@@ -1536,7 +2330,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
 
@@ -1700,6 +2494,13 @@ spec:
                       type: object
                     type: array
                 type: object
+              registerTargetsWithPodAvailabilityZone:
+                description: |-
+                  registerTargetsWithPodAvailabilityZone specifies whether cross-account targets are registered with the
+                  availability zone of the pod's node instead of "all". Requires iamRoleArnToAssume. Enables in-AZ routing
+                  when cross-zone load balancing is disabled. Availability zone names are translated across accounts using
+                  availability zone IDs, so the assumed role requires ec2:DescribeAvailabilityZones.
+                type: boolean
               serviceRef:
                 description: serviceRef is a reference to a Kubernetes Service and
                   ServicePort.
@@ -1944,6 +2745,13 @@ spec:
                     type: object
                 type: object
                 x-kubernetes-map-type: atomic
+              registerTargetsWithPodAvailabilityZone:
+                description: |-
+                  registerTargetsWithPodAvailabilityZone specifies whether cross-account targets are registered with the
+                  availability zone of the pod's node instead of "all". Requires iamRoleArnToAssume. Enables in-AZ routing
+                  when cross-zone load balancing is disabled. Availability zone names are translated across accounts using
+                  availability zone IDs, so the assumed role requires ec2:DescribeAvailabilityZones.
+                type: boolean
               serviceRef:
                 description: serviceRef is a reference to a Kubernetes Service and
                   ServicePort.
@@ -2095,7 +2903,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: v1beta1
+    name: v1
     schema:
       openAPIV3Schema:
         description: TargetGroupConfiguration is the Schema for defining TargetGroups
@@ -2557,6 +3365,479 @@ spec:
     storage: true
     subresources:
       status: {}
+  - additionalPrinterColumns:
+    - description: The Kubernetes Service's name
+      jsonPath: .spec.targetReference.name
+      name: SERVICE-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    deprecated: true
+    deprecationWarning: gateway.k8s.aws/v1beta1 TargetGroupConfiguration is deprecated;
+      use gateway.k8s.aws/v1 instead
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: TargetGroupConfiguration is the Schema for defining TargetGroups
+          with an AWS ELB Gateway
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TargetGroupConfigurationSpec defines the TargetGroup properties
+              for a route.
+            properties:
+              defaultConfiguration:
+                description: defaultRouteConfiguration fallback configuration applied
+                  to all routes, unless overridden by route-specific configurations.
+                properties:
+                  enableMultiCluster:
+                    description: |-
+                      EnableMultiCluster [Application / Network LoadBalancer]
+                      Allows for multiple Clusters / Services to use the generated TargetGroup ARN
+                    type: boolean
+                  healthCheckConfig:
+                    description: healthCheckConfig The Health Check configuration
+                      for this backend.
+                    properties:
+                      healthCheckInterval:
+                        description: healthCheckInterval The approximate amount of
+                          time, in seconds, between health checks of an individual
+                          target.
+                        format: int32
+                        type: integer
+                      healthCheckPath:
+                        description: healthCheckPath The destination for health checks
+                          on the targets.
+                        type: string
+                      healthCheckPort:
+                        description: |-
+                          healthCheckPort The port the load balancer uses when performing health checks on targets.
+                          The default is to use the port on which each target receives traffic from the load balancer.
+                        type: string
+                      healthCheckProtocol:
+                        description: healthCheckProtocol The protocol to use to connect
+                          with the target. The GENEVE, TLS, UDP, and TCP_UDP protocols
+                          are not supported for health checks.
+                        enum:
+                        - HTTP
+                        - HTTPS
+                        - TCP
+                        type: string
+                      healthCheckTimeout:
+                        description: healthCheckTimeout The amount of time, in seconds,
+                          during which no response means a failed health check
+                        format: int32
+                        type: integer
+                      healthyThresholdCount:
+                        description: healthyThresholdCount The number of consecutive
+                          health checks successes required before considering an unhealthy
+                          target healthy.
+                        format: int32
+                        type: integer
+                      matcher:
+                        description: healthCheckCodes The HTTP or gRPC codes to use
+                          when checking for a successful response from a target
+                        properties:
+                          grpcCode:
+                            description: The gRPC codes
+                            type: string
+                          httpCode:
+                            description: The HTTP codes.
+                            type: string
+                        type: object
+                      unhealthyThresholdCount:
+                        description: unhealthyThresholdCount The number of consecutive
+                          health check failures required before considering the target
+                          unhealthy.
+                        format: int32
+                        type: integer
+                    type: object
+                  ipAddressType:
+                    description: ipAddressType specifies whether the target group
+                      is of type IPv4 or IPv6. If unspecified, it will be automatically
+                      inferred.
+                    enum:
+                    - ipv4
+                    - ipv6
+                    type: string
+                  nodeSelector:
+                    description: node selector for instance type target groups to
+                      only register certain nodes
+                    properties:
+                      matchExpressions:
+                        description: matchExpressions is a list of label selector
+                          requirements. The requirements are ANDed.
+                        items:
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
+                          properties:
+                            key:
+                              description: key is the label key that the selector
+                                applies to.
+                              type: string
+                            operator:
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
+                              type: string
+                            values:
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
+                        type: object
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  protocol:
+                    description: |-
+                      Protocol [Application / Network Load Balancer] the protocol for the target group.
+                      If unspecified, it will be automatically inferred.
+                    enum:
+                    - HTTP
+                    - HTTPS
+                    - TCP
+                    - TLS
+                    - UDP
+                    - TCP_UDP
+                    type: string
+                  protocolVersion:
+                    description: protocolVersion [HTTP/HTTPS protocol] The protocol
+                      version. The possible values are GRPC , HTTP1 and HTTP2
+                    enum:
+                    - HTTP1
+                    - HTTP2
+                    - GRPC
+                    type: string
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: Tags the Tags to add on the target group.
+                    type: object
+                  targetControlPort:
+                    description: targetControlPort [Application Load Balancer] The
+                      port on which the target communicates its capacity. This value
+                      can't be modified after target group creation.
+                    format: int32
+                    type: integer
+                  targetGroupAttributes:
+                    description: targetGroupAttributes defines the attribute of target
+                      group
+                    items:
+                      description: TargetGroupAttribute defines target group attribute.
+                      properties:
+                        key:
+                          description: The key of the attribute.
+                          type: string
+                        value:
+                          description: The value of the attribute.
+                          type: string
+                      required:
+                      - key
+                      - value
+                      type: object
+                    type: array
+                  targetGroupName:
+                    description: targetGroupName specifies the name to assign to the
+                      Target Group. If not defined, then one is generated.
+                    type: string
+                  targetType:
+                    description: targetType is the TargetType of TargetGroup. If unspecified,
+                      it will be automatically inferred as instance.
+                    enum:
+                    - instance
+                    - ip
+                    type: string
+                type: object
+              routeConfigurations:
+                description: routeConfigurations the route configuration for specific
+                  routes. the longest prefix match (kind:namespace:name) is taken
+                  to combine with the default properties.
+                items:
+                  description: RouteConfiguration defines the per route configuration
+                  properties:
+                    routeIdentifier:
+                      description: name the identifier of the route, it should be
+                        in the form of ROUTE:NAMESPACE:NAME
+                      properties:
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      type: object
+                    targetGroupProps:
+                      description: targetGroupProps the target group specific properties
+                      properties:
+                        enableMultiCluster:
+                          description: |-
+                            EnableMultiCluster [Application / Network LoadBalancer]
+                            Allows for multiple Clusters / Services to use the generated TargetGroup ARN
+                          type: boolean
+                        healthCheckConfig:
+                          description: healthCheckConfig The Health Check configuration
+                            for this backend.
+                          properties:
+                            healthCheckInterval:
+                              description: healthCheckInterval The approximate amount
+                                of time, in seconds, between health checks of an individual
+                                target.
+                              format: int32
+                              type: integer
+                            healthCheckPath:
+                              description: healthCheckPath The destination for health
+                                checks on the targets.
+                              type: string
+                            healthCheckPort:
+                              description: |-
+                                healthCheckPort The port the load balancer uses when performing health checks on targets.
+                                The default is to use the port on which each target receives traffic from the load balancer.
+                              type: string
+                            healthCheckProtocol:
+                              description: healthCheckProtocol The protocol to use
+                                to connect with the target. The GENEVE, TLS, UDP,
+                                and TCP_UDP protocols are not supported for health
+                                checks.
+                              enum:
+                              - HTTP
+                              - HTTPS
+                              - TCP
+                              type: string
+                            healthCheckTimeout:
+                              description: healthCheckTimeout The amount of time,
+                                in seconds, during which no response means a failed
+                                health check
+                              format: int32
+                              type: integer
+                            healthyThresholdCount:
+                              description: healthyThresholdCount The number of consecutive
+                                health checks successes required before considering
+                                an unhealthy target healthy.
+                              format: int32
+                              type: integer
+                            matcher:
+                              description: healthCheckCodes The HTTP or gRPC codes
+                                to use when checking for a successful response from
+                                a target
+                              properties:
+                                grpcCode:
+                                  description: The gRPC codes
+                                  type: string
+                                httpCode:
+                                  description: The HTTP codes.
+                                  type: string
+                              type: object
+                            unhealthyThresholdCount:
+                              description: unhealthyThresholdCount The number of consecutive
+                                health check failures required before considering
+                                the target unhealthy.
+                              format: int32
+                              type: integer
+                          type: object
+                        ipAddressType:
+                          description: ipAddressType specifies whether the target
+                            group is of type IPv4 or IPv6. If unspecified, it will
+                            be automatically inferred.
+                          enum:
+                          - ipv4
+                          - ipv6
+                          type: string
+                        nodeSelector:
+                          description: node selector for instance type target groups
+                            to only register certain nodes
+                          properties:
+                            matchExpressions:
+                              description: matchExpressions is a list of label selector
+                                requirements. The requirements are ANDed.
+                              items:
+                                description: |-
+                                  A label selector requirement is a selector that contains values, a key, and an operator that
+                                  relates the key and values.
+                                properties:
+                                  key:
+                                    description: key is the label key that the selector
+                                      applies to.
+                                    type: string
+                                  operator:
+                                    description: |-
+                                      operator represents a key's relationship to a set of values.
+                                      Valid operators are In, NotIn, Exists and DoesNotExist.
+                                    type: string
+                                  values:
+                                    description: |-
+                                      values is an array of string values. If the operator is In or NotIn,
+                                      the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                      the values array must be empty. This array is replaced during a strategic
+                                      merge patch.
+                                    items:
+                                      type: string
+                                    type: array
+                                    x-kubernetes-list-type: atomic
+                                required:
+                                - key
+                                - operator
+                                type: object
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            matchLabels:
+                              additionalProperties:
+                                type: string
+                              description: |-
+                                matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                                map is equivalent to an element of matchExpressions, whose key field is "key", the
+                                operator is "In", and the values array contains only "value". The requirements are ANDed.
+                              type: object
+                          type: object
+                          x-kubernetes-map-type: atomic
+                        protocol:
+                          description: |-
+                            Protocol [Application / Network Load Balancer] the protocol for the target group.
+                            If unspecified, it will be automatically inferred.
+                          enum:
+                          - HTTP
+                          - HTTPS
+                          - TCP
+                          - TLS
+                          - UDP
+                          - TCP_UDP
+                          type: string
+                        protocolVersion:
+                          description: protocolVersion [HTTP/HTTPS protocol] The protocol
+                            version. The possible values are GRPC , HTTP1 and HTTP2
+                          enum:
+                          - HTTP1
+                          - HTTP2
+                          - GRPC
+                          type: string
+                        tags:
+                          additionalProperties:
+                            type: string
+                          description: Tags the Tags to add on the target group.
+                          type: object
+                        targetControlPort:
+                          description: targetControlPort [Application Load Balancer]
+                            The port on which the target communicates its capacity.
+                            This value can't be modified after target group creation.
+                          format: int32
+                          type: integer
+                        targetGroupAttributes:
+                          description: targetGroupAttributes defines the attribute
+                            of target group
+                          items:
+                            description: TargetGroupAttribute defines target group
+                              attribute.
+                            properties:
+                              key:
+                                description: The key of the attribute.
+                                type: string
+                              value:
+                                description: The value of the attribute.
+                                type: string
+                            required:
+                            - key
+                            - value
+                            type: object
+                          type: array
+                        targetGroupName:
+                          description: targetGroupName specifies the name to assign
+                            to the Target Group. If not defined, then one is generated.
+                          type: string
+                        targetType:
+                          description: targetType is the TargetType of TargetGroup.
+                            If unspecified, it will be automatically inferred as instance.
+                          enum:
+                          - instance
+                          - ip
+                          type: string
+                      type: object
+                  required:
+                  - routeIdentifier
+                  - targetGroupProps
+                  type: object
+                type: array
+              targetReference:
+                description: |-
+                  targetReference the kubernetes object to attach the Target Group settings to.
+                  When omitted, this TGC can only be used as a default via LoadBalancerConfiguration's
+                  defaultTargetGroupConfiguration reference.
+                properties:
+                  group:
+                    default: ""
+                    description: |-
+                      Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                      When unspecified or empty string, core API group is inferred.
+                    type: string
+                  kind:
+                    default: Service
+                    description: |-
+                      Kind is the Kubernetes resource kind of the referent. For example
+                      "Service".
+
+                      Defaults to "Service" when not specified.
+                    type: string
+                  name:
+                    description: Name is the name of the referent.
+                    type: string
+                required:
+                - name
+                type: object
+            type: object
+          status:
+            description: TargetGroupConfigurationStatus defines the observed state
+              of TargetGroupConfiguration
+            properties:
+              observedGatewayClassConfigurationGeneration:
+                description: The generation of the Gateway Configuration attached
+                  to the GatewayClass object.
+                format: int64
+                type: integer
+              observedGatewayConfigurationGeneration:
+                description: The generation of the Gateway Configuration attached
+                  to the Gateway object.
+                format: int64
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
 
 ---
 
@@ -2569,8 +3850,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller
   namespace: kube-system
@@ -2585,8 +3866,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-leader-election-role
   namespace: kube-system
@@ -2634,8 +3915,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-role
 rules:
@@ -2868,8 +4149,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-leader-election-rolebinding
   namespace: kube-system
@@ -2892,8 +4173,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-rolebinding
 roleRef:
@@ -2916,8 +4197,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
     prometheus.io/service-monitor: "false"
   name: aws-load-balancer-webhook-service
@@ -2941,8 +4222,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller
   namespace: kube-system
@@ -2982,6 +4263,7 @@ spec:
         - --ingress-class=alb
         - --aws-region=us-test-1
         - --metrics-bind-addr=:9442
+        - --default-load-balancer-scheme=internal
         - --enable-waf=false
         - --enable-wafv2=false
         - --enable-shield=false
@@ -2996,7 +4278,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/aws-load-balancer-controller.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/eks/aws-load-balancer-controller:v3.3.0
+        image: public.ecr.aws/eks/aws-load-balancer-controller:v3.6.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 2
@@ -3070,8 +4352,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-serving-cert
   namespace: kube-system
@@ -3096,8 +4378,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-selfsigned-issuer
   namespace: kube-system
@@ -3114,8 +4396,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: alb
 
@@ -3129,8 +4411,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: alb
 spec:
@@ -3148,13 +4430,13 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-webhook
 webhooks:
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3185,7 +4467,7 @@ webhooks:
     - pods
   sideEffects: None
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3216,7 +4498,7 @@ webhooks:
     - pods
   sideEffects: None
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3247,7 +4529,7 @@ webhooks:
     - services
   sideEffects: None
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3282,7 +4564,7 @@ webhooks:
     - pods
   sideEffects: None
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3315,7 +4597,7 @@ webhooks:
     - pods
   sideEffects: None
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3347,13 +4629,13 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.3.0
-    helm.sh/chart: aws-load-balancer-controller-3.3.0
+    app.kubernetes.io/version: v3.6.1
+    helm.sh/chart: aws-load-balancer-controller-3.6.1
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-webhook
 webhooks:
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3379,7 +4661,7 @@ webhooks:
     - ingressclassparams
   sideEffects: None
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3399,7 +4681,7 @@ webhooks:
     - targetgroupbindings
   sideEffects: None
 - admissionReviewVersions:
-  - v1beta1
+  - v1
   clientConfig:
     service:
       name: aws-load-balancer-webhook-service
@@ -3408,8 +4690,6 @@ webhooks:
   failurePolicy: Fail
   matchPolicy: Equivalent
   name: vingress.elbv2.k8s.aws
-  namespaceSelector: null
-  objectSelector: null
   rules:
   - apiGroups:
     - networking.k8s.io

@@ -19,9 +19,12 @@ region: "{{`{{ Region }}`}}"
 # rather than `"v3.2.2"` — the chart wraps the final image in double quotes.
 image:
   repository: public.ecr.aws/eks/aws-load-balancer-controller
-  tag: '{{ or .CloudProvider.AWS.LoadBalancerController.Version `v3.3.0` }}'
+  tag: "{{ or .CloudProvider.AWS.LoadBalancerController.Version `v3.6.1` }}"
 
 metricsBindAddr: ":9442"
+
+# Falls back to the controller's own default so existing clusters are unchanged.
+defaultLoadBalancerScheme: '{{ or .CloudProvider.AWS.LoadBalancerController.DefaultLoadBalancerScheme "internal" }}'
 
 resources:
   limits:
