@@ -20,3 +20,23 @@ test-e2e-install:
 	cd $(KOPS_ROOT)/tests/e2e && \
 		go install ./kubetest2-tester-kops && \
 		go install ./kubetest2-kops
+
+.PHONY: build-e2e-binaries
+build-e2e-binaries: build-e2e-binaries-amd64 build-e2e-binaries-arm64 build-e2e-binaries-s390x build-e2e-binaries-ppc64le build-e2e-binaries-riscv64 build-e2e-binaries-darwin-arm64
+
+.PHONY: build-e2e-binaries-amd64 build-e2e-binaries-arm64 build-e2e-binaries-s390x build-e2e-binaries-ppc64le build-e2e-binaries-riscv64
+build-e2e-binaries-amd64 build-e2e-binaries-arm64 build-e2e-binaries-s390x build-e2e-binaries-ppc64le build-e2e-binaries-riscv64: build-e2e-binaries-%:
+	mkdir -p "$(KOPS_ROOT)/.build/dist/kubetest2/linux/$*"
+	cd "$(KOPS_ROOT)/tests/e2e" && \
+		CGO_ENABLED=0 GOOS=linux GOARCH=$* go build -o "$(KOPS_ROOT)/.build/dist/kubetest2/linux/$*/" ./kubetest2-kops ./kubetest2-tester-kops
+
+.PHONY: build-e2e-binaries-darwin-arm64
+build-e2e-binaries-darwin-arm64:
+	mkdir -p "$(KOPS_ROOT)/.build/dist/kubetest2/darwin/arm64"
+	cd "$(KOPS_ROOT)/tests/e2e" && \
+		CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o "$(KOPS_ROOT)/.build/dist/kubetest2/darwin/arm64/" ./kubetest2-kops ./kubetest2-tester-kops
+
+.PHONY: upload-e2e-binaries
+upload-e2e-binaries: gcloud build-e2e-binaries
+	gcloud storage cp --custom-metadata="Surrogate-Key=kops-kubetest2" --cache-control="private, max-age=0, no-transform" \
+		--recursive "$(KOPS_ROOT)/.build/dist/kubetest2/"* "$(GCS_LOCATION)kubetest2/"

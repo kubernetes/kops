@@ -1,27 +1,24 @@
 package linodego
 
-/*
-Pointer takes a value of any type T and returns a pointer to that value.
-Go does not allow directly creating pointers to literals, so Pointer enables
-abstraction away the pointer logic.
-
-Example:
-
-		booted := true
-
-		createOpts := linodego.InstanceCreateOptions{
-			Booted: &booted,
-		}
-
-		can be replaced with
-
-		createOpts := linodego.InstanceCreateOptions{
-			Booted: linodego.Pointer(true),
-		}
-*/
-
+// Pointer takes a value of any type T and returns a pointer to that value.
+//
+// Example:
+//
+//	booted := true
+//
+//	createOpts := linodego.InstanceCreateOptions{
+//		Booted: &booted,
+//	}
+//
+// can be replaced with
+//
+//	createOpts := linodego.InstanceCreateOptions{
+//		Booted: new(true),
+//	}
+//
+// Deprecated: As of Go 1.26, use the built-in new(value) instead.
 func Pointer[T any](value T) *T {
-	return &value
+	return new(value)
 }
 
 // DoublePointer creates a double pointer to a value of type T.
