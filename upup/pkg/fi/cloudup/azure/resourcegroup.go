@@ -21,7 +21,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources/v3"
 )
 
 // ResourceGroupsClient is a client for managing resource groups.

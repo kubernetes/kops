@@ -23,7 +23,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v7"
 )
 
 // NatGatewaysClient is a client for managing Nat Gateways.

@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
-	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources/v3"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )

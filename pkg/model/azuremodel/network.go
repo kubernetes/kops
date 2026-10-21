@@ -19,7 +19,7 @@ package azuremodel
 import (
 	"strconv"
 
-	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v7"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
