@@ -153,7 +153,7 @@ github.com/AzureAD/microsoft-authentication-library-for-go/apps/public
 # github.com/GoogleCloudPlatform/confidential-space/server v0.0.0-20260522213940-e5c6d01a3007
 ## explicit; go 1.24.0
 github.com/GoogleCloudPlatform/confidential-space/server/proto/gen/attestation
-# github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.33.0
+# github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.34.0
 ## explicit; go 1.25.0
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp
 # github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.57.0
@@ -508,6 +508,7 @@ github.com/envoyproxy/go-control-plane/envoy/config/trace/v3
 github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3
 github.com/envoyproxy/go-control-plane/envoy/extensions/clusters/aggregate/v3
 github.com/envoyproxy/go-control-plane/envoy/extensions/filters/common/fault/v3
+github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3
 github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/fault/v3
 github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/gcp_authn/v3
 github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/rbac/v3
@@ -523,6 +524,7 @@ github.com/envoyproxy/go-control-plane/envoy/extensions/rbac/audit_loggers/strea
 github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/http_11_proxy/v3
 github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3
 github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3
+github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3
 github.com/envoyproxy/go-control-plane/envoy/service/load_stats/v3
 github.com/envoyproxy/go-control-plane/envoy/service/status/v3
 github.com/envoyproxy/go-control-plane/envoy/type/http/v3
@@ -1052,7 +1054,7 @@ github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
 github.com/spf13/viper/internal/features
-# github.com/spiffe/go-spiffe/v2 v2.7.0
+# github.com/spiffe/go-spiffe/v2 v2.8.1
 ## explicit; go 1.24.0
 github.com/spiffe/go-spiffe/v2/bundle/jwtbundle
 github.com/spiffe/go-spiffe/v2/bundle/spiffebundle
@@ -1343,7 +1345,7 @@ google.golang.org/genproto/googleapis/api/monitoredres
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.83.0
+# google.golang.org/grpc v1.84.0
 ## explicit; go 1.25.0
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -1422,6 +1424,7 @@ google.golang.org/grpc/internal/hierarchy
 google.golang.org/grpc/internal/idle
 google.golang.org/grpc/internal/mem
 google.golang.org/grpc/internal/metadata
+google.golang.org/grpc/internal/optional
 google.golang.org/grpc/internal/pretty
 google.golang.org/grpc/internal/proto/grpc_lookup_v1
 google.golang.org/grpc/internal/proxyattributes
@@ -1470,6 +1473,8 @@ google.golang.org/grpc/internal/xds/clients/xdsclient/metrics
 google.golang.org/grpc/internal/xds/clusterspecifier
 google.golang.org/grpc/internal/xds/clusterspecifier/rls
 google.golang.org/grpc/internal/xds/httpfilter
+google.golang.org/grpc/internal/xds/httpfilter/extproc
+google.golang.org/grpc/internal/xds/httpfilter/extproc/internal
 google.golang.org/grpc/internal/xds/httpfilter/fault
 google.golang.org/grpc/internal/xds/httpfilter/rbac
 google.golang.org/grpc/internal/xds/httpfilter/router
