@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"slices"
 	"strings"
 
 	"k8s.io/kops/pkg/nodeidentity/aws"
@@ -36,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
@@ -295,6 +297,11 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 				allErrs = append(allErrs, field.NotFound(field.NewPath("spec", "networking", "subnets").Index(i), z))
 			}
 		}
+	}
+
+	if cluster.GetCloudProvider() == kops.CloudProviderAzure && g.Spec.RootVolume != nil && g.Spec.RootVolume.Type != nil {
+		types := slices.Concat(azure.ManagedOSDiskTypes, azure.EphemeralOSDiskPlacements)
+		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolume", "type"), g.Spec.RootVolume.Type, types)...)
 	}
 
 	if cluster.GetCloudProvider() == kops.CloudProviderAWS {

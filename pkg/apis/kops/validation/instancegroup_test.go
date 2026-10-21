@@ -230,6 +230,35 @@ func TestValidBootDevice(t *testing.T) {
 	}
 }
 
+func TestValidAzureRootVolumeType(t *testing.T) {
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				Azure: &kops.AzureSpec{},
+			},
+		},
+	}
+	grid := []struct {
+		volumeType string
+		expected   []string
+	}{
+		{volumeType: "StandardSSD_LRS"},
+		{volumeType: "Premium_ZRS"},
+		{volumeType: "ResourceDisk"},
+		{volumeType: "NvmeDisk"},
+		// Ultra disks cannot be OS disks.
+		{volumeType: "UltraSSD_LRS", expected: []string{"Unsupported value::spec.rootVolume.type"}},
+		{volumeType: "gp3", expected: []string{"Unsupported value::spec.rootVolume.type"}},
+	}
+
+	for _, g := range grid {
+		ig := createMinimalInstanceGroup()
+		ig.Spec.RootVolume = &kops.InstanceRootVolumeSpec{Type: new(g.volumeType)}
+		errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
+		testErrors(t, g.volumeType, errs, g.expected)
+	}
+}
+
 func TestCrossValidateInstanceGroupContainerdRegistryMirrors(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{

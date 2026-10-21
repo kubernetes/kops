@@ -75,6 +75,19 @@ kops delete cluster --name my.k8s
 kops delete cluster --name my.k8s --yes 
 ```
 
+## Ephemeral OS disks
+
+Setting `rootVolumeType` to one of the VM's local disks gives the instance group an Azure [ephemeral OS disk](https://learn.microsoft.com/en-us/azure/virtual-machines/ephemeral-os-disks): `CacheDisk` (host cache), `ResourceDisk` (temp disk) or `NvmeDisk` (local NVMe disk). OS disk writes go to that local disk; a `StandardSSD_LRS` managed base disk serves image reads and is billed. The VM size must have the local disk (`SupportedEphemeralOSDiskPlacements` in `az vm list-skus`) and the root volume must fit it: without `rootVolumeSize`, kOps uses 128 GiB for nodes and 64 GiB for the control plane.
+
+```yaml
+spec:
+  machineType: Standard_D8ds_v5
+  rootVolumeType: ResourceDisk
+  rootVolumeSize: 300
+```
+
+The setting only applies when the VM Scale Set is created: changing `rootVolumeType` on an existing instance group makes `kops update cluster` fail and blocks rolling updates until it is reverted, so switch by creating a new instance group. The OS disk contents are lost when a VM is reimaged, resized, redeployed or healed, and stop/deallocate is not supported.
+
 ## Managed Identities
 
 kOps assigns a system-assigned managed identity to each VM Scale Set. The control-plane identity is granted the following built-in roles:

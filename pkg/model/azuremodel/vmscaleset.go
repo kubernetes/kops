@@ -18,6 +18,7 @@ package azuremodel
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
@@ -213,11 +214,14 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 		}
 	}
 
-	var storageAccountType compute.StorageAccountTypes
+	storageAccountType := compute.StorageAccountTypesStandardSSDLRS
+	var ephemeralPlacement *compute.DiffDiskPlacement
 	if spec.RootVolume != nil && spec.RootVolume.Type != nil {
-		storageAccountType = compute.StorageAccountTypes(*spec.RootVolume.Type)
-	} else {
-		storageAccountType = compute.StorageAccountTypesStandardSSDLRS
+		if slices.Contains(azure.EphemeralOSDiskPlacements, *spec.RootVolume.Type) {
+			ephemeralPlacement = to.Ptr(compute.DiffDiskPlacement(*spec.RootVolume.Type))
+		} else {
+			storageAccountType = compute.StorageAccountTypes(*spec.RootVolume.Type)
+		}
 	}
 
 	imageReference, err := parseImage(spec.Image)
@@ -225,17 +229,29 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 		return nil, err
 	}
 
+	osDisk := &compute.VirtualMachineScaleSetOSDisk{
+		OSType:       to.Ptr(compute.OperatingSystemTypesLinux),
+		CreateOption: to.Ptr(compute.DiskCreateOptionTypesFromImage),
+		DiskSizeGB:   to.Ptr(volumeSize),
+		ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
+			StorageAccountType: &storageAccountType,
+		},
+		Caching: to.Ptr(compute.CachingTypesReadWrite),
+	}
+
+	if ephemeralPlacement != nil {
+		// Azure only accepts ReadOnly caching for an ephemeral OS disk. The managed disk type
+		// still selects the base disk that serves reads of the image.
+		osDisk.Caching = to.Ptr(compute.CachingTypesReadOnly)
+		osDisk.DiffDiskSettings = &compute.DiffDiskSettings{
+			Option:    to.Ptr(compute.DiffDiskOptionsLocal),
+			Placement: ephemeralPlacement,
+		}
+	}
+
 	return &compute.VirtualMachineScaleSetStorageProfile{
 		ImageReference: imageReference,
-		OSDisk: &compute.VirtualMachineScaleSetOSDisk{
-			OSType:       to.Ptr(compute.OperatingSystemTypesLinux),
-			CreateOption: to.Ptr(compute.DiskCreateOptionTypesFromImage),
-			DiskSizeGB:   to.Ptr(volumeSize),
-			ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
-				StorageAccountType: &storageAccountType,
-			},
-			Caching: to.Ptr(compute.CachingTypesReadWrite),
-		},
+		OSDisk:         osDisk,
 	}, nil
 }
 

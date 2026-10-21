@@ -162,6 +162,62 @@ resource "azurerm_linux_virtual_machine_scale_set" "control-plane-eastus-1-maste
   zones        = ["1"]
 }
 
+resource "azurerm_linux_virtual_machine_scale_set" "nodes-ephemeral-minimal-azure-example-com" {
+  admin_ssh_key {
+    public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbY5rS+D/y2tqFq1aaugISaPcuMUIDiS76GjAI0dz08d7D5iy+LgWjhSqiZPGzObLdO6BNlKSHxYlZQBu7bxsyojQtk5F8Tjkdpgfpi9E+GD4Hl8UU8aQc1t0vK2KP/J2u2ZVc+AKISSdGQoQ95m2CYcQ6iLShzI+H25PJEEaIRAacWhmiNoo4Dku1wnlPS34Etudtro07uvLWHcD5rihlQ48VUWJr4in3ejeGzHTS5iOa1PQgddzd4uT2kd6m4rYa2NI0Ar7CJH772lYG5SF7cZgaV3bHkRNiRgMaj52bhyd0lfhioaJIaehk+IdcCaIO0EVJxr+Dnwt97oEKNOqT chacman@M1Book.local"
+    username   = "admin-user"
+  }
+  admin_username                  = "admin-user"
+  computer_name_prefix            = "nodes-ephemeral"
+  disable_password_authentication = true
+  identity {
+    type = "SystemAssigned"
+  }
+  instances = 1
+  location  = "eastus"
+  name      = "nodes-ephemeral"
+  network_interface {
+    ip_configuration {
+      application_security_group_ids = [azurerm_application_security_group.nodes-minimal-azure-example-com.id]
+      name                           = "nodes-ephemeral"
+      primary                        = true
+      public_ip_address {
+        name    = "nodes-ephemeral"
+        version = "IPv4"
+      }
+      subnet_id = azurerm_subnet.eastus.id
+    }
+    ip_forwarding_enabled = true
+    name                  = "nodes-ephemeral"
+    primary               = true
+  }
+  os_disk {
+    caching = "ReadOnly"
+    diff_disk_settings {
+      option    = "Local"
+      placement = "ResourceDisk"
+    }
+    disk_size_gb         = 300
+    storage_account_type = "StandardSSD_LRS"
+  }
+  resource_group_name = azurerm_resource_group.minimal-azure-example-com.name
+  sku                 = "Standard_D8ds_v5"
+  source_image_reference {
+    offer     = "UbuntuServer"
+    publisher = "Canonical"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+  tags = {
+    "KubernetesCluster"         = "test-cluster.k8s"
+    "k8s.io_role_node"          = "1"
+    "kops.k8s.io_instancegroup" = "nodes-ephemeral"
+  }
+  upgrade_mode = "Manual"
+  user_data    = filebase64("${path.module}/data/azurerm_linux_virtual_machine_scale_set_nodes-ephemeral.minimal-azure.example.com_user_data")
+  zones        = ["1"]
+}
+
 resource "azurerm_linux_virtual_machine_scale_set" "nodes-minimal-azure-example-com" {
   admin_ssh_key {
     public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbY5rS+D/y2tqFq1aaugISaPcuMUIDiS76GjAI0dz08d7D5iy+LgWjhSqiZPGzObLdO6BNlKSHxYlZQBu7bxsyojQtk5F8Tjkdpgfpi9E+GD4Hl8UU8aQc1t0vK2KP/J2u2ZVc+AKISSdGQoQ95m2CYcQ6iLShzI+H25PJEEaIRAacWhmiNoo4Dku1wnlPS34Etudtro07uvLWHcD5rihlQ48VUWJr4in3ejeGzHTS5iOa1PQgddzd4uT2kd6m4rYa2NI0Ar7CJH772lYG5SF7cZgaV3bHkRNiRgMaj52bhyd0lfhioaJIaehk+IdcCaIO0EVJxr+Dnwt97oEKNOqT chacman@M1Book.local"
@@ -648,6 +704,14 @@ resource "azurerm_storage_blob" "nodeupconfig-nodes" {
   name                 = "tests/minimal-azure.example.com/igconfig/node/nodes/nodeupconfig.yaml"
   provider             = azurerm.files
   source               = "${path.module}/data/azurerm_storage_blob_nodeupconfig-nodes_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
+}
+
+resource "azurerm_storage_blob" "nodeupconfig-nodes-ephemeral" {
+  name                 = "tests/minimal-azure.example.com/igconfig/node/nodes-ephemeral/nodeupconfig.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_nodeupconfig-nodes-ephemeral_source"
   storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
   type                 = "Block"
 }

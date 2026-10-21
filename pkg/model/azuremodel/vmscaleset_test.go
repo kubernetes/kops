@@ -200,6 +200,37 @@ func TestGetStorageProfile(t *testing.T) {
 			},
 		},
 		{
+			// Ephemeral OS disk on the temp disk.
+			spec: kops.InstanceGroupSpec{
+				Image: "Canonical:ubuntu-24_04-lts:server:latest",
+				RootVolume: &kops.InstanceRootVolumeSpec{
+					Size: new(int32(300)),
+					Type: new("ResourceDisk"),
+				},
+			},
+			profile: &compute.VirtualMachineScaleSetStorageProfile{
+				ImageReference: &compute.ImageReference{
+					Publisher: to.Ptr("Canonical"),
+					Offer:     to.Ptr("ubuntu-24_04-lts"),
+					SKU:       to.Ptr("server"),
+					Version:   to.Ptr("latest"),
+				},
+				OSDisk: &compute.VirtualMachineScaleSetOSDisk{
+					OSType:       to.Ptr(compute.OperatingSystemTypesLinux),
+					CreateOption: to.Ptr(compute.DiskCreateOptionTypesFromImage),
+					DiskSizeGB:   to.Ptr[int32](300),
+					ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
+						StorageAccountType: to.Ptr(compute.StorageAccountTypesStandardSSDLRS),
+					},
+					Caching: to.Ptr(compute.CachingTypesReadOnly),
+					DiffDiskSettings: &compute.DiffDiskSettings{
+						Option:    to.Ptr(compute.DiffDiskOptionsLocal),
+						Placement: to.Ptr(compute.DiffDiskPlacementResourceDisk),
+					},
+				},
+			},
+		},
+		{
 			spec: kops.InstanceGroupSpec{
 				Image: "Canonical:UbuntuServer:18.04-LTS:latest",
 				Role:  kops.InstanceGroupRoleControlPlane,
