@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcenames"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -123,7 +123,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) erro
 		kcm.ConfigureCloudRoutes = new(false)
 
 		// If the cloud is allocating the node CIDRs, that should be done by CCM
-		if o.GetCloudProvider() == kops.CloudProviderGCE && gce.UsesIPAliases(o) {
+		if o.GetCloudProvider() == kops.CloudProviderGCE && gcenames.UsesIPAliases(o) {
 			kcm.AllocateNodeCIDRs = new(false)
 		}
 	} else if networking.External != nil {
