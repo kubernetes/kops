@@ -35,7 +35,7 @@ import (
 	"k8s.io/kops/cloudmock/openstack/mocknetworking"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
 func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
@@ -559,7 +559,7 @@ func Test_BuildClients(t *testing.T) {
 
 		t.Run(g.name, func(t *testing.T) {
 
-			cloud, err := buildClients(provider, tags, g.spec, vfs.OpenstackConfig{}, "", false)
+			cloud, err := buildClients(provider, tags, g.spec, openstackconfig.OpenstackConfig{}, "", false)
 			if g.expectError {
 				if err != nil {
 					return

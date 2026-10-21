@@ -27,7 +27,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
 const (
@@ -42,7 +42,7 @@ func init() {
 }
 
 func newDesignate(_ io.Reader) (*Interface, error) {
-	oc := vfs.OpenstackConfig{}
+	oc := openstackconfig.OpenstackConfig{}
 	region, err := oc.GetRegion()
 	if err != nil {
 		return nil, fmt.Errorf("error finding openstack region: %v", err)
