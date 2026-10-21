@@ -76,7 +76,9 @@ type InstanceGroupSpec struct {
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	// +k8s:conversion-gen=false
 	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
-	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
+	// RootVolumeType is the type of the root volume to use, for example gp3 on AWS, pd-ssd on GCE or
+	// StandardSSD_LRS on Azure. On Azure, CacheDisk, ResourceDisk or NvmeDisk place the root volume
+	// on the VM's local storage as an ephemeral OS disk instead of a managed disk.
 	// +k8s:conversion-gen=false
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
 	// RootVolumeIOPS is the provisioned IOPS when the volume type is io1, io2 or gp3 (AWS only).

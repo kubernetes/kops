@@ -1116,8 +1116,10 @@ spec:
                 format: int32
                 type: integer
               rootVolumeType:
-                description: RootVolumeType is the type of the EBS root volume to
-                  use (e.g. gp2)
+                description: |-
+                  RootVolumeType is the type of the root volume to use, for example gp3 on AWS, pd-ssd on GCE or
+                  StandardSSD_LRS on Azure. On Azure, CacheDisk, ResourceDisk or NvmeDisk place the root volume
+                  on the VM's local storage as an ephemeral OS disk instead of a managed disk.
                 type: string
               securityGroupOverride:
                 description: SecurityGroupOverride overrides the default security

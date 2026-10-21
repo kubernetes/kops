@@ -39,10 +39,16 @@ type terraformAzureVMScaleSetImageReference struct {
 	Version   *string `cty:"version"`
 }
 
+type terraformAzureVMScaleSetDiffDiskSettings struct {
+	Option    *string `cty:"option"`
+	Placement *string `cty:"placement"`
+}
+
 type terraformAzureVMScaleSetOSDisk struct {
-	Caching            *string `cty:"caching"`
-	StorageAccountType *string `cty:"storage_account_type"`
-	DiskSizeGB         *int32  `cty:"disk_size_gb"`
+	Caching            *string                                   `cty:"caching"`
+	StorageAccountType *string                                   `cty:"storage_account_type"`
+	DiskSizeGB         *int32                                    `cty:"disk_size_gb"`
+	DiffDiskSettings   *terraformAzureVMScaleSetDiffDiskSettings `cty:"diff_disk_settings"`
 }
 
 type terraformAzureVMScaleSetPublicIPAddress struct {
@@ -134,6 +140,13 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 			Type: new("SystemAssigned"),
 		},
 		Tags: stringMap(e.Tags),
+	}
+
+	if settings := storageProfile.OSDisk.DiffDiskSettings; settings != nil {
+		tf.OSDisk.DiffDiskSettings = &terraformAzureVMScaleSetDiffDiskSettings{
+			Option:    stringPtr(settings.Option),
+			Placement: stringPtr(settings.Placement),
+		}
 	}
 
 	if e.UserData != nil {

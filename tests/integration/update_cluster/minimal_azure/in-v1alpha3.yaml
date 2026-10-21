@@ -99,3 +99,27 @@ spec:
   - eastus
   zones:
   - eastus-1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha3
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-azure.example.com
+  name: nodes-ephemeral
+spec:
+  associatePublicIP: true
+  image: Canonical:UbuntuServer:18.04-LTS:latest
+  machineType: Standard_D8ds_v5
+  maxSize: 1
+  minSize: 1
+  role: Node
+  rootVolume:
+    size: 300
+    type: ResourceDisk
+  subnets:
+  - eastus
+  zones:
+  - eastus-1

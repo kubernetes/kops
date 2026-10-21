@@ -267,7 +267,9 @@ var SpotAllocationStrategies = []string{
 type InstanceRootVolumeSpec struct {
 	// Size is the size of the EBS root volume to use, in GB.
 	Size *int32 `json:"size,omitempty"`
-	// Type is the type of the EBS root volume to use (for example gp2).
+	// Type is the type of the root volume to use, for example gp3 on AWS, pd-ssd on GCE or
+	// StandardSSD_LRS on Azure. On Azure, CacheDisk, ResourceDisk or NvmeDisk place the root volume
+	// on the VM's local storage as an ephemeral OS disk instead of a managed disk.
 	Type *string `json:"type,omitempty"`
 	// IOPS is the provisioned IOPS when the volume type is io1, io2 or gp3 (AWS only).
 	IOPS *int32 `json:"iops,omitempty"`
