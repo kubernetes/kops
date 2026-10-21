@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcenames"
 )
 
 const (
@@ -30,7 +31,7 @@ const (
 	gceLabelNameKubernetesCluster = "k8s-io-cluster-name"
 
 	GceLabelNameInstanceGroup     = "k8s-io-instance-group"
-	GceLabelNameRolePrefix        = "k8s-io-role-"
+	GceLabelNameRolePrefix        = gcenames.GceLabelNameRolePrefix
 	GceLabelNameEtcdClusterPrefix = "k8s-io-etcd-"
 	ControlPlane                  = "control-plane"
 	Bastion                       = "bastion"
@@ -68,5 +69,5 @@ func DecodeGCELabel(s string) (string, error) {
 
 // TagForRole return the instance (network) tag used for instances with the given role.
 func TagForRole(clusterName string, role kops.InstanceGroupRole) string {
-	return ClusterPrefixedName(GceLabelNameRolePrefix+role.ToLowerString(), clusterName, 63)
+	return gcenames.TagForRole(clusterName, role)
 }

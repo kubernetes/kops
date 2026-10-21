@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcenames"
 )
 
 func IsNotFound(err error) bool {
@@ -53,23 +54,7 @@ func IsNotReady(err error) bool {
 
 // ClusterPrefixedName returns a cluster-prefixed name, with a maxLength
 func ClusterPrefixedName(objectName string, clusterName string, maxLength int) string {
-	suffix := "-" + objectName
-	prefixLength := maxLength - len(suffix)
-	if prefixLength < 10 {
-		klog.Fatalf("cannot construct a reasonable object name of length %d with a suffix of length %d (%q)", maxLength, len(suffix), suffix)
-	}
-
-	// GCE does not support . in tags / names
-	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
-
-	opt := truncate.TruncateStringOptions{
-		MaxLength:     prefixLength,
-		AlwaysAddHash: false,
-		HashLength:    6,
-	}
-	prefix := truncate.TruncateString(safeClusterName, opt)
-
-	return prefix + suffix
+	return gcenames.ClusterPrefixedName(objectName, clusterName, maxLength)
 }
 
 // ClusterSuffixedName returns a cluster-suffixed name, with a maxLength
@@ -96,9 +81,7 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) s
 // SafeClusterName returns a safe cluster name
 // Deprecated: prefer ClusterSuffixedName
 func SafeClusterName(clusterName string) string {
-	// GCE does not support . in tags / names
-	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
-	return safeClusterName
+	return gcenames.SafeClusterName(clusterName)
 }
 
 type Label struct {

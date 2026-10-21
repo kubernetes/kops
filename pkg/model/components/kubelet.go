@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcenames"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -140,7 +140,7 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 			cluster.Spec.CloudConfig = &kops.CloudConfiguration{}
 		}
 		cluster.Spec.CloudProvider.GCE.Multizone = new(true)
-		cluster.Spec.CloudProvider.GCE.NodeTags = new(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
+		cluster.Spec.CloudProvider.GCE.NodeTags = new(gcenames.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
 	}
 
 	// Set systemd as the default cgroup driver for kubelet, unless the user opted in to cgroupfs.
