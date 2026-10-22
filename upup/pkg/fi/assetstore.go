@@ -117,6 +117,21 @@ func (a *AssetStore) FindMatches(expr *regexp.Regexp) map[string]Resource {
 	return matches
 }
 
+func (a *AssetStore) FindArchiveMatches(archiveExpr *regexp.Regexp) map[string]Resource {
+	matches := make(map[string]Resource)
+
+	klog.Infof("Matching assets extracted from archives %q:", archiveExpr.String())
+	for _, a := range a.assets {
+		if a.source == nil || a.source.Parent == nil || !archiveExpr.MatchString(path.Base(a.source.Parent.URL)) {
+			continue
+		}
+		klog.Infof("    %s", a.AssetPath)
+		matches[a.Key] = &assetResource{Asset: a}
+	}
+
+	return matches
+}
+
 func (a *AssetStore) FindMatch(expr *regexp.Regexp) (name string, res Resource, err error) {
 	matches := a.FindMatches(expr)
 
@@ -174,6 +189,16 @@ func (a *AssetStore) AddForTest(id string, path string, content string) {
 		Key:       id,
 		AssetPath: path,
 		resource:  NewStringResource(content),
+	})
+}
+
+// AddArchiveFileForTest adds an asset as if it had been extracted from the archive at archiveURL.
+func (a *AssetStore) AddArchiveFileForTest(archiveURL string, id string, path string, content string) {
+	a.assets = append(a.assets, &asset{
+		Key:       id,
+		AssetPath: path,
+		resource:  NewStringResource(content),
+		source:    &Source{Parent: &Source{URL: archiveURL}, ExtractFromArchive: path},
 	})
 }
 
