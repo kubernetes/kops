@@ -422,7 +422,7 @@ func TestPrimaryIPv6(t *testing.T) {
 		expectIsEnabled bool
 	}{
 		{igs[subnetIPv4], false},
-		{igs[subnetDualstack], false},
+		{igs[subnetDualstack], true},
 		{igs[subnetIPv6], true},
 	}
 	for _, test := range tests {

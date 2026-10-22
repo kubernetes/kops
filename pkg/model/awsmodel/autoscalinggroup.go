@@ -265,8 +265,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 				if clusterSubnet.IPv6CIDR != "" {
 					lt.IPv6AddressCount = new(int32(1))
 					lt.HTTPProtocolIPv6 = new(ec2types.LaunchTemplateInstanceMetadataProtocolIpv6Enabled)
-				}
-				if clusterSubnet.CIDR == "" && clusterSubnet.IPv6CIDR != "" {
 					lt.PrimaryIPv6 = new(true)
 				}
 			}

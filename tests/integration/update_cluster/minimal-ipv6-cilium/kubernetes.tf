@@ -493,6 +493,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
     associate_public_ip_address = false
     delete_on_termination       = true
     ipv6_address_count          = 1
+    primary_ipv6                = true
     security_groups             = [aws_security_group.masters-minimal-ipv6-example-com.id]
   }
   tag_specifications {
