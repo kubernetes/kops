@@ -539,12 +539,13 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      delete_on_termination = true
-      encrypted             = true
-      iops                  = 3000
-      throughput            = 125
-      volume_size           = 128
-      volume_type           = "gp3"
+      delete_on_termination      = true
+      encrypted                  = true
+      iops                       = 3000
+      throughput                 = 125
+      volume_initialization_rate = 200
+      volume_size                = 128
+      volume_type                = "gp3"
     }
   }
   block_device_mappings {
