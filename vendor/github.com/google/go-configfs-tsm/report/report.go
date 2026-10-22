@@ -38,27 +38,34 @@ type Privilege struct {
 
 // Request represents an open request for an attestation report.
 type Request struct {
-	InBlob     []byte
-	Privilege  *Privilege
-	GetAuxBlob bool
+	InBlob                 []byte
+	Privilege              *Privilege
+	GetAuxBlob             bool
+	ServiceProvider        string
+	ServiceGuid            string
+	ServiceManifestVersion string
 }
 
 // OpenReport represents a created tsm report subtree with internal expectations for the generation.
 type OpenReport struct {
-	InBlob             []byte
-	Privilege          *Privilege
-	GetAuxBlob         bool
-	entry              *configfsi.TsmPath
-	expectedGeneration uint64
-	client             configfsi.Client
+	InBlob                 []byte
+	Privilege              *Privilege
+	GetAuxBlob             bool
+	ServiceProvider        string
+	ServiceGuid            string
+	ServiceManifestVersion string
+	entry                  *configfsi.TsmPath
+	expectedGeneration     uint64
+	client                 configfsi.Client
 }
 
 // Response represents a common case response for getting at attestation report to avoid
 // multiple attribute access calls.
 type Response struct {
-	Provider string
-	OutBlob  []byte
-	AuxBlob  []byte
+	Provider     string
+	OutBlob      []byte
+	AuxBlob      []byte
+	ManifestBlob []byte
 }
 
 // GenerationErr is returned when an attribute's value is invalid due to mismatched expectations
@@ -133,6 +140,9 @@ func Create(client configfsi.Client, req *Request) (*OpenReport, error) {
 	r.InBlob = req.InBlob // InBlob is not a copy!
 	r.Privilege = req.Privilege
 	r.GetAuxBlob = req.GetAuxBlob
+	r.ServiceProvider = req.ServiceProvider
+	r.ServiceGuid = req.ServiceGuid
+	r.ServiceManifestVersion = req.ServiceManifestVersion
 	return r, nil
 }
 
@@ -201,7 +211,23 @@ func (r *OpenReport) Get() (*Response, error) {
 			return nil, err
 		}
 	}
+	if r.ServiceProvider != "" {
+		if err := r.WriteOption("service_provider", []byte(r.ServiceProvider)); err != nil {
+			return nil, err
+		}
+	}
+	if r.ServiceGuid != "" {
+		if err := r.WriteOption("service_guid", []byte(r.ServiceGuid)); err != nil {
+			return nil, err
+		}
+	}
+	if r.ServiceManifestVersion != "" {
+		if err := r.WriteOption("service_manifest_version", []byte(r.ServiceManifestVersion)); err != nil {
+			return nil, err
+		}
+	}
 	resp := &Response{}
+
 	if r.GetAuxBlob {
 		resp.AuxBlob, err = r.ReadOption("auxblob")
 		if err != nil {
@@ -217,6 +243,13 @@ func (r *OpenReport) Get() (*Response, error) {
 		return nil, err
 	}
 	resp.Provider = string(providerData)
+	if r.ServiceProvider != "" {
+		manifest, err := r.ReadOption("manifestblob")
+		if err != nil {
+			return nil, fmt.Errorf("could not read report manifestblob: %w", err)
+		}
+		resp.ManifestBlob = manifest
+	}
 	return resp, nil
 }
 

@@ -313,7 +313,7 @@ func (k *Key) Attest(opts AttestOpts) (*pb.Attestation, error) {
 	// Attempt to construct certificate chain. fetchIssuingCertificate checks if
 	// AK cert is present and contains intermediate cert URLs.
 	if opts.CertChainFetcher != nil {
-		attestation.IntermediateCerts, err = internal.GetCertificateChain(k.cert, opts.CertChainFetcher)
+		attestation.IntermediateCerts, err = internal.GetAKIntermediateCerts(k.cert, opts.CertChainFetcher)
 		if err != nil {
 			return nil, fmt.Errorf("fetching certificate chain: %w", err)
 		}
