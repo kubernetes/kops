@@ -2,7 +2,7 @@
 
 ## etcd-manager
 
-[etcd-manager](https://github.com/kubernetes-sigs/etcdadm/tree/master/etcd-manager) is a kubernetes-sigs project that kOps uses to manage
+[etcd-manager](https://github.com/kubernetes-sigs/etcd-manager) is a kubernetes-sigs project that kOps uses to manage
 etcd.
 
 It handles graceful upgrades of etcd, TLS, and backups. If a Kubernetes cluster needs more redundant control plane, it also takes care of resizing the etcd cluster.
