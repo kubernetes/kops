@@ -193,7 +193,7 @@ func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
 }
 
 func deleteInstanceWithID(c OpenstackCloud, instanceID string) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(instanceDeleteBackoff, func() (bool, error) {
 		err := servers.Delete(context.TODO(), c.ComputeClient(), instanceID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting instance: %s", err)
