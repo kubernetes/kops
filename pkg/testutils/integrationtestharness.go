@@ -190,6 +190,10 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
 		RootDeviceName: aws.String("/dev/xvda"),
 		Architecture:   ec2types.ArchitectureValuesX8664,
+		BlockDeviceMappings: []ec2types.BlockDeviceMapping{{
+			DeviceName: aws.String("/dev/xvda"),
+			Ebs:        &ec2types.EbsBlockDevice{SnapshotId: aws.String("snap-12345678")},
+		}},
 	})
 
 	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{

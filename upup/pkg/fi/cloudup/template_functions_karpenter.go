@@ -100,9 +100,12 @@ type karpenterBlockDeviceEBS struct {
 	Encrypted           *bool   `json:"encrypted,omitempty"`
 	IOPS                *int64  `json:"iops,omitempty"`
 	KMSKeyID            *string `json:"kmsKeyID,omitempty"`
+	SnapshotID          string  `json:"snapshotID,omitempty"`
 	Throughput          *int64  `json:"throughput,omitempty"`
 	VolumeSize          string  `json:"volumeSize,omitempty"`
 	VolumeType          string  `json:"volumeType,omitempty"`
+	// VolumeInitializationRate requires SnapshotID: Karpenter rejects one without the other.
+	VolumeInitializationRate *int32 `json:"volumeInitializationRate,omitempty"`
 }
 
 type karpenterAMITerm struct {
@@ -235,11 +238,11 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 	if err != nil {
 		return nil, fmt.Errorf("reading userData for %q: %w", ig.Name, err)
 	}
-	rootDeviceName, err := tf.karpenterRootDeviceName(ig.Spec.Image)
+	rootDeviceName, rootSnapshotID, err := tf.karpenterRootDevice(ig.Spec.Image)
 	if err != nil {
 		return nil, fmt.Errorf("resolving root device for %q: %w", ig.Name, err)
 	}
-	blockDeviceMappings, err := buildKarpenterBlockDeviceMappings(ig, rootDeviceName)
+	blockDeviceMappings, err := buildKarpenterBlockDeviceMappings(ig, rootDeviceName, rootSnapshotID)
 	if err != nil {
 		return nil, fmt.Errorf("building blockDeviceMappings for %q: %w", ig.Name, err)
 	}
@@ -304,7 +307,7 @@ func buildKarpenterKubeletConfiguration(ig *kops.InstanceGroup) *karpenterKubele
 	return kubelet
 }
 
-func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName string) ([]karpenterBlockDeviceMapping, error) {
+func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName, rootSnapshotID string) ([]karpenterBlockDeviceMapping, error) {
 	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
 	if err != nil {
 		return nil, err
@@ -368,6 +371,13 @@ func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName st
 	if throughput != nil {
 		ebs.Throughput = new(int64(fi.ValueOf(throughput)))
 	}
+	if ig.Spec.RootVolume != nil && ig.Spec.RootVolume.InitializationRate != nil {
+		if rootSnapshotID == "" {
+			return nil, fmt.Errorf("rootVolume.initializationRate needs an image with an EBS root snapshot")
+		}
+		ebs.SnapshotID = rootSnapshotID
+		ebs.VolumeInitializationRate = ig.Spec.RootVolume.InitializationRate
+	}
 
 	return []karpenterBlockDeviceMapping{
 		{
@@ -378,27 +388,34 @@ func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName st
 	}, nil
 }
 
-// karpenterRootDeviceName resolves the root device name of the InstanceGroup image, so
-// that the generated block device mapping overrides the image's root volume rather than
-// attaching an additional one. The name varies between images (/dev/xvda, /dev/sda1),
-// so it has to come from the image itself.
-func (tf *TemplateFunctions) karpenterRootDeviceName(image string) (string, error) {
+// karpenterRootDevice resolves the root device name and root snapshot of the InstanceGroup
+// image, so that the generated block device mapping overrides the image's root volume rather
+// than attaching an additional one. The name varies between images (/dev/xvda, /dev/sda1),
+// so it has to come from the image itself. The snapshot is only used when the root volume
+// sets an initialization rate, which Karpenter accepts only together with a snapshotID.
+func (tf *TemplateFunctions) karpenterRootDevice(image string) (string, string, error) {
 	cloud, ok := tf.cloud.(awsup.AWSCloud)
 	if !ok {
-		return "", fmt.Errorf("expected an AWS cloud, got %T", tf.cloud)
+		return "", "", fmt.Errorf("expected an AWS cloud, got %T", tf.cloud)
 	}
 	resolved, err := cloud.ResolveImage(image)
 	if err != nil {
-		return "", fmt.Errorf("unable to resolve image %q: %w", image, err)
+		return "", "", fmt.Errorf("unable to resolve image %q: %w", image, err)
 	}
 	if resolved == nil {
-		return "", fmt.Errorf("unable to resolve image %q: not found", image)
+		return "", "", fmt.Errorf("unable to resolve image %q: not found", image)
 	}
 	rootDeviceName := fi.ValueOf(resolved.RootDeviceName)
 	if rootDeviceName == "" {
-		return "", fmt.Errorf("image %q has no root device name", image)
+		return "", "", fmt.Errorf("image %q has no root device name", image)
 	}
-	return rootDeviceName, nil
+	var rootSnapshotID string
+	for _, mapping := range resolved.BlockDeviceMappings {
+		if fi.ValueOf(mapping.DeviceName) == rootDeviceName && mapping.Ebs != nil {
+			rootSnapshotID = fi.ValueOf(mapping.Ebs.SnapshotId)
+		}
+	}
+	return rootDeviceName, rootSnapshotID, nil
 }
 
 func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup) (*karpenterNodePool, error) {

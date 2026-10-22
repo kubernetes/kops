@@ -768,6 +768,12 @@ func Convert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGr
 		}
 		out.RootVolume.EncryptionKey = in.RootVolumeEncryptionKey
 	}
+	if in.RootVolumeInitializationRate != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.InitializationRate = in.RootVolumeInitializationRate
+	}
 	if in.RootVolumeIOPS != nil {
 		if out.RootVolume == nil {
 			out.RootVolume = &kops.InstanceRootVolumeSpec{}
@@ -812,6 +818,7 @@ func Convert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.Insta
 		rv := in.RootVolume
 		out.RootVolumeEncryption = rv.Encryption
 		out.RootVolumeEncryptionKey = rv.EncryptionKey
+		out.RootVolumeInitializationRate = rv.InitializationRate
 		out.RootVolumeIOPS = rv.IOPS
 		out.RootVolumeOptimization = rv.Optimization
 		out.RootVolumeSize = rv.Size

@@ -99,6 +99,10 @@ type InstanceGroupSpec struct {
 	// RootVolumeEncryptionKey provides the key identifier for root volume encryption
 	// +k8s:conversion-gen=false
 	RootVolumeEncryptionKey *string `json:"rootVolumeEncryptionKey,omitempty"`
+	// RootVolumeInitializationRate is the EBS Provisioned Rate for Volume Initialization, in MiB/s, at which the
+	// root volume is initialized from the image snapshot. Valid range is 100 to 300 (AWS only).
+	// +k8s:conversion-gen=false
+	RootVolumeInitializationRate *int32 `json:"rootVolumeInitializationRate,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
 	Volumes []VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts

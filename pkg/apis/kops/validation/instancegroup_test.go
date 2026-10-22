@@ -230,6 +230,29 @@ func TestValidBootDevice(t *testing.T) {
 	}
 }
 
+func TestValidRootVolumeInitializationRate(t *testing.T) {
+	grid := []struct {
+		description   string
+		cloudProvider kops.CloudProviderSpec
+		rate          int32
+		expected      []string
+	}{
+		{description: "minimum", cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}}, rate: 100},
+		{description: "maximum", cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}}, rate: 300},
+		{description: "below minimum", cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}}, rate: 99, expected: []string{"Invalid value::spec.rootVolume.initializationRate"}},
+		{description: "above maximum", cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}}, rate: 301, expected: []string{"Invalid value::spec.rootVolume.initializationRate"}},
+		{description: "not AWS", cloudProvider: kops.CloudProviderSpec{Azure: &kops.AzureSpec{}}, rate: 200, expected: []string{"Forbidden::spec.rootVolume.initializationRate"}},
+	}
+
+	for _, g := range grid {
+		cluster := &kops.Cluster{Spec: kops.ClusterSpec{CloudProvider: g.cloudProvider}}
+		ig := createMinimalInstanceGroup()
+		ig.Spec.RootVolume = &kops.InstanceRootVolumeSpec{InitializationRate: new(g.rate)}
+		errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
+		testErrors(t, g.description, errs, g.expected)
+	}
+}
+
 func TestValidAzureRootVolumeType(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{

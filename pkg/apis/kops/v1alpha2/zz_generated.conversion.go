@@ -4539,6 +4539,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	// INFO: in.RootVolumeDeleteOnTermination opted out of conversion generation
 	// INFO: in.RootVolumeEncryption opted out of conversion generation
 	// INFO: in.RootVolumeEncryptionKey opted out of conversion generation
+	// INFO: in.RootVolumeInitializationRate opted out of conversion generation
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]kops.VolumeSpec, len(*in))

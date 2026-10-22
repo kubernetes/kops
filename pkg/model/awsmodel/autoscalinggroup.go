@@ -328,6 +328,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		lt.HTTPTokens = new(ec2types.LaunchTemplateHttpTokensState(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPTokens)))
 	}
 
+	if ig.Spec.RootVolume != nil {
+		lt.RootVolumeInitializationRate = ig.Spec.RootVolume.InitializationRate
+	}
+
 	switch rootVolumeType {
 	case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
 		if ig.Spec.RootVolume == nil || fi.ValueOf(ig.Spec.RootVolume.IOPS) < 100 {
