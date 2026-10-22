@@ -15,15 +15,15 @@
 # limitations under the License.
 
 # Runs the kubernetes-sigs/agent-sandbox benchmark and stress test against a
-# kOps cluster on GCE. Upstream runs the same test in its benchmarks-kops-gcp-*
-# jobs with a pinned kOps release; this scenario runs it with the kOps build
-# under test, so kOps changes that affect pod launch throughput or
-# control-plane behaviour show up in presubmits.
+# kOps cluster on GCE (the default), AWS or Azure, selected by CLOUD_PROVIDER.
+# Upstream runs the same test on GCE in its benchmarks-kops-gcp-* jobs with a
+# pinned kOps release; this scenario runs it with the kOps build under test, so
+# kOps changes that affect pod launch throughput or control-plane behaviour
+# show up in presubmits.
 #
-# The cluster tuning mirrors test/benchmarks/scenarios/benchmarks-kops-gcp/run
-# in agent-sandbox, and the STRESS_* variables keep that script's names and
-# defaults, so results are comparable with the upstream jobs. The measurements
-# behind each knob are documented in that script.
+# The cluster tuning follows test/benchmarks/scenarios/benchmarks-kops-gcp/run
+# in agent-sandbox, which documents the measurements behind each knob, and the
+# STRESS_* variables keep that script's names.
 
 set -o errexit
 set -o nounset
@@ -32,10 +32,9 @@ set -o pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}"
 
-export CLOUD_PROVIDER=gce
+export CLOUD_PROVIDER="${CLOUD_PROVIDER:-gce}"
 # CNI is the upstream job's name for the --networking value (cilium or kindnet in its CI).
 export NETWORKING="${CNI:-${NETWORKING:-cilium}}"
-export ZONES="${ZONES:-us-central1-a}"
 
 AGENT_SANDBOX_REPO="${AGENT_SANDBOX_REPO:-https://github.com/kubernetes-sigs/agent-sandbox}"
 AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
@@ -43,32 +42,73 @@ AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
 # to the cluster are pinned to the same published release tag.
 export IMAGE_PREFIX="${IMAGE_PREFIX:-registry.k8s.io/agent-sandbox/}"
 
-# Upstream periodic sizing: 20 n2-standard-8 workers behind a c3-standard-22
-# control plane. The upstream cilium presubmit runs STRESS_NODE_COUNT=3,
-# STRESS_CONTROL_PLANE_SIZE=c3-standard-8 and a shorter STRESS_PHASES list.
-STRESS_NODE_COUNT="${STRESS_NODE_COUNT:-20}"
-STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-22}"
-STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-pd-ssd}"
+# 3 workers behind a control plane of the same 8 vCPU / 32 GiB shape on every
+# cloud, the profile the kOps jobs run; AWS and Azure use each cloud's closest
+# match to the GCE shapes. The control-plane size does not follow
+# STRESS_NODE_COUNT, so a larger run sets STRESS_CONTROL_PLANE_SIZE as well.
+STRESS_NODE_COUNT="${STRESS_NODE_COUNT:-3}"
 STRESS_NODE_CIDR_MASK_SIZE="${STRESS_NODE_CIDR_MASK_SIZE:-23}"
 STRESS_ETCD_QUOTA_BYTES="${STRESS_ETCD_QUOTA_BYTES:-8589934592}"
 STRESS_VALIDATE_WAIT="${STRESS_VALIDATE_WAIT:-25m}"
 
-# Boskos projects do not allow IAM changes, so the VMs run as the default compute service account.
-OVERRIDES="${OVERRIDES-} --gce-service-account=default"
+OVERRIDES="${OVERRIDES-}"
+case "${CLOUD_PROVIDER}" in
+  gce)
+    export ZONES="${ZONES:-us-central1-a}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-8}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-n2-standard-8}"
+    # Boskos projects do not allow IAM changes, so the VMs run as the default compute service account.
+    OVERRIDES="${OVERRIDES} --gce-service-account=default"
+    # Root volumes on pd-ssd: pod launch is fsync-bound on pd-standard, and the c3
+    # control-plane machine family does not support pd-standard boot disks.
+    STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-pd-ssd}"
+    OVERRIDES="${OVERRIDES} --control-plane-volume-type=pd-ssd"
+    ;;
+  aws)
+    # No default zone: kubetest2-kops picks a zone that offers both instance
+    # types, in a random region per run (us-east-1a had no m6i.2xlarge
+    # capacity). Set ZONES to pin one.
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-m7i.2xlarge}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.2xlarge}"
+    # gp3, kOps' AWS default, is an SSD with a 3000 IOPS baseline at any size.
+    STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
+    ;;
+  azure)
+    # No default zone: kubetest2-kops picks uksouth-1 or uksouth-2, where the
+    # other kOps Azure jobs run. Ddsv5 is Dsv5 plus a local temp disk, and the
+    # CI subscription's Ddsv5 quota there is 250 cores against the 65-core
+    # default for Dsv5.
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-Standard_D8ds_v5}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8ds_v5}"
+    # Worker roots are ephemeral OS disks on the VM's 300 GiB temp disk: pod
+    # launch is fsync-bound, and a 128 GB Premium_LRS root (P10, 500 IOPS)
+    # started pods three to four times slower than on gp3.
+    STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-ResourceDisk}"
+    # kOps' Azure support is alpha and feature-gated, for every kops invocation.
+    if [[ ",${KOPS_FEATURE_FLAGS:-}," != *,Azure,* ]]; then
+      export KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS:+${KOPS_FEATURE_FLAGS},}Azure"
+    fi
+    ;;
+  *)
+    echo "Unsupported CLOUD_PROVIDER=${CLOUD_PROVIDER}: expected gce, aws or azure" >&2
+    exit 1
+    ;;
+esac
 OVERRIDES="${OVERRIDES} --control-plane-size=${STRESS_CONTROL_PLANE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-count=${STRESS_NODE_COUNT}"
-OVERRIDES="${OVERRIDES} --node-size=n2-standard-8"
-# Root volumes on pd-ssd: pod launch is fsync-bound on pd-standard, and the c3
-# control-plane machine family does not support pd-standard boot disks.
+OVERRIDES="${OVERRIDES} --node-size=${STRESS_NODE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-volume-type=${STRESS_NODE_VOLUME_TYPE}"
-OVERRIDES="${OVERRIDES} --control-plane-volume-type=pd-ssd"
-# kubetest2-kops would otherwise shrink the root volumes to 100GB/48GB; keep the
-# kOps defaults the upstream job runs with, as pd-ssd IOPS scale with size.
+# kubetest2-kops would otherwise shrink the root volumes to 48GB (100GB for GCE
+# nodes); keep the kOps defaults the upstream job runs with, as pd-ssd IOPS
+# scale with size.
 OVERRIDES="${OVERRIDES} --node-volume-size=128"
 OVERRIDES="${OVERRIDES} --control-plane-volume-size=64"
 # Let the stress tool scrape kube-controller-manager and kube-scheduler /metrics
-# anonymously through the apiserver pod proxy. The probe paths must be repeated
-# because setting the field replaces the default list the liveness probes use.
+# anonymously through the apiserver pod proxy. The ports are not reachable from
+# outside the cluster on any cloud: kOps' GCE firewall, AWS security groups and
+# Azure NSG expose only SSH, the API and the NodePort range kubetest2-kops
+# opens. The probe paths must be repeated because setting the field replaces
+# the default list the liveness probes use.
 for path in /healthz /readyz /livez /metrics; do
   OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.authorizationAlwaysAllowPaths=${path}"
   OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeScheduler.authorizationAlwaysAllowPaths=${path}"
@@ -92,7 +132,9 @@ OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[1].manager.listenMetrics
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.kubeAPIQPS=500"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventQPS=5"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventBurst=50"
-# /23 per node allows up to 510 pods per node and 512 nodes within the /14 pod CIDR.
+# /23 per node allows up to 510 pods per node and 4096 nodes within the /11 pod
+# CIDR kOps defaults to with cilium (512 within the /14 that GCE IP aliases use
+# with kindnet).
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.nodeCIDRMaskSize=${STRESS_NODE_CIDR_MASK_SIZE}"
 # Above etcd's 2GiB default quota every write fails with NOSPACE until the alarm is cleared.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${STRESS_ETCD_QUOTA_BYTES}"
@@ -116,7 +158,8 @@ fi
 
 source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
 
-# GCE provisioning on shared boskos projects intermittently stalls past the default validation budget.
+# GCE provisioning on shared boskos projects intermittently stalls past
+# kubetest2-kops' 20m default; the budget applies on every cloud.
 KUBETEST2="${KUBETEST2} --validation-wait=${STRESS_VALIDATE_WAIT}"
 
 kops-acquire-latest
@@ -172,23 +215,27 @@ dev/tools/test-e2e --suite=benchmarks --image-prefix="${IMAGE_PREFIX}"
 STRESS_OUTPUT_DIR="${ARTIFACTS:-${WORKSPACE}}/stress-test"
 mkdir -p "${STRESS_OUTPUT_DIR}"
 
-# Phases are documented in test/stress/phase.go. The default list measures
-# launch latency and throughput on a mostly empty cluster, then repeats the
-# mif400 level at 80% pod utilization to separate launch-pipeline cost from
-# resident-pod scale cost.
+# Phases are documented in test/stress/phase.go. The default list is sized for
+# the 3-worker default: launch latency, then throughput at mif200, mif100 and
+# mif50 on a mostly empty cluster. Throughput phases run for at least 300 s
+# (the tool's default is 45 s): steady-state throughput does not depend on the
+# phase length, and the extra pod churn per worker makes the node memory and
+# cgroup trends readable. The longer phases need the 90m tool timeout. The
+# scrape interval stays at the tool's 15 s default, exposed as a knob.
 set +o errexit
 # STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass tool flags
 # verbatim (e.g. --client-connections=4 for the claims profile).
 # shellcheck disable=SC2086
 go run ./test/stress \
-  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:600,throughput-mif:400,throughput-mif:200,throughput-mif:100,throughput-mif:50,fill-pct:80,throughput-mif:400-label:pct80}" \
+  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50}" \
   --fill-per-node="${STRESS_FILL_PER_NODE:-10}" \
   --probe-count="${STRESS_PROBE_COUNT:-30}" \
   --throughput-count="${STRESS_THROUGHPUT_COUNT:-500}" \
-  --throughput-min-seconds="${STRESS_THROUGHPUT_MIN_SECONDS:-45}" \
+  --throughput-min-seconds="${STRESS_THROUGHPUT_MIN_SECONDS:-300}" \
   --create-concurrency="${STRESS_CREATE_CONCURRENCY:-50}" \
   --claims-warm-count="${STRESS_CLAIMS_WARM:-300}" \
-  --timeout="${STRESS_TIMEOUT:-30m}" \
+  --timeout="${STRESS_TIMEOUT:-90m}" \
+  --metrics-interval="${STRESS_METRICS_INTERVAL:-15s}" \
   --output-dir="${STRESS_OUTPUT_DIR}" \
   ${STRESS_EXTRA_ARGS:-}
 stress_status=$?
