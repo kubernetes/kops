@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/awsup"
@@ -537,9 +538,11 @@ func (c *NodeupModelContext) ClusterName() string {
 }
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext) error {
-	f := b.Assets.FindMatches(regexp.MustCompile(".*"))
-
-	for name, res := range f {
+	for name, res := range b.Assets.FindMatches(regexp.MustCompile(".*")) {
+		source := res.(fi.HasSource).GetSource()
+		if source == nil || source.Parent == nil || !wellknownassets.CNIAssetURLPattern.MatchString(source.Parent.URL) {
+			continue
+		}
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(b.CNIBinDir(), name),
 			Contents: res,
