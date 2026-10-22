@@ -100,6 +100,14 @@ var deleteBackoff = wait.Backoff{
 	Steps:    4,
 }
 
+// instanceDeleteBackoff is the backoff strategy for openstack instance delete retries.
+var instanceDeleteBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   5,
+	Jitter:   0.1,
+	Steps:    5,
+}
+
 type OpenstackCloud interface {
 	fi.Cloud
 	ComputeClient() *gophercloud.ServiceClient
