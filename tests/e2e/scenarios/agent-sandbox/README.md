@@ -18,8 +18,8 @@ continent.
 
 ### Running locally
 
-Requires `kubectl`, `go`, `python3`, an authenticated `gcloud`, the cloud's credentials below and
-a cluster name. `gcloud` is needed on every cloud: by default the script builds kOps from the
+Requires a linux/amd64 host with `kubectl`, `go`, `python3` and an authenticated `gcloud`, the
+cloud's credentials below and a cluster name. `gcloud` is needed on every cloud: by default the script builds kOps from the
 current tree and stages it in the kOps staging GCS bucket, which needs write access to that
 bucket; `JOB_TYPE=periodic` downloads the latest kOps CI build instead. DNS defaults to `none`,
 so a `.k8s.local` name works on every cloud:
@@ -28,16 +28,17 @@ so a `.k8s.local` name works on every cloud:
 export CLUSTER_NAME=agent-sandbox.k8s.local
 ```
 
-**GCE** (default): set the GCP project and the kOps state store:
+**GCE** (default): set the GCP project and leave `KOPS_STATE_STORE` unset: kubetest2-kops creates
+a bucket for the run and deletes it on teardown, and it deletes a bucket you set as well.
 
 ```
 export GCP_PROJECT=...
-export KOPS_STATE_STORE=gs://...
 ```
 
 **AWS**: kubetest2-kops passes kops only `AWS_PROFILE`, `AWS_SHARED_CREDENTIALS_FILE` and the
 container-credential variables, so keep the credentials in a shared credentials file or a
-container credential provider. Set the kOps state store:
+container credential provider. Set the kOps state store; a bucket kubetest2-kops creates for the
+run is not deleted on teardown:
 
 ```
 export CLOUD_PROVIDER=aws
@@ -48,7 +49,10 @@ export KOPS_STATE_STORE=s3://...
 ([getting started](https://kops.sigs.k8s.io/getting_started/azure/)); the script adds `Azure` to
 `KOPS_FEATURE_FLAGS` itself. kubetest2-kops passes kops only `AZURE_TENANT_ID`,
 `AZURE_SUBSCRIPTION_ID`, `AZURE_CLIENT_ID` and `AZURE_FEDERATED_TOKEN_FILE`, so authenticate with
-`az login` or workload identity; `AZURE_SUBSCRIPTION_ID` is required. Set the kOps state store:
+`az login` or workload identity; a client secret in `AZURE_CLIENT_SECRET` is not passed on.
+`AZURE_SUBSCRIPTION_ID` is required. Set the kOps state store on a storage account where the
+identity has Storage Blob Data Contributor; when unset, kubetest2-kops uses the kOps CI account's
+container:
 
 ```
 export CLOUD_PROVIDER=azure
@@ -130,13 +134,14 @@ Azure against 5 ms on gp3, and the launch latency tails follow it.
 | `STRESS_THROUGHPUT_MIN_SECONDS` | `300` | Minimum length of each throughput phase (tool default `45`); the extra pod churn per worker makes the node memory and cgroup trends readable |
 | `STRESS_TIMEOUT` | `90m` | Stress tool run timeout (tool default `30m`), for the longer throughput phases |
 | `STRESS_METRICS_INTERVAL` | `15s` | Interval between the stress tool's Prometheus scrapes (the tool default) |
-| `STRESS_EXTRA_ARGS` | unset | Extra stress tool flags, passed verbatim |
+| `STRESS_EXTRA_ARGS` | unset | Extra stress tool flags, word-split and appended to the command |
 | `STRESS_VALIDATE_WAIT` | `25m` | Cluster validation timeout |
 | `STRESS_ETCD_UNSAFE_NO_FSYNC` | `true` | Sets `ETCD_UNSAFE_NO_FSYNC` in every etcd cluster's `manager.env`, which etcd-manager passes on to etcd, so the etcd volume's fsync latency stays out of the launch latency; the clusters are discarded after the run. `false` keeps fsync |
 
 The other `STRESS_*` knobs (`STRESS_FILL_PER_NODE`, `STRESS_PROBE_COUNT`, `STRESS_THROUGHPUT_COUNT`,
 `STRESS_CREATE_CONCURRENCY`, `STRESS_CLAIMS_WARM`, `STRESS_NODE_CIDR_MASK_SIZE`,
-`STRESS_ETCD_QUOTA_BYTES`, `STRESS_KINDNET_NETWORK_POLICIES`) match the upstream script.
+`STRESS_ETCD_QUOTA_BYTES`, `STRESS_KINDNET_NETWORK_POLICIES`, `STRESS_CILIUM_VALIDATE_WAIT`) match
+the upstream script.
 
 ### Output
 

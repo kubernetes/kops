@@ -151,7 +151,7 @@ OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventBurst=50"
 # /23 per node allows up to 510 pods per node; the pod CIDR is the /14 of GCE
 # IP aliases with kindnet (512 nodes) and 100.96.0.0/11 otherwise (4096).
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.nodeCIDRMaskSize=${STRESS_NODE_CIDR_MASK_SIZE}"
-# Above etcd's 2GiB default quota every write fails with NOSPACE until the alarm is cleared.
+# Above etcd's 2 GiB default quota, puts fail with NOSPACE until the alarm is cleared.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${STRESS_ETCD_QUOTA_BYTES}"
 # etcd's WAL fsync paces the control plane rather than CPU (p99 55 ms on
 # Azure's StandardSSD_LRS etcd volumes, 5 ms on gp3) and the launch latency
@@ -211,8 +211,9 @@ export KUBECONFIG
 
 if [[ "${NETWORKING}" == "cilium" ]]; then
   # Raise cilium-agent's endpoint-create API rate limit (0.5/s with auto-adjust
-  # by default) and its client-go budget (5 QPS, burst 10). Both otherwise cap
-  # pod launch throughput below what the datapath can do.
+  # by default) and its client-go budget (10 QPS, burst 20 in the Cilium 1.18
+  # kOps deploys). Both otherwise cap pod launch throughput below what the
+  # datapath can do.
   kubectl --namespace kube-system patch configmap cilium-config --type merge \
     --patch '{"data":{"api-rate-limit":"endpoint-create=rate-limit:100/s,rate-burst:100,parallel-requests:32,auto-adjust:false","k8s-client-qps":"50","k8s-client-burst":"100"}}'
   # kOps deploys the cilium DaemonSet with updateStrategy=OnDelete, so the
@@ -276,8 +277,8 @@ controller_log_pid=$!
 # cgroup trends readable. The longer phases need the 90m tool timeout. The
 # scrape interval stays at the tool's 15 s default, exposed as a knob.
 set +o errexit
-# STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass tool flags
-# verbatim (e.g. --client-connections=4 for the claims profile).
+# STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass several tool
+# flags (e.g. --client-connections=4 for the claims profile).
 # shellcheck disable=SC2086
 go run ./test/stress \
   --phases="${STRESS_PHASES:-fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50}" \
