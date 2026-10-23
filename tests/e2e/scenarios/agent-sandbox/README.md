@@ -61,7 +61,7 @@ export KOPS_STATE_STORE=azureblob://<storage-account>/<container>
 ```
 
 The defaults run 3 workers behind a control plane of the same size (see the table below) with a
-phase list that tops out at mif200, the profile the kOps CI jobs run. The control-plane size and
+single mif200 throughput phase, the profile the kOps CI jobs run. The control-plane size and
 the phase list do not follow the worker count, so a larger run sets them as well, for example on
 GCE:
 
@@ -130,9 +130,9 @@ Azure against 5 ms on gp3, and the launch latency tails follow it.
 | `STRESS_CONTROL_PLANE_SIZE` | per cloud, see above | Control-plane machine type |
 | `STRESS_NODE_SIZE` | per cloud, see above | Worker machine type |
 | `STRESS_NODE_VOLUME_TYPE` | per cloud, see above | Worker root volume type |
-| `STRESS_PHASES` | `fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50` | Stress tool phases, see `test/stress/phase.go` upstream |
+| `STRESS_PHASES` | `fill,probe,throughput-mif:200` | Stress tool phases, see `test/stress/phase.go` upstream |
 | `STRESS_THROUGHPUT_MIN_SECONDS` | `300` | Minimum length of each throughput phase (tool default `45`); the extra pod churn per worker makes the node memory and cgroup trends readable |
-| `STRESS_TIMEOUT` | `90m` | Stress tool run timeout (tool default `30m`), for the longer throughput phases |
+| `STRESS_TIMEOUT` | `90m` | Stress tool run timeout (tool default `30m`), for the longer throughput phase |
 | `STRESS_METRICS_INTERVAL` | `15s` | Interval between the stress tool's Prometheus scrapes (the tool default) |
 | `STRESS_EXTRA_ARGS` | unset | Extra stress tool flags, word-split and appended to the command |
 | `STRESS_VALIDATE_WAIT` | `25m` | Cluster validation timeout |
