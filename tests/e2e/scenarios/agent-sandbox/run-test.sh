@@ -33,8 +33,8 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}"
 
 export CLOUD_PROVIDER="${CLOUD_PROVIDER:-gce}"
-# CNI is the upstream job's name for the --networking value (cilium or kindnet in its CI).
-export NETWORKING="${CNI:-${NETWORKING:-cilium}}"
+# CNI is the upstream job's name for the --networking value.
+export NETWORKING="${CNI:-${NETWORKING:-kindnet}}"
 
 AGENT_SANDBOX_REPO="${AGENT_SANDBOX_REPO:-https://github.com/kubernetes-sigs/agent-sandbox}"
 AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
@@ -134,9 +134,8 @@ OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[1].manager.listenMetrics
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.kubeAPIQPS=500"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventQPS=5"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventBurst=50"
-# /23 per node allows up to 510 pods per node and 4096 nodes within the /11 pod
-# CIDR kOps defaults to with cilium (512 within the /14 that GCE IP aliases use
-# with kindnet).
+# /23 per node allows up to 510 pods per node; the pod CIDR is the /14 of GCE
+# IP aliases with kindnet (512 nodes) and 100.96.0.0/11 otherwise (4096).
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.nodeCIDRMaskSize=${STRESS_NODE_CIDR_MASK_SIZE}"
 # Above etcd's 2GiB default quota every write fails with NOSPACE until the alarm is cleared.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${STRESS_ETCD_QUOTA_BYTES}"
