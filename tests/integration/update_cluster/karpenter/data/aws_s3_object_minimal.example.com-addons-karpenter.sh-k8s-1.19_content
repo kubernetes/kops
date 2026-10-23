@@ -3263,7 +3263,9 @@ spec:
       encrypted: true
       iops: 4000
       kmsKeyID: arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
+      snapshotID: snap-12345678
       throughput: 200
+      volumeInitializationRate: 300
       volumeSize: 200Gi
       volumeType: gp3
     rootVolume: true

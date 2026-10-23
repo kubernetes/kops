@@ -225,14 +225,15 @@ func responseLaunchTemplateData(req *ec2types.RequestLaunchTemplateData) *ec2typ
 			var ebs *ec2types.LaunchTemplateEbsBlockDevice
 			if x.Ebs != nil {
 				ebs = &ec2types.LaunchTemplateEbsBlockDevice{
-					DeleteOnTermination: x.Ebs.DeleteOnTermination,
-					Encrypted:           x.Ebs.Encrypted,
-					Iops:                x.Ebs.Iops,
-					KmsKeyId:            x.Ebs.KmsKeyId,
-					SnapshotId:          x.Ebs.SnapshotId,
-					Throughput:          x.Ebs.Throughput,
-					VolumeSize:          x.Ebs.VolumeSize,
-					VolumeType:          x.Ebs.VolumeType,
+					DeleteOnTermination:      x.Ebs.DeleteOnTermination,
+					Encrypted:                x.Ebs.Encrypted,
+					Iops:                     x.Ebs.Iops,
+					KmsKeyId:                 x.Ebs.KmsKeyId,
+					SnapshotId:               x.Ebs.SnapshotId,
+					Throughput:               x.Ebs.Throughput,
+					VolumeInitializationRate: x.Ebs.VolumeInitializationRate,
+					VolumeSize:               x.Ebs.VolumeSize,
+					VolumeType:               x.Ebs.VolumeType,
 				}
 			}
 			resp.BlockDeviceMappings = append(resp.BlockDeviceMappings, ec2types.LaunchTemplateBlockDeviceMapping{

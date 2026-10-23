@@ -2757,6 +2757,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RootVolumeInitializationRate != nil {
+		in, out := &in.RootVolumeInitializationRate, &out.RootVolumeInitializationRate
+		*out = new(int32)
+		**out = **in
+	}
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]VolumeSpec, len(*in))

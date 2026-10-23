@@ -98,6 +98,8 @@ type terraformLaunchTemplateBlockDeviceEBS struct {
 	Encrypted *bool `cty:"encrypted"`
 	// KmsKeyID is the encryption key identifier for the volume
 	KmsKeyID *string `cty:"kms_key_id"`
+	// VolumeInitializationRate is the provisioned rate for volume initialization in MiB/s
+	VolumeInitializationRate *int32 `cty:"volume_initialization_rate"`
 }
 
 type terraformLaunchTemplateBlockDevice struct {
@@ -325,13 +327,14 @@ func createTerraformLaunchTemplateBlockDevice(deviceName string, v *BlockDeviceM
 		DeviceName: new(deviceName),
 		EBS: []*terraformLaunchTemplateBlockDeviceEBS{
 			{
-				DeleteOnTermination: new(true),
-				Encrypted:           v.EbsEncrypted,
-				KmsKeyID:            v.EbsKmsKey,
-				IOPS:                v.EbsVolumeIops,
-				Throughput:          v.EbsVolumeThroughput,
-				VolumeSize:          v.EbsVolumeSize,
-				VolumeType:          new(string(v.EbsVolumeType)),
+				DeleteOnTermination:      new(true),
+				Encrypted:                v.EbsEncrypted,
+				KmsKeyID:                 v.EbsKmsKey,
+				IOPS:                     v.EbsVolumeIops,
+				Throughput:               v.EbsVolumeThroughput,
+				VolumeSize:               v.EbsVolumeSize,
+				VolumeType:               new(string(v.EbsVolumeType)),
+				VolumeInitializationRate: v.EbsVolumeInitializationRate,
 			},
 		},
 	}

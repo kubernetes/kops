@@ -5359,6 +5359,7 @@ func autoConvert_v1alpha3_InstanceRootVolumeSpec_To_kops_InstanceRootVolumeSpec(
 	out.Optimization = in.Optimization
 	out.Encryption = in.Encryption
 	out.EncryptionKey = in.EncryptionKey
+	out.InitializationRate = in.InitializationRate
 	return nil
 }
 
@@ -5375,6 +5376,7 @@ func autoConvert_kops_InstanceRootVolumeSpec_To_v1alpha3_InstanceRootVolumeSpec(
 	out.Optimization = in.Optimization
 	out.Encryption = in.Encryption
 	out.EncryptionKey = in.EncryptionKey
+	out.InitializationRate = in.InitializationRate
 	return nil
 }
 

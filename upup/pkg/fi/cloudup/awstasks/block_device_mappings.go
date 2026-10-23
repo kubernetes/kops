@@ -34,6 +34,8 @@ type BlockDeviceMapping struct {
 	EbsEncrypted *bool
 	// EbsKmsKey is the encryption key identifier for the volume
 	EbsKmsKey *string
+	// EbsVolumeInitializationRate is the provisioned rate for volume initialization in MiB/s
+	EbsVolumeInitializationRate *int32
 	// EbsVolumeIops is the provisioned iops for the volume
 	EbsVolumeIops *int32
 	// EbsVolumeThroughput is the throughput for the volume
@@ -148,6 +150,7 @@ func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i ec2types.LaunchTemp
 		o.EbsVolumeThroughput = i.Ebs.Throughput
 		o.EbsEncrypted = i.Ebs.Encrypted
 		o.EbsKmsKey = i.Ebs.KmsKeyId
+		o.EbsVolumeInitializationRate = i.Ebs.VolumeInitializationRate
 	}
 
 	return aws.ToString(i.DeviceName), o
@@ -161,10 +164,11 @@ func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string
 	}
 	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || len(i.EbsVolumeType) > 0 || i.EbsEncrypted != nil {
 		o.Ebs = &ec2types.LaunchTemplateEbsBlockDeviceRequest{
-			DeleteOnTermination: i.EbsDeleteOnTermination,
-			Encrypted:           i.EbsEncrypted,
-			VolumeSize:          i.EbsVolumeSize,
-			VolumeType:          i.EbsVolumeType,
+			DeleteOnTermination:      i.EbsDeleteOnTermination,
+			Encrypted:                i.EbsEncrypted,
+			VolumeInitializationRate: i.EbsVolumeInitializationRate,
+			VolumeSize:               i.EbsVolumeSize,
+			VolumeType:               i.EbsVolumeType,
 		}
 	}
 	switch i.EbsVolumeType {

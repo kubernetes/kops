@@ -2982,6 +2982,11 @@ func (in *InstanceRootVolumeSpec) DeepCopyInto(out *InstanceRootVolumeSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.InitializationRate != nil {
+		in, out := &in.InitializationRate, &out.InitializationRate
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 

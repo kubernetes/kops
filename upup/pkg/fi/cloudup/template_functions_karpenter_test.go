@@ -449,11 +449,13 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 	}
 
 	grid := []struct {
-		desc        string
-		role        kops.InstanceGroupRole
-		rootVolume  *kops.InstanceRootVolumeSpec
-		expected    *karpenterBlockDeviceEBS
-		expectError bool
+		desc       string
+		role       kops.InstanceGroupRole
+		rootVolume *kops.InstanceRootVolumeSpec
+		// noRootSnapshot simulates an image without an EBS root snapshot.
+		noRootSnapshot bool
+		expected       *karpenterBlockDeviceEBS
+		expectError    bool
 	}{
 		{
 			desc:     "no rootVolume uses the kOps defaults",
@@ -564,6 +566,20 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 			expected: rootEBS(),
 		},
 		{
+			desc:       "initialization rate sets the image root snapshot",
+			rootVolume: &kops.InstanceRootVolumeSpec{InitializationRate: new(int32(300))},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) {
+				e.SnapshotID = "snap-12345678"
+				e.VolumeInitializationRate = new(int32(300))
+			}),
+		},
+		{
+			desc:           "initialization rate without a root snapshot",
+			rootVolume:     &kops.InstanceRootVolumeSpec{InitializationRate: new(int32(300))},
+			noRootSnapshot: true,
+			expectError:    true,
+		},
+		{
 			desc:        "unknown role",
 			role:        kops.InstanceGroupRole("Bogus"),
 			expectError: true,
@@ -582,7 +598,11 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 					RootVolume: g.rootVolume,
 				},
 			}
-			actual, err := buildKarpenterBlockDeviceMappings(ig, "/dev/xvda")
+			rootSnapshotID := "snap-12345678"
+			if g.noRootSnapshot {
+				rootSnapshotID = ""
+			}
+			actual, err := buildKarpenterBlockDeviceMappings(ig, "/dev/xvda", rootSnapshotID)
 			if g.expectError {
 				if err == nil {
 					t.Fatalf("expected an error, got %#v", actual)
@@ -606,9 +626,9 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 	}
 }
 
-func TestKarpenterRootDeviceNameWithoutAWSCloud(t *testing.T) {
+func TestKarpenterRootDeviceWithoutAWSCloud(t *testing.T) {
 	tf := &TemplateFunctions{}
-	if _, err := tf.karpenterRootDeviceName("ami-12345678"); err == nil {
+	if _, _, err := tf.karpenterRootDevice("ami-12345678"); err == nil {
 		t.Errorf("expected an error when the cloud is not an AWS cloud")
 	}
 }

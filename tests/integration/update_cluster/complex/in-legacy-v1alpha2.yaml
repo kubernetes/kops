@@ -148,6 +148,7 @@ spec:
   - us-test-1a
   detailedInstanceMonitoring: true
   rootVolumeEncryption: true
+  rootVolumeInitializationRate: 200
   cpuCredits: standard
   volumes:
   - device: /dev/xvdd

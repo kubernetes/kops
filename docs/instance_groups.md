@@ -384,6 +384,26 @@ spec:
   maxInstanceLifetime: "48h"
 ```
 
+## rootVolume.initializationRate (AWS Only)
+
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+Sets the [EBS Provisioned Rate for Volume Initialization](https://docs.aws.amazon.com/ebs/latest/userguide/initalize-volume.html),
+in MiB/s, at which the root volume is initialized from the image snapshot. Valid values are 100 to 300.
+Without it, the root volume blocks are fetched from S3 lazily on first read.
+
+```yaml
+spec:
+  rootVolume:
+    initializationRate: 300
+```
+
+For instance groups managed by Karpenter, kOps also sets the image root snapshot on the
+EC2NodeClass root volume, as Karpenter requires a snapshotID with a volumeInitializationRate.
+
+The rate counts towards the per-Region quota for the maximum concurrent volume initialization rate,
+which can be raised with Service Quotas.
+
 # API Changes
 
 kOps is working on updating the `v1alpha2` API to a newer version. That new API
@@ -397,6 +417,7 @@ the removal of fields no longer in use.
 | externalLoadBalancers[\*].targetGroupArn | externalLoadBalancers[\*].targetGroupARN |
 | rootVolumeEncryption                     | rootVolume.encryption                    |
 | rootVolumeEncryptionKey                  | rootVolume.encryptionKey                 |
+| rootVolumeInitializationRate             | rootVolume.initializationRate            |
 | rootVolumeIops                           | rootVolume.iops                          |
 | rootVolumeOptimization                   | rootVolume.optimization                  |
 | rootVolumeSize                           | rootVolume.size                          |

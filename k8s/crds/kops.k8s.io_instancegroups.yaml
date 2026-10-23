@@ -1101,6 +1101,12 @@ spec:
                 description: RootVolumeEncryptionKey provides the key identifier for
                   root volume encryption
                 type: string
+              rootVolumeInitializationRate:
+                description: |-
+                  RootVolumeInitializationRate is the EBS Provisioned Rate for Volume Initialization, in MiB/s, at which the
+                  root volume is initialized from the image snapshot. Valid range is 100 to 300 (AWS only).
+                format: int32
+                type: integer
               rootVolumeIops:
                 description: RootVolumeIOPS is the provisioned IOPS when the volume
                   type is io1, io2 or gp3 (AWS only).

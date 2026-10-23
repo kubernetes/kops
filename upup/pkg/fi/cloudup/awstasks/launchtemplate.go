@@ -61,6 +61,8 @@ type LaunchTemplate struct {
 	InstanceType *ec2types.InstanceType
 	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
 	IPv6AddressCount *int32
+	// RootVolumeInitializationRate is the EBS Provisioned Rate for Volume Initialization in MiB/s
+	RootVolumeInitializationRate *int32
 	// RootVolumeIops is the provisioned IOPS when the volume type is io1, io2 or gp3
 	RootVolumeIops *int32
 	// RootVolumeOptimization enables EBS optimization for an instance
@@ -119,12 +121,13 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 	}
 
 	b := &BlockDeviceMapping{
-		EbsDeleteOnTermination: aws.Bool(true),
-		EbsVolumeSize:          t.RootVolumeSize,
-		EbsVolumeType:          t.RootVolumeType,
-		EbsVolumeIops:          t.RootVolumeIops,
-		EbsVolumeThroughput:    t.RootVolumeThroughput,
-		EbsEncrypted:           t.RootVolumeEncryption,
+		EbsDeleteOnTermination:      aws.Bool(true),
+		EbsVolumeSize:               t.RootVolumeSize,
+		EbsVolumeType:               t.RootVolumeType,
+		EbsVolumeIops:               t.RootVolumeIops,
+		EbsVolumeThroughput:         t.RootVolumeThroughput,
+		EbsEncrypted:                t.RootVolumeEncryption,
+		EbsVolumeInitializationRate: t.RootVolumeInitializationRate,
 	}
 	if aws.ToBool(t.RootVolumeEncryption) && aws.ToString(t.RootVolumeKmsKey) != "" {
 		b.EbsKmsKey = t.RootVolumeKmsKey

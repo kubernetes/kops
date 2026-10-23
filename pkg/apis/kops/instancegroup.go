@@ -281,6 +281,9 @@ type InstanceRootVolumeSpec struct {
 	Encryption *bool `json:"encryption,omitempty"`
 	// EncryptionKey provides the key identifier for root volume encryption.
 	EncryptionKey *string `json:"encryptionKey,omitempty"`
+	// InitializationRate is the EBS Provisioned Rate for Volume Initialization, in MiB/s, at which the
+	// root volume is initialized from the image snapshot. Valid range is 100 to 300 (AWS only).
+	InitializationRate *int32 `json:"initializationRate,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)

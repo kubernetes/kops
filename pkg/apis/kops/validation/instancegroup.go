@@ -299,6 +299,10 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		}
 	}
 
+	if cluster.GetCloudProvider() != kops.CloudProviderAWS && g.Spec.RootVolume != nil && g.Spec.RootVolume.InitializationRate != nil {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "rootVolume", "initializationRate"), "only supported on AWS"))
+	}
+
 	if cluster.GetCloudProvider() == kops.CloudProviderAzure && g.Spec.RootVolume != nil && g.Spec.RootVolume.Type != nil {
 		types := slices.Concat(azure.ManagedOSDiskTypes, azure.EphemeralOSDiskPlacements)
 		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolume", "type"), g.Spec.RootVolume.Type, types)...)
@@ -307,6 +311,11 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	if cluster.GetCloudProvider() == kops.CloudProviderAWS {
 		if g.Spec.RootVolume != nil && g.Spec.RootVolume.Type != nil {
 			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolume", "type"), g.Spec.RootVolume.Type, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
+		}
+		if g.Spec.RootVolume != nil && g.Spec.RootVolume.InitializationRate != nil {
+			if rate := *g.Spec.RootVolume.InitializationRate; rate < 100 || rate > 300 {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolume", "initializationRate"), rate, "must be between 100 and 300 MiB/s"))
+			}
 		}
 
 		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(g)
