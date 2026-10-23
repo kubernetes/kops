@@ -87,7 +87,7 @@ closest match to the GCE shapes.
 | `ZONES` | `us-central1-a` | chosen per run | `uksouth-1` or `uksouth-2` |
 | `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-8` | `m7i.2xlarge` | `Standard_D8ds_v5` |
 | `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8ds_v5` |
-| `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` | `ResourceDisk` (ephemeral OS disk) |
+| `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` at 16000 IOPS and 1000 MB/s | `ResourceDisk` (ephemeral OS disk) |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
 
 On AWS no zone is pinned: kubetest2-kops picks a zone that offers both instance types, in a
@@ -97,7 +97,10 @@ use. The Ddsv5 sizes are the Dsv5 ones plus a local temp disk, with a larger quo
 subscription, and the worker roots are
 [ephemeral OS disks](https://kops.sigs.k8s.io/getting_started/azure/#ephemeral-os-disks) on that
 temp disk: pod launch is fsync-bound, and a 128 GB `Premium_LRS` root (P10, 500 IOPS) starts pods
-three to four times slower than `gp3`. On GCE the roots are `pd-ssd` because pod launch is
+three to four times slower than `gp3`. On AWS the worker roots are `gp3` provisioned at 16000 IOPS
+and 1000 MB/s: at the 3000 IOPS default the disks ran 89% busy at mif 200 with 3 ms average writes
+and 12% iowait while the CPUs were 37% busy, and containerd's container create averaged 840 ms
+against 16 ms on Azure and 51 ms on GCE. On GCE the roots are `pd-ssd` because pod launch is
 fsync-bound on `pd-standard`, and the `c3` family does not support `pd-standard` boot disks.
 
 etcd runs without fsync (`STRESS_ETCD_UNSAFE_NO_FSYNC`): the WAL fsync on the etcd volumes
