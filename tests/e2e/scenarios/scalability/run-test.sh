@@ -258,7 +258,7 @@ if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; t
   ENABLE_RESTART_COUNT_CHECK: false
 EOL
   cat "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml
-else
+elif [[ "${SCALE_SCENARIO}" == "performance" ]]; then
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
   # setting a default value here to avoid an incorrect yaml file
   CL2_ENABLE_PVS: true
