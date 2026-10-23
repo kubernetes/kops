@@ -67,10 +67,9 @@ export STRESS_CONTROL_PLANE_SIZE=c3-standard-22
 export STRESS_PHASES=fill,probe,throughput-mif:600,throughput-mif:400,throughput-mif:200,throughput-mif:100,throughput-mif:50
 ```
 
-To compare cgroup drivers, run a second time with `CGROUP_DRIVER=cgroupfs`. kOps 1.34+
-always configures the systemd cgroup driver, so this switches containerd's runc
-`SystemdCgroup` option off through `spec.containerd.configAdditions`, and the kubelet
-follows the runtime's driver.
+To compare cgroup drivers, run a second time with `CGROUP_DRIVER=cgroupfs`, which sets
+`spec.kubelet.cgroupDriver: cgroupfs`; kOps sets containerd's runc `SystemdCgroup` option to
+match.
 
 Then run:
 

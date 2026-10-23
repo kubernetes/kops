@@ -155,13 +155,15 @@ fi
 OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.server.v1.metrics\".address=0.0.0.0:1338'"
 # CGROUP_DRIVER=cgroupfs runs the benchmark without the systemd cgroup driver,
 # whose per-container systemd round trips are a cost on the pod launch path.
-# kOps 1.34+ always configures systemd and ignores spec.kubelet.cgroupDriver,
-# so the switch is made in containerd instead: Kubernetes 1.34+ kubelets take
-# the cgroup driver from the runtime. The single quotes keep the inner double
-# quotes intact through kubetest2's create-args split.
-if [[ "${CGROUP_DRIVER:-systemd}" == "cgroupfs" ]]; then
-  OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.cri.v1.runtime\".containerd.runtimes.runc.options.SystemdCgroup=false'"
-fi
+# kOps sets containerd's runc SystemdCgroup option from spec.kubelet.cgroupDriver.
+case "${CGROUP_DRIVER:-systemd}" in
+  systemd) ;;
+  cgroupfs) OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.cgroupDriver=cgroupfs" ;;
+  *)
+    echo "Unsupported CGROUP_DRIVER=${CGROUP_DRIVER}: expected systemd or cgroupfs" >&2
+    exit 1
+    ;;
+esac
 
 source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
 
