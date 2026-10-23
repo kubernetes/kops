@@ -58,6 +58,7 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
 const (
@@ -324,7 +325,7 @@ var _ fi.Cloud = (*openstackCloud)(nil)
 var openstackCloudInstances = make(map[string]OpenstackCloud)
 
 func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, error) {
-	config := vfs.OpenstackConfig{}
+	config := openstackconfig.OpenstackConfig{}
 
 	region, err := config.GetRegion()
 	if err != nil {
@@ -377,7 +378,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 	return buildClients(provider, nil, nil, config, region, false)
 }
 
-func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, spec *kops.OpenstackSpec, config vfs.OpenstackConfig, region string, hasDNS bool) (OpenstackCloud, error) {
+func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, spec *kops.OpenstackSpec, config openstackconfig.OpenstackConfig, region string, hasDNS bool) (OpenstackCloud, error) {
 	cinderClient, err := openstack.NewBlockStorageV3(provider, gophercloud.EndpointOpts{
 		Type:   "volumev3",
 		Region: region,
