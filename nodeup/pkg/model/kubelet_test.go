@@ -447,6 +447,28 @@ func Test_BuildComponentConfigFile(t *testing.T) {
 	}
 }
 
+func Test_KubeletConfiguration_KubeAPIRateLimits(t *testing.T) {
+	builder := &KubeletBuilder{NodeupModelContext: &NodeupModelContext{
+		NodeupConfig: &nodeup.Config{
+			ContainerdConfig: &kops.ContainerdConfig{},
+		},
+	}}
+
+	cc, err := builder.kubeletConfiguration(&kops.KubeletConfigSpec{
+		KubeAPIQPS:   new(int32(500)),
+		KubeAPIBurst: new(int32(1000)),
+	}, "")
+	if err != nil {
+		t.Fatalf("kubeletConfiguration() error = %v", err)
+	}
+	if fi.ValueOf(cc.KubeAPIQPS) != 500 {
+		t.Errorf("KubeAPIQPS = %v, want 500", fi.ValueOf(cc.KubeAPIQPS))
+	}
+	if cc.KubeAPIBurst != 1000 {
+		t.Errorf("KubeAPIBurst = %d, want 1000", cc.KubeAPIBurst)
+	}
+}
+
 func TestParseKeyValueList(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -522,9 +544,9 @@ func Test_Kubelet_BuildFlags(t *testing.T) {
 			want:   "",
 		},
 		{
-			name:   "KubeAPIQPS and KubeAPIBurst passed as flags",
+			name:   "KubeAPIQPS and KubeAPIBurst migrated to config file",
 			config: kops.KubeletConfigSpec{KubeAPIQPS: new(int32(500)), KubeAPIBurst: new(int32(1000))},
-			want:   "--kube-api-burst=1000 --kube-api-qps=500",
+			want:   "",
 		},
 	}
 
