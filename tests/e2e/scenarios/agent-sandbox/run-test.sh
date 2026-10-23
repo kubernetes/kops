@@ -154,6 +154,13 @@ OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventBurst=50"
 # /23 per node allows up to 510 pods per node; the pod CIDR is the /14 of GCE
 # IP aliases with kindnet (512 nodes) and 100.96.0.0/11 otherwise (4096).
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.nodeCIDRMaskSize=${STRESS_NODE_CIDR_MASK_SIZE}"
+# The stress tool sizes every phase against the workers' spare pod slots and
+# refuses a run whose peak exceeds them. At the kubelet default of 110 pods per
+# node, 3 workers have 330 slots and DaemonSets and system pods take about 19,
+# while the resident fill pods (10 per node) plus 300 in flight need 330, so
+# the default refuses mif300. 250 per node gives 750 slots; the /23 node CIDR
+# above allows 510 pods per node.
+OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.maxPods=250"
 # Above etcd's 2 GiB default quota, puts fail with NOSPACE until the alarm is cleared.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${STRESS_ETCD_QUOTA_BYTES}"
 # etcd's WAL fsync paces the control plane rather than CPU (p99 55 ms on
@@ -272,7 +279,7 @@ kubectl logs --follow deployment/agent-sandbox-controller --namespace agent-sand
 controller_log_pid=$!
 
 # Phases are documented in test/stress/phase.go. The default list is sized for
-# the 3-worker default: launch latency, then throughput at mif200 on a mostly
+# the 3-worker default: launch latency, then throughput at mif300 on a mostly
 # empty cluster. The throughput phase runs for at least 300 s (the tool's
 # default is 45 s): steady-state throughput does not depend on the phase
 # length, and the extra pod churn per worker makes the node memory and cgroup
@@ -283,7 +290,7 @@ set +o errexit
 # flags (e.g. --client-connections=4 for the claims profile).
 # shellcheck disable=SC2086
 go run ./test/stress \
-  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:200}" \
+  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:300}" \
   --fill-per-node="${STRESS_FILL_PER_NODE:-10}" \
   --probe-count="${STRESS_PROBE_COUNT:-30}" \
   --throughput-count="${STRESS_THROUGHPUT_COUNT:-500}" \
