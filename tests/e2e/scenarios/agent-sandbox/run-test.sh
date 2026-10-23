@@ -35,6 +35,8 @@ cd "${REPO_ROOT}"
 export CLOUD_PROVIDER="${CLOUD_PROVIDER:-gce}"
 # CNI is the upstream job's name for the --networking value.
 export NETWORKING="${CNI:-${NETWORKING:-kindnet}}"
+# Latest Kubernetes dev build; kubetest2-kops resolves the marker to the build's base URL.
+K8S_VERSION="${K8S_VERSION:-https://dl.k8s.io/ci/latest.txt}"
 
 AGENT_SANDBOX_REPO="${AGENT_SANDBOX_REPO:-https://github.com/kubernetes-sigs/agent-sandbox}"
 AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
