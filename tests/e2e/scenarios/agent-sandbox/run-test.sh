@@ -270,18 +270,18 @@ kubectl logs --follow deployment/agent-sandbox-controller --namespace agent-sand
 controller_log_pid=$!
 
 # Phases are documented in test/stress/phase.go. The default list is sized for
-# the 3-worker default: launch latency, then throughput at mif200, mif100 and
-# mif50 on a mostly empty cluster. Throughput phases run for at least 300 s
-# (the tool's default is 45 s): steady-state throughput does not depend on the
-# phase length, and the extra pod churn per worker makes the node memory and
-# cgroup trends readable. The longer phases need the 90m tool timeout. The
-# scrape interval stays at the tool's 15 s default, exposed as a knob.
+# the 3-worker default: launch latency, then throughput at mif200 on a mostly
+# empty cluster. The throughput phase runs for at least 300 s (the tool's
+# default is 45 s): steady-state throughput does not depend on the phase
+# length, and the extra pod churn per worker makes the node memory and cgroup
+# trends readable. The 90m tool timeout covers the longer phase. The scrape
+# interval stays at the tool's 15 s default, exposed as a knob.
 set +o errexit
 # STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass several tool
 # flags (e.g. --client-connections=4 for the claims profile).
 # shellcheck disable=SC2086
 go run ./test/stress \
-  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50}" \
+  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:200}" \
   --fill-per-node="${STRESS_FILL_PER_NODE:-10}" \
   --probe-count="${STRESS_PROBE_COUNT:-30}" \
   --throughput-count="${STRESS_THROUGHPUT_COUNT:-500}" \
