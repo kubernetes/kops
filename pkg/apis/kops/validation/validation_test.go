@@ -2813,3 +2813,50 @@ func TestValidateKubeletCgroupDriver(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func TestValidateKubeletPackages(t *testing.T) {
+	grid := []struct {
+		Input          kops.KubeletConfigSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.KubeletConfigSpec{
+				Packages: &kops.PackagesConfig{
+					UrlAmd64:  new("https://example.com/kubelet-amd64"),
+					HashAmd64: new("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.KubeletConfigSpec{
+				Packages: &kops.PackagesConfig{
+					UrlArm64:  new("https://example.com/kubelet-arm64"),
+					HashArm64: new("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.KubeletConfigSpec{
+				Packages: &kops.PackagesConfig{
+					UrlAmd64: new("https://example.com/kubelet-amd64"),
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::spec.kubelet.packages.packageUrl"},
+		},
+		{
+			Input: kops.KubeletConfigSpec{
+				Packages: &kops.PackagesConfig{
+					HashArm64: new("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::spec.kubelet.packages.packageHashArm64"},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateKubelet(&g.Input, &kops.Cluster{}, field.NewPath("spec", "kubelet"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

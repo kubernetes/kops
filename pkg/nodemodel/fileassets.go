@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 // KubernetesFileAssets are the assets for downloading Kubernetes binaries
@@ -50,24 +51,24 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 	for _, arch := range architectures.GetSupported() {
 		kubernetesAssets[arch] = []*assets.MirroredAsset{}
 
-		k8sAssetsNames := []string{
-			fmt.Sprintf("/bin/linux/%s/kubelet", arch),
-			fmt.Sprintf("/bin/linux/%s/kubectl", arch),
+		kubeletAsset, err := buildKubeletAsset(ig, assetBuilder, baseURL, arch)
+		if err != nil {
+			return nil, err
+		}
+		if kubeletAsset != nil {
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(kubeletAsset))
 		}
 
-		for _, an := range k8sAssetsNames {
-			k, err := url.Parse(baseURL)
-			if err != nil {
-				return nil, err
-			}
-			k.Path = path.Join(k.Path, an)
-
-			asset, err := assetBuilder.RemapFile(k, nil)
-			if err != nil {
-				return nil, err
-			}
-			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
+		kubectlURL, err := url.Parse(baseURL)
+		if err != nil {
+			return nil, err
 		}
+		kubectlURL.Path = path.Join(kubectlURL.Path, fmt.Sprintf("/bin/linux/%s/kubectl", arch))
+		kubectlAsset, err := assetBuilder.RemapFile(kubectlURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(kubectlAsset))
 
 		cloudProvider := ig.GetCloudProvider()
 		switch cloudProvider {
@@ -172,4 +173,42 @@ func BuildNodeUpAssets(ctx context.Context, assetBuilder *assets.AssetBuilder) (
 	return &NodeUpAssets{
 		NodeUpAssets: nodeUpAssets,
 	}, nil
+}
+
+func buildKubeletAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, baseURL string, arch architectures.Architecture) (*assets.FileAsset, error) {
+	kubeletSpec := ig.KubeletSpec()
+	if kubeletSpec != nil && kubeletSpec.Packages != nil {
+		var canonicalURL string
+		var knownHashString string
+		switch arch {
+		case architectures.ArchitectureAmd64:
+			if kubeletSpec.Packages.UrlAmd64 != nil && kubeletSpec.Packages.HashAmd64 != nil {
+				canonicalURL = *kubeletSpec.Packages.UrlAmd64
+				knownHashString = *kubeletSpec.Packages.HashAmd64
+			}
+		case architectures.ArchitectureArm64:
+			if kubeletSpec.Packages.UrlArm64 != nil && kubeletSpec.Packages.HashArm64 != nil {
+				canonicalURL = *kubeletSpec.Packages.UrlArm64
+				knownHashString = *kubeletSpec.Packages.HashArm64
+			}
+		}
+		if canonicalURL != "" {
+			u, err := url.Parse(canonicalURL)
+			if err != nil {
+				return nil, fmt.Errorf("unable to parse kubelet package URL %q: %w", canonicalURL, err)
+			}
+			knownHash, err := hashing.FromString(knownHashString)
+			if err != nil {
+				return nil, fmt.Errorf("unable to parse kubelet package hash %q: %w", knownHashString, err)
+			}
+			return assetBuilder.RemapFile(u, knownHash)
+		}
+	}
+
+	k, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, err
+	}
+	k.Path = path.Join(k.Path, fmt.Sprintf("/bin/linux/%s/kubelet", arch))
+	return assetBuilder.RemapFile(k, nil)
 }

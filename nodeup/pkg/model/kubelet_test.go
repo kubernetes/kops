@@ -535,3 +535,62 @@ func Test_Kubelet_BuildFlags(t *testing.T) {
 		})
 	}
 }
+
+func Test_Kubelet_FlagOverride(t *testing.T) {
+	builder := &KubeletBuilder{NodeupModelContext: &NodeupModelContext{
+		NodeupConfig: &nodeup.Config{
+			ContainerdConfig: &kops.ContainerdConfig{},
+		},
+	}}
+
+	override := "--kubeconfig=/var/lib/kubelet/kubeconfig --provider=mock --nodename=vkubelet-0"
+	kubeletConfig := &kops.KubeletConfigSpec{
+		FlagOverride: &override,
+	}
+
+	task, err := builder.buildSystemdEnvironmentFile(context.Background(), kubeletConfig)
+	if err != nil {
+		t.Fatalf("buildSystemdEnvironmentFile error = %v", err)
+	}
+
+	gotBytes, err := fi.ResourceAsBytes(task.Contents)
+	if err != nil {
+		t.Fatalf("ResourceAsBytes error = %v", err)
+	}
+	got := string(gotBytes)
+	want := "DAEMON_ARGS=\"--kubeconfig=/var/lib/kubelet/kubeconfig --provider=mock --nodename=vkubelet-0\"\nHOME=\"/root\"\n"
+	if got != want {
+		t.Errorf("buildSystemdEnvironmentFile got:\n%q\nwant:\n%q", got, want)
+	}
+}
+
+func Test_Kubelet_FindKubeletAsset_CustomPackages(t *testing.T) {
+	assetStore := fi.NewAssetStore("")
+	assetStore.AddForTest("vkubelet-linux-amd64", "/cache/vkubelet-linux-amd64", "custom-vkubelet-binary")
+
+	builder := &KubeletBuilder{NodeupModelContext: &NodeupModelContext{
+		Architecture: "amd64",
+		Assets:       assetStore,
+	}}
+
+	customURL := "https://example.com/releases/vkubelet-linux-amd64"
+	customHash := "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+	kubeletConfig := &kops.KubeletConfigSpec{
+		Packages: &kops.PackagesConfig{
+			UrlAmd64:  &customURL,
+			HashAmd64: &customHash,
+		},
+	}
+
+	res, err := builder.findKubeletAsset(kubeletConfig)
+	if err != nil {
+		t.Fatalf("findKubeletAsset error = %v", err)
+	}
+	gotBytes, err := fi.ResourceAsBytes(res)
+	if err != nil {
+		t.Fatalf("ResourceAsBytes error = %v", err)
+	}
+	if string(gotBytes) != "custom-vkubelet-binary" {
+		t.Errorf("got asset content %q, want %q", string(gotBytes), "custom-vkubelet-binary")
+	}
+}
