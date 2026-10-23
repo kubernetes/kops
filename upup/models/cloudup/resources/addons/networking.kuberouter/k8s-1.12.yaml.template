@@ -1,4 +1,4 @@
-# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.11.1/daemonset/generic-kuberouter-all-features.yaml
+# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.11.2/daemonset/generic-kuberouter-all-features.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -62,7 +62,7 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v2.11.1
+        image: docker.io/cloudnativelabs/kube-router:v2.11.2
         args:
         # Strict validation default-denies every externalIP and loadBalancerIP when no ranges are set,
         # so we only turn it on once the user has given us something to accept
@@ -135,7 +135,7 @@ spec:
           readOnly: true
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v2.11.1
+        image: docker.io/cloudnativelabs/kube-router:v2.11.2
         command:
         - /bin/sh
         - -c
