@@ -45,7 +45,9 @@ For an `http://` or `https://` repository, nodes must be able to read without cr
 The repository can be public or allow access through network connectivity, such as a
 particular cloud endpoint.
 
-{{ kops_feature_table(kops_added_default='1.37') }}
+| Introduced |
+| :-: |
+| kOps 1.37 |
 
 On GCE, the repository can also be a `gs://` URL. Nodes then read it with the credentials of
 their service account, which allows the bucket to be private. The service accounts of the
@@ -57,7 +59,9 @@ spec:
     fileRepository: gs://example-bucket/files
 ```
 
-{{ kops_feature_table(kops_added_default='1.37') }}
+| Introduced |
+| :-: |
+| kOps 1.37 |
 
 On AWS, the repository can also be an `s3://` URL. Nodes then read it with the credentials of
 their instance profile, which allows the bucket to be private. The instance profiles of the
@@ -71,7 +75,9 @@ spec:
     fileRepository: s3://example-bucket/files
 ```
 
-{{ kops_feature_table(kops_added_default='1.37') }}
+| Introduced |
+| :-: |
+| kOps 1.37 |
 
 On Azure, the repository can also be an `azureblob://<account>/<container>/<prefix>` URL.
 Nodes then read it with their system-assigned managed identity, which allows the storage
@@ -87,7 +93,9 @@ spec:
 
 ## Copying assets into repositories
 
-{{ kops_feature_table(kops_added_default='1.22') }}
+| Introduced |
+| :-: |
+| kOps 1.22 |
 
 You can copy assets into their repositories either by running `kops get assets --copy` or through an external process.
 
@@ -102,7 +110,9 @@ An Azure Blob Storage container must be configured with a prefix of `azureblob:/
 
 ## Listing assets
 
-{{ kops_feature_table(kops_added_default='1.22') }}
+| Introduced |
+| :-: |
+| kOps 1.22 |
 
 You can obtain a list of image and file assets used by a particular cluster by running `kops get assets`. You can get output in table, YAML, or JSON format.
 You can feed this into a process, external to kOps, for copying the assets to their respective repositories.

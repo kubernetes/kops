@@ -77,7 +77,9 @@ spec:
 
 **AWS only**
 
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 The `class` field must be `Network` (the default), which uses a Network Load Balancer (NLB).
 
@@ -171,7 +173,9 @@ etcdClusters:
 The etcd version used by kOps follows the recommended etcd version for the given kubernetes version. It is possible to override this by adding the `version` key to each of the etcd clusters.
 
 ### Running a custom etcd version
-{{ kops_feature_table(kops_added_default='1.37') }}
+| Introduced |
+| :-: |
+| kOps 1.37 |
 
 To run an etcd version that kOps does not bundle, set both `version` and `image` on each of the etcd clusters. When `image` is set, the etcd and etcdctl binaries for `version` are sourced from that image instead of the default `registry.k8s.io/etcd` image. The image must contain `/usr/local/bin/etcd` and `/usr/local/bin/etcdctl` matching `version`, like the official `gcr.io/etcd-development/etcd` images do, and must provide the architectures of the control-plane nodes.
 
@@ -261,7 +265,9 @@ etcdClusters:
 ```
 
 ### etcd metrics
-{{ kops_feature_table(kops_added_default='1.18') }}
+| Introduced |
+| :-: |
+| kOps 1.18 |
 
 You can expose /metrics endpoint for the etcd instances and control their type (`basic` or `extensive`) by defining env vars:
 
@@ -282,7 +288,9 @@ etcdClusters:
 *Note:* If you are running multiple etcd clusters you need to expose the metrics on different ports for each cluster as etcd is running as a service on the master nodes.
 
 ### etcd backups interval
-{{ kops_feature_table(kops_added_default='1.24.1') }}
+| Introduced |
+| :-: |
+| kOps 1.24.1 |
 
 You can set the interval between backups using the `backupInterval` parameter:
 
@@ -297,7 +305,9 @@ etcdClusters:
 ```
 
 ### etcd backups retention
-{{ kops_feature_table(kops_added_default='1.18') }}
+| Introduced |
+| :-: |
+| kOps 1.18 |
 
 As of kOps 1.27, the default etcd backup retention duration is 90 days.
 You can adjust the retention duration using the `backupRetentionDays` parameter:
@@ -340,7 +350,9 @@ spec:
     - 12.34.56.78/32
 ```
 
-{{ kops_feature_table(kops_added_default='1.23') }}
+| Introduced |
+| :-: |
+| kOps 1.23 |
 
 In AWS, instead of listing all CIDRs, it is possible to specify a pre-existing [AWS Prefix List](https://docs.aws.amazon.com/vpc/latest/userguide/managed-prefix-lists.html) ID.
 
@@ -356,7 +368,9 @@ spec:
     - 12.34.56.78/32
 ```
 
-{{ kops_feature_table(kops_added_default='1.23') }}
+| Introduced |
+| :-: |
+| kOps 1.23 |
 
 In AWS, instead of listing all CIDRs, it is possible to specify a pre-existing [AWS Prefix List](https://docs.aws.amazon.com/vpc/latest/userguide/managed-prefix-lists.html) ID.
 
@@ -436,7 +450,9 @@ spec:
 
 ### additionalRoutes
 
-{{ kops_feature_table(kops_added_default='1.24') }}
+| Introduced |
+| :-: |
+| kOps 1.24 |
 
 Add routes in the route tables of the subnet. Targets of routes can be an instance, a peering connection, a NAT gateway, a transit gateway, an internet gateway or an egress-only internet gateway.
 Currently, only AWS is supported.
@@ -563,7 +579,9 @@ spec:
 ```
 
 ### Request Timeout
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 The duration a handler must keep a request open before timing it out and can be overridden by other flags for specific types of requests.
 Note that you must fill empty units of time with zeros. (default 1m0s)
@@ -575,7 +593,9 @@ spec:
 ```
 
 ### Profiling
-{{ kops_feature_table(kops_added_default='1.18') }}
+| Introduced |
+| :-: |
+| kOps 1.18 |
 
 Profiling via web interface `host:port/debug/pprof/`. (default: true)
 
@@ -817,7 +837,9 @@ spec:
 ```
 
 ### Protect Kernel Defaults
-{{ kops_feature_table(kops_added_default='1.18', k8s_min='1.4') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.18 | k8s 1.4 |
 
 Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
 
@@ -828,7 +850,9 @@ spec:
 ```
 
 ### Housekeeping Interval
-{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.2') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.19 | k8s 1.2 |
 
 The interval between container housekeepings defaults to `10s`. This can be too small or too high for some use cases and can be modified with the following addition to the kubelet spec.
 
@@ -839,7 +863,9 @@ spec:
 ```
 
 ### Pod PIDs Limit
-{{ kops_feature_table(kops_added_default='1.22', k8s_min='1.20') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.22 | k8s 1.20 |
 
 `podPidsLimit` allows to configure the maximum number of pids (process ids) in any pod.
 [Read more](https://kubernetes.io/docs/concepts/policy/pid-limiting/) in Kubernetes documentation.
@@ -851,7 +877,9 @@ spec:
 ```
 
 ### Event QPS
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 The limit event creations per second in kubelet. Default value is `0` which means unlimited event creations.
 
@@ -862,7 +890,9 @@ spec:
 ```
 
 ### Event Burst
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 Maximum size of a bursty event records, temporarily allows event records to burst to this number, while still not exceeding EventQPS. Only used if EventQPS > 0.
 
@@ -884,7 +914,9 @@ spec:
 
 ### Graceful Node Shutdown
 
-{{ kops_feature_table(kops_added_default='1.23', k8s_min='1.21') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.23 | k8s 1.21 |
 
 Graceful node shutdown allows kubelet to prevent instance shutdown until Pods have been safely terminated or a timeout has been reached.
 
@@ -1228,7 +1260,9 @@ spec:
 
 ### mode
 
-{{ kops_feature_table(kops_added_default='1.24') }}
+| Introduced |
+| :-: |
+| kOps 1.24 |
 
 Optionally, `mode` allows you to specify a file's mode and permission bits.
 
@@ -1270,7 +1304,9 @@ spec:
 ```
 
 ### useIPBasedNodeNames
-{{ kops_feature_table(kops_added_default='1.37') }}
+| Introduced |
+| :-: |
+| kOps 1.37 |
 
 *AWS only*
 
@@ -1287,7 +1323,9 @@ spec:
 ```
 
 ### manageStorageClasses
-{{ kops_feature_table(kops_added_default='1.20') }}
+| Introduced |
+| :-: |
+| kOps 1.20 |
 
 
 By default kops will create `StorageClass` resources with some opinionated settings specific to cloud provider on which the cluster is installed. One of those storage classes will be defined as default applying the annotation `storageclass.kubernetes.io/is-default-class: "true"`. This may not always be a desirable behaviour and some cluster admins rather prefer to have more control of storage classes and manage them outside of kops. When set to `false`, kOps will no longer create any `StorageClass` objects. Any such objects that kOps created in the past are left as is, and kOps will no longer reconcile them against future changes.
@@ -1358,7 +1396,9 @@ tar tf cri-containerd-cni-1.4.4-linux-amd64.tar.gz
 ```
 
 ### Runc Version and Packages
-{{ kops_feature_table(kops_added_default='1.24.2') }}
+| Introduced |
+| :-: |
+| kOps 1.24.2 |
 
 kOps uses the binaries from https://github.com/opencontainers/runc for installing runc on any supported OS. This makes it easy to specify the desired release version:
 
@@ -1382,7 +1422,9 @@ spec:
 ```
 
 ### Registry Mirrors
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 If you have many instances running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet. By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
 
@@ -1505,7 +1547,9 @@ spec:
 ```
 
 ## sysctlParameters
-{{ kops_feature_table(kops_added_default='1.17') }}
+| Introduced |
+| :-: |
+| kOps 1.17 |
 
 To add custom kernel runtime parameters to your all instance groups in the
 cluster, specify the `sysctlParameters` field as an array of strings. Each
@@ -1558,7 +1602,9 @@ spec:
 
 ## Service Account Issuer Discovery and AWS IAM Roles for Service Accounts (IRSA)
 
-{{ kops_feature_table(kops_added_default='1.21') }}
+| Introduced |
+| :-: |
+| kOps 1.21 |
 
 **Warning**: Enabling the following configuration on an existing cluster can be disruptive due to the control plane provisioning tokens with different issuers. The symptom is that Pods are unable to authenticate to the Kubernetes API. To resolve this, delete Service Account token secrets that exists in the cluster and kill all pods unable to authenticate.
 

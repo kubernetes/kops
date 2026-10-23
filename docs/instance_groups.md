@@ -141,7 +141,9 @@ spec:
 ```
 
 ## compressUserData
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 Compresses parts of the user-data to save space and help with the size limit
 in certain clouds. Currently only the Specs in nodeup.sh will be compressed.
@@ -152,7 +154,9 @@ spec:
 ```
 
 ## packages
-{{ kops_feature_table(kops_added_default='1.24') }}
+| Introduced |
+| :-: |
+| kOps 1.24 |
 
 To install additional packages to hosts in the instance group, specify the `packages` field as an array of strings.
 
@@ -171,7 +175,9 @@ spec:
 ```
 
 ## sysctlParameters
-{{ kops_feature_table(kops_added_default='1.17') }}
+| Introduced |
+| :-: |
+| kOps 1.17 |
 
 To add custom kernel runtime parameters to your instance group, specify the
 `sysctlParameters` field as an array of strings. Each string must take the form
@@ -270,14 +276,18 @@ The number of Spot Instance pools across which to allocate your Spot Instances. 
 
 ### CapacityRebalance
 
-{{ kops_feature_table(kops_added_default='1.26') }}
+| Introduced |
+| :-: |
+| kOps 1.26 |
 
 If using spot instances, it's recommended to enable CapacityRebalance in your InstanceGroup. This configures ASGs to proactively replace spot instances when ASG receives a rebalance recommendation.
 https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
 
 ### instanceRequirements
 
-{{ kops_feature_table(kops_added_default='1.24') }}
+| Introduced |
+| :-: |
+| kOps 1.24 |
 
 Instead of configuring specific machine types, the InstanceGroup can be configured to use all machine types that satisfy a given set of requirements.
 
@@ -314,7 +324,9 @@ spec:
 
 ## warmPool (AWS Only)
 
-{{ kops_feature_table(kops_added_default='1.21') }}
+| Introduced |
+| :-: |
+| kOps 1.21 |
 
 A Warm Pool contains pre-initialized EC2 instances that can join the cluster significantly faster than regular instances. These instances run the kOps configuration process, pull known container images, and then shut down. When the ASG needs to scale out it will pull instances from the warm pool if any are available.
 
@@ -370,7 +382,9 @@ spec:
 
 ## maxInstanceLifetime (AWS Only)
 
-{{ kops_feature_table(kops_added_default='1.24') }}
+| Introduced |
+| :-: |
+| kOps 1.24 |
 
 The maximum instance lifetime specifies the maximum amount of time (in go duration [format](https://pkg.go.dev/time#ParseDuration)) that an instance can be in service before it is terminated and replaced.
 A common use case might be a requirement to replace your instances on a schedule because of internal security policies or external compliance controls.

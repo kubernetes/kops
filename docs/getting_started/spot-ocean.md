@@ -86,8 +86,8 @@ export KOPS_FEATURE_FLAGS="Spotinst,SpotinstOcean,SpotinstOceanTemplate"
 kops create cluster --zones=us-west-2a example
 ```
 
-!!!note
-    It's possible to have a cluster with both Ocean-managed and unmanaged instance groups.
+> [!NOTE]
+> It's possible to have a cluster with both Ocean-managed and unmanaged instance groups.
 
 ```bash
 # configure the feature flags

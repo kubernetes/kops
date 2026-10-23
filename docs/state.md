@@ -48,7 +48,9 @@ There are a few ways to configure your state store. In priority order:
 + config file `$HOME/.kops/config`
 
 ## Local filesystem state stores
-{{ kops_feature_table(kops_added_default='1.17') }}
+| Introduced |
+| :-: |
+| kOps 1.17 |
 
 The local filesystem state store (`file://`) is **not** functional for running clusters. It is permitted so as to enable review workflows.
 

@@ -19,7 +19,9 @@ There are two types of credentials managed by kOps:
 
 ## Rotating keypairs
 
-{{ kops_feature_table(kops_added_default='1.22') }}
+| Introduced |
+| :-: |
+| kOps 1.22 |
 
 You may gracefully rotate keypairs of keysets that are either Certificate Authorities
 or are "service-account" by performing the following procedure. Other keypairs will be

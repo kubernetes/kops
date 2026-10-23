@@ -1,5 +1,7 @@
-# netlify configuration
+# Netlify build for the kOps documentation site.
 [build]
 publish = "site"
-command = "make build-docs-netlify"
-environment = { PYTHON_VERSION = "3.12" }
+command = "./hack/build-mdbook.sh build"
+
+# Default pretty_urls (true) lets the legacy mkdocs-style /foo/ paths
+# resolve to mdBook's /foo.html output without per-page rewrites.
