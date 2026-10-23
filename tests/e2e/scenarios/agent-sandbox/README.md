@@ -133,3 +133,7 @@ The other `STRESS_*` knobs (`STRESS_FILL_PER_NODE`, `STRESS_PROBE_COUNT`, `STRES
 The stress tool's raw data, the controller log and the rendered HTML report are written to
 `${ARTIFACTS}/stress-test/` (or the temporary workspace when `ARTIFACTS` is unset). In prow,
 the job page links to the report through `stress-test.link.txt`.
+
+`controller.log` follows the controller for the whole stress run, about 50 KB/s under churn. If
+the stream ends early, on a dropped connection or a controller restart, `controller-tail.log`
+holds the end-of-run snapshot as well.

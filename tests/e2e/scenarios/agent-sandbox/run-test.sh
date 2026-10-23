@@ -231,6 +231,13 @@ dev/tools/test-e2e --suite=benchmarks --image-prefix="${IMAGE_PREFIX}"
 STRESS_OUTPUT_DIR="${ARTIFACTS:-${WORKSPACE}}/stress-test"
 mkdir -p "${STRESS_OUTPUT_DIR}"
 
+# kubectl logs reads only the current log file, which the kubelet rotates at
+# 10Mi, and the controller writes about 50 KB/s under churn, so a snapshot
+# covers only the last minutes. Following the log for the whole run keeps all
+# of it: the kubelet's follow reader reopens the file after each rotation.
+kubectl logs --follow deployment/agent-sandbox-controller --namespace agent-sandbox-system > "${STRESS_OUTPUT_DIR}/controller.log" &
+controller_log_pid=$!
+
 # Phases are documented in test/stress/phase.go. The default list is sized for
 # the 3-worker default: launch latency, then throughput at mif200, mif100 and
 # mif50 on a mostly empty cluster. Throughput phases run for at least 300 s
@@ -257,7 +264,13 @@ go run ./test/stress \
 stress_status=$?
 set -o errexit
 
-kubectl logs deployment/agent-sandbox-controller --namespace agent-sandbox-system --tail=-1 > "${STRESS_OUTPUT_DIR}/controller.log" || true
+# kill fails when the stream ended early, on a dropped connection or a
+# controller restart: keep what it got and add the end-of-run snapshot.
+if kill "${controller_log_pid}" 2>/dev/null; then
+  wait "${controller_log_pid}" || true
+else
+  kubectl logs deployment/agent-sandbox-controller --namespace agent-sandbox-system --tail=-1 > "${STRESS_OUTPUT_DIR}/controller-tail.log" || true
+fi
 kubectl get pods -A -o wide > "${STRESS_OUTPUT_DIR}/pods.txt" || true
 kubectl get nodes -o wide > "${STRESS_OUTPUT_DIR}/nodes.txt" || true
 
