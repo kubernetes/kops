@@ -146,6 +146,13 @@ if [[ "${NETWORKING}" == "cilium" ]]; then
   # Serve cilium-agent metrics on :9090, where the stress tool reads endpoint regeneration latency.
   OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.enablePrometheusMetrics=true"
 fi
+# Serve containerd's CRI and CNI timers on :1338, which the stress tool scrapes
+# through the node-exporter pod proxy to split network setup out of sandbox
+# creation; like the other metrics ports it is not reachable from outside the
+# cluster. kOps writes containerd config version 4, where the listener is the
+# io.containerd.server.v1.metrics plugin. The single quotes keep the inner
+# double quotes intact through kubetest2's create-args split.
+OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.server.v1.metrics\".address=0.0.0.0:1338'"
 # CGROUP_DRIVER=cgroupfs runs the benchmark without the systemd cgroup driver,
 # whose per-container systemd round trips are a cost on the pod launch path.
 # kOps 1.34+ always configures systemd and ignores spec.kubelet.cgroupDriver,
@@ -203,6 +210,13 @@ echo "Using agent-sandbox checkout ${AGENT_SANDBOX_ROOT} ($(git describe --tags 
 # disk stats; the stress tool scrapes it through the apiserver pod proxy.
 kubectl apply -f test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
 kubectl --namespace kube-system rollout status daemonset/node-exporter --timeout=3m
+# The stress tool's scrapes are best-effort, so fail here if a node's containerd
+# metrics listener is missing.
+node_exporter_pod_names=$(kubectl --namespace kube-system get pods --selector=app.kubernetes.io/name=node-exporter -o jsonpath='{.items[*].metadata.name}')
+read -r -a node_exporter_pods <<< "${node_exporter_pod_names}"
+for pod in "${node_exporter_pods[@]:?No node-exporter pods found}"; do
+  kubectl --request-timeout=10s get --raw "/api/v1/namespaces/kube-system/pods/http:${pod}:1338/proxy/v1/metrics" > /dev/null
+done
 
 # CONTROLLER_ARGS appends controller flags, e.g. --enable-pprof-debug so the
 # stress tool can capture controller profiles during claims phases.
