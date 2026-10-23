@@ -66,6 +66,9 @@ case "${CLOUD_PROVIDER}" in
     # control-plane machine family does not support pd-standard boot disks.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-pd-ssd}"
     OVERRIDES="${OVERRIDES} --control-plane-volume-type=pd-ssd"
+    # Ubuntu 26.10, the image the kOps u2610 distro jobs run (pinned in
+    # test-infra's config/jobs/kubernetes/kops/pinned.list).
+    INSTANCE_IMAGE="${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2610-stonking-amd64-v20261014}"
     ;;
   aws)
     # No default zone: kubetest2-kops picks a zone that offers both instance
@@ -76,6 +79,9 @@ case "${CLOUD_PROVIDER}" in
     # gp3, kOps' AWS default, provisioned at 16000 IOPS and 1000 MB/s once
     # common.sh has defined the kubetest2 command below.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
+    # Ubuntu 26.10, the image the kOps u2610 distro jobs run (pinned in
+    # test-infra's config/jobs/kubernetes/kops/pinned.list).
+    INSTANCE_IMAGE="${INSTANCE_IMAGE:-099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-amd64-server-20261020}"
     ;;
   azure)
     # No default zone: kubetest2-kops picks uksouth-1 or uksouth-2, where the
@@ -88,6 +94,8 @@ case "${CLOUD_PROVIDER}" in
     # launch is fsync-bound, and a 128 GB Premium_LRS root (P10, 500 IOPS)
     # started pods three to four times slower than on gp3.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-ResourceDisk}"
+    # Ubuntu 26.10 like AWS and GCE: Canonical's gen2 server image of the 26.10 release.
+    INSTANCE_IMAGE="${INSTANCE_IMAGE:-Canonical:ubuntu-26_10:server:26.10.202610200}"
     # kOps' Azure support is alpha and feature-gated, for every kops invocation.
     if [[ ",${KOPS_FEATURE_FLAGS:-}," != *,Azure,* ]]; then
       export KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS:+${KOPS_FEATURE_FLAGS},}Azure"
@@ -98,6 +106,10 @@ case "${CLOUD_PROVIDER}" in
     exit 1
     ;;
 esac
+# Ubuntu 26.10 on every cloud: under pod churn the 24.04 kernel (6.17) keeps
+# dying memory cgroups pinned, 11,000 to 14,500 per worker after a 22-minute
+# run with about 1 GiB of kernel memory, and the 7.3 kernel frees them.
+OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE}"
 OVERRIDES="${OVERRIDES} --control-plane-size=${STRESS_CONTROL_PLANE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-count=${STRESS_NODE_COUNT}"
 OVERRIDES="${OVERRIDES} --node-size=${STRESS_NODE_SIZE}"
