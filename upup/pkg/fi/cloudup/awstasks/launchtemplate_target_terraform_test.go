@@ -39,6 +39,8 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				SpotPrice:                    new("0.1"),
 				SpotDurationInMinutes:        new(int32(60)),
 				InstanceInterruptionBehavior: new(ec2types.InstanceInterruptionBehaviorHibernate),
+				IPv6AddressCount:             new(int32(1)),
+				PrimaryIPv6:                  new(true),
 				RootVolumeOptimization:       new(true),
 				RootVolumeIops:               new(int32(100)),
 				RootVolumeSize:               new(int32(64)),
@@ -88,6 +90,8 @@ resource "aws_launch_template" "test" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
+    ipv6_address_count          = 1
+    primary_ipv6                = true
     security_groups             = [aws_security_group.nodes-1.id, aws_security_group.nodes-2.id]
   }
   placement {

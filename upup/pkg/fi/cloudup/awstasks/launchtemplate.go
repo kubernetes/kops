@@ -61,6 +61,8 @@ type LaunchTemplate struct {
 	InstanceType *ec2types.InstanceType
 	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
 	IPv6AddressCount *int32
+	// PrimaryIPv6 is whether to assign the IPv6 address associated with ENI as the primary IPv6 address.
+	PrimaryIPv6 *bool
 	// RootVolumeIops is the provisioned IOPS when the volume type is io1, io2 or gp3
 	RootVolumeIops *int32
 	// RootVolumeOptimization enables EBS optimization for an instance

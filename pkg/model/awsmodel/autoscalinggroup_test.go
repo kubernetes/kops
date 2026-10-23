@@ -288,3 +288,149 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		})
 	}
 }
+
+func TestPrimaryIPv6(t *testing.T) {
+	cluster := buildMinimalCluster()
+	subnets := cluster.Spec.Networking.Subnets
+	const (
+		subnetIPv4 = iota
+		subnetDualstack
+		subnetIPv6
+		_subnetCount
+	)
+	subnets[subnetDualstack] = kops.ClusterSubnetSpec{
+		Name:     subnets[subnetDualstack].Name,
+		CIDR:     subnets[subnetDualstack].CIDR,
+		IPv6CIDR: "2001:db8:aaaa:2::/64",
+		Zone:     subnets[subnetDualstack].Zone,
+		Type:     subnets[subnetDualstack].Type,
+	}
+	subnets[subnetIPv6] = kops.ClusterSubnetSpec{
+		Name:     subnets[subnetIPv6].Name,
+		CIDR:     "",
+		IPv6CIDR: "2001:db8:aaaa:3::/64",
+		Zone:     subnets[subnetIPv6].Zone,
+		Type:     subnets[subnetIPv6].Type,
+	}
+	cluster.Spec.Networking.Subnets = subnets
+
+	igs := make([]*kops.InstanceGroup, _subnetCount)
+	igs[subnetIPv4] = &kops.InstanceGroup{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "IPv4",
+		},
+		Spec: kops.InstanceGroupSpec{
+			Role:    kops.InstanceGroupRoleNode,
+			Subnets: []string{subnets[subnetIPv4].Name},
+		},
+	}
+	igs[subnetDualstack] = &kops.InstanceGroup{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "DualStack",
+		},
+		Spec: kops.InstanceGroupSpec{
+			Role:    kops.InstanceGroupRoleNode,
+			Subnets: []string{subnets[subnetDualstack].Name},
+		},
+	}
+	igs[subnetIPv6] = &kops.InstanceGroup{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "IPv6",
+		},
+		Spec: kops.InstanceGroupSpec{
+			Role:    kops.InstanceGroupRoleNode,
+			Subnets: []string{subnets[subnetIPv6].Name},
+		},
+	}
+
+	b := AutoscalingGroupModelBuilder{
+		AWSModelContext: &AWSModelContext{
+			KopsModelContext: &model.KopsModelContext{
+				IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+				AllInstanceGroups: igs,
+				InstanceGroups:    igs,
+			},
+		},
+		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
+			Lifecycle: fi.LifecycleSync,
+			KopsModelContext: &model.KopsModelContext{
+				IAMModelContext: iam.IAMModelContext{
+					Cluster: &kops.Cluster{
+						Spec: kops.ClusterSpec{
+							CloudProvider: kops.CloudProviderSpec{
+								AWS: &kops.AWSSpec{},
+							},
+							Networking:        kops.NetworkingSpec{},
+							KubernetesVersion: "1.20.0",
+						},
+					},
+				},
+			},
+		},
+		Cluster: cluster,
+	}
+
+	c := &fi.CloudupModelBuilderContext{
+		Tasks: make(map[string]fi.CloudupTask),
+	}
+
+	// We need the CA for the bootstrap script
+	caTask := &fitasks.Keypair{
+		Name:    new(fi.CertificateIDCA),
+		Subject: "cn=kubernetes",
+		Type:    "ca",
+	}
+	c.AddTask(caTask)
+	for _, keypair := range []string{
+		"etcd-clients-ca",
+	} {
+		task := &fitasks.Keypair{
+			Name:    new(keypair),
+			Subject: "cn=" + keypair,
+			Type:    "ca",
+		}
+		c.AddTask(task)
+	}
+
+	if err := b.Build(c); err != nil {
+		t.Fatalf("error from Build: %v", err)
+	}
+
+	isPrimaryIPv6Enabled := func(lt *awstasks.LaunchTemplate) bool {
+		if lt.PrimaryIPv6 == nil {
+			return false
+		}
+		return *lt.PrimaryIPv6
+	}
+	launchTemplateForGroup := func(t *testing.T, ig *kops.InstanceGroup) *awstasks.LaunchTemplate {
+		t.Helper()
+		subdomain := ig.Name
+		if ig.Spec.Role.HasControlPlane() {
+			subdomain = ig.Name + ".masters"
+		}
+		task, ok := c.Tasks[fmt.Sprintf("LaunchTemplate/%s.%s", subdomain, cluster.Name)]
+		if !ok {
+			t.Fatalf("No task available in model build context for InstanceGroup %q", ig.Name)
+		}
+		if task == nil {
+			t.Fatalf("Task pointer in model build context for InstanceGroup %q is nil", ig.Name)
+		}
+		return task.(*awstasks.LaunchTemplate)
+	}
+	tests := []struct {
+		ig              *kops.InstanceGroup
+		expectIsEnabled bool
+	}{
+		{igs[subnetIPv4], false},
+		{igs[subnetDualstack], true},
+		{igs[subnetIPv6], true},
+	}
+	for _, test := range tests {
+		t.Run(test.ig.Name, func(t *testing.T) {
+			lt := launchTemplateForGroup(t, test.ig)
+			if want, got := test.expectIsEnabled, isPrimaryIPv6Enabled(lt); got != want {
+				t.Errorf("%q (subnet %q): launch template sets PrimaryIPv6: want %t, got %t", test.ig.Name, test.ig.Spec.Subnets[0], want, got)
+			}
+		})
+	}
+}

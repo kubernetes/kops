@@ -58,6 +58,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 				DeleteOnTermination:      aws.Bool(true),
 				DeviceIndex:              new(int32(0)),
 				Ipv6AddressCount:         t.IPv6AddressCount,
+				PrimaryIpv6:              t.PrimaryIPv6,
 			},
 		},
 	}
@@ -237,6 +238,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 			actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: new(id)})
 		}
 		actual.IPv6AddressCount = x.Ipv6AddressCount
+		actual.PrimaryIPv6 = x.PrimaryIpv6
 	}
 	// In older Kops versions, security groups were added to LaunchTemplateData.SecurityGroupIds
 	for _, id := range lt.LaunchTemplateData.SecurityGroupIds {

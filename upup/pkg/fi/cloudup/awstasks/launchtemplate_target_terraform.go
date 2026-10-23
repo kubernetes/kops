@@ -34,6 +34,8 @@ type terraformLaunchTemplateNetworkInterface struct {
 	DeleteOnTermination *bool `cty:"delete_on_termination"`
 	// Ipv6AddressCount is the number of IPv6 addresses to assign with the primary network interface.
 	Ipv6AddressCount *int32 `cty:"ipv6_address_count"`
+	// PrimaryIPv6 is whether to assign the IPv6 address associated with ENI as the primary IPv6 address.
+	PrimaryIPv6 *bool `cty:"primary_ipv6"`
 	// SecurityGroups is a list of security group ids.
 	SecurityGroups []*terraformWriter.Literal `cty:"security_groups"`
 }
@@ -212,6 +214,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 				AssociatePublicIPAddress: e.AssociatePublicIP,
 				DeleteOnTermination:      new(true),
 				Ipv6AddressCount:         e.IPv6AddressCount,
+				PrimaryIPv6:              e.PrimaryIPv6,
 			},
 		},
 	}
