@@ -112,7 +112,7 @@ Azure against 5 ms on gp3, and the launch latency tails follow it.
 | Variable | Default | Purpose |
 |---|---|---|
 | `CLOUD_PROVIDER` | `gce` | `gce`, `aws` or `azure` |
-| `CNI` | `cilium` | kOps `--networking` value; upstream CI runs `cilium` and `kindnet` |
+| `CNI` | `kindnet` | kOps `--networking` value; `cilium` runs the Cilium variant with the agent's rate limits raised |
 | `CGROUP_DRIVER` | `systemd` | `cgroupfs` switches containerd and the kubelet off the systemd cgroup driver |
 | `ZONES` | per cloud, see above | Zone to create the cluster in |
 | `K8S_VERSION` | `stable` | Kubernetes version passed to kubetest2 |
