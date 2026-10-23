@@ -521,6 +521,11 @@ func Test_Kubelet_BuildFlags(t *testing.T) {
 			config: kops.KubeletConfigSpec{ImageMaximumGCAge: &metav1.Duration{Duration: 30 * time.Hour}},
 			want:   "",
 		},
+		{
+			name:   "KubeAPIQPS and KubeAPIBurst passed as flags",
+			config: kops.KubeletConfigSpec{KubeAPIQPS: new(int32(500)), KubeAPIBurst: new(int32(1000))},
+			want:   "--kube-api-burst=1000 --kube-api-qps=500",
+		},
 	}
 
 	for _, tc := range tests {

@@ -254,6 +254,8 @@ type KubeletConfigSpec struct {
 	CrashLoopBackOffMaxContainerRestartPeriod *metav1.Duration `json:"crashLoopBackOffMaxContainerRestartPeriod,omitempty"`
 	// KubeAPIQPS Burst to use while talking with kubernetes apiserver. (default 50)
 	KubeAPIQPS *int32 `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
+	// KubeAPIBurst Burst to use while talking with kubernetes apiserver. (default 100)
+	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty" flag:"kube-api-burst"`
 	// EventRecordQPS is the maximum event creations per second. If 0, there is no limit enforced.
 	// Default: 50
 	EventRecordQPS *int32 `json:"eventRecordQPS,omitempty"`
