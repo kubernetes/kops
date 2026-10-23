@@ -283,7 +283,7 @@ spec:
                   defaultLoadBalancerScheme:
                     description: |-
                       DefaultLoadBalancerScheme specifies the default scheme for the load balancer.
-                      Default: "internet-facing"
+                      Default: "internal"
                     type: string
                   enableShield:
                     description: |-

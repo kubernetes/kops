@@ -550,6 +550,9 @@ func (t *Tester) execute() error {
 
 	t.TestArgs += " --disable-log-dump"
 
+	// Disable colours in Ginkgo
+	t.GinkgoArgs += " --no-color"
+
 	return t.Test()
 }
 
