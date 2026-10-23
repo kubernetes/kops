@@ -261,14 +261,21 @@ kubectl logs deployment/agent-sandbox-controller --namespace agent-sandbox-syste
 kubectl get pods -A -o wide > "${STRESS_OUTPUT_DIR}/pods.txt" || true
 kubectl get nodes -o wide > "${STRESS_OUTPUT_DIR}/nodes.txt" || true
 
-# The HTML report is rendered next to the raw data it is built from.
+# The HTML report is rendered next to the raw data it is built from. A report
+# failure must not replace the stress result or skip the Spyglass link below.
 REPORT_OUTPUT_DIR="${STRESS_OUTPUT_DIR}/report"
-python3 -m venv "${WORKSPACE}/report-venv"
-"${WORKSPACE}/report-venv/bin/pip" install --quiet 'duckdb>=1,<2' 'jinja2>=3,<4'
-"${WORKSPACE}/report-venv/bin/python3" test/stress/generate-report/generate_report.py \
-  --input-dir "${STRESS_OUTPUT_DIR}" \
-  --output-dir "${REPORT_OUTPUT_DIR}"
-echo "Stress test report written to ${REPORT_OUTPUT_DIR}"
+report_status=0
+python3 -m venv "${WORKSPACE}/report-venv" \
+  && "${WORKSPACE}/report-venv/bin/pip" install --quiet 'duckdb>=1,<2' 'jinja2>=3,<4' \
+  && "${WORKSPACE}/report-venv/bin/python3" test/stress/generate-report/generate_report.py \
+    --input-dir "${STRESS_OUTPUT_DIR}" \
+    --output-dir "${REPORT_OUTPUT_DIR}" \
+  || report_status=$?
+if (( report_status == 0 )); then
+  echo "Stress test report written to ${REPORT_OUTPUT_DIR}"
+else
+  echo "Stress test report generation failed with status ${report_status}" >&2
+fi
 
 # Spyglass renders artifacts/*.link.txt files as links on the prow job page. A
 # gs:// URL opens directly in the GCS browser, while an https:// URL goes
@@ -284,4 +291,7 @@ if [[ -n "${ARTIFACTS:-}" && -n "${JOB_NAME:-}" && -n "${BUILD_ID:-}" ]]; then
   echo "Stress test report: https://storage.googleapis.com/${REPORT_PATH}"
 fi
 
-exit "${stress_status}"
+if (( stress_status != 0 )); then
+  exit "${stress_status}"
+fi
+exit "${report_status}"
