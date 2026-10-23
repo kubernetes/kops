@@ -239,6 +239,16 @@ if [[ -z "${AGENT_SANDBOX_ROOT:-}" ]]; then
     AGENT_SANDBOX_VERSION=$(python3 dev/tools/latest-published-tag)
   fi
   git checkout --quiet "${AGENT_SANDBOX_VERSION}"
+  # Apply the upstream changes in patches/ that the tag lacks. A patch already
+  # in the checkout is skipped, so it can stay until a tag carries it.
+  for patch in "${REPO_ROOT}"/tests/e2e/scenarios/agent-sandbox/patches/*.patch; do
+    [[ -e "${patch}" ]] || continue
+    if git apply --reverse --check "${patch}" 2>/dev/null; then
+      echo "Already in ${AGENT_SANDBOX_VERSION}, skipping: ${patch##*/}"
+    else
+      git apply --verbose "${patch}"
+    fi
+  done
 fi
 cd "${AGENT_SANDBOX_ROOT}"
 # deploy-to-kube and test-e2e read IMAGE_PREFIX and IMAGE_TAG from the environment.
@@ -249,7 +259,10 @@ export IMAGE_TAG
 echo "Using agent-sandbox checkout ${AGENT_SANDBOX_ROOT} ($(git describe --tags --always)) with images ${IMAGE_PREFIX}*:${IMAGE_TAG}"
 
 # node-exporter gives the report node-level CPU (including iowait), memory and
-# disk stats; the stress tool scrapes it through the apiserver pod proxy.
+# disk stats; the stress tool scrapes it through the apiserver pod proxy and
+# keeps every metric. patches/node-exporter-collectors.patch adds the
+# collectors that help tell CPU queueing, I/O wait and other uninterruptible
+# sleep apart in a load1 rise, and the CPU model.
 kubectl apply -f test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
 kubectl --namespace kube-system rollout status daemonset/node-exporter --timeout=3m
 # The stress tool's scrapes are best-effort, so fail here if a node's containerd
