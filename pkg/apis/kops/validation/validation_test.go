@@ -2813,3 +2813,32 @@ func TestValidateKubeletCgroupDriver(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func TestValidateKubeletKubeAPIBurst(t *testing.T) {
+	grid := []struct {
+		Input          kops.KubeletConfigSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input:          kops.KubeletConfigSpec{},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.KubeletConfigSpec{KubeAPIBurst: new(int32(0))},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.KubeletConfigSpec{KubeAPIBurst: new(int32(1000))},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.KubeletConfigSpec{KubeAPIBurst: new(int32(-1))},
+			ExpectedErrors: []string{"Invalid value::spec.kubelet.kubeAPIBurst"},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateKubelet(&g.Input, &kops.Cluster{}, field.NewPath("spec", "kubelet"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

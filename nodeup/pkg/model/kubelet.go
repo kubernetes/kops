@@ -355,6 +355,8 @@ func (b *KubeletBuilder) kubeletConfiguration(kubeletConfig *kops.KubeletConfigS
 		EvictionPressureTransitionPeriod: fi.ValueOf(kubeletConfig.EvictionPressureTransitionPeriod),
 		EvictionMaxPodGracePeriod:        kubeletConfig.EvictionMaxPodGracePeriod,
 		EventRecordQPS:                   kubeletConfig.EventRecordQPS,
+		KubeAPIQPS:                       kubeletConfig.KubeAPIQPS,
+		KubeAPIBurst:                     fi.ValueOf(kubeletConfig.KubeAPIBurst),
 		ProtectKernelDefaults:            fi.ValueOf(kubeletConfig.ProtectKernelDefaults),
 		KernelMemcgNotification:          fi.ValueOf(kubeletConfig.KernelMemcgNotification),
 		MaxPods:                          fi.ValueOf(kubeletConfig.MaxPods),

@@ -872,6 +872,18 @@ spec:
     eventBurst: 10
 ```
 
+### Kubernetes API client rate limits
+{{ kops_feature_table(kops_added_default='1.38') }}
+
+`kubeAPIQPS` is the sustained number of requests per second that the kubelet sends to the Kubernetes API server, and `kubeAPIBurst` is the number of requests it can send above that rate before client-side rate limiting delays them. The kubelet defaults are 50 and 100. Raising `kubeAPIQPS` without also raising `kubeAPIBurst` still caps bursts at 100 requests, so the kubelet keeps queuing requests when many pods start at once.
+
+```yaml
+spec:
+  kubelet:
+    kubeAPIQPS: 500
+    kubeAPIBurst: 1000
+```
+
 ### LogFormat
 
 Choose between log format. Permitted formats: "json", "text". Default: "text".

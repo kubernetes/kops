@@ -4510,6 +4510,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.KubeAPIBurst != nil {
+		in, out := &in.KubeAPIBurst, &out.KubeAPIBurst
+		*out = new(int32)
+		**out = **in
+	}
 	if in.EventRecordQPS != nil {
 		in, out := &in.EventRecordQPS, &out.EventRecordQPS
 		*out = new(int32)

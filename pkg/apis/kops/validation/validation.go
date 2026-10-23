@@ -1121,6 +1121,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		if k.CgroupDriver != "" {
 			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("cgroupDriver"), &k.CgroupDriver, []string{"systemd", "cgroupfs"})...)
 		}
+
+		if k.KubeAPIBurst != nil && *k.KubeAPIBurst < 0 {
+			allErrs = append(allErrs, field.Invalid(kubeletPath.Child("kubeAPIBurst"), *k.KubeAPIBurst, "kubeAPIBurst cannot be negative"))
+		}
 	}
 	return allErrs
 }
