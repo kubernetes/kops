@@ -144,9 +144,11 @@ OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeScheduler.burst=500"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[0].manager.listenMetricsURLs=http://0.0.0.0:2391"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[1].manager.listenMetricsURLs=http://0.0.0.0:2392"
 # Each kubelet status sync is a serialized GET+PATCH, which caps churn at about
-# 5 pods/s/node under the default QPS. Event emission has its own limiter and
-# drops extra events, which is acceptable for a benchmark.
+# 5 pods/s/node under the default QPS, and bursts above the kubelet's default
+# burst of 100 wait in its client rate limiter. Event emission has its own
+# limiter and drops extra events, which is acceptable for a benchmark.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.kubeAPIQPS=500"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.kubeAPIBurst=500"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventQPS=5"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventBurst=50"
 # /23 per node allows up to 510 pods per node; the pod CIDR is the /14 of GCE
