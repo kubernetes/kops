@@ -123,7 +123,7 @@ Azure against 5 ms on gp3, and the launch latency tails follow it.
 | `INSTANCE_IMAGE` | per cloud, see above | kOps `--image` for all instance groups; Ubuntu 26.10 on every cloud, because the 24.04 kernel keeps dying memory cgroups pinned under pod churn |
 | `K8S_VERSION` | `https://dl.k8s.io/ci/latest.txt` (latest dev build) | Kubernetes version or marker URL passed to kubetest2-kops |
 | `AGENT_SANDBOX_VERSION` | newest tag published on `registry.k8s.io` | agent-sandbox tag to check out and deploy; v1.0.8 or newer for AWS and Azure |
-| `AGENT_SANDBOX_ROOT` | fresh clone in the workspace | Use an existing agent-sandbox checkout as is |
+| `AGENT_SANDBOX_ROOT` | fresh clone in the workspace | Use an existing agent-sandbox checkout as is; `patches/` are applied only to the fresh clone |
 | `IMAGE_PREFIX` / `IMAGE_TAG` | `registry.k8s.io/agent-sandbox/` / `AGENT_SANDBOX_VERSION` | Controller images to deploy |
 | `CONTROLLER_ARGS` | unset | Extra controller flags, e.g. `--enable-pprof-debug` |
 | `STRESS_NODE_COUNT` | `3` | Worker node count |
@@ -152,3 +152,12 @@ the job page links to the report through `stress-test.link.txt`.
 `controller.log` follows the controller for the whole stress run, about 50 KB/s under churn. If
 the stream ends early, on a dropped connection or a controller restart, `controller-tail.log`
 holds the end-of-run snapshot as well.
+
+`patches/` holds upstream changes the agent-sandbox tag lacks; the fresh clone gets them with
+`git apply`, and a patch a tag already carries is skipped. `node-exporter-collectors.patch` adds
+the pressure, stat, schedstat, processes and vmstat collectors and the cpu collector's cpu.info
+option to the node-exporter manifest, so the metrics file and the report's explorer carry PSI
+(`node_pressure_*`), tasks blocked on I/O (`node_procs_blocked`), run-queue wait
+(`node_schedstat_waiting_seconds_total`), thread counts per state
+(`node_processes_threads_state`), page-cache dirtying and writeback (`node_vmstat_nr_*`) and the
+CPU model (`node_cpu_info`).
