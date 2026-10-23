@@ -100,6 +100,10 @@ temp disk: pod launch is fsync-bound, and a 128 GB `Premium_LRS` root (P10, 500 
 three to four times slower than `gp3`. On GCE the roots are `pd-ssd` because pod launch is
 fsync-bound on `pd-standard`, and the `c3` family does not support `pd-standard` boot disks.
 
+etcd runs without fsync (`STRESS_ETCD_UNSAFE_NO_FSYNC`): the WAL fsync on the etcd volumes
+(`StandardSSD_LRS` on Azure, `gp3` on AWS, `pd-ssd` on GCE) paces the control plane, p99 55 ms on
+Azure against 5 ms on gp3, and the launch latency tails follow it.
+
 ### Variables
 
 | Variable | Default | Purpose |
@@ -123,6 +127,7 @@ fsync-bound on `pd-standard`, and the `c3` family does not support `pd-standard`
 | `STRESS_METRICS_INTERVAL` | `15s` | Interval between the stress tool's Prometheus scrapes (the tool default) |
 | `STRESS_EXTRA_ARGS` | unset | Extra stress tool flags, passed verbatim |
 | `STRESS_VALIDATE_WAIT` | `25m` | Cluster validation timeout |
+| `STRESS_ETCD_UNSAFE_NO_FSYNC` | `true` | Sets `ETCD_UNSAFE_NO_FSYNC` in every etcd cluster's `manager.env`, which etcd-manager passes on to etcd, so the etcd volume's fsync latency stays out of the launch latency; the clusters are discarded after the run. `false` keeps fsync |
 
 The other `STRESS_*` knobs (`STRESS_FILL_PER_NODE`, `STRESS_PROBE_COUNT`, `STRESS_THROUGHPUT_COUNT`,
 `STRESS_CREATE_CONCURRENCY`, `STRESS_CLAIMS_WARM`, `STRESS_NODE_CIDR_MASK_SIZE`,

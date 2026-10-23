@@ -49,6 +49,7 @@ export IMAGE_PREFIX="${IMAGE_PREFIX:-registry.k8s.io/agent-sandbox/}"
 STRESS_NODE_COUNT="${STRESS_NODE_COUNT:-3}"
 STRESS_NODE_CIDR_MASK_SIZE="${STRESS_NODE_CIDR_MASK_SIZE:-23}"
 STRESS_ETCD_QUOTA_BYTES="${STRESS_ETCD_QUOTA_BYTES:-8589934592}"
+STRESS_ETCD_UNSAFE_NO_FSYNC="${STRESS_ETCD_UNSAFE_NO_FSYNC:-true}"
 STRESS_VALIDATE_WAIT="${STRESS_VALIDATE_WAIT:-25m}"
 
 OVERRIDES="${OVERRIDES-}"
@@ -138,6 +139,13 @@ OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventBurst=50"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.nodeCIDRMaskSize=${STRESS_NODE_CIDR_MASK_SIZE}"
 # Above etcd's 2GiB default quota every write fails with NOSPACE until the alarm is cleared.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${STRESS_ETCD_QUOTA_BYTES}"
+# etcd's WAL fsync paces the control plane rather than CPU (p99 55 ms on
+# Azure's StandardSSD_LRS etcd volumes, 5 ms on gp3) and the launch latency
+# tails follow it. The benchmark measures the launch pipeline, not durability,
+# and the clusters are discarded after the run, so etcd runs with
+# --unsafe-no-fsync. etcd-manager passes ETCD_* variables through to etcd;
+# [*] covers both clusters.
+OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_UNSAFE_NO_FSYNC=${STRESS_ETCD_UNSAFE_NO_FSYNC}"
 if [[ "${NETWORKING}" == "kindnet" && "${STRESS_KINDNET_NETWORK_POLICIES:-false}" != "true" ]]; then
   # kindnet's NetworkPolicy engine watches every pod from every node; the benchmark does not use NetworkPolicy.
   OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.kindnet.networkPolicies=false"
