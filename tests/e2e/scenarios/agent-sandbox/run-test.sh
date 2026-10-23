@@ -77,8 +77,8 @@ case "${CLOUD_PROVIDER}" in
     # types, in a random region per run. Set ZONES to pin one.
     STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-m7i.4xlarge}"
     STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.4xlarge}"
-    # gp3, kOps' AWS default, provisioned at 16000 IOPS and 1000 MB/s once
-    # common.sh has defined the kubetest2 command below.
+    # gp3, kOps' AWS default, with IOPS and throughput raised once common.sh
+    # has defined the kubetest2 command below.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
     # Ubuntu 26.10, the image the kOps u2610 distro jobs run (pinned in
     # test-infra's config/jobs/kubernetes/kops/pinned.list).
@@ -194,11 +194,10 @@ source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
 # kubetest2-kops' 20m default; the budget applies on every cloud.
 KUBETEST2="${KUBETEST2} --validation-wait=${STRESS_VALIDATE_WAIT}"
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
-  # gp3's 3000 IOPS default saturates under the benchmark: the worker roots
-  # ran 89% busy at mif 200 with 3 ms average writes and 12% iowait while the
-  # CPUs were 37% busy, and containerd's container create averaged 840 ms
-  # against 16 ms on Azure's local disks. One value per flag: kubetest2 splits
-  # the value on commas.
+  # gp3's default IOPS saturate under pod churn and inflate containerd's
+  # create operations, so the worker roots are provisioned above the
+  # benchmark's write rate. One value per flag: kubetest2 splits the value on
+  # commas.
   KUBETEST2="${KUBETEST2} --node-instance-group-overrides=spec.rootVolume.iops=16000 --node-instance-group-overrides=spec.rootVolume.throughput=1000"
 fi
 
