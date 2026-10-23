@@ -44,10 +44,12 @@ AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
 # to the cluster are pinned to the same published release tag.
 export IMAGE_PREFIX="${IMAGE_PREFIX:-registry.k8s.io/agent-sandbox/}"
 
-# 3 workers behind a control plane of the same 8 vCPU / 32 GiB shape on every
-# cloud, the profile the kOps jobs run; AWS and Azure use each cloud's closest
-# match to the GCE shapes. The control-plane size does not follow
-# STRESS_NODE_COUNT, so a larger run sets STRESS_CONTROL_PLANE_SIZE as well.
+# 3 workers of 16 vCPUs / 64 GiB on every cloud, the profile the kOps jobs run:
+# a pod lifecycle costs about 1 CPU-second on the node, so an 8 vCPU worker
+# tops out below 10 pods/s on CPU alone. The control plane is c3-standard-22 on
+# GCE, the c3 size above 8 vCPUs, and 16 vCPUs on AWS and Azure, each cloud's
+# closest match. The control-plane size does not follow STRESS_NODE_COUNT, so
+# a larger run sets STRESS_CONTROL_PLANE_SIZE as well.
 STRESS_NODE_COUNT="${STRESS_NODE_COUNT:-3}"
 STRESS_NODE_CIDR_MASK_SIZE="${STRESS_NODE_CIDR_MASK_SIZE:-23}"
 STRESS_ETCD_QUOTA_BYTES="${STRESS_ETCD_QUOTA_BYTES:-8589934592}"
@@ -58,8 +60,8 @@ OVERRIDES="${OVERRIDES-}"
 case "${CLOUD_PROVIDER}" in
   gce)
     export ZONES="${ZONES:-us-central1-a}"
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-8}"
-    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-n2-standard-8}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-22}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-n2-standard-16}"
     # Boskos projects do not allow IAM changes, so the VMs run as the default compute service account.
     OVERRIDES="${OVERRIDES} --gce-service-account=default"
     # Root volumes on pd-ssd: pod launch is fsync-bound on pd-standard, and the c3
@@ -72,10 +74,9 @@ case "${CLOUD_PROVIDER}" in
     ;;
   aws)
     # No default zone: kubetest2-kops picks a zone that offers both instance
-    # types, in a random region per run (us-east-1a had no m6i.2xlarge
-    # capacity). Set ZONES to pin one.
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-m7i.2xlarge}"
-    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.2xlarge}"
+    # types, in a random region per run. Set ZONES to pin one.
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-m7i.4xlarge}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.4xlarge}"
     # gp3, kOps' AWS default, provisioned at 16000 IOPS and 1000 MB/s once
     # common.sh has defined the kubetest2 command below.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
@@ -88,9 +89,9 @@ case "${CLOUD_PROVIDER}" in
     # other kOps Azure jobs run. Ddsv5 is Dsv5 plus a local temp disk, and the
     # CI subscription's Ddsv5 quota there is 250 cores against the 65-core
     # default for Dsv5.
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-Standard_D8ds_v5}"
-    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8ds_v5}"
-    # Worker roots are ephemeral OS disks on the VM's 300 GiB temp disk: pod
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-Standard_D16ds_v5}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D16ds_v5}"
+    # Worker roots are ephemeral OS disks on the VM's 600 GiB temp disk: pod
     # launch is fsync-bound, and a 128 GB Premium_LRS root (P10, 500 IOPS)
     # started pods three to four times slower than on gp3.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-ResourceDisk}"

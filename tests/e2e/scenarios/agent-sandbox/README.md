@@ -67,7 +67,6 @@ GCE:
 
 ```
 export STRESS_NODE_COUNT=20
-export STRESS_CONTROL_PLANE_SIZE=c3-standard-22
 export STRESS_PHASES=fill,probe,throughput-mif:600,throughput-mif:400,throughput-mif:200,throughput-mif:100,throughput-mif:50
 ```
 
@@ -83,14 +82,16 @@ tests/e2e/scenarios/agent-sandbox/run-test.sh
 
 ### Per-cloud defaults
 
-Workers and control planes have 8 vCPUs / 32 GiB on every cloud; AWS and Azure use each cloud's
-closest match to the GCE shapes.
+Workers have 16 vCPUs / 64 GiB on every cloud: a pod lifecycle costs about 1 CPU-second on the
+node, so an 8 vCPU worker tops out below 10 pods/s on CPU alone. The GCE control plane is
+`c3-standard-22`, the c3 size above 8 vCPUs; AWS and Azure use 16 vCPU control planes, each
+cloud's closest match.
 
 | | GCE | AWS | Azure |
 |---|---|---|---|
 | `ZONES` | `us-central1-a` | chosen per run | `uksouth-1` or `uksouth-2` |
-| `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-8` | `m7i.2xlarge` | `Standard_D8ds_v5` |
-| `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8ds_v5` |
+| `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-22` | `m7i.4xlarge` | `Standard_D16ds_v5` |
+| `STRESS_NODE_SIZE` | `n2-standard-16` | `m6i.4xlarge` | `Standard_D16ds_v5` |
 | `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` at 16000 IOPS and 1000 MB/s | `ResourceDisk` (ephemeral OS disk) |
 | `INSTANCE_IMAGE` | Ubuntu 26.10 `v20261014` | Ubuntu 26.10 `20261020` | Ubuntu 26.10 `26.10.202610200` |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
