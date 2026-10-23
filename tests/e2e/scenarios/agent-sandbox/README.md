@@ -88,6 +88,7 @@ closest match to the GCE shapes.
 | `STRESS_CONTROL_PLANE_SIZE` | `c3-standard-8` | `m7i.2xlarge` | `Standard_D8ds_v5` |
 | `STRESS_NODE_SIZE` | `n2-standard-8` | `m6i.2xlarge` | `Standard_D8ds_v5` |
 | `STRESS_NODE_VOLUME_TYPE` | `pd-ssd` | `gp3` at 16000 IOPS and 1000 MB/s | `ResourceDisk` (ephemeral OS disk) |
+| `INSTANCE_IMAGE` | Ubuntu 26.10 `v20261014` | Ubuntu 26.10 `20261020` | Ubuntu 26.10 `26.10.202610200` |
 | Control-plane root volume type | `pd-ssd` | `gp3` (kOps default) | `StandardSSD_LRS` (kOps default) |
 
 On AWS no zone is pinned: kubetest2-kops picks a zone that offers both instance types, in a
@@ -115,6 +116,7 @@ Azure against 5 ms on gp3, and the launch latency tails follow it.
 | `CNI` | `kindnet` | kOps `--networking` value; `cilium` runs the Cilium variant with the agent's rate limits raised |
 | `CGROUP_DRIVER` | `systemd` | `cgroupfs` switches containerd and the kubelet off the systemd cgroup driver |
 | `ZONES` | per cloud, see above | Zone to create the cluster in |
+| `INSTANCE_IMAGE` | per cloud, see above | kOps `--image` for all instance groups; Ubuntu 26.10 on every cloud, because the 24.04 kernel keeps dying memory cgroups pinned under pod churn |
 | `K8S_VERSION` | `https://dl.k8s.io/ci/latest.txt` (latest dev build) | Kubernetes version or marker URL passed to kubetest2-kops |
 | `AGENT_SANDBOX_VERSION` | newest tag published on `registry.k8s.io` | agent-sandbox tag to check out and deploy; v1.0.8 or newer for AWS and Azure |
 | `AGENT_SANDBOX_ROOT` | fresh clone in the workspace | Use an existing agent-sandbox checkout as is |
