@@ -115,7 +115,7 @@ Azure against 5 ms on gp3, and the launch latency tails follow it.
 | `CNI` | `kindnet` | kOps `--networking` value; `cilium` runs the Cilium variant with the agent's rate limits raised |
 | `CGROUP_DRIVER` | `systemd` | `cgroupfs` switches containerd and the kubelet off the systemd cgroup driver |
 | `ZONES` | per cloud, see above | Zone to create the cluster in |
-| `K8S_VERSION` | `stable` | Kubernetes version passed to kubetest2 |
+| `K8S_VERSION` | `https://dl.k8s.io/ci/latest.txt` (latest dev build) | Kubernetes version or marker URL passed to kubetest2-kops |
 | `AGENT_SANDBOX_VERSION` | newest tag published on `registry.k8s.io` | agent-sandbox tag to check out and deploy; v1.0.8 or newer for AWS and Azure |
 | `AGENT_SANDBOX_ROOT` | fresh clone in the workspace | Use an existing agent-sandbox checkout as is |
 | `IMAGE_PREFIX` / `IMAGE_TAG` | `registry.k8s.io/agent-sandbox/` / `AGENT_SANDBOX_VERSION` | Controller images to deploy |
