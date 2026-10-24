@@ -1364,11 +1364,13 @@ func AddKarpenterPermissions(p *Policy, useCustomInstanceProfiles bool, useCusto
 			},
 		},
 		// AllowScopedDeletion: deleting is only allowed for the instances and launch templates
-		// that Karpenter created for this cluster.
+		// that Karpenter created for this cluster. Rebooting, which node repair uses, is scoped
+		// to the same instances.
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorset.Of(
 				"ec2:DeleteLaunchTemplate",
+				"ec2:RebootInstances",
 				"ec2:TerminateInstances",
 			),
 			Resource:  stringorset.Set([]string{instanceARN, launchTemplateARN}),
