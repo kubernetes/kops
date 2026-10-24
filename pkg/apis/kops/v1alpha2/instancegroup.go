@@ -51,6 +51,13 @@ type InstanceGroupList struct {
 // InstanceGroupRole string describes the roles of the nodes in this InstanceGroup (master or nodes)
 type InstanceGroupRole string
 
+// WellKnownService names a cluster endpoint that an instance group can serve.
+type WellKnownService string
+
+// ClusterComponent names a cluster component that kOps schedules onto a node rather than
+// running as a static pod.
+type ClusterComponent string
+
 type InstanceManager string
 
 // InstanceGroupSpec is the specification for an InstanceGroup
@@ -59,6 +66,12 @@ type InstanceGroupSpec struct {
 	Manager InstanceManager `json:"manager,omitempty"`
 	// Type determines the role of instances in this instance group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
+	// ServesWellKnownServices lists the cluster endpoints that should route traffic to this
+	// instance group. When unset it is derived from the roles.
+	ServesWellKnownServices []WellKnownService `json:"servesWellKnownServices,omitempty"`
+	// HostedComponents lists the cluster components that kOps schedules onto nodes, rather than
+	// running as static pods, which should be placed on this instance group.
+	HostedComponents []ClusterComponent `json:"hostedComponents,omitempty"`
 	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
 	// MinSize is the minimum size of the pool

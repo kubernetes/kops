@@ -14,6 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# InstanceGroup.Spec.Role is a comma-separated list of roles, so a group can carry more than one
+# (for example "APIServer,Scheduler"). Any code that treats it as a single value will silently
+# look at only one of the roles. This check looks for the two shapes that go wrong:
+#
+#   1. Comparing the role against a role constant with == or !=.
+#   2. Switching on the role, where only the first matching case runs.
+#
+# Use the Has* helpers to ask whether a group carries a role, or PrimaryRole() where exactly one
+# role can be represented (naming a cloud resource, selecting an IAM identity, a state-store
+# path). A switch that genuinely needs to match the whole value can opt out with a trailing
+# "kops:single-role-switch" comment explaining why.
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -23,30 +35,43 @@ cd "${KOPS_ROOT}"
 
 errors=0
 
-# Find all .go files, excluding vendor, .build, and the file where roles are defined.
-# We also exclude pkg/apis/kops/instancegroup.go
+# Exclude vendor, .build, and pkg/apis/kops/instancegroup.go, which is where the roles and the
+# helpers themselves are defined.
 files=$(find . -name "*.go" -not -path "./vendor/*" -not -path "./.build/*" -not -path "./pkg/apis/kops/instancegroup.go")
 
-# Regex to match == or != with InstanceGroupRole constants
-# We check for constants with or without package prefixes (e.g. kops., api., unversioned.)
-# We match both:
-#   variable == constant
-#   constant == variable
-#   variable != constant
-#   constant != variable
-REGEX='==[[:space:]]*([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer|Etcd|Scheduler|KubeControllerManager)\b|\b([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)[[:space:]]*==|!=[[:space:]]*([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)\b|\b([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)[[:space:]]*!='
+roles='(ControlPlane|Node|Bastion|APIServer|Etcd|Scheduler|KubeControllerManager)'
+# Role constants, with or without a package qualifier (kops., api., unversioned., ...).
+role_const="([a-zA-Z0-9_]+\.)?InstanceGroupRole${roles}\b"
 
-for file in $files; do
-    if grep -E "${REGEX}" "${file}" > /dev/null; then
-      echo "Verification failed in ${file}: direct comparison with InstanceGroupRole constant found:"
-        grep -n -E "${REGEX}" "${file}"
+# variable == constant, constant == variable, and the != forms.
+equality_regex="(==|!=)[[:space:]]*${role_const}|${role_const}[[:space:]]*(==|!=)"
+
+# switch on the role itself, e.g. "switch ig.Spec.Role {".
+switch_regex="switch[[:space:]]+[^{]*\.Spec\.Role[[:space:]]*\{"
+
+optout_marker='kops:single-role-switch'
+
+for file in ${files}; do
+    if grep -E "${equality_regex}" "${file}" > /dev/null; then
+        echo "Verification failed in ${file}: direct comparison with an InstanceGroupRole constant:"
+        grep -n -E "${equality_regex}" "${file}"
+        errors=$((errors + 1))
+    fi
+
+    if grep -E "${switch_regex}" "${file}" | grep -v "${optout_marker}" > /dev/null; then
+        echo "Verification failed in ${file}: switch on a possibly-composite InstanceGroup role:"
+        grep -n -E "${switch_regex}" "${file}" | grep -v "${optout_marker}"
         errors=$((errors + 1))
     fi
 done
 
 if [ "${errors}" -ne 0 ]; then
-  echo "Error: Found ${errors} files with direct InstanceGroupRole comparisons (== or !=). Use HasControlPlane(), HasNode(), HasBastion(), HasAPIServer(), HasEtcd(), HasScheduler() or HasKubeControllerManager() instead."
-    exit 1
+  echo
+  echo "Error: found ${errors} file(s) treating InstanceGroup.Spec.Role as a single role."
+  echo "Spec.Role is a comma-separated list. Use HasControlPlane(), HasNode(), HasBastion(),"
+  echo "HasAPIServer(), HasEtcd(), HasScheduler() or HasKubeControllerManager() to test for a"
+  echo "role, or PrimaryRole() where only one role can be represented."
+  exit 1
 fi
 
 echo "InstanceGroupRole comparison verification passed."

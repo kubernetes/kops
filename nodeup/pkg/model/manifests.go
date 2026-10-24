@@ -37,8 +37,9 @@ var _ fi.NodeupModelBuilder = &ManifestsBuilder{}
 func (b *ManifestsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	ctx := c.Context()
 
-	// Write etcd manifests (currently etcd <=> master)
-	if b.IsMaster || b.BootConfig.InstanceGroupRole.HasEtcd() {
+	// Write etcd manifests. Gated on etcd membership rather than role, so that etcd can be
+	// co-located with any control-plane role.
+	if b.HostsEtcd {
 		for _, manifest := range b.NodeupConfig.EtcdManifests {
 			p, err := vfs.Context.BuildVfsPath(manifest)
 			if err != nil {

@@ -116,7 +116,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		Zones:              azNumbers,
 	}
 
-	switch ig.Spec.Role {
+	switch ig.Spec.Role.PrimaryRole() {
 	case kops.InstanceGroupRoleControlPlane:
 		t.ApplicationSecurityGroups = append(t.ApplicationSecurityGroups, b.LinkToApplicationSecurityGroupControlPlane())
 	case kops.InstanceGroupRoleNode:
@@ -208,7 +208,7 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 		volumeSize = *spec.RootVolume.Size
 	} else {
 		var err error
-		volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(spec.Role)
+		volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(spec.Role.PrimaryRole())
 		if err != nil {
 			return nil, err
 		}
