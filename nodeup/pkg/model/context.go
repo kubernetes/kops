@@ -537,7 +537,10 @@ func (c *NodeupModelContext) ClusterName() string {
 }
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext) error {
-	f := b.Assets.FindMatches(regexp.MustCompile(".*"))
+	f := b.Assets.FindArchiveMatches(regexp.MustCompile(`^cni-plugins-.*\.(tgz|tar\.gz)$`))
+	if len(f) == 0 {
+		return fmt.Errorf("found no files extracted from a cni-plugins archive")
+	}
 
 	for name, res := range f {
 		c.AddTask(&nodetasks.File{
