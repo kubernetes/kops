@@ -27,11 +27,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 // +kops:fitask
@@ -214,7 +214,7 @@ func (lb *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
 
 	if len(fi.ValueOf(lb.ID)) > 0 {
 		// able to retrieve ID.
-		done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 			klog.V(2).Infof("Finding IP address for load balancer ID=%s", fi.ValueOf(lb.ID))
 			loadBalancer, _, err := loadBalancerService.Get(context.TODO(), fi.ValueOf(lb.ID))
 			if err != nil {

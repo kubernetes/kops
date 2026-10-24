@@ -23,9 +23,9 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2"
 	v2pools "github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/pools"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 // +kops:fitask
@@ -141,7 +141,7 @@ func (_ *PoolAssociation) CheckChanges(a, e, changes *PoolAssociation) error {
 }
 
 func GetServerFixedIP(client *gophercloud.ServiceClient, server *servers.Server, interfaceName string) (memberAddress string, err error) {
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		memberAddress, err = openstack.GetServerFixedIP(server, interfaceName)
 		if err != nil {
 			// sometimes provisioning interfaces is slow, that is why we need retry the interface from the server

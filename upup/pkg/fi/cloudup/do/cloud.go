@@ -35,8 +35,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/etcd"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
@@ -242,7 +242,7 @@ func (c *doCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 
 func (c *doCloudImplementation) GetVPCUUID(networkCIDR string, vpcName string) (string, error) {
 	vpcUUID := ""
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		vpcs, err := c.GetAllVPCs()
 		if err != nil {
 			return false, err
@@ -271,7 +271,7 @@ func (c *doCloudImplementation) GetVPCUUID(networkCIDR string, vpcName string) (
 
 func (c *doCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		// Note that this must match Digital Ocean's lb name
 		klog.V(2).Infof("Querying DO to find Loadbalancers for API (%q)", cluster.Name)
 

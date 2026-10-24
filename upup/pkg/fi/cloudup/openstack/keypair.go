@@ -22,7 +22,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/keypairs"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/try"
 )
 
 func (c *openstackCloud) GetKeypair(name string) (*keypairs.KeyPair, error) {
@@ -31,7 +31,7 @@ func (c *openstackCloud) GetKeypair(name string) (*keypairs.KeyPair, error) {
 
 func getKeypair(c OpenstackCloud, name string) (*keypairs.KeyPair, error) {
 	var k *keypairs.KeyPair
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		rs, err := keypairs.Get(context.TODO(), c.ComputeClient(), name, nil).Extract()
 		if err != nil {
 			if isNotFound(err) {
@@ -58,7 +58,7 @@ func (c *openstackCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypair
 func createKeypair(c OpenstackCloud, opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error) {
 	var k *keypairs.KeyPair
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		v, err := keypairs.Create(context.TODO(), c.ComputeClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating keypair: %v", err)
@@ -80,7 +80,7 @@ func (c *openstackCloud) DeleteKeyPair(name string) error {
 }
 
 func deleteKeyPair(c OpenstackCloud, name string) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := keypairs.Delete(context.TODO(), c.ComputeClient(), name, nil).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting keypair: %v", err)
@@ -105,7 +105,7 @@ func (c *openstackCloud) ListKeypairs() ([]keypairs.KeyPair, error) {
 
 func listKeypairs(c OpenstackCloud) ([]keypairs.KeyPair, error) {
 	var k []keypairs.KeyPair
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := keypairs.List(c.ComputeClient(), nil).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing keypairs: %v", err)

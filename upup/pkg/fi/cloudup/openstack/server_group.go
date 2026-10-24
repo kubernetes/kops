@@ -28,8 +28,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 func (c *openstackCloud) CreateServerGroup(opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error) {
@@ -39,7 +39,7 @@ func (c *openstackCloud) CreateServerGroup(opt servergroups.CreateOptsBuilder) (
 func createServerGroup(c OpenstackCloud, opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error) {
 	var i *servergroups.ServerGroup
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		v, err := servergroups.Create(context.TODO(), c.ComputeClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating server group: %v", err)
@@ -63,7 +63,7 @@ func (c *openstackCloud) ListServerGroups(opts servergroups.ListOptsBuilder) ([]
 func listServerGroups(c OpenstackCloud, opts servergroups.ListOptsBuilder) ([]servergroups.ServerGroup, error) {
 	var sgs []servergroups.ServerGroup
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := servergroups.List(c.ComputeClient(), opts).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing server groups: %v", err)
@@ -141,7 +141,7 @@ func (c *openstackCloud) DeleteServerGroup(groupID string) error {
 }
 
 func deleteServerGroup(c OpenstackCloud, groupID string) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := servergroups.Delete(context.TODO(), c.ComputeClient(), groupID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting server group: %v", err)

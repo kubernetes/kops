@@ -22,7 +22,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/routers"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/try"
 )
 
 func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, error) {
@@ -32,7 +32,7 @@ func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, er
 func listRouters(c OpenstackCloud, opt routers.ListOpts) ([]routers.Router, error) {
 	var rs []routers.Router
 
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(readBackoff, func() (bool, error) {
 		allPages, err := routers.List(c.NetworkingClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing routers: %v", err)
@@ -61,7 +61,7 @@ func (c *openstackCloud) CreateRouter(opt routers.CreateOptsBuilder) (*routers.R
 func createRouter(c OpenstackCloud, opt routers.CreateOptsBuilder) (*routers.Router, error) {
 	var r *routers.Router
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		v, err := routers.Create(context.TODO(), c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating router: %v", err)
@@ -85,7 +85,7 @@ func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddI
 func createRouterInterface(c OpenstackCloud, routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error) {
 	var i *routers.InterfaceInfo
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		v, err := routers.AddInterface(context.TODO(), c.NetworkingClient(), routerID, opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating router interface: %v", err)
@@ -107,7 +107,7 @@ func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.Remo
 }
 
 func deleteRouterInterface(c OpenstackCloud, routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		_, err := routers.RemoveInterface(context.TODO(), c.NetworkingClient(), routerID, opt).Extract()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting router interface: %v", err)
@@ -131,7 +131,7 @@ func (c *openstackCloud) DeleteRouter(routerID string) error {
 }
 
 func deleteRouter(c OpenstackCloud, routerID string) error {
-	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
+	done, err := try.RetryWithBackoff(deleteBackoff, func() (bool, error) {
 		err := routers.Delete(context.TODO(), c.NetworkingClient(), routerID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting router: %v", err)
