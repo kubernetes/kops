@@ -110,6 +110,7 @@
     {
       "Action": [
         "ec2:DeleteLaunchTemplate",
+        "ec2:RebootInstances",
         "ec2:TerminateInstances"
       ],
       "Condition": {
