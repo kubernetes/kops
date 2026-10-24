@@ -157,6 +157,39 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 	if e.RolePolicyDocument == nil {
 		klog.V(2).Infof("Deleting IAM role %q", fi.ValueOf(a.Name))
 
+		ip, err := findIAMInstanceProfile(ctx, t.Cloud, fi.ValueOf(a.Name))
+		if err != nil {
+			return err
+		}
+		if ip != nil {
+			ownershipTag := "kubernetes.io/cluster/" + t.Cloud.Tags()[awsup.TagClusterName]
+			if mapIAMTagsToMap(ip.Tags)[ownershipTag] != "owned" {
+				klog.Warningf("Not deleting IAM role %q because IAM instance profile %q is not owned by the cluster", fi.ValueOf(a.Name), aws.ToString(ip.InstanceProfileName))
+				return nil
+			}
+
+			for _, role := range ip.Roles {
+				klog.V(2).Infof("Removing role %q from IAM instance profile %q", aws.ToString(role.RoleName), aws.ToString(ip.InstanceProfileName))
+				request := &iam.RemoveRoleFromInstanceProfileInput{
+					InstanceProfileName: ip.InstanceProfileName,
+					RoleName:            role.RoleName,
+				}
+				_, err := t.Cloud.IAM().RemoveRoleFromInstanceProfile(ctx, request)
+				if err != nil && !awsup.IsIAMNoSuchEntityException(err) {
+					return fmt.Errorf("error removing role %q from IAM instance profile %q: %v", aws.ToString(role.RoleName), aws.ToString(ip.InstanceProfileName), err)
+				}
+			}
+
+			klog.V(2).Infof("Deleting IAM instance profile %q", aws.ToString(ip.InstanceProfileName))
+			request := &iam.DeleteInstanceProfileInput{
+				InstanceProfileName: ip.InstanceProfileName,
+			}
+			_, err := t.Cloud.IAM().DeleteInstanceProfile(ctx, request)
+			if err != nil && !awsup.IsIAMNoSuchEntityException(err) {
+				return fmt.Errorf("error deleting IAM instance profile %q: %v", aws.ToString(ip.InstanceProfileName), err)
+			}
+		}
+
 		var attachedPolicies []iamtypes.AttachedPolicy
 		var policyNames []string
 
