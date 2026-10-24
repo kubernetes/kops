@@ -270,6 +270,7 @@ func TestInstanceRenderLinodeCreateWithPublicAndVPCInterfaces(t *testing.T) {
 		Count:                  1,
 		Subnet:                 &Subnet{ID: new(42)},
 		RequirePublicInterface: &requirePublicInterface,
+		PublicFirewall:         &Firewall{ID: new(55)},
 		Tags:                   []string{"kops.k8s.io/cluster:example.k8s.local"},
 		AuthorizedKeys:         []*SSHKey{{Name: new("example-k8s-local-default"), PublicKey: &publicKey}},
 		UserData:               userData,
@@ -314,6 +315,12 @@ func TestInstanceRenderLinodeCreateWithPublicAndVPCInterfaces(t *testing.T) {
 	if got, want := client.LastCreateInstanceOpts.LinodeInterfaces[1].VPC.SubnetID, 42; got != want {
 		t.Fatalf("unexpected VPC subnet ID: got %d, want %d", got, want)
 	}
+	if got, want := fi.ValueOf(client.LastCreateInstanceOpts.LinodeInterfaces[0].FirewallID), 55; got != want {
+		t.Fatalf("unexpected public interface firewall ID: got %d, want %d", got, want)
+	}
+	if got, want := fi.ValueOf(client.LastCreateInstanceOpts.LinodeInterfaces[1].FirewallID), -1; got != want {
+		t.Fatalf("unexpected VPC interface firewall ID: got %d, want %d", got, want)
+	}
 	if !strings.HasPrefix(client.LastCreateInstanceOpts.Label, "nodes-us-east-") {
 		t.Fatalf("unexpected created label: got %q", client.LastCreateInstanceOpts.Label)
 	}
@@ -356,6 +363,9 @@ func TestInstanceRenderLinodeCreateWithVPCOnlyInterfaceAndExistingSSHKey(t *test
 	}
 	if got, want := client.LastCreateInstanceOpts.LinodeInterfaces[0].VPC.SubnetID, 42; got != want {
 		t.Fatalf("unexpected VPC subnet ID: got %d, want %d", got, want)
+	}
+	if got, want := fi.ValueOf(client.LastCreateInstanceOpts.LinodeInterfaces[0].FirewallID), -1; got != want {
+		t.Fatalf("unexpected VPC interface firewall ID: got %d, want %d", got, want)
 	}
 	if got, want := client.LastCreateInstanceOpts.AuthorizedKeys, []string{testLinodeSSHPublicKey}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("unexpected authorized keys: got %v, want %v", got, want)
