@@ -33,8 +33,10 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}"
 
 export CLOUD_PROVIDER="${CLOUD_PROVIDER:-gce}"
-# CNI is the upstream job's name for the --networking value (cilium or kindnet in its CI).
-export NETWORKING="${CNI:-${NETWORKING:-cilium}}"
+# CNI is the upstream job's name for the --networking value.
+export NETWORKING="${CNI:-${NETWORKING:-kindnet}}"
+# Latest Kubernetes dev build; kubetest2-kops resolves the marker to the build's base URL.
+K8S_VERSION="${K8S_VERSION:-https://dl.k8s.io/ci/latest.txt}"
 
 AGENT_SANDBOX_REPO="${AGENT_SANDBOX_REPO:-https://github.com/kubernetes-sigs/agent-sandbox}"
 AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
@@ -42,48 +44,59 @@ AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-}"
 # to the cluster are pinned to the same published release tag.
 export IMAGE_PREFIX="${IMAGE_PREFIX:-registry.k8s.io/agent-sandbox/}"
 
-# 3 workers behind a control plane of the same 8 vCPU / 32 GiB shape on every
-# cloud, the profile the kOps jobs run; AWS and Azure use each cloud's closest
-# match to the GCE shapes. The control-plane size does not follow
-# STRESS_NODE_COUNT, so a larger run sets STRESS_CONTROL_PLANE_SIZE as well.
+# 3 workers of 16 vCPUs / 64 GiB on every cloud, the profile the kOps jobs run:
+# a pod lifecycle costs about 1 CPU-second on the node, so an 8 vCPU worker
+# tops out below 10 pods/s on CPU alone. The control plane is c3-standard-22 on
+# GCE, the c3 size above 8 vCPUs, and 16 vCPUs on AWS and Azure, each cloud's
+# closest match. The control-plane size does not follow STRESS_NODE_COUNT, so
+# a larger run sets STRESS_CONTROL_PLANE_SIZE as well.
 STRESS_NODE_COUNT="${STRESS_NODE_COUNT:-3}"
 STRESS_NODE_CIDR_MASK_SIZE="${STRESS_NODE_CIDR_MASK_SIZE:-23}"
 STRESS_ETCD_QUOTA_BYTES="${STRESS_ETCD_QUOTA_BYTES:-8589934592}"
+STRESS_ETCD_UNSAFE_NO_FSYNC="${STRESS_ETCD_UNSAFE_NO_FSYNC:-true}"
 STRESS_VALIDATE_WAIT="${STRESS_VALIDATE_WAIT:-25m}"
 
 OVERRIDES="${OVERRIDES-}"
 case "${CLOUD_PROVIDER}" in
   gce)
     export ZONES="${ZONES:-us-central1-a}"
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-8}"
-    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-n2-standard-8}"
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-c3-standard-22}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-n2-standard-16}"
     # Boskos projects do not allow IAM changes, so the VMs run as the default compute service account.
     OVERRIDES="${OVERRIDES} --gce-service-account=default"
     # Root volumes on pd-ssd: pod launch is fsync-bound on pd-standard, and the c3
     # control-plane machine family does not support pd-standard boot disks.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-pd-ssd}"
     OVERRIDES="${OVERRIDES} --control-plane-volume-type=pd-ssd"
+    # Ubuntu 26.10, the image the kOps u2610 distro jobs run (pinned in
+    # test-infra's config/jobs/kubernetes/kops/pinned.list).
+    INSTANCE_IMAGE="${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2610-stonking-amd64-v20261014}"
     ;;
   aws)
     # No default zone: kubetest2-kops picks a zone that offers both instance
-    # types, in a random region per run (us-east-1a had no m6i.2xlarge
-    # capacity). Set ZONES to pin one.
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-m7i.2xlarge}"
-    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.2xlarge}"
-    # gp3, kOps' AWS default, is an SSD with a 3000 IOPS baseline at any size.
+    # types, in a random region per run. Set ZONES to pin one.
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-m7i.4xlarge}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-m6i.4xlarge}"
+    # gp3, kOps' AWS default, with IOPS and throughput raised once common.sh
+    # has defined the kubetest2 command below.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-gp3}"
+    # Ubuntu 26.10, the image the kOps u2610 distro jobs run (pinned in
+    # test-infra's config/jobs/kubernetes/kops/pinned.list).
+    INSTANCE_IMAGE="${INSTANCE_IMAGE:-099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-stonking-26.10-amd64-server-20261020}"
     ;;
   azure)
     # No default zone: kubetest2-kops picks uksouth-1 or uksouth-2, where the
     # other kOps Azure jobs run. Ddsv5 is Dsv5 plus a local temp disk, and the
     # CI subscription's Ddsv5 quota there is 250 cores against the 65-core
     # default for Dsv5.
-    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-Standard_D8ds_v5}"
-    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D8ds_v5}"
-    # Worker roots are ephemeral OS disks on the VM's 300 GiB temp disk: pod
+    STRESS_CONTROL_PLANE_SIZE="${STRESS_CONTROL_PLANE_SIZE:-Standard_D16ds_v5}"
+    STRESS_NODE_SIZE="${STRESS_NODE_SIZE:-Standard_D16ds_v5}"
+    # Worker roots are ephemeral OS disks on the VM's 600 GiB temp disk: pod
     # launch is fsync-bound, and a 128 GB Premium_LRS root (P10, 500 IOPS)
     # started pods three to four times slower than on gp3.
     STRESS_NODE_VOLUME_TYPE="${STRESS_NODE_VOLUME_TYPE:-ResourceDisk}"
+    # Ubuntu 26.10 like AWS and GCE: Canonical's gen2 server image of the 26.10 release.
+    INSTANCE_IMAGE="${INSTANCE_IMAGE:-Canonical:ubuntu-26_10:server:26.10.202610200}"
     # kOps' Azure support is alpha and feature-gated, for every kops invocation.
     if [[ ",${KOPS_FEATURE_FLAGS:-}," != *,Azure,* ]]; then
       export KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS:+${KOPS_FEATURE_FLAGS},}Azure"
@@ -94,6 +107,10 @@ case "${CLOUD_PROVIDER}" in
     exit 1
     ;;
 esac
+# Ubuntu 26.10 on every cloud: under pod churn the 24.04 kernel (6.17) keeps
+# dying memory cgroups pinned, 11,000 to 14,500 per worker after a 22-minute
+# run with about 1 GiB of kernel memory, and the 7.3 kernel frees them.
+OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE}"
 OVERRIDES="${OVERRIDES} --control-plane-size=${STRESS_CONTROL_PLANE_SIZE}"
 OVERRIDES="${OVERRIDES} --node-count=${STRESS_NODE_COUNT}"
 OVERRIDES="${OVERRIDES} --node-size=${STRESS_NODE_SIZE}"
@@ -127,17 +144,32 @@ OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeScheduler.burst=500"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[0].manager.listenMetricsURLs=http://0.0.0.0:2391"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[1].manager.listenMetricsURLs=http://0.0.0.0:2392"
 # Each kubelet status sync is a serialized GET+PATCH, which caps churn at about
-# 5 pods/s/node under the default QPS. Event emission has its own limiter and
-# drops extra events, which is acceptable for a benchmark.
+# 5 pods/s/node under the default QPS, and bursts above the kubelet's default
+# burst of 100 wait in its client rate limiter. Event emission has its own
+# limiter and drops extra events, which is acceptable for a benchmark.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.kubeAPIQPS=500"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.kubeAPIBurst=500"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventQPS=5"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.eventBurst=50"
-# /23 per node allows up to 510 pods per node and 4096 nodes within the /11 pod
-# CIDR kOps defaults to with cilium (512 within the /14 that GCE IP aliases use
-# with kindnet).
+# /23 per node allows up to 510 pods per node; the pod CIDR is the /14 of GCE
+# IP aliases with kindnet (512 nodes) and 100.96.0.0/11 otherwise (4096).
 OVERRIDES="${OVERRIDES} --set=cluster.spec.kubeControllerManager.nodeCIDRMaskSize=${STRESS_NODE_CIDR_MASK_SIZE}"
-# Above etcd's 2GiB default quota every write fails with NOSPACE until the alarm is cleared.
+# The stress tool sizes every phase against the workers' spare pod slots and
+# refuses a run whose peak exceeds them. At the kubelet default of 110 pods per
+# node, 3 workers have 330 slots and DaemonSets and system pods take about 19,
+# while the resident fill pods (10 per node) plus 300 in flight need 330, so
+# the default refuses mif300. 250 per node gives 750 slots; the /23 node CIDR
+# above allows 510 pods per node.
+OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.maxPods=250"
+# Above etcd's 2 GiB default quota, puts fail with NOSPACE until the alarm is cleared.
 OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${STRESS_ETCD_QUOTA_BYTES}"
+# etcd's WAL fsync paces the control plane rather than CPU (p99 55 ms on
+# Azure's StandardSSD_LRS etcd volumes, 5 ms on gp3) and the launch latency
+# tails follow it. The benchmark measures the launch pipeline, not durability,
+# and the clusters are discarded after the run, so etcd runs with
+# --unsafe-no-fsync. etcd-manager passes ETCD_* variables through to etcd;
+# [*] covers both clusters.
+OVERRIDES="${OVERRIDES} --set=cluster.spec.etcdClusters[*].manager.env=ETCD_UNSAFE_NO_FSYNC=${STRESS_ETCD_UNSAFE_NO_FSYNC}"
 if [[ "${NETWORKING}" == "kindnet" && "${STRESS_KINDNET_NETWORK_POLICIES:-false}" != "true" ]]; then
   # kindnet's NetworkPolicy engine watches every pod from every node; the benchmark does not use NetworkPolicy.
   OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.kindnet.networkPolicies=false"
@@ -146,21 +178,37 @@ if [[ "${NETWORKING}" == "cilium" ]]; then
   # Serve cilium-agent metrics on :9090, where the stress tool reads endpoint regeneration latency.
   OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.enablePrometheusMetrics=true"
 fi
+# Serve containerd's CRI and CNI timers on :1338, which the stress tool scrapes
+# through the node-exporter pod proxy to split network setup out of sandbox
+# creation; like the other metrics ports it is not reachable from outside the
+# cluster. kOps writes containerd config version 4, where the listener is the
+# io.containerd.server.v1.metrics plugin. The single quotes keep the inner
+# double quotes intact through kubetest2's create-args split.
+OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.server.v1.metrics\".address=0.0.0.0:1338'"
 # CGROUP_DRIVER=cgroupfs runs the benchmark without the systemd cgroup driver,
 # whose per-container systemd round trips are a cost on the pod launch path.
-# kOps 1.34+ always configures systemd and ignores spec.kubelet.cgroupDriver,
-# so the switch is made in containerd instead: Kubernetes 1.34+ kubelets take
-# the cgroup driver from the runtime. The single quotes keep the inner double
-# quotes intact through kubetest2's create-args split.
-if [[ "${CGROUP_DRIVER:-systemd}" == "cgroupfs" ]]; then
-  OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.cri.v1.runtime\".containerd.runtimes.runc.options.SystemdCgroup=false'"
-fi
+# kOps sets containerd's runc SystemdCgroup option from spec.kubelet.cgroupDriver.
+case "${CGROUP_DRIVER:-systemd}" in
+  systemd) ;;
+  cgroupfs) OVERRIDES="${OVERRIDES} --set=cluster.spec.kubelet.cgroupDriver=cgroupfs" ;;
+  *)
+    echo "Unsupported CGROUP_DRIVER=${CGROUP_DRIVER}: expected systemd or cgroupfs" >&2
+    exit 1
+    ;;
+esac
 
 source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
 
 # GCE provisioning on shared boskos projects intermittently stalls past
 # kubetest2-kops' 20m default; the budget applies on every cloud.
 KUBETEST2="${KUBETEST2} --validation-wait=${STRESS_VALIDATE_WAIT}"
+if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  # gp3's default IOPS saturate under pod churn and inflate containerd's
+  # create operations, so the worker roots are provisioned above the
+  # benchmark's write rate. One value per flag: kubetest2 splits the value on
+  # commas.
+  KUBETEST2="${KUBETEST2} --node-instance-group-overrides=spec.rootVolume.iops=16000 --node-instance-group-overrides=spec.rootVolume.throughput=1000"
+fi
 
 kops-acquire-latest
 
@@ -172,8 +220,9 @@ export KUBECONFIG
 
 if [[ "${NETWORKING}" == "cilium" ]]; then
   # Raise cilium-agent's endpoint-create API rate limit (0.5/s with auto-adjust
-  # by default) and its client-go budget (5 QPS, burst 10). Both otherwise cap
-  # pod launch throughput below what the datapath can do.
+  # by default) and its client-go budget (10 QPS, burst 20 in the Cilium 1.18
+  # kOps deploys). Both otherwise cap pod launch throughput below what the
+  # datapath can do.
   kubectl --namespace kube-system patch configmap cilium-config --type merge \
     --patch '{"data":{"api-rate-limit":"endpoint-create=rate-limit:100/s,rate-burst:100,parallel-requests:32,auto-adjust:false","k8s-client-qps":"50","k8s-client-burst":"100"}}'
   # kOps deploys the cilium DaemonSet with updateStrategy=OnDelete, so the
@@ -190,6 +239,16 @@ if [[ -z "${AGENT_SANDBOX_ROOT:-}" ]]; then
     AGENT_SANDBOX_VERSION=$(python3 dev/tools/latest-published-tag)
   fi
   git checkout --quiet "${AGENT_SANDBOX_VERSION}"
+  # Apply the upstream changes in patches/ that the tag lacks. A patch already
+  # in the checkout is skipped, so it can stay until a tag carries it.
+  for patch in "${REPO_ROOT}"/tests/e2e/scenarios/agent-sandbox/patches/*.patch; do
+    [[ -e "${patch}" ]] || continue
+    if git apply --reverse --check "${patch}" 2>/dev/null; then
+      echo "Already in ${AGENT_SANDBOX_VERSION}, skipping: ${patch##*/}"
+    else
+      git apply --verbose "${patch}"
+    fi
+  done
 fi
 cd "${AGENT_SANDBOX_ROOT}"
 # deploy-to-kube and test-e2e read IMAGE_PREFIX and IMAGE_TAG from the environment.
@@ -200,9 +259,19 @@ export IMAGE_TAG
 echo "Using agent-sandbox checkout ${AGENT_SANDBOX_ROOT} ($(git describe --tags --always)) with images ${IMAGE_PREFIX}*:${IMAGE_TAG}"
 
 # node-exporter gives the report node-level CPU (including iowait), memory and
-# disk stats; the stress tool scrapes it through the apiserver pod proxy.
+# disk stats; the stress tool scrapes it through the apiserver pod proxy and
+# keeps every metric. patches/node-exporter-collectors.patch adds the
+# collectors that help tell CPU queueing, I/O wait and other uninterruptible
+# sleep apart in a load1 rise, and the CPU model.
 kubectl apply -f test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
 kubectl --namespace kube-system rollout status daemonset/node-exporter --timeout=3m
+# The stress tool's scrapes are best-effort, so fail here if a node's containerd
+# metrics listener is missing.
+node_exporter_pod_names=$(kubectl --namespace kube-system get pods --selector=app.kubernetes.io/name=node-exporter -o jsonpath='{.items[*].metadata.name}')
+read -r -a node_exporter_pods <<< "${node_exporter_pod_names}"
+for pod in "${node_exporter_pods[@]:?No node-exporter pods found}"; do
+  kubectl --request-timeout=10s get --raw "/api/v1/namespaces/kube-system/pods/http:${pod}:1338/proxy/v1/metrics" > /dev/null
+done
 
 # CONTROLLER_ARGS appends controller flags, e.g. --enable-pprof-debug so the
 # stress tool can capture controller profiles during claims phases.
@@ -215,19 +284,26 @@ dev/tools/test-e2e --suite=benchmarks --image-prefix="${IMAGE_PREFIX}"
 STRESS_OUTPUT_DIR="${ARTIFACTS:-${WORKSPACE}}/stress-test"
 mkdir -p "${STRESS_OUTPUT_DIR}"
 
+# kubectl logs reads only the current log file, which the kubelet rotates at
+# 10Mi, and the controller writes about 50 KB/s under churn, so a snapshot
+# covers only the last minutes. Following the log for the whole run keeps all
+# of it: the kubelet's follow reader reopens the file after each rotation.
+kubectl logs --follow deployment/agent-sandbox-controller --namespace agent-sandbox-system > "${STRESS_OUTPUT_DIR}/controller.log" &
+controller_log_pid=$!
+
 # Phases are documented in test/stress/phase.go. The default list is sized for
-# the 3-worker default: launch latency, then throughput at mif200, mif100 and
-# mif50 on a mostly empty cluster. Throughput phases run for at least 300 s
-# (the tool's default is 45 s): steady-state throughput does not depend on the
-# phase length, and the extra pod churn per worker makes the node memory and
-# cgroup trends readable. The longer phases need the 90m tool timeout. The
-# scrape interval stays at the tool's 15 s default, exposed as a knob.
+# the 3-worker default: launch latency, then throughput at mif300 on a mostly
+# empty cluster. The throughput phase runs for at least 300 s (the tool's
+# default is 45 s): steady-state throughput does not depend on the phase
+# length, and the extra pod churn per worker makes the node memory and cgroup
+# trends readable. The 90m tool timeout covers the longer phase. The scrape
+# interval stays at the tool's 15 s default, exposed as a knob.
 set +o errexit
-# STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass tool flags
-# verbatim (e.g. --client-connections=4 for the claims profile).
+# STRESS_EXTRA_ARGS is word-split on purpose, so callers can pass several tool
+# flags (e.g. --client-connections=4 for the claims profile).
 # shellcheck disable=SC2086
 go run ./test/stress \
-  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:200,throughput-mif:100,throughput-mif:50}" \
+  --phases="${STRESS_PHASES:-fill,probe,throughput-mif:300}" \
   --fill-per-node="${STRESS_FILL_PER_NODE:-10}" \
   --probe-count="${STRESS_PROBE_COUNT:-30}" \
   --throughput-count="${STRESS_THROUGHPUT_COUNT:-500}" \
@@ -241,18 +317,31 @@ go run ./test/stress \
 stress_status=$?
 set -o errexit
 
-kubectl logs deployment/agent-sandbox-controller --namespace agent-sandbox-system --tail=-1 > "${STRESS_OUTPUT_DIR}/controller.log" || true
+# kill fails when the stream ended early, on a dropped connection or a
+# controller restart: keep what it got and add the end-of-run snapshot.
+if kill "${controller_log_pid}" 2>/dev/null; then
+  wait "${controller_log_pid}" || true
+else
+  kubectl logs deployment/agent-sandbox-controller --namespace agent-sandbox-system --tail=-1 > "${STRESS_OUTPUT_DIR}/controller-tail.log" || true
+fi
 kubectl get pods -A -o wide > "${STRESS_OUTPUT_DIR}/pods.txt" || true
 kubectl get nodes -o wide > "${STRESS_OUTPUT_DIR}/nodes.txt" || true
 
-# The HTML report is rendered next to the raw data it is built from.
+# The HTML report is rendered next to the raw data it is built from. A report
+# failure must not replace the stress result or skip the Spyglass link below.
 REPORT_OUTPUT_DIR="${STRESS_OUTPUT_DIR}/report"
-python3 -m venv "${WORKSPACE}/report-venv"
-"${WORKSPACE}/report-venv/bin/pip" install --quiet 'duckdb>=1,<2' 'jinja2>=3,<4'
-"${WORKSPACE}/report-venv/bin/python3" test/stress/generate-report/generate_report.py \
-  --input-dir "${STRESS_OUTPUT_DIR}" \
-  --output-dir "${REPORT_OUTPUT_DIR}"
-echo "Stress test report written to ${REPORT_OUTPUT_DIR}"
+report_status=0
+python3 -m venv "${WORKSPACE}/report-venv" \
+  && "${WORKSPACE}/report-venv/bin/pip" install --quiet 'duckdb>=1,<2' 'jinja2>=3,<4' \
+  && "${WORKSPACE}/report-venv/bin/python3" test/stress/generate-report/generate_report.py \
+    --input-dir "${STRESS_OUTPUT_DIR}" \
+    --output-dir "${REPORT_OUTPUT_DIR}" \
+  || report_status=$?
+if (( report_status == 0 )); then
+  echo "Stress test report written to ${REPORT_OUTPUT_DIR}"
+else
+  echo "Stress test report generation failed with status ${report_status}" >&2
+fi
 
 # Spyglass renders artifacts/*.link.txt files as links on the prow job page. A
 # gs:// URL opens directly in the GCS browser, while an https:// URL goes
@@ -268,4 +357,7 @@ if [[ -n "${ARTIFACTS:-}" && -n "${JOB_NAME:-}" && -n "${BUILD_ID:-}" ]]; then
   echo "Stress test report: https://storage.googleapis.com/${REPORT_PATH}"
 fi
 
-exit "${stress_status}"
+if (( stress_status != 0 )); then
+  exit "${stress_status}"
+fi
+exit "${report_status}"
