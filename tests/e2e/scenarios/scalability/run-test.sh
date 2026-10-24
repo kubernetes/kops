@@ -176,10 +176,13 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=120")
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=io2")
-  create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true")
-  create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.defaultLoadBalancerScheme=internet-facing")
-  create_args+=("--set=cluster.spec.certManager.enabled=true")
-
+  if [[ "${ENABLE_AWS_LOAD_BALANCER_CONTROLLER:-false}" == "true" ]]; then
+    create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true")
+    create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.defaultLoadBalancerScheme=internet-facing")
+    create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.cpuLimit=${AWS_LOAD_BALANCER_CONTROLLER_CPU_LIMIT:-400m}")
+    create_args+=("--set=cluster.spec.cloudProvider.aws.loadBalancerController.memoryLimit=${AWS_LOAD_BALANCER_CONTROLLER_MEMORY_LIMIT:-1Gi}")
+    create_args+=("--set=cluster.spec.certManager.enabled=true")
+  fi
 fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
