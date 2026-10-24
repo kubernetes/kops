@@ -8,7 +8,7 @@ kind: Kustomization
 helmCharts:
   - name: karpenter
     repo: oci://public.ecr.aws/karpenter
-    version: "1.13.0"
+    version: "1.15.1"
     releaseName: karpenter
     namespace: kube-system
     valuesFile: helm-values.yaml
