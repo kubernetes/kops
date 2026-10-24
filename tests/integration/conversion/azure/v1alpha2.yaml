@@ -9,7 +9,19 @@ spec:
   - proxy.api.minimal.example.com
   api:
     dns: {}
-  authentication: {}
+  authentication:
+    oidc:
+      clientID: oidc-client
+      groupsClaims:
+      - groupclaim1
+      - groupclaim2
+      groupsPrefix: 'oidcgroup:'
+      issuerURL: https://oidc-issuer.nonexistent
+      requiredClaims:
+        claim1: value1
+        claim2: value2
+      usernameClaim: user
+      usernamePrefix: 'oidc:'
   authorization:
     alwaysAllow: {}
   channel: stable
