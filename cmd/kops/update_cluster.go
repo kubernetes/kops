@@ -113,6 +113,10 @@ type CoreUpdateClusterOptions struct {
 	// The goal is that the cluster can keep running even during more disruptive
 	// infrastructure changes.
 	Prune bool
+
+	// SuppressRollingUpdateHint skips the "kops rolling-update cluster" suggestion.
+	// Reconcile rolls instances itself, so that hint is misleading there.
+	SuppressRollingUpdateHint bool
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -225,7 +229,7 @@ type UpdateClusterResults struct {
 func RunCoreUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CoreUpdateClusterOptions, connectionOptions kubeconfig.CreateKubecfgOptions) (*UpdateClusterResults, error) {
 	opt := &UpdateClusterOptions{}
 	opt.CoreUpdateClusterOptions = *c
-	opt.Reconcile = false
+	opt.Reconcile = c.SuppressRollingUpdateHint
 	opt.CreateKubecfgOptions = connectionOptions
 	opt.CreateKubecfgOptions.CreateKubecfg = false
 	return RunUpdateCluster(ctx, f, out, opt)
