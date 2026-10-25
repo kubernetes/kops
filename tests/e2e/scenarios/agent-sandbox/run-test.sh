@@ -185,6 +185,10 @@ fi
 # io.containerd.server.v1.metrics plugin. The single quotes keep the inner
 # double quotes intact through kubetest2's create-args split.
 OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.server.v1.metrics\".address=0.0.0.0:1338'"
+# containerd brings up lo in the pod network namespace itself instead of
+# running the loopback CNI plugin for every sandbox, which takes one plugin
+# process and its RTNL work off each CNI ADD and DEL.
+OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.cri.v1.runtime\".cni.use_internal_loopback=true'"
 # CGROUP_DRIVER=cgroupfs runs the benchmark without the systemd cgroup driver,
 # whose per-container systemd round trips are a cost on the pod launch path.
 # kOps sets containerd's runc SystemdCgroup option from spec.kubelet.cgroupDriver.
