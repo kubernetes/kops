@@ -195,6 +195,11 @@ if [[ "${NETWORKING}" == "kindnet" ]]; then
   # otherwise; a call without either writes nothing. The plugin inherits
   # containerd's environment, and the node dump collects this file.
   OVERRIDES="${OVERRIDES} --set=cluster.spec.containerd.env=CNI_LOG_FILE=/var/log/cni-kindnet.log"
+  # cni-kindnet v1.0.2 never retries a failed pod interface set-up and leaves
+  # the veth pair of a failed attempt behind. This image is upstream main with
+  # the fix (hakman/kindnet branch cni-fix-interface-retry), so a failed
+  # attempt is logged to CNI_LOG_FILE and retried.
+  OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.kindnet.image=docker.io/hakman/kindnet:v1.0.2-23-g32cbbf7"
 fi
 # CGROUP_DRIVER=cgroupfs runs the benchmark without the systemd cgroup driver,
 # whose per-container systemd round trips are a cost on the pod launch path.
