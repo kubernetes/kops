@@ -42,6 +42,8 @@ type ContainerdConfig struct {
 	ConfigAdditions map[string]intstr.IntOrString `json:"configAdditions,omitempty"`
 	// ConfigOverride is the complete containerd config file provided by the user.
 	ConfigOverride *string `json:"configOverride,omitempty"`
+	// Env sets environment variables for the containerd service.
+	Env []EnvVar `json:"env,omitempty"`
 	// LogLevel controls the logging details [trace, debug, info, warn, error, fatal, panic] (default "info").
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Packages overrides the URL and hash for the packages.
