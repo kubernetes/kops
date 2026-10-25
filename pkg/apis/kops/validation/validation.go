@@ -2051,6 +2051,8 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 
 	allErrs = append(allErrs, validateContainerdRegistryMirrors(config.RegistryMirrors, fldPath.Child("registryMirrors"))...)
 
+	allErrs = append(allErrs, validateContainerdEnv(config.Env, fldPath.Child("env"))...)
+
 	if config.NvidiaGPU != nil {
 		allErrs = append(allErrs, validateNvidiaConfig(cluster, config.NvidiaGPU, fldPath.Child("nvidia"), inClusterConfig)...)
 	}
@@ -2059,6 +2061,25 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 		allErrs = append(allErrs, validateGVisorConfig(fldPath.Child("gvisor"), inClusterConfig)...)
 	}
 
+	return allErrs
+}
+
+func validateContainerdEnv(env []kops.EnvVar, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	seen := sets.New[string]()
+	for i, e := range env {
+		namePath := fldPath.Index(i).Child("name")
+		for _, msg := range utilvalidation.IsCIdentifier(e.Name) {
+			allErrs = append(allErrs, field.Invalid(namePath, e.Name, msg))
+		}
+		if e.Name == "CONTAINERD_OPTS" {
+			allErrs = append(allErrs, field.Forbidden(namePath, "CONTAINERD_OPTS is set by kOps"))
+		}
+		if seen.Has(e.Name) {
+			allErrs = append(allErrs, field.Duplicate(namePath, e.Name))
+		}
+		seen.Insert(e.Name)
+	}
 	return allErrs
 }
 

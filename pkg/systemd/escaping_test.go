@@ -41,3 +41,25 @@ func TestEscapeCommand(t *testing.T) {
 		}
 	}
 }
+
+func TestQuoteEnvironmentFileValue(t *testing.T) {
+	tests := []struct {
+		value    string
+		expected string
+	}{
+		{value: "", expected: `""`},
+		{value: "/var/log/cni.log", expected: `"/var/log/cni.log"`},
+		{value: "a b  c", expected: `"a b  c"`},
+		{value: `say "hi"`, expected: `"say \"hi\""`},
+		{value: `C:\dir\`, expected: `"C:\\dir\\"`},
+		{value: "$HOME ${HOME} `id`", expected: "\"\\$HOME \\${HOME} \\`id\\`\""},
+		{value: "it's #1; ok", expected: `"it's #1; ok"`},
+		{value: "line1\nline2", expected: "\"line1\nline2\""},
+	}
+	for _, test := range tests {
+		result := QuoteEnvironmentFileValue(test.value)
+		if test.expected != result {
+			t.Errorf("QuoteEnvironmentFileValue(%q): expected %s, got %s", test.value, test.expected, result)
+		}
+	}
+}

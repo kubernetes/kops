@@ -1574,6 +1574,11 @@ func (in *ContainerdConfig) DeepCopyInto(out *ContainerdConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]EnvVar, len(*in))
+		copy(*out, *in)
+	}
 	if in.LogLevel != nil {
 		in, out := &in.LogLevel, &out.LogLevel
 		*out = new(string)

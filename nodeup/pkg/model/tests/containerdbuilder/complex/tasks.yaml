@@ -102,7 +102,11 @@ contents: |2
 path: /etc/crictl.yaml
 type: file
 ---
-contents: CONTAINERD_OPTS=--log-level=info
+contents: |-
+  CONTAINERD_OPTS=--log-level=info
+  CNI_LOG_FILE="/var/log/cni.log"
+  TEST_QUOTING="say \"hi\" to C:\\dir\\ for \$HOME \${HOME} \`id\`"
+  TEST_EMPTY=""
 path: /etc/sysconfig/containerd
 type: file
 ---

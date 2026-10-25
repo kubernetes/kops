@@ -3311,6 +3311,17 @@ func autoConvert_v1alpha2_ContainerdConfig_To_kops_ContainerdConfig(in *Containe
 	out.Address = in.Address
 	out.ConfigAdditions = in.ConfigAdditions
 	out.ConfigOverride = in.ConfigOverride
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]kops.EnvVar, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha2_EnvVar_To_kops_EnvVar(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Env = nil
+	}
 	out.LogLevel = in.LogLevel
 	if in.Packages != nil {
 		in, out := &in.Packages, &out.Packages
@@ -3379,6 +3390,17 @@ func autoConvert_kops_ContainerdConfig_To_v1alpha2_ContainerdConfig(in *kops.Con
 	out.Address = in.Address
 	out.ConfigAdditions = in.ConfigAdditions
 	out.ConfigOverride = in.ConfigOverride
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]EnvVar, len(*in))
+		for i := range *in {
+			if err := Convert_kops_EnvVar_To_v1alpha2_EnvVar(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Env = nil
+	}
 	out.LogLevel = in.LogLevel
 	if in.Packages != nil {
 		in, out := &in.Packages, &out.Packages

@@ -1329,6 +1329,18 @@ spec:
     configOverride: ""
 ```
 
+### Environment variables
+
+`env` sets environment variables for the containerd service. nodeup writes them to `/etc/sysconfig/containerd`, which the containerd unit loads. The processes containerd starts, such as CNI plugins and runtime shims, inherit them; containers do not. Values are used as they are, without variable expansion. `CONTAINERD_OPTS` is reserved for the daemon flags kOps sets. An instance group's `env` list replaces the cluster's.
+
+```yaml
+spec:
+  containerd:
+    env:
+    - name: CNI_LOG_FILE
+      value: /var/log/cni.log
+```
+
 ### SELinux
 
 Setting `spec.containerd.selinuxEnabled: true` enables SELinux support in containerd (`enable_selinux` in its config) and applies the `spc_t` SELinux context to kOps-managed system pods that need it (via the channels manifest decoration and `kubemanifest.AddHostPathSELinuxContext`).

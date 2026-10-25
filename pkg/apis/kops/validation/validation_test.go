@@ -2051,6 +2051,65 @@ func Test_Validate_RuncVersion(t *testing.T) {
 	}
 }
 
+func Test_Validate_ContainerdEnv(t *testing.T) {
+	grid := []struct {
+		name           string
+		env            []kops.EnvVar
+		expectedErrors []string
+	}{
+		{
+			name: "valid",
+			env: []kops.EnvVar{
+				{Name: "CNI_LOG_FILE", Value: "/var/log/cni.log"},
+				{Name: "_private", Value: `quotes " and $dollars`},
+				{Name: "EMPTY"},
+			},
+		},
+		{
+			name:           "empty name",
+			env:            []kops.EnvVar{{Value: "x"}},
+			expectedErrors: []string{"Invalid value::containerd.env[0].name"},
+		},
+		{
+			name:           "leading digit",
+			env:            []kops.EnvVar{{Name: "1VAR"}},
+			expectedErrors: []string{"Invalid value::containerd.env[0].name"},
+		},
+		{
+			name:           "dash",
+			env:            []kops.EnvVar{{Name: "MY-VAR"}},
+			expectedErrors: []string{"Invalid value::containerd.env[0].name"},
+		},
+		{
+			name:           "equals sign",
+			env:            []kops.EnvVar{{Name: "A=B"}},
+			expectedErrors: []string{"Invalid value::containerd.env[0].name"},
+		},
+		{
+			name:           "duplicate",
+			env:            []kops.EnvVar{{Name: "A", Value: "1"}, {Name: "B"}, {Name: "A", Value: "2"}},
+			expectedErrors: []string{"Duplicate value::containerd.env[2].name"},
+		},
+		{
+			name:           "reserved",
+			env:            []kops.EnvVar{{Name: "CONTAINERD_OPTS", Value: "--log-level=debug"}},
+			expectedErrors: []string{"Forbidden::containerd.env[0].name"},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			containerd := &kops.ContainerdConfig{
+				Env: g.env,
+			}
+			errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), true)
+			testErrors(t, g.name, errs, g.expectedErrors)
+			if len(errs) != len(g.expectedErrors) {
+				t.Errorf("expected %d errors, got %v", len(g.expectedErrors), errs)
+			}
+		})
+	}
+}
+
 func Test_Validate_ContainerdRegistryMirrors(t *testing.T) {
 	grid := []struct {
 		endpoint string

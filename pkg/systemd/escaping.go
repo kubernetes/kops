@@ -75,3 +75,10 @@ func escapeArg(s string) string {
 
 	return b.String()
 }
+
+var environmentFileEscaper = strings.NewReplacer(`\`, `\\`, `"`, `\"`, "`", "\\`", `$`, `\$`)
+
+// QuoteEnvironmentFileValue double-quotes a value for a systemd EnvironmentFile.
+func QuoteEnvironmentFileValue(s string) string {
+	return `"` + environmentFileEscaper.Replace(s) + `"`
+}
