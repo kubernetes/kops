@@ -6104,6 +6104,11 @@ spec:
                       fastPathThreshold:
                         format: int32
                         type: integer
+                      image:
+                        description: |-
+                          Image is the container image to use for kindnet. When set, it replaces
+                          registry.k8s.io/networking/kindnet:<version> and Version is not used.
+                        type: string
                       logLevel:
                         format: int32
                         type: integer

@@ -622,6 +622,9 @@ type KindnetNetworkingSpec struct {
 	// Version is the version of the kindnet agent.
 	// Default: v1.8.0
 	Version string `json:"version,omitempty"`
+	// Image is the container image to use for kindnet. When set, it replaces
+	// registry.k8s.io/networking/kindnet:<version> and Version is not used.
+	Image string `json:"image,omitempty"`
 	// Enable network policies
 	NetworkPolicies              *bool `json:"networkPolicies,omitempty"`
 	AdminNetworkPolicies         *bool `json:"adminNetworkPolicies,omitempty"`

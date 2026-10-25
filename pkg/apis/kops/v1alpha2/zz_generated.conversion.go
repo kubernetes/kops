@@ -5163,6 +5163,7 @@ func Convert_kops_KindnetMasqueradeSpec_To_v1alpha2_KindnetMasqueradeSpec(in *ko
 
 func autoConvert_v1alpha2_KindnetNetworkingSpec_To_kops_KindnetNetworkingSpec(in *KindnetNetworkingSpec, out *kops.KindnetNetworkingSpec, s conversion.Scope) error {
 	out.Version = in.Version
+	out.Image = in.Image
 	out.NetworkPolicies = in.NetworkPolicies
 	out.AdminNetworkPolicies = in.AdminNetworkPolicies
 	out.BaselineAdminNetworkPolicies = in.BaselineAdminNetworkPolicies
@@ -5189,6 +5190,7 @@ func Convert_v1alpha2_KindnetNetworkingSpec_To_kops_KindnetNetworkingSpec(in *Ki
 
 func autoConvert_kops_KindnetNetworkingSpec_To_v1alpha2_KindnetNetworkingSpec(in *kops.KindnetNetworkingSpec, out *KindnetNetworkingSpec, s conversion.Scope) error {
 	out.Version = in.Version
+	out.Image = in.Image
 	out.NetworkPolicies = in.NetworkPolicies
 	out.AdminNetworkPolicies = in.AdminNetworkPolicies
 	out.BaselineAdminNetworkPolicies = in.BaselineAdminNetworkPolicies
