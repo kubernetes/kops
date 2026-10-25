@@ -33,7 +33,7 @@ spec:
     - name: SCW_SECRET_KEY
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20261022
     name: etcd-manager
     resources:
       requests:
@@ -67,25 +67,25 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - --target-dir=/opt/etcd-v3.5.31
+    - --target-dir=/opt/etcd-v3.5.35
     - --src=/usr/local/bin/etcd
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/etcd:v3.5.31
-    name: init-etcd-3-5-31
+    image: registry.k8s.io/etcd:v3.5.35
+    name: init-etcd-3-5-35
     resources: {}
     volumeMounts:
     - mountPath: /opt
       name: opt
   - args:
-    - --target-dir=/opt/etcd-v3.6.12
+    - --target-dir=/opt/etcd-v3.6.16
     - --src=/usr/local/bin/etcd
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/etcd:v3.6.12
-    name: init-etcd-3-6-12
+    image: registry.k8s.io/etcd:v3.6.16
+    name: init-etcd-3-6-16
     resources: {}
     volumeMounts:
     - mountPath: /opt
@@ -117,18 +117,22 @@ spec:
     - --target-dir=/opt/etcd-v3.5.29
     - --target-dir=/opt/etcd-v3.5.3
     - --target-dir=/opt/etcd-v3.5.30
+    - --target-dir=/opt/etcd-v3.5.31
+    - --target-dir=/opt/etcd-v3.5.32
+    - --target-dir=/opt/etcd-v3.5.33
+    - --target-dir=/opt/etcd-v3.5.34
     - --target-dir=/opt/etcd-v3.5.4
     - --target-dir=/opt/etcd-v3.5.5
     - --target-dir=/opt/etcd-v3.5.6
     - --target-dir=/opt/etcd-v3.5.7
     - --target-dir=/opt/etcd-v3.5.8
     - --target-dir=/opt/etcd-v3.5.9
-    - --src=/opt/etcd-v3.5.31/etcd
-    - --src=/opt/etcd-v3.5.31/etcdctl
+    - --src=/opt/etcd-v3.5.35/etcd
+    - --src=/opt/etcd-v3.5.35/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
-    name: init-etcd-symlinks-3-5-31
+    name: init-etcd-symlinks-3-5-35
     resources: {}
     volumeMounts:
     - mountPath: /opt
@@ -139,6 +143,10 @@ spec:
     - --target-dir=/opt/etcd-v3.6.1
     - --target-dir=/opt/etcd-v3.6.10
     - --target-dir=/opt/etcd-v3.6.11
+    - --target-dir=/opt/etcd-v3.6.12
+    - --target-dir=/opt/etcd-v3.6.13
+    - --target-dir=/opt/etcd-v3.6.14
+    - --target-dir=/opt/etcd-v3.6.15
     - --target-dir=/opt/etcd-v3.6.2
     - --target-dir=/opt/etcd-v3.6.3
     - --target-dir=/opt/etcd-v3.6.4
@@ -147,12 +155,12 @@ spec:
     - --target-dir=/opt/etcd-v3.6.7
     - --target-dir=/opt/etcd-v3.6.8
     - --target-dir=/opt/etcd-v3.6.9
-    - --src=/opt/etcd-v3.6.12/etcd
-    - --src=/opt/etcd-v3.6.12/etcdctl
+    - --src=/opt/etcd-v3.6.16/etcd
+    - --src=/opt/etcd-v3.6.16/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
-    name: init-etcd-symlinks-3-6-12
+    name: init-etcd-symlinks-3-6-16
     resources: {}
     volumeMounts:
     - mountPath: /opt
