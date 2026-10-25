@@ -739,7 +739,10 @@ type GCPNetworkingSpec struct{}
 
 // KindnetNetworkingSpec configures Kindnet settings.
 type KindnetNetworkingSpec struct {
-	Version                      string                 `json:"version,omitempty"`
+	Version string `json:"version,omitempty"`
+	// Image is the container image to use for kindnet. When set, it replaces
+	// registry.k8s.io/networking/kindnet:<version> and Version is not used.
+	Image                        string                 `json:"image,omitempty"`
 	NetworkPolicies              *bool                  `json:"networkPolicies,omitempty"`
 	AdminNetworkPolicies         *bool                  `json:"adminNetworkPolicies,omitempty"`
 	BaselineAdminNetworkPolicies *bool                  `json:"baselineAdminNetworkPolicies,omitempty"`

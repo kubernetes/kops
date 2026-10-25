@@ -53,6 +53,7 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	runChannelBuilderTest(t, "cilium", []string{"kops-controller.addons.k8s.io-k8s-1.16"})
 	runChannelBuilderTest(t, "amazonvpc", []string{"networking.amazon-vpc-routed-eni-k8s-1.16"})
 	runChannelBuilderTest(t, "amazonvpc-containerd", []string{"networking.amazon-vpc-routed-eni-k8s-1.16"})
+	runChannelBuilderTest(t, "kindnet", []string{"networking.kindnet-k8s-1.32"})
 	runChannelBuilderTest(t, "awsiamauthenticator/crd", []string{"authentication.aws-k8s-1.12"})
 	runChannelBuilderTest(t, "awsiamauthenticator/mappings", []string{"authentication.aws-k8s-1.12"})
 	runChannelBuilderTest(t, "metrics-server/insecure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
