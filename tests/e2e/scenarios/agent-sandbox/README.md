@@ -157,9 +157,9 @@ With kindnet, the script sets `CNI_LOG_FILE=/var/log/cni-kindnet.log` in contain
 (`spec.containerd.env`). The cni-kindnet plugin inherits it and appends its warnings and errors,
 such as failed conntrack cleanups and IPAM errors, to that file, which the node dump copies to
 `${ARTIFACTS}/<node>/cni-kindnet.log`. A CNI call without warnings or errors writes nothing.
-kindnet runs from `docker.io/hakman/kindnet:v1.0.2-23-g32cbbf7` (`spec.networking.kindnet.image`),
-upstream main with the fix for the pod interface creation retry, so each failed attempt shows up
-in that log as a `failed attempt` line.
+kindnet runs from `docker.io/hakman/kindnet:v1.0.2-28-gd34b13e` (`spec.networking.kindnet.image`),
+upstream main with the fix for the pod interface creation retry and fewer SQLite and netlink
+requests per ADD, so each failed attempt shows up in that log as a `failed attempt` line.
 
 `patches/` holds upstream changes the agent-sandbox tag lacks; the fresh clone gets them with
 `git apply`, and a patch a tag already carries is skipped. `node-exporter-collectors.patch` adds
