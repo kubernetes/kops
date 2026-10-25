@@ -19,7 +19,7 @@ region: "{{`{{ Region }}`}}"
 # rather than `"v3.2.2"` — the chart wraps the final image in double quotes.
 image:
   repository: public.ecr.aws/eks/aws-load-balancer-controller
-  tag: "{{ or .CloudProvider.AWS.LoadBalancerController.Version `v3.6.1` }}"
+  tag: "{{ or .CloudProvider.AWS.LoadBalancerController.Version `v3.6.2` }}"
 
 metricsBindAddr: ":9442"
 
