@@ -26,6 +26,7 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model/awsmodel"
@@ -196,7 +197,7 @@ func (tf *TemplateFunctions) KarpenterEC2NodeClass(ig *kops.InstanceGroup) (stri
 }
 
 func (tf *TemplateFunctions) KarpenterNodePool(ig *kops.InstanceGroup) (string, error) {
-	nodePool, err := tf.buildKarpenterNodePool(ig)
+	nodePool, err := tf.buildKarpenterNodePool(ig, schema.GroupKind{Group: karpenterAWSAPIGroup, Kind: "EC2NodeClass"})
 	if err != nil {
 		return "", err
 	}
@@ -401,7 +402,7 @@ func (tf *TemplateFunctions) karpenterRootDeviceName(image string) (string, erro
 	return rootDeviceName, nil
 }
 
-func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup) (*karpenterNodePool, error) {
+func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup, nodeClassKind schema.GroupKind) (*karpenterNodePool, error) {
 	labels, err := nodelabels.BuildNodeLabels(tf.Cluster, ig)
 	if err != nil {
 		return nil, fmt.Errorf("building node labels for %q: %w", ig.Name, err)
@@ -412,8 +413,8 @@ func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup) (*ka
 		Spec: karpenterNodeClaimSpec{
 			Requirements: tf.karpenterRequirements(ig),
 			NodeClassRef: karpenterNodeClassRef{
-				Group: karpenterAWSAPIGroup,
-				Kind:  "EC2NodeClass",
+				Group: nodeClassKind.Group,
+				Kind:  nodeClassKind.Kind,
 				Name:  ig.Name,
 			},
 		},
