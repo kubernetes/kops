@@ -99,6 +99,17 @@ var deleteBackoff = wait.Backoff{
 	Steps:    4,
 }
 
+// instanceDeleteBackoff is the backoff strategy for openstack instance delete retries.
+// For a server booted from a volume, Nova disconnects the boot volume and releases its
+// Cinder attachment before it deletes the server record, so the delete takes longer.
+var instanceDeleteBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   2,
+	Jitter:   0.1,
+	Cap:      10 * time.Second,
+	Steps:    20,
+}
+
 type OpenstackCloud interface {
 	fi.Cloud
 	ComputeClient() *gophercloud.ServiceClient
