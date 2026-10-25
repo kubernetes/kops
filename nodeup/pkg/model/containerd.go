@@ -304,6 +304,9 @@ func (b *ContainerdBuilder) buildSysconfigFile(c *fi.NodeupModelBuilderContext) 
 	lines := []string{
 		"CONTAINERD_OPTS=" + flagsString,
 	}
+	for _, env := range containerd.Env {
+		lines = append(lines, env.Name+"="+systemd.QuoteEnvironmentFileValue(env.Value))
+	}
 	contents := strings.Join(lines, "\n")
 
 	c.AddTask(&nodetasks.File{

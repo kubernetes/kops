@@ -17,6 +17,12 @@ spec:
       plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_int: 1
       plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_intstr: "1"
       plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_str: test
+    env:
+      - name: CNI_LOG_FILE
+        value: /var/log/cni.log
+      - name: TEST_QUOTING
+        value: 'say "hi" to C:\dir\ for $HOME ${HOME} `id`'
+      - name: TEST_EMPTY
     registryMirrors:
       "*":
         - https://fallback.example.com
