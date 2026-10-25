@@ -3850,8 +3850,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller
   namespace: kube-system
@@ -3866,8 +3866,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-leader-election-role
   namespace: kube-system
@@ -3915,8 +3915,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-role
 rules:
@@ -4149,8 +4149,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-leader-election-rolebinding
   namespace: kube-system
@@ -4173,8 +4173,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller-rolebinding
 roleRef:
@@ -4197,8 +4197,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
     prometheus.io/service-monitor: "false"
   name: aws-load-balancer-webhook-service
@@ -4222,8 +4222,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-controller
   namespace: kube-system
@@ -4276,7 +4276,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: public.ecr.aws/eks/aws-load-balancer-controller:v3.6.1
+        image: public.ecr.aws/eks/aws-load-balancer-controller:v3.6.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 2
@@ -4345,8 +4345,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-serving-cert
   namespace: kube-system
@@ -4371,8 +4371,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-selfsigned-issuer
   namespace: kube-system
@@ -4389,8 +4389,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: alb
 
@@ -4404,8 +4404,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: alb
 spec:
@@ -4423,8 +4423,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-webhook
 webhooks:
@@ -4622,8 +4622,8 @@ metadata:
     app.kubernetes.io/instance: aws-load-balancer-controller
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-load-balancer-controller
-    app.kubernetes.io/version: v3.6.1
-    helm.sh/chart: aws-load-balancer-controller-3.6.1
+    app.kubernetes.io/version: v3.6.2
+    helm.sh/chart: aws-load-balancer-controller-3.6.2
     k8s-addon: aws-load-balancer-controller.addons.k8s.io
   name: aws-load-balancer-webhook
 webhooks:
