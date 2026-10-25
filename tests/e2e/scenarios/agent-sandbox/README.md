@@ -153,6 +153,11 @@ the job page links to the report through `stress-test.link.txt`.
 the stream ends early, on a dropped connection or a controller restart, `controller-tail.log`
 holds the end-of-run snapshot as well.
 
+With kindnet, the script sets `CNI_LOG_FILE=/var/log/cni-kindnet.log` in containerd's environment
+(`spec.containerd.env`). The cni-kindnet plugin inherits it and appends its warnings and errors,
+such as failed conntrack cleanups and IPAM errors, to that file, which the node dump copies to
+`${ARTIFACTS}/<node>/cni-kindnet.log`. A CNI call without warnings or errors writes nothing.
+
 `patches/` holds upstream changes the agent-sandbox tag lacks; the fresh clone gets them with
 `git apply`, and a patch a tag already carries is skipped. `node-exporter-collectors.patch` adds
 the pressure, stat, schedstat, processes and vmstat collectors and the cpu collector's cpu.info

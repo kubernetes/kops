@@ -189,6 +189,13 @@ OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\
 # running the loopback CNI plugin for every sandbox, which takes one plugin
 # process and its RTNL work off each CNI ADD and DEL.
 OVERRIDES="${OVERRIDES} --set='cluster.spec.containerd.configAdditions=plugins.\"io.containerd.cri.v1.runtime\".cni.use_internal_loopback=true'"
+if [[ "${NETWORKING}" == "kindnet" ]]; then
+  # cni-kindnet appends its warnings and errors, such as failed conntrack
+  # cleanups and IPAM errors, to the file CNI_LOG_FILE names and discards them
+  # otherwise; a call without either writes nothing. The plugin inherits
+  # containerd's environment, and the node dump collects this file.
+  OVERRIDES="${OVERRIDES} --set=cluster.spec.containerd.env=CNI_LOG_FILE=/var/log/cni-kindnet.log"
+fi
 # CGROUP_DRIVER=cgroupfs runs the benchmark without the systemd cgroup driver,
 # whose per-container systemd round trips are a cost on the pod launch path.
 # kOps sets containerd's runc SystemdCgroup option from spec.kubelet.cgroupDriver.
