@@ -4530,6 +4530,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.FlagOverride != nil {
+		in, out := &in.FlagOverride, &out.FlagOverride
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

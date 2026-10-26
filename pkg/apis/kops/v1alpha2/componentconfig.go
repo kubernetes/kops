@@ -262,6 +262,10 @@ type KubeletConfigSpec struct {
 	// NodeLeaseDurationSeconds is the duration the Kubelet will set on its corresponding Lease, in seconds.
 	// Default: 40
 	NodeLeaseDurationSeconds *int32 `json:"nodeLeaseDurationSeconds,omitempty"`
+	// FlagOverride overrides the complete command-line arguments (DAEMON_ARGS) passed to the kubelet binary.
+	// Useful when running an alternative kubelet implementation (such as Virtual Kubelet or Krustlet) that
+	// does not accept standard upstream kubelet flags.
+	FlagOverride *string `json:"flagOverride,omitempty" flag:"-"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
