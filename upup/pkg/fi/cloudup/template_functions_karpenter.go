@@ -197,7 +197,15 @@ func (tf *TemplateFunctions) KarpenterEC2NodeClass(ig *kops.InstanceGroup) (stri
 }
 
 func (tf *TemplateFunctions) KarpenterNodePool(ig *kops.InstanceGroup) (string, error) {
-	nodePool, err := tf.buildKarpenterNodePool(ig, schema.GroupKind{Group: karpenterAWSAPIGroup, Kind: "EC2NodeClass"})
+	var nodeClassKind schema.GroupKind
+	switch cloudProvider := tf.Cluster.GetCloudProvider(); cloudProvider {
+	case kops.CloudProviderAWS:
+		nodeClassKind = schema.GroupKind{Group: karpenterAWSAPIGroup, Kind: "EC2NodeClass"}
+	default:
+		return "", fmt.Errorf("Karpenter NodePool is not supported for cloud provider %q", cloudProvider)
+	}
+
+	nodePool, err := tf.buildKarpenterNodePool(ig, nodeClassKind)
 	if err != nil {
 		return "", err
 	}
