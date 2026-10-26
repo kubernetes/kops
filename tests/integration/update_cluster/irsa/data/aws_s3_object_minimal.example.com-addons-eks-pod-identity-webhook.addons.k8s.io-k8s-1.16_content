@@ -123,7 +123,7 @@ spec:
         - --sts-regional-endpoint
         - --aws-default-region=us-test-1
         - --v=5
-        image: public.ecr.aws/eks/amazon-eks-pod-identity-webhook:v0.6.17
+        image: public.ecr.aws/eks/amazon-eks-pod-identity-webhook:v0.6.19
         name: pod-identity-webhook
         readinessProbe:
           failureThreshold: 3
@@ -216,6 +216,8 @@ webhooks:
       operator: NotIn
       values:
       - kube-apiserver
+    - key: eks.amazonaws.com/skip-pod-identity-webhook
+      operator: DoesNotExist
   rules:
   - apiGroups:
     - ""
