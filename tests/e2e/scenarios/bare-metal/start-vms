@@ -42,7 +42,16 @@ go build -o ${BINDIR}/storage .
 sudo setcap cap_net_bind_service=ep ${BINDIR}/dhcp
 
 # Install software we need
-sudo apt-get update
+# apt-get update has no overall timeout; it has hung for ~1h when the runner's
+# azure.archive.ubuntu.com mirror was unreachable, so bound and retry it.
+for attempt in 1 2 3; do
+  if timeout 5m sudo apt-get update; then
+    break
+  fi
+  if [[ ${attempt} == 3 ]]; then
+    exit 1
+  fi
+done
 if ! genisoimage --version; then
   echo "Installing genisoimage"
   sudo apt-get install --yes genisoimage
