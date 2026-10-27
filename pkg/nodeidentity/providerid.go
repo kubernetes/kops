@@ -24,7 +24,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// NewProviderIDDispatcher selects a configured identifier by provider ID scheme.
+// NewProviderIDDispatcher returns an Identifier that routes by provider ID scheme.
+// Map keys are schemes such as "gce" or "hcloud", without "://".
 // The selected identifier remains responsible for verifying the node.
 func NewProviderIDDispatcher(identifiers map[string]Identifier) Identifier {
 	return &providerIDDispatcher{identifiers: identifiers}
@@ -34,6 +35,8 @@ type providerIDDispatcher struct {
 	identifiers map[string]Identifier
 }
 
+// IdentifyNode returns the selected identifier's result and error unchanged,
+// without fallback. Missing or unconfigured provider ID schemes are rejected.
 func (d *providerIDDispatcher) IdentifyNode(ctx context.Context, node *corev1.Node) (*Info, error) {
 	providerID := node.Spec.ProviderID
 	if providerID == "" {

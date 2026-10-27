@@ -392,6 +392,7 @@ func addNodeController(ctx context.Context, mgr manager.Manager, opt *config.Opt
 	return nil
 }
 
+// withProviderIDDispatch limits routing to the configured cloud's identifier.
 func withProviderIDDispatch(cloud string, identifier nodeidentity.Identifier) nodeidentity.Identifier {
 	switch cloud {
 	case "metal":
