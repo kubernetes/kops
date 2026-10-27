@@ -5796,6 +5796,8 @@ func autoConvert_v1alpha3_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
 	out.AdditionalServiceAccountIssuers = in.AdditionalServiceAccountIssuers
 	out.ServiceAccountJWKSURI = in.ServiceAccountJWKSURI
+	out.ServiceAccountExtendTokenExpiration = in.ServiceAccountExtendTokenExpiration
+	out.ServiceAccountMaxTokenExpiration = in.ServiceAccountMaxTokenExpiration
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
 	out.CPULimit = in.CPULimit
@@ -5918,6 +5920,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha3_KubeAPIServerConfig(in *ko
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
 	out.AdditionalServiceAccountIssuers = in.AdditionalServiceAccountIssuers
 	out.ServiceAccountJWKSURI = in.ServiceAccountJWKSURI
+	out.ServiceAccountExtendTokenExpiration = in.ServiceAccountExtendTokenExpiration
+	out.ServiceAccountMaxTokenExpiration = in.ServiceAccountMaxTokenExpiration
 	out.APIAudiences = in.APIAudiences
 	out.CPURequest = in.CPURequest
 	out.CPULimit = in.CPULimit

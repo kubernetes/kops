@@ -574,6 +574,25 @@ spec:
     requestTimeout: 3m0s
 ```
 
+### serviceAccountExtendTokenExpiration and serviceAccountMaxTokenExpiration
+{{ kops_feature_table(kops_added_default='1.38') }}
+
+
+By default, `kube-apiserver` extends the one-hour tokens that kubelet requests for `kube-api-access-*` volumes to one year.
+Set `serviceAccountExtendTokenExpiration: false` so that these tokens expire after the requested lifetime instead.
+Clients that read their token once and never reload it will start receiving `401 Unauthorized` after about an hour.
+
+`serviceAccountMaxTokenExpiration` caps the lifetime of tokens issued through TokenRequest and must be between 1h and 2^32 seconds.
+While extension is on, the cap does not shorten the extended tokens above: kube-apiserver applies it first and then raises the expiry to the extended lifetime, logging a warning.
+Set `serviceAccountExtendTokenExpiration` to `false` for the cap to take effect on them.
+
+```yaml
+spec:
+  kubeAPIServer:
+    serviceAccountExtendTokenExpiration: false
+    serviceAccountMaxTokenExpiration: 2h
+```
+
 ### Profiling
 {{ kops_feature_table(kops_added_default='1.18') }}
 
