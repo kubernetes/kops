@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -55,18 +55,14 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 
 	if b.BuildKubernetes {
 		// Build k/k
-		re := regexp.MustCompile(`^gs://([\w-]+)/(devel|ci)(/.*)?`)
-
-		// StageLocation is often just the root of the bucket. the leading slash has been stripped
-		kubeStageLocation := b.StageLocation + "/ci/kubernetes"
-		mat := re.FindStringSubmatch(kubeStageLocation)
-		if mat == nil || len(mat) < 4 {
-			return nil, fmt.Errorf("invalid stage location: %v. Use gs://<bucket>/<ci|devel>/<optional-suffix>", kubeStageLocation)
+		bucket, gcsRoot, kubeBaseURL, err := kubeStageLocation(b.StageLocation)
+		if err != nil {
+			return nil, err
 		}
 
 		if err := krel.NewInstance(&krel.Options{
-			Bucket:             mat[1],
-			GCSRoot:            "kubernetes",
+			Bucket:             bucket,
+			GCSRoot:            gcsRoot,
 			AllowDup:           true,
 			CI:                 true,
 			NoUpdateLatest:     false,
@@ -75,7 +71,6 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		}).Build(); err != nil {
 			return nil, fmt.Errorf("stage via krel push: %w", err)
 		}
-		kubeBaseURL := "https://storage.googleapis.com/" + mat[1] + "/kubernetes/latest.txt"
 
 		results = &BuildResults{
 			KubernetesBaseURL: kubeBaseURL,
@@ -134,4 +129,20 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	klog.Infof("wrote file %q with %q", p, results.KopsBaseURL)
 
 	return results, nil
+}
+
+// kubeStageLocation splits stageLocation into the GCS bucket and the krel GCSRoot,
+// <prefix>/kubernetes, and returns the URL of the latest.txt marker krel writes there.
+func kubeStageLocation(stageLocation string) (bucket, gcsRoot, markerURL string, err error) {
+	rest, ok := strings.CutPrefix(stageLocation, "gs://")
+	if !ok {
+		return "", "", "", fmt.Errorf("invalid stage location %q: must be a gs:// path", stageLocation)
+	}
+	bucket, prefix, _ := strings.Cut(rest, "/")
+	if bucket == "" {
+		return "", "", "", fmt.Errorf("invalid stage location %q: missing bucket name", stageLocation)
+	}
+	gcsRoot = path.Join(prefix, "kubernetes")
+	markerURL = "https://storage.googleapis.com/" + path.Join(bucket, gcsRoot, "latest.txt")
+	return bucket, gcsRoot, markerURL, nil
 }

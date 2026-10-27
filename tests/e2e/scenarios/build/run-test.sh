@@ -19,15 +19,22 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+CLOUD_PROVIDER="${CLOUD_PROVIDER:-gce}"
+
+CREATE_ARGS="--networking=kubenet --set=spec.nodeProblemDetector.enabled=true"
+if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
+    CREATE_ARGS="--gce-service-account=default ${CREATE_ARGS}"
+fi
+
 make test-e2e-install
 
 cd "${GOPATH}"/src/k8s.io/kubernetes
 
 kubetest2 kops -v=6 \
     --up --down --build --build-kubernetes=true --target-build-arch=linux/amd64 \
-    --cloud-provider=gce --admin-access=0.0.0.0/0 \
+    --cloud-provider="${CLOUD_PROVIDER}" --admin-access=0.0.0.0/0 \
     --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
-    --create-args "--gce-service-account=default --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
+    --create-args "${CREATE_ARGS}" \
     --test=kops \
     -- \
     --ginkgo-args="--debug" \
