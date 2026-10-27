@@ -26,11 +26,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"sigs.k8s.io/yaml"
 )
 
 func TestKarpenterNodePoolStaticCapacity(t *testing.T) {
 	tf := &TemplateFunctions{}
 	tf.Cluster = &kops.Cluster{}
+	tf.Cluster.Spec.CloudProvider.AWS = &kops.AWSSpec{}
 
 	grid := []struct {
 		desc        string
@@ -83,6 +85,61 @@ func TestKarpenterNodePoolStaticCapacity(t *testing.T) {
 			hasLimits := strings.Contains(rendered, "\n  limits:\n    nodes: \""+g.limitsNodes+"\"\n")
 			if hasLimits != (g.limitsNodes != "") {
 				t.Errorf("expected limits.nodes=%q present=%t, got:\n%s", g.limitsNodes, g.limitsNodes != "", rendered)
+			}
+		})
+	}
+}
+
+func TestKarpenterNodePoolProvider(t *testing.T) {
+	grid := []struct {
+		desc          string
+		cloudProvider kops.CloudProviderSpec
+		expectedError string
+	}{
+		{
+			desc:          "aws",
+			cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+		},
+		{
+			desc:          "gce",
+			cloudProvider: kops.CloudProviderSpec{GCE: &kops.GCESpec{}},
+			expectedError: `Karpenter NodePool is not supported for cloud provider "gce"`,
+		},
+		{
+			desc:          "unspecified",
+			expectedError: `Karpenter NodePool is not supported for cloud provider ""`,
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			tf := &TemplateFunctions{}
+			tf.Cluster = &kops.Cluster{}
+			tf.Cluster.Spec.CloudProvider = g.cloudProvider
+			ig := &kops.InstanceGroup{}
+			ig.Name = "nodes"
+			ig.Spec.Role = kops.InstanceGroupRoleNode
+
+			rendered, err := tf.KarpenterNodePool(ig)
+			if g.expectedError != "" {
+				if err == nil || err.Error() != g.expectedError {
+					t.Errorf("expected error %q, got %v", g.expectedError, err)
+				}
+				if rendered != "" {
+					t.Errorf("expected no rendered resource, got:\n%s", rendered)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			var nodePool karpenterNodePool
+			if err := yaml.Unmarshal([]byte(rendered), &nodePool); err != nil {
+				t.Fatalf("unmarshaling NodePool: %v", err)
+			}
+			expected := karpenterNodeClassRef{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass", Name: ig.Name}
+			if actual := nodePool.Spec.Template.Spec.NodeClassRef; actual != expected {
+				t.Errorf("expected NodeClass reference %#v, got %#v", expected, actual)
 			}
 		})
 	}
