@@ -380,6 +380,7 @@ func addNodeController(ctx context.Context, mgr manager.Manager, opt *config.Opt
 		return fmt.Errorf("identifier for cloud %q not implemented", opt.Cloud)
 	}
 
+	identifier = withProviderIDDispatch(opt.Cloud, identifier)
 	nodeController, err := controllers.NewNodeReconciler(mgr, identifier)
 	if err != nil {
 		return err
@@ -389,6 +390,19 @@ func addNodeController(ctx context.Context, mgr manager.Manager, opt *config.Opt
 	}
 
 	return nil
+}
+
+func withProviderIDDispatch(cloud string, identifier nodeidentity.Identifier) nodeidentity.Identifier {
+	switch cloud {
+	case "metal":
+		// Metal identification is not implemented.
+		return identifier
+	case "hetzner":
+		cloud = "hcloud"
+	}
+	return nodeidentity.NewProviderIDDispatcher(map[string]nodeidentity.Identifier{
+		cloud: identifier,
+	})
 }
 
 // Reconciler is the interface for a standard Reconciler.
