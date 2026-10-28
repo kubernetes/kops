@@ -4072,6 +4072,13 @@ spec:
                     description: MetricsBindAddress is the IP address for the metrics
                       server to serve on
                     type: string
+                  nodePortAddresses:
+                    description: NodePortAddresses is a list of CIDR ranges and/or
+                      keywords (e.g. "primary") on which NodePort and health check
+                      node port services are served
+                    items:
+                      type: string
+                    type: array
                   proxyMode:
                     description: 'Which proxy mode to use: (userspace, iptables, ipvs)'
                     type: string

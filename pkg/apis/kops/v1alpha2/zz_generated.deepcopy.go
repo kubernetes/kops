@@ -4077,6 +4077,11 @@ func (in *KubeProxyConfig) DeepCopyInto(out *KubeProxyConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.NodePortAddresses != nil {
+		in, out := &in.NodePortAddresses, &out.NodePortAddresses
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.IPVSExcludeCIDRs != nil {
 		in, out := &in.IPVSExcludeCIDRs, &out.IPVSExcludeCIDRs
 		*out = make([]string, len(*in))

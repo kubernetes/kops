@@ -6183,6 +6183,7 @@ func autoConvert_v1alpha3_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.MetricsBindAddress = in.MetricsBindAddress
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
+	out.NodePortAddresses = in.NodePortAddresses
 	out.IPVSExcludeCIDRs = in.IPVSExcludeCIDRs
 	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
 	out.IPVSScheduler = in.IPVSScheduler
@@ -6212,6 +6213,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha3_KubeProxyConfig(in *kops.KubeP
 	out.MetricsBindAddress = in.MetricsBindAddress
 	out.Enabled = in.Enabled
 	out.ProxyMode = in.ProxyMode
+	out.NodePortAddresses = in.NodePortAddresses
 	out.IPVSExcludeCIDRs = in.IPVSExcludeCIDRs
 	out.IPVSMinSyncPeriod = in.IPVSMinSyncPeriod
 	out.IPVSScheduler = in.IPVSScheduler
