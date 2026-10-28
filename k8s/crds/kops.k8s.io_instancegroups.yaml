@@ -656,6 +656,12 @@ spec:
                     description: FeatureGates is set of key=value pairs that describe
                       feature gates for alpha/experimental features.
                     type: object
+                  flagOverride:
+                    description: |-
+                      FlagOverride overrides the complete command-line arguments (DAEMON_ARGS) passed to the kubelet binary.
+                      Useful when running an alternative kubelet implementation (such as Virtual Kubelet or Krustlet) that
+                      does not accept standard upstream kubelet flags.
+                    type: string
                   hairpinMode:
                     description: |-
                       How should the kubelet configure the container bridge for hairpin packets.

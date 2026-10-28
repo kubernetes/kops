@@ -5977,6 +5977,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.KubeAPIBurst = in.KubeAPIBurst
 	out.EventRecordQPS = in.EventRecordQPS
 	out.NodeLeaseDurationSeconds = in.NodeLeaseDurationSeconds
+	out.FlagOverride = in.FlagOverride
 	return nil
 }
 
@@ -6087,6 +6088,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.KubeAPIBurst = in.KubeAPIBurst
 	out.EventRecordQPS = in.EventRecordQPS
 	out.NodeLeaseDurationSeconds = in.NodeLeaseDurationSeconds
+	out.FlagOverride = in.FlagOverride
 	return nil
 }
 

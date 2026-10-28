@@ -475,31 +475,36 @@ func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfi
 
 // buildSystemdEnvironmentFile renders the environment file for the kubelet
 func (b *KubeletBuilder) buildSystemdEnvironmentFile(ctx context.Context, kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
-	// TODO: Dump the separate file for flags - just complexity!
-	flags, err := flagbuilder.BuildFlags(kubeletConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error building kubelet flags: %v", err)
-	}
-
-	if b.UsesSecondaryIP() {
-		localIP, err := b.GetMetadataLocalIP(ctx)
+	var flags string
+	if kubeletConfig.FlagOverride != nil {
+		flags = *kubeletConfig.FlagOverride
+	} else {
+		var err error
+		flags, err = flagbuilder.BuildFlags(kubeletConfig)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error building kubelet flags: %v", err)
 		}
-		if localIP != "" {
-			flags += " --node-ip=" + localIP
+
+		if b.UsesSecondaryIP() {
+			localIP, err := b.GetMetadataLocalIP(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if localIP != "" {
+				flags += " --node-ip=" + localIP
+			}
 		}
-	}
 
-	if b.IsIPv6Only() {
-		flags += " --node-ip=::"
-	}
+		if b.IsIPv6Only() {
+			flags += " --node-ip=::"
+		}
 
-	flags += " --config=" + kubeletConfigFilePath
+		flags += " --config=" + kubeletConfigFilePath
 
-	if b.UseExternalKubeletCredentialProvider() {
-		flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
-		flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
+		if b.UseExternalKubeletCredentialProvider() {
+			flags += " --image-credential-provider-config=" + credentialProviderConfigFilePath
+			flags += " --image-credential-provider-bin-dir=" + b.binaryPath()
+		}
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"

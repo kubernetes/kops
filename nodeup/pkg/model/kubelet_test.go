@@ -562,3 +562,31 @@ func Test_Kubelet_BuildFlags(t *testing.T) {
 		})
 	}
 }
+
+func Test_Kubelet_FlagOverride(t *testing.T) {
+	builder := &KubeletBuilder{NodeupModelContext: &NodeupModelContext{
+		NodeupConfig: &nodeup.Config{
+			ContainerdConfig: &kops.ContainerdConfig{},
+		},
+	}}
+
+	override := "--kubeconfig=/var/lib/kubelet/kubeconfig --provider=mock --nodename=vkubelet-0"
+	kubeletConfig := &kops.KubeletConfigSpec{
+		FlagOverride: &override,
+	}
+
+	task, err := builder.buildSystemdEnvironmentFile(context.Background(), kubeletConfig)
+	if err != nil {
+		t.Fatalf("buildSystemdEnvironmentFile error = %v", err)
+	}
+
+	gotBytes, err := fi.ResourceAsBytes(task.Contents)
+	if err != nil {
+		t.Fatalf("ResourceAsBytes error = %v", err)
+	}
+	got := string(gotBytes)
+	want := "DAEMON_ARGS=\"--kubeconfig=/var/lib/kubelet/kubeconfig --provider=mock --nodename=vkubelet-0\"\nHOME=\"/root\"\n"
+	if got != want {
+		t.Errorf("buildSystemdEnvironmentFile got:\n%q\nwant:\n%q", got, want)
+	}
+}
