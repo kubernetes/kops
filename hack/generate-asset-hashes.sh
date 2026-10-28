@@ -159,10 +159,10 @@ EOF
 # The first argument is the major and minor version, the second is the maximum patch version.
 generate_k8s_hashes 1.32 13
 generate_k8s_hashes 1.33 13
-generate_k8s_hashes 1.34 12
-generate_k8s_hashes 1.35 9
-generate_k8s_hashes 1.36 5
-generate_k8s_hashes 1.37 1
+generate_k8s_hashes 1.34 13
+generate_k8s_hashes 1.35 10
+generate_k8s_hashes 1.36 6
+generate_k8s_hashes 1.37 2
 
 # Generate runc hashes.
 # The first argument is the major and minor version, the second is the maximum patch version.
