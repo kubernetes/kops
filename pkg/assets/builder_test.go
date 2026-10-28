@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -207,6 +208,110 @@ func TestRemapURLPathDelimiterEscaping(t *testing.T) {
 			expectedPath := "/prefix,prod/binaries/kops/1.37.0/linux/arm64/nodeup"
 			if parsed.Path != expectedPath {
 				t.Errorf("expected decoded path %q, got %q", expectedPath, parsed.Path)
+			}
+		})
+	}
+}
+
+func TestRemapFileDownloadLocationConflicts(t *testing.T) {
+	const internalKubelet = "https://internal.example.com/release/v1.32.0/bin/linux/amd64/kubelet"
+	const upstreamKubelet = "https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet"
+	const mirroredKubelet = "https://repo.example.com/mirror/release/v1.32.0/bin/linux/amd64/kubelet"
+	hashA := hashing.MustFromString("sha256:" + strings.Repeat("a", 64))
+	hashB := hashing.MustFromString("sha256:" + strings.Repeat("b", 64))
+
+	type file struct {
+		url  string
+		hash *hashing.Hash
+	}
+
+	for _, tc := range []struct {
+		name           string
+		fileRepository string
+		files          []file
+		expectedError  string
+		// expectedDownloadURLs are the download URLs of the registered assets, ordered by canonical URL.
+		expectedDownloadURLs []string
+	}{
+		{
+			name:           "different sources with different hashes",
+			fileRepository: "https://repo.example.com/mirror",
+			files:          []file{{internalKubelet, hashA}, {upstreamKubelet, hashB}},
+			expectedError: fmt.Sprintf("different hashes for same file download location %s: %s (%s) vs %s (%s)",
+				mirroredKubelet, internalKubelet, hashA, upstreamKubelet, hashB),
+		},
+		{
+			// The upstream URL remaps onto the internal URL, which is already in the file repository.
+			name:           "source in the file repository with a different hash",
+			fileRepository: "https://internal.example.com",
+			files:          []file{{internalKubelet, hashA}, {upstreamKubelet, hashB}},
+			expectedError: fmt.Sprintf("different hashes for same file download location %s: %s (%s) vs %s (%s)",
+				internalKubelet, internalKubelet, hashA, upstreamKubelet, hashB),
+		},
+		{
+			name:  "same source with different hashes",
+			files: []file{{upstreamKubelet, hashA}, {upstreamKubelet, hashB}},
+			expectedError: fmt.Sprintf("different hashes for same file download location %s: %s (%s) vs %s (%s)",
+				upstreamKubelet, upstreamKubelet, hashA, upstreamKubelet, hashB),
+		},
+		{
+			// The source in the file repository keeps the comma, while the remapped source escapes it.
+			name:           "source in the file repository with a comma in the path",
+			fileRepository: "https://repo.example.com",
+			files:          []file{{"https://repo.example.com/prefix,prod/kubelet", hashA}, {"https://dl.k8s.io/prefix,prod/kubelet", hashB}},
+			expectedError: fmt.Sprintf("different hashes for same file download location %s: %s (%s) vs %s (%s)",
+				"https://repo.example.com/prefix%2Cprod/kubelet", "https://repo.example.com/prefix,prod/kubelet", hashA, "https://dl.k8s.io/prefix,prod/kubelet", hashB),
+		},
+		{
+			name:                 "different sources with the same hash",
+			fileRepository:       "https://repo.example.com/mirror",
+			files:                []file{{internalKubelet, hashA}, {upstreamKubelet, hashA}},
+			expectedDownloadURLs: []string{mirroredKubelet, mirroredKubelet},
+		},
+		{
+			name:                 "exact duplicates",
+			fileRepository:       "https://repo.example.com/mirror",
+			files:                []file{{upstreamKubelet, hashA}, {upstreamKubelet, hashA}},
+			expectedDownloadURLs: []string{mirroredKubelet},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			assetsSpec := &kops.AssetsSpec{}
+			if tc.fileRepository != "" {
+				fileRepository := tc.fileRepository
+				assetsSpec.FileRepository = &fileRepository
+			}
+			builder := NewAssetBuilder(nil, assetsSpec, false)
+
+			for i, f := range tc.files {
+				u, err := url.Parse(f.url)
+				if err != nil {
+					t.Fatalf("parsing URL %q: %v", f.url, err)
+				}
+				_, err = builder.RemapFile(u, f.hash)
+				if i < len(tc.files)-1 || tc.expectedError == "" {
+					if err != nil {
+						t.Fatalf("remapping file %q: %v", f.url, err)
+					}
+					continue
+				}
+				if err == nil {
+					t.Fatalf("expected error %q, got none", tc.expectedError)
+				}
+				if err.Error() != tc.expectedError {
+					t.Errorf("expected error %q, got %q", tc.expectedError, err.Error())
+				}
+			}
+
+			if tc.expectedError != "" {
+				return
+			}
+			var downloadURLs []string
+			for _, asset := range builder.FileAssets() {
+				downloadURLs = append(downloadURLs, asset.DownloadURL.String())
+			}
+			if !reflect.DeepEqual(downloadURLs, tc.expectedDownloadURLs) {
+				t.Errorf("expected download URLs %v, got %v", tc.expectedDownloadURLs, downloadURLs)
 			}
 		})
 	}
