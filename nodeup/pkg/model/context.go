@@ -68,6 +68,12 @@ type NodeupModelContext struct {
 	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
 	HasAPIServer bool
 
+	// HostsEtcd is true if this instance runs an etcd member, i.e. the InstanceGroup is
+	// referenced by a member of one of the cluster's etcd clusters (populated by Init).
+	// This is deliberately derived from etcd membership rather than from the role, because
+	// etcd can be co-located with any control-plane role.
+	HostsEtcd bool
+
 	// usesNoneDNS is true if the cluster runs with dns=none (which uses fixed IPs, for example a load balancer, instead of DNS)
 	usesNoneDNS bool
 
@@ -113,6 +119,10 @@ func (c *NodeupModelContext) Init() error {
 	if role.HasControlPlane() || role.HasAPIServer() {
 		c.HasAPIServer = true
 	}
+
+	// cloudup only populates EtcdManifests for instance groups that are etcd members,
+	// so its presence is what tells us etcd is local to this instance.
+	c.HostsEtcd = len(c.NodeupConfig.EtcdManifests) > 0
 
 	c.usesNoneDNS = c.NodeupConfig.UsesNoneDNS
 	c.discoveryService = c.NodeupConfig.DiscoveryService

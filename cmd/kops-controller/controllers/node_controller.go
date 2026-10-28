@@ -100,19 +100,20 @@ func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		}
 	}
 
+	// Prune kOps-managed labels the node should no longer have. nodelabels.All is the single
+	// list, so adding a role label does not mean remembering to update this one.
+	managed := make(map[string]struct{}, len(nodelabels.All()))
+	for _, label := range nodelabels.All() {
+		managed[label] = struct{}{}
+	}
+
 	deleteLabels := make(map[string]struct{})
 	for k := range node.Labels {
-		// If it is one of our managed labels, "prune" values we don't want to be there
-		switch k {
-		case nodelabels.RoleLabelAPIServer16,
-			nodelabels.RoleLabelEtcd,
-			nodelabels.RoleLabelScheduler,
-			nodelabels.RoleLabelKubeControllerManager,
-			nodelabels.RoleLabelNode16,
-			nodelabels.RoleLabelControlPlane20:
-			if _, found := labels[k]; !found {
-				deleteLabels[k] = struct{}{}
-			}
+		if _, isManaged := managed[k]; !isManaged {
+			continue
+		}
+		if _, found := labels[k]; !found {
+			deleteLabels[k] = struct{}{}
 		}
 	}
 
