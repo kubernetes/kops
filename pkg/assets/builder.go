@@ -61,9 +61,10 @@ func SetImageDigestResolver(resolver ImageDigestResolver) {
 
 // AssetBuilder discovers and remaps assets.
 type AssetBuilder struct {
-	mu          sync.RWMutex
-	imageAssets []*ImageAsset
-	fileAssets  []*FileAsset
+	mu                      sync.RWMutex
+	imageAssets             []*ImageAsset
+	fileAssets              []*FileAsset
+	fileAssetsByDownloadURL map[string]*FileAsset
 
 	// The following fields are immutable after construction via NewAssetBuilder
 	// and are safe to read without holding mu.
@@ -141,9 +142,10 @@ type FileAsset struct {
 // NewAssetBuilder creates a new AssetBuilder.
 func NewAssetBuilder(vfsContext *vfs.VFSContext, assets *kops.AssetsSpec, getAssets bool) *AssetBuilder {
 	a := &AssetBuilder{
-		vfsContext:     vfsContext,
-		assetsLocation: assets,
-		getAssets:      getAssets,
+		vfsContext:              vfsContext,
+		assetsLocation:          assets,
+		getAssets:               getAssets,
+		fileAssetsByDownloadURL: make(map[string]*FileAsset),
 	}
 
 	return a
@@ -156,11 +158,36 @@ func (a *AssetBuilder) addImageAsset(asset *ImageAsset) {
 	a.imageAssets = append(a.imageAssets, asset)
 }
 
-func (a *AssetBuilder) addFileAsset(asset *FileAsset) {
+func (a *AssetBuilder) addFileAsset(asset *FileAsset) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
+	// Remapping to the file repository keeps only the path, so different canonical URLs can share a
+	// download URL, which serves a single file. Hashes read from the download URL itself always match,
+	// so this only catches conflicts between known hashes or hashes read from the canonical URLs.
+	// Key on the decoded path, as remapURL escapes commas while URLs on the repository host keep them.
+	keyURL := *asset.DownloadURL
+	keyURL.RawPath = ""
+	key := keyURL.String()
+	existing, found := a.fileAssetsByDownloadURL[key]
+	if found && !existing.SHAValue.Equal(asset.SHAValue) {
+		return fmt.Errorf("different hashes for same file download location %s: %s (%s) vs %s (%s)",
+			asset.DownloadURL, existing.CanonicalURL, existing.SHAValue, asset.CanonicalURL, asset.SHAValue)
+	}
+
+	switch {
+	case !found:
+		a.fileAssetsByDownloadURL[key] = asset
+	case existing.CanonicalURL.String() == asset.CanonicalURL.String():
+		// Every instance group registers the same assets, so exact duplicates add nothing.
+		return nil
+	default:
+		klog.Warningf("file download location %s is shared by %s and %s, which must be the same file",
+			asset.DownloadURL, existing.CanonicalURL, asset.CanonicalURL)
+	}
+
 	a.fileAssets = append(a.fileAssets, asset)
+	return nil
 }
 
 // AddStaticManifest records a nodeup static manifest.
@@ -317,6 +344,7 @@ func (a *AssetBuilder) RemapImage(image string) string {
 // It is returns in a FileAsset, alongside the SHA hash of the file.
 // The SHA hash is is knownHash is provided, and otherwise will be found first by
 // checking the canonical URL against our well-known hashes, and failing that via download.
+// It returns an error if the download URL is already registered with a different hash.
 func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash) (*FileAsset, error) {
 	if canonicalURL == nil {
 		return nil, fmt.Errorf("unable to remap a nil URL")
@@ -350,7 +378,9 @@ func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash)
 	fileAsset.SHAValue = knownHash
 
 	klog.V(8).Infof("adding file: %+v", fileAsset)
-	a.addFileAsset(fileAsset)
+	if err := a.addFileAsset(fileAsset); err != nil {
+		return nil, err
+	}
 
 	return fileAsset, nil
 }
