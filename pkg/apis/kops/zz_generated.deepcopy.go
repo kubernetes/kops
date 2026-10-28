@@ -4421,6 +4421,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.NodeStatusReportFrequency != nil {
+		in, out := &in.NodeStatusReportFrequency, &out.NodeStatusReportFrequency
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.NetworkPluginName != nil {
 		in, out := &in.NetworkPluginName, &out.NetworkPluginName
 		*out = new(string)

@@ -756,6 +756,11 @@ spec:
                       Default: 40
                     format: int32
                     type: integer
+                  nodeStatusReportFrequency:
+                    description: |-
+                      NodeStatusReportFrequency is how often the kubelet posts node status to the apiserver when the status has not changed.
+                      If unset, the kubelet uses nodeStatusUpdateFrequency when that field is set, and 5m otherwise.
+                    type: string
                   nodeStatusUpdateFrequency:
                     description: |-
                       NodeStatusUpdateFrequency Specifies how often kubelet posts node status to master (default 10s)
