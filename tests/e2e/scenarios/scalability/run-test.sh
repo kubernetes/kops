@@ -95,6 +95,7 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--set spec.networking.subnets[0].cidr=10.128.0.0/15")
   create_args+=("--set spec.networking.serviceClusterIPRange=10.130.0.0/15")
   create_args+=("--set spec.networking.nonMasqueradeCIDR=10.64.0.0/10")
+  create_args+=("--set spec.kubeProxy.nodePortAddresses=0.0.0.0/0")
   if [[ "${GCE_VOLUME_TYPE}" == hyperdisk-* ]]; then
     create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
     create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000")

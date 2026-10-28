@@ -289,6 +289,8 @@ type KubeProxyConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Which proxy mode to use: (userspace, iptables, ipvs)
 	ProxyMode string `json:"proxyMode,omitempty" flag:"proxy-mode"`
+	// NodePortAddresses is a list of CIDR ranges and/or keywords (e.g. "primary") on which NodePort and health check node port services are served
+	NodePortAddresses []string `json:"nodePortAddresses,omitempty" flag:"nodeport-addresses"`
 	// IPVSExcludeCIDRs is comma-separated list of CIDR's which the ipvs proxier should not touch when cleaning up IPVS rules
 	IPVSExcludeCIDRs []string `json:"ipvsExcludeCIDRs,omitempty" flag:"ipvs-exclude-cidrs"`
 	// IPVSMinSyncPeriod is the minimum interval of how often the ipvs rules can be refreshed as endpoints and services change (e.g. '5s', '1m', '2h22m')
