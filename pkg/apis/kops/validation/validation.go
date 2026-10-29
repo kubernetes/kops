@@ -23,6 +23,7 @@ import (
 	"net"
 	"net/netip"
 	"net/url"
+	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -1125,6 +1126,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		if k.KubeAPIBurst != nil && *k.KubeAPIBurst < 0 {
 			allErrs = append(allErrs, field.Invalid(kubeletPath.Child("kubeAPIBurst"), *k.KubeAPIBurst, "kubeAPIBurst cannot be negative"))
 		}
+
+		if k.Packages != nil {
+			allErrs = append(allErrs, validateKubeletPackagesConfig(k.Packages, kubeletPath.Child("packages"))...)
+		}
 	}
 	return allErrs
 }
@@ -2008,45 +2013,7 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 	}
 
 	if config.Packages != nil {
-		if config.Packages.UrlAmd64 != nil && config.Packages.HashAmd64 != nil {
-			u := fi.ValueOf(config.Packages.UrlAmd64)
-			_, err := url.Parse(u)
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.UrlAmd64,
-					fmt.Sprintf("cannot parse package URL: %v", err)))
-			}
-			h := fi.ValueOf(config.Packages.HashAmd64)
-			if len(h) > 64 {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
-					"Package hash must be 64 characters long"))
-			}
-		} else if config.Packages.UrlAmd64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.HashAmd64,
-				"Package hash must also be set"))
-		} else if config.Packages.HashAmd64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
-				"Package URL must also be set"))
-		}
-
-		if config.Packages.UrlArm64 != nil && config.Packages.HashArm64 != nil {
-			u := fi.ValueOf(config.Packages.UrlArm64)
-			_, err := url.Parse(u)
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.UrlArm64,
-					fmt.Sprintf("cannot parse package URL: %v", err)))
-			}
-			h := fi.ValueOf(config.Packages.HashArm64)
-			if len(h) > 64 {
-				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
-					"Package hash must be 64 characters long"))
-			}
-		} else if config.Packages.UrlArm64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.HashArm64,
-				"Package hash must also be set"))
-		} else if config.Packages.HashArm64 != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
-				"Package URL must also be set"))
-		}
+		allErrs = append(allErrs, validatePackagesConfig(config.Packages, fldPath.Child("packages"))...)
 	}
 
 	allErrs = append(allErrs, validateContainerdRegistryMirrors(config.RegistryMirrors, fldPath.Child("registryMirrors"))...)
@@ -2080,6 +2047,79 @@ func validateContainerdEnv(env []kops.EnvVar, fldPath *field.Path) field.ErrorLi
 		}
 		seen.Insert(e.Name)
 	}
+	return allErrs
+}
+
+func validatePackagesConfig(packages *kops.PackagesConfig, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if packages == nil {
+		return allErrs
+	}
+
+	if packages.UrlAmd64 != nil && packages.HashAmd64 != nil {
+		u := fi.ValueOf(packages.UrlAmd64)
+		if parsed, err := url.Parse(u); err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("urlAmd64"), u,
+				fmt.Sprintf("cannot parse package URL: %v", err)))
+		} else if (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("urlAmd64"), u,
+				"package URL must be an absolute http or https URL"))
+		}
+		h := fi.ValueOf(packages.HashAmd64)
+		if len(h) != 64 || strings.Trim(h, "0123456789abcdefABCDEF") != "" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("hashAmd64"), h,
+				"package hash must be the 64 character hex-encoded sha256 of the file"))
+		}
+	} else if packages.UrlAmd64 != nil {
+		allErrs = append(allErrs, field.Required(fldPath.Child("hashAmd64"),
+			"Package hash must also be set"))
+	} else if packages.HashAmd64 != nil {
+		allErrs = append(allErrs, field.Required(fldPath.Child("urlAmd64"),
+			"Package URL must also be set"))
+	}
+
+	if packages.UrlArm64 != nil && packages.HashArm64 != nil {
+		u := fi.ValueOf(packages.UrlArm64)
+		if parsed, err := url.Parse(u); err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("urlArm64"), u,
+				fmt.Sprintf("cannot parse package URL: %v", err)))
+		} else if (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("urlArm64"), u,
+				"package URL must be an absolute http or https URL"))
+		}
+		h := fi.ValueOf(packages.HashArm64)
+		if len(h) != 64 || strings.Trim(h, "0123456789abcdefABCDEF") != "" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("hashArm64"), h,
+				"package hash must be the 64 character hex-encoded sha256 of the file"))
+		}
+	} else if packages.UrlArm64 != nil {
+		allErrs = append(allErrs, field.Required(fldPath.Child("hashArm64"),
+			"Package hash must also be set"))
+	} else if packages.HashArm64 != nil {
+		allErrs = append(allErrs, field.Required(fldPath.Child("urlArm64"),
+			"Package URL must also be set"))
+	}
+
+	return allErrs
+}
+
+func validateKubeletPackagesConfig(packages *kops.PackagesConfig, fldPath *field.Path) field.ErrorList {
+	allErrs := validatePackagesConfig(packages, fldPath)
+	if packages == nil {
+		return allErrs
+	}
+
+	if u := fi.ValueOf(packages.UrlAmd64); u != "" {
+		if path.Base(u) != "kubelet" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("urlAmd64"), u, "package URL must point to a binary named \"kubelet\""))
+		}
+	}
+	if u := fi.ValueOf(packages.UrlArm64); u != "" {
+		if path.Base(u) != "kubelet" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("urlArm64"), u, "package URL must point to a binary named \"kubelet\""))
+		}
+	}
+
 	return allErrs
 }
 

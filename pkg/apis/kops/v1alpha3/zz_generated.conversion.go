@@ -6411,6 +6411,15 @@ func autoConvert_v1alpha3_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.KubeAPIBurst = in.KubeAPIBurst
 	out.EventRecordQPS = in.EventRecordQPS
 	out.NodeLeaseDurationSeconds = in.NodeLeaseDurationSeconds
+	if in.Packages != nil {
+		in, out := &in.Packages, &out.Packages
+		*out = new(kops.PackagesConfig)
+		if err := Convert_v1alpha3_PackagesConfig_To_kops_PackagesConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Packages = nil
+	}
 	return nil
 }
 
@@ -6521,6 +6530,15 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha3_KubeletConfigSpec(in *kops.K
 	out.KubeAPIBurst = in.KubeAPIBurst
 	out.EventRecordQPS = in.EventRecordQPS
 	out.NodeLeaseDurationSeconds = in.NodeLeaseDurationSeconds
+	if in.Packages != nil {
+		in, out := &in.Packages, &out.Packages
+		*out = new(PackagesConfig)
+		if err := Convert_kops_PackagesConfig_To_v1alpha3_PackagesConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Packages = nil
+	}
 	return nil
 }
 

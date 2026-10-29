@@ -34,6 +34,9 @@ type InstanceGroup interface {
 	// InstallCNIAssets returns true if CNI network plugins need to be installed
 	InstallCNIAssets() bool
 
+	// KubeletSpec returns the KubeletConfigSpec for the instance group.
+	KubeletSpec() *kops.KubeletConfigSpec
+
 	// RawClusterSpec returns the cluster spec for the instance group.
 	// If possible, prefer abstracted methods over accessing this data directly.
 	RawClusterSpec() *kops.ClusterSpec
@@ -72,6 +75,10 @@ func (m *instanceGroupModel) GetCloudProvider() kops.CloudProviderID {
 
 func (m *instanceGroupModel) InstallCNIAssets() bool {
 	return m.cluster.InstallCNIAssets()
+}
+
+func (m *instanceGroupModel) KubeletSpec() *kops.KubeletConfigSpec {
+	return m.ig.Spec.Kubelet
 }
 
 func (m *instanceGroupModel) RawClusterSpec() *kops.ClusterSpec {

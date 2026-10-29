@@ -260,6 +260,8 @@ type KubeletConfigSpec struct {
 	// NodeLeaseDurationSeconds is the duration the Kubelet will set on its corresponding Lease, in seconds.
 	// Default: 40
 	NodeLeaseDurationSeconds *int32 `json:"nodeLeaseDurationSeconds,omitempty"`
+	// Packages overrides the URL and hash for the kubelet binary package.
+	Packages *PackagesConfig `json:"packages,omitempty" flag:"-"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
