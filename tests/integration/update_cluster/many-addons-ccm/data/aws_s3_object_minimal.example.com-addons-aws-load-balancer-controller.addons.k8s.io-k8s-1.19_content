@@ -4511,6 +4511,10 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+    - key: component
+      operator: NotIn
+      values:
+      - apiserver
   rules:
   - apiGroups:
     - ""

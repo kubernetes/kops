@@ -47,6 +47,15 @@ serviceMutatorWebhookConfig:
       operator: NotIn
       values:
         - kube-system
+  # The apiserver creates default/kubernetes through admission before the
+  # controller runs. With failurePolicy Fail the Service is never created,
+  # nothing gets in-cluster credentials and node bootstrap deadlocks.
+  objectSelector:
+    matchExpressions:
+      - key: component
+        operator: NotIn
+        values:
+          - apiserver
 
 replicaCount: 1
 
