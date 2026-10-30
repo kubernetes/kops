@@ -233,6 +233,15 @@ func GetClusterName40(cluster string) string {
 	})
 }
 
+// QueueNamePrefix returns the cluster-derived prefix of the SQS queue names.
+// Periods are not allowed in queue names and queue names cannot exceed 80 characters,
+// so leave room for a suffix such as "-nth".
+// Creation and deletion must use the same prefix, or `kops delete cluster` cannot find the queue.
+func QueueNamePrefix(clusterName string) string {
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
+	return truncate.TruncateString(safeClusterName, truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
+}
+
 // GetResourceName32 will attempt to calculate a meaningful name for a resource given a prefix
 // Will never return a string longer than 32 chars
 func GetResourceName32(cluster string, prefix string) string {

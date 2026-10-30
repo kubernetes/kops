@@ -20,6 +20,7 @@ import (
 	"context"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,8 +28,10 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockiam"
+	"k8s.io/kops/cloudmock/aws/mocksqs"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -341,6 +344,31 @@ func TestSharedVolume(t *testing.T) {
 		if rt.ID == *ownedVolume.VolumeId && rt.Shared {
 			t.Fatalf("expected Shared: false, got: %v", rt.Shared)
 		}
+	}
+}
+
+func TestListSQSQueues(t *testing.T) {
+	ctx := context.TODO()
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockSQS := &mocksqs.MockSQS{}
+	cloud.MockSQS = mockSQS
+
+	// Long enough that the queue name is truncated and hashed
+	clusterName := "e2e-e2e-ci-kubernetes-kops-al2023-aws-conformance-aws-cni.tests-kops-aws.k8s.io"
+	queueName := awsup.QueueNamePrefix(clusterName) + "-nth"
+	if _, err := mockSQS.CreateQueue(ctx, &sqs.CreateQueueInput{QueueName: aws.String(queueName)}); err != nil {
+		t.Fatalf("error creating SQS queue: %v", err)
+	}
+
+	resourceTrackers, err := ListSQSQueues(cloud, "", clusterName)
+	if err != nil {
+		t.Fatalf("error listing SQS queues: %v", err)
+	}
+	if len(resourceTrackers) != 1 {
+		t.Fatalf("expected 1 SQS queue for cluster %q, got %d", clusterName, len(resourceTrackers))
+	}
+	if !strings.HasSuffix(resourceTrackers[0].ID, "/"+queueName) {
+		t.Errorf("expected queue URL ending in %q, got %q", queueName, resourceTrackers[0].ID)
 	}
 }
 

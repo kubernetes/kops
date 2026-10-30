@@ -19,6 +19,8 @@ package mocksqs
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -74,9 +76,12 @@ func (m *MockSQS) ListQueues(ctx context.Context, input *sqs.ListQueuesInput, op
 
 	response := &sqs.ListQueuesOutput{}
 
-	if queue, ok := m.Queues[*input.QueueNamePrefix]; ok {
-		response.QueueUrls = []string{aws.ToString(queue.url)}
+	for name, queue := range m.Queues {
+		if strings.HasPrefix(name, aws.ToString(input.QueueNamePrefix)) {
+			response.QueueUrls = append(response.QueueUrls, aws.ToString(queue.url))
+		}
 	}
+	sort.Strings(response.QueueUrls)
 	return response, nil
 }
 
@@ -111,5 +116,14 @@ func (m *MockSQS) ListQueueTags(ctx context.Context, input *sqs.ListQueueTagsInp
 }
 
 func (m *MockSQS) DeleteQueue(ctx context.Context, input *sqs.DeleteQueueInput, optFns ...func(*sqs.Options)) (*sqs.DeleteQueueOutput, error) {
-	panic("Not implemented")
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	for name, queue := range m.Queues {
+		if aws.ToString(queue.url) == aws.ToString(input.QueueUrl) {
+			delete(m.Queues, name)
+			return &sqs.DeleteQueueOutput{}, nil
+		}
+	}
+	return nil, fmt.Errorf("queue %q not found", aws.ToString(input.QueueUrl))
 }

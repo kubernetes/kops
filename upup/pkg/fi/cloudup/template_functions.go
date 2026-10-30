@@ -62,7 +62,6 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/resources/spotinst"
-	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/third_party/forked/text/template"
 	"k8s.io/kops/upup/pkg/fi"
@@ -444,7 +443,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	if cluster.Spec.CloudProvider.AWS != nil && cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
-			s := truncate.TruncateString(strings.ReplaceAll(tf.ClusterName(), ".", "-"), truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
+			s := awsup.QueueNamePrefix(tf.ClusterName())
 			domain := ".amazonaws.com/"
 			if strings.Contains(tf.Region, "cn-") {
 				domain = ".amazonaws.com.cn/"

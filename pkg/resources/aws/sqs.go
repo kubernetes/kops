@@ -19,7 +19,6 @@ package aws
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"k8s.io/klog/v2"
@@ -63,7 +62,7 @@ func ListSQSQueues(cloud fi.Cloud, vpcID, clusterName string) ([]*resources.Reso
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Listing SQS queues")
-	queuePrefix := strings.ReplaceAll(clusterName, ".", "-")
+	queuePrefix := awsup.QueueNamePrefix(clusterName)
 
 	request := &sqs.ListQueuesInput{
 		QueueNamePrefix: &queuePrefix,

@@ -23,7 +23,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
@@ -113,7 +112,7 @@ func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.CloudupModelBuilderCo
 }
 
 func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) error {
-	queueName := model.QueueNamePrefix(b.ClusterName()) + "-nth"
+	queueName := awsup.QueueNamePrefix(b.ClusterName()) + "-nth"
 
 	policy := iam.NewPolicy(b.ClusterName(), b.AWSPartition, b.Region)
 	arn := arn.ARN{

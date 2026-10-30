@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -235,10 +234,4 @@ func (b *KopsModelContext) LinkToPrivateRouteTableInZone(zoneName string) *awsta
 
 func (b *KopsModelContext) InstanceName(ig *kops.InstanceGroup, suffix string) string {
 	return b.AutoscalingGroupName(ig) + suffix
-}
-
-func QueueNamePrefix(clusterName string) string {
-	// periods aren't allowed in queue name and queue name can't exceed 80 characters
-	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
-	return truncate.TruncateString(safeClusterName, truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
 }
