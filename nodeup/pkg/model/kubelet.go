@@ -331,6 +331,7 @@ func (b *KubeletBuilder) kubeletConfiguration(kubeletConfig *kops.KubeletConfigS
 		ImageGCLowThresholdPercent:       kubeletConfig.ImageGCLowThresholdPercent,
 		ImageMaximumGCAge:                fi.ValueOf(kubeletConfig.ImageMaximumGCAge),
 		NodeStatusUpdateFrequency:        fi.ValueOf(kubeletConfig.NodeStatusUpdateFrequency),
+		NodeStatusReportFrequency:        fi.ValueOf(kubeletConfig.NodeStatusReportFrequency),
 		NodeLeaseDurationSeconds:         fi.ValueOf(kubeletConfig.NodeLeaseDurationSeconds),
 		SeccompDefault:                   kubeletConfig.SeccompDefault,
 		KubeReserved:                     kubeletConfig.KubeReserved,
