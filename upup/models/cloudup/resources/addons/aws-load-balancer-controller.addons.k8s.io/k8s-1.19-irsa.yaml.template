@@ -4428,6 +4428,10 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+    - key: component
+      operator: NotIn
+      values:
+      - apiserver
   rules:
   - apiGroups:
     - ""
@@ -4596,6 +4600,8 @@ webhooks:
   failurePolicy: Fail
   matchPolicy: Equivalent
   name: vingress.elbv2.k8s.aws
+  namespaceSelector: null
+  objectSelector: null
   rules:
   - apiGroups:
     - networking.k8s.io

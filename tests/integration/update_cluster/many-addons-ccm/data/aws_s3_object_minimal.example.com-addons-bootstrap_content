@@ -169,7 +169,7 @@ spec:
       k8s-addon: node-termination-handler.aws
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: ef6d297a691b8d2166cd9809ce818ebe85a48ec50f511d3190f51a15132309f0
+    manifestHash: 3ed2cb7ec6fb11973b67c7b88aeda12b89883347e4f958ee4c97cc6942ba551e
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     prune:

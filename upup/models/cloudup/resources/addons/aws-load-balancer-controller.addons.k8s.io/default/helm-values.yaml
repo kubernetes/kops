@@ -47,6 +47,15 @@ serviceMutatorWebhookConfig:
       operator: NotIn
       values:
         - kube-system
+  # The webhook may be installed before the apiserver creates default/kubernetes.
+  # Blocking that Service leaves bootstrap components without the injected
+  # KUBERNETES_SERVICE_PORT, so they cannot start and make the webhook available.
+  objectSelector:
+    matchExpressions:
+      - key: component
+        operator: NotIn
+        values:
+          - apiserver
 
 replicaCount: 1
 
