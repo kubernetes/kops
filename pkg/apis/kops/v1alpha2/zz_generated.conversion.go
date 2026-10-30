@@ -5900,6 +5900,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.RegisterNode = in.RegisterNode
 	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
+	out.NodeStatusReportFrequency = in.NodeStatusReportFrequency
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName
@@ -6019,6 +6020,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.RegisterNode = in.RegisterNode
 	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
+	out.NodeStatusReportFrequency = in.NodeStatusReportFrequency
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName

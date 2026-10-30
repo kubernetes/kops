@@ -469,6 +469,52 @@ func Test_KubeletConfiguration_KubeAPIRateLimits(t *testing.T) {
 	}
 }
 
+func Test_KubeletConfiguration_NodeStatusFrequencies(t *testing.T) {
+	builder := &KubeletBuilder{NodeupModelContext: &NodeupModelContext{
+		NodeupConfig: &nodeup.Config{
+			ContainerdConfig: &kops.ContainerdConfig{},
+		},
+	}}
+
+	tests := []struct {
+		name       string
+		config     kops.KubeletConfigSpec
+		wantUpdate time.Duration
+		wantReport time.Duration
+	}{
+		{
+			// Zero values let the kubelet apply its own defaults (10s update, 5m report).
+			name: "unset",
+		},
+		{
+			// The kubelet copies an explicit update frequency into an unset report frequency,
+			// so the report frequency must be settable on its own to keep the 5m default.
+			name: "update and report frequencies",
+			config: kops.KubeletConfigSpec{
+				NodeStatusUpdateFrequency: &metav1.Duration{Duration: 4 * time.Second},
+				NodeStatusReportFrequency: &metav1.Duration{Duration: 5 * time.Minute},
+			},
+			wantUpdate: 4 * time.Second,
+			wantReport: 5 * time.Minute,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := builder.kubeletConfiguration(&tt.config, "")
+			if err != nil {
+				t.Fatalf("kubeletConfiguration() error = %v", err)
+			}
+			if cc.NodeStatusUpdateFrequency.Duration != tt.wantUpdate {
+				t.Errorf("NodeStatusUpdateFrequency = %v, want %v", cc.NodeStatusUpdateFrequency.Duration, tt.wantUpdate)
+			}
+			if cc.NodeStatusReportFrequency.Duration != tt.wantReport {
+				t.Errorf("NodeStatusReportFrequency = %v, want %v", cc.NodeStatusReportFrequency.Duration, tt.wantReport)
+			}
+		})
+	}
+}
+
 func TestParseKeyValueList(t *testing.T) {
 	tests := []struct {
 		name            string
