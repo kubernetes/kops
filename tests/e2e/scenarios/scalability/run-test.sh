@@ -263,7 +263,6 @@ if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; t
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
   # we are not testing PVS at this point
   CL2_ENABLE_PVS: false
-  ENABLE_RESTART_COUNT_CHECK: false
 EOL
   cat "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml
 elif [[ "${SCALE_SCENARIO}" == "performance" ]]; then
