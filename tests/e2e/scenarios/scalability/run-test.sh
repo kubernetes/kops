@@ -195,6 +195,10 @@ KUBETEST2_ARGS+=("--node-dump-timeout=${NODE_DUMP_TIMEOUT:-5m}")
 # Tolerate up to 2 nodes failing to join on 5k clusters.
 if [[ "${KUBE_NODE_COUNT:-100}" -ge 5000 ]]; then
   KUBETEST2_ARGS+=("--max-unready-nodes=${MAX_UNREADY_NODES:-2}")
+elif [[ "${KUBE_NODE_COUNT:-100}" -ge 500 && "${SCALE_SCENARIO}" == "performance" ]]; then
+  # About one node in a few thousand never becomes Ready. clusterloader2 copes
+  # with that; the e2e suite of the correctness scenario waits for every node.
+  KUBETEST2_ARGS+=("--max-unready-nodes=${MAX_UNREADY_NODES:-1}")
 fi
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
