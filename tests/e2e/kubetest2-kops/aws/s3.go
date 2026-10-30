@@ -111,6 +111,12 @@ func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, p
 		CreateBucketConfiguration: bucketConfig,
 	},
 	)
+	var owned *types.BucketAlreadyOwnedByYou
+	if errors.As(err, &owned) {
+		// The SDK retried a CreateBucket whose first attempt had succeeded.
+		klog.Infof("Bucket %s already exists in this account", bucketName)
+		err = nil
+	}
 	if err != nil {
 		var exists *types.BucketAlreadyExists
 		if errors.As(err, &exists) {
