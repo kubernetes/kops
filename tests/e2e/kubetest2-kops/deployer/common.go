@@ -115,8 +115,8 @@ func (d *deployer) initialize() error {
 
 	// Determine whether ephemeral buckets need to be created. Each store
 	// method generates a dynamic bucket name when its corresponding env var
-	// is unset; those buckets must be created before cluster provisioning
-	// and deleted during teardown.
+	// is unset; those buckets must be created before they are used (the
+	// staging bucket by Build, the others by Up) and deleted during teardown.
 	switch d.CloudProvider {
 	case "aws":
 		if os.Getenv("KOPS_STATE_STORE") == "" {
@@ -124,6 +124,9 @@ func (d *deployer) initialize() error {
 		}
 		if _, found := os.LookupEnv("KOPS_DISCOVERY_STORE"); !found {
 			d.createDiscoveryStore = true
+		}
+		if os.Getenv("KOPS_STAGING_BUCKET") == "" && d.StageLocation == "" {
+			d.createStagingStore = true
 		}
 	case "gce":
 		if d.boskos != nil || os.Getenv("KOPS_STATE_STORE") == "" || os.Getenv("KOPS_STAGING_BUCKET") == "" {
@@ -631,6 +634,14 @@ func (d *deployer) stagingStore() string {
 	sb := os.Getenv("KOPS_STAGING_BUCKET")
 	if sb == "" {
 		switch d.CloudProvider {
+		case "aws":
+			ctx := context.Background()
+			bucketName, err := d.aws.BucketName(ctx, aws.BucketTypeStagingStore)
+			if err != nil {
+				klog.Fatalf("Failed to generate bucket name: %v", err)
+				return ""
+			}
+			sb = "s3://" + bucketName
 		case "gce":
 			sb = "gs://" + gce.GCSBucketName(d.GCPProject, "staging")
 		}

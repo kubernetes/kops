@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -50,6 +51,7 @@ type BucketType string
 const (
 	BucketTypeStateStore     BucketType = "state"
 	BucketTypeDiscoveryStore BucketType = "discovery"
+	BucketTypeStagingStore   BucketType = "staging"
 )
 
 // NewAWSClient returns a new instance of awsClient configured to work in the default region (us-east-2).
@@ -73,11 +75,7 @@ func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, 
 	// invocations within the same CI job (e.g. upgrade tests) resolve to the same bucket name.
 	var suffix string
 	if jobID := os.Getenv("BUILD_ID"); jobID != "" {
-		if len(jobID) > 14 {
-			suffix = jobID[:14]
-		} else {
-			suffix = jobID
-		}
+		suffix = jobID
 	} else {
 		callerIdentity, err := c.stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
 		if err != nil {
@@ -170,21 +168,9 @@ func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, p
 func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	bucketName = strings.TrimPrefix(bucketName, "s3://")
 
-	// Resolve the bucket's actual region to avoid 301 PermanentRedirect errors.
-	// During teardown the deployer may derive the S3 client region from random
-	// zones, which can differ from the region where the bucket was created.
-	bucketRegion, err := c.getBucketRegion(ctx, bucketName)
-	if err != nil {
-		klog.Infof("Could not determine region for bucket %s: %v", bucketName, err)
-	}
+	regionOpt := c.bucketRegionOption(ctx, bucketName)
 
-	regionOpt := func(o *s3.Options) {
-		if bucketRegion != "" {
-			o.Region = bucketRegion
-		}
-	}
-
-	_, err = c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
+	_, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	}, regionOpt)
 	if err != nil {
@@ -203,7 +189,9 @@ func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 		ctx, &s3.HeadBucketInput{
 			Bucket: aws.String(bucketName),
 		},
-		time.Minute)
+		time.Minute, func(o *s3.BucketNotExistsWaiterOptions) {
+			o.ClientOptions = append(o.ClientOptions, regionOpt)
+		})
 	if err != nil {
 		klog.Infof("Failed attempt to wait for bucket %s to be deleted, err: %v", bucketName, err)
 
@@ -215,10 +203,78 @@ func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	return nil
 }
 
-// getBucketRegion resolves the AWS region where the bucket resides.
+// DeleteS3BucketAndObjects deletes all objects in the S3 bucket with the given name, and then the
+// bucket. A bucket that does not exist is not an error.
+func (c Client) DeleteS3BucketAndObjects(ctx context.Context, bucketName string) error {
+	bucketName = strings.TrimPrefix(bucketName, "s3://")
+	regionOpt := c.bucketRegionOption(ctx, bucketName)
+
+	// A page holds at most 1000 keys, which is also the most that DeleteObjects accepts.
+	paginator := s3.NewListObjectsV2Paginator(c.s3Client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucketName),
+	})
+	deleted := 0
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx, regionOpt)
+		if err != nil {
+			var noBucket *types.NoSuchBucket
+			if errors.As(err, &noBucket) {
+				klog.Infof("Bucket %s does not exist.", bucketName)
+
+				return nil
+			}
+
+			return fmt.Errorf("listing objects in bucket %s: %w", bucketName, err)
+		}
+		if len(page.Contents) == 0 {
+			continue
+		}
+
+		objects := make([]types.ObjectIdentifier, 0, len(page.Contents))
+		for _, object := range page.Contents {
+			objects = append(objects, types.ObjectIdentifier{Key: object.Key})
+		}
+		resp, err := c.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+			Bucket: aws.String(bucketName),
+			Delete: &types.Delete{
+				Objects: objects,
+				Quiet:   aws.Bool(true),
+			},
+		}, regionOpt)
+		if err != nil {
+			return fmt.Errorf("deleting objects in bucket %s: %w", bucketName, err)
+		}
+		if len(resp.Errors) > 0 {
+			return fmt.Errorf("deleting object %q in bucket %s: %s", aws.ToString(resp.Errors[0].Key), bucketName, aws.ToString(resp.Errors[0].Message))
+		}
+		deleted += len(objects)
+	}
+	klog.Infof("Deleted %d objects from bucket %s", deleted, bucketName)
+
+	return c.DeleteS3Bucket(ctx, bucketName)
+}
+
+// bucketRegionOption returns an option that sends requests to the region where the bucket resides,
+// to avoid 301 PermanentRedirect errors. During teardown the deployer may derive the S3 client
+// region from random zones, which can differ from the region where the bucket was created.
+func (c Client) bucketRegionOption(ctx context.Context, bucketName string) func(*s3.Options) {
+	bucketRegion, err := c.BucketRegion(ctx, bucketName)
+	if err != nil {
+		klog.Infof("Could not determine region for bucket %s: %v", bucketName, err)
+	}
+
+	return func(o *s3.Options) {
+		if bucketRegion != "" {
+			o.Region = bucketRegion
+		}
+	}
+}
+
+// BucketRegion resolves the AWS region where the bucket resides.
 // GetBucketLocation is region-agnostic and can locate buckets in any region
 // from any endpoint. We pin to defaultRegion for consistency.
-func (c Client) getBucketRegion(ctx context.Context, bucketName string) (string, error) {
+func (c Client) BucketRegion(ctx context.Context, bucketName string) (string, error) {
+	bucketName = strings.TrimPrefix(bucketName, "s3://")
 	resp, err := c.s3Client.GetBucketLocation(ctx, &s3.GetBucketLocationInput{
 		Bucket: aws.String(bucketName),
 	}, func(o *s3.Options) {
@@ -276,4 +332,38 @@ func (c Client) setPublicAccessBlock(ctx context.Context, bucketName string) err
 		},
 	})
 	return err
+}
+
+// SplitS3URL splits an s3://<bucket>/<prefix> location into the bucket name and the key prefix,
+// without leading or trailing slashes.
+func SplitS3URL(location string) (bucket, prefix string, err error) {
+	rest, ok := strings.CutPrefix(location, "s3://")
+	if !ok {
+		return "", "", fmt.Errorf("%q is not an s3:// location", location)
+	}
+	bucket, prefix, _ = strings.Cut(rest, "/")
+	if bucket == "" {
+		return "", "", fmt.Errorf("%q does not contain a bucket name", location)
+	}
+
+	return bucket, strings.Trim(prefix, "/"), nil
+}
+
+// PublicObjectURL returns the https:// URL that serves urlPath from a publicly readable bucket in
+// the given region. urlPath is kept as is, so a "+" stays literal; see k8s.io/release/pkg/build.S3ObjectKey
+// for the key that S3 serves at that URL.
+func PublicObjectURL(ctx context.Context, region, bucket, urlPath string) (string, error) {
+	endpoint, err := s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, s3.EndpointParameters{
+		Bucket: aws.String(bucket),
+		Region: aws.String(region),
+	})
+	if err != nil {
+		return "", fmt.Errorf("resolving S3 endpoint for bucket %q in region %q: %w", bucket, region, err)
+	}
+
+	u := endpoint.URI
+	// The bucket is part of the path for buckets that cannot be addressed as a subdomain.
+	u.Path = path.Join("/", u.Path, urlPath)
+
+	return u.String(), nil
 }

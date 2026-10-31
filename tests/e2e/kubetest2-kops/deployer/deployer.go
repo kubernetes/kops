@@ -44,7 +44,9 @@ type deployer struct {
 
 	KopsRoot string `flag:"kops-root" desc:"Path to root of the kops repo. Used with --build."`
 
-	StageLocation string `flag:"stage-location" desc:"Storage location for kops artifacts. Only gs:// paths are supported."`
+	StageLocation string `flag:"stage-location" desc:"Storage location for kops and kubernetes build artifacts. gs:// paths are supported, and s3:// paths with --cloud-provider=aws. The location must be publicly readable."`
+
+	KeepStagingStore bool `flag:"keep-staging-store" desc:"Do not delete the staging bucket created by --build in --down, e.g. when deleting a leaked cluster between --build and --up"`
 
 	KopsVersionMarker    string `flag:"kops-version-marker" desc:"The URL to the kops version marker. Conflicts with --build and --kops-binary-path"`
 	KopsBaseURL          string `flag:"-"`
@@ -100,6 +102,7 @@ type deployer struct {
 
 	createStateStore     bool
 	createDiscoveryStore bool
+	createStagingStore   bool
 	stateStoreName       string
 	discoveryStoreName   string
 	stagingStoreName     string
