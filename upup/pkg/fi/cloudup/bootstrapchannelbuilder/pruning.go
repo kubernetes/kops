@@ -30,6 +30,13 @@ import (
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 )
 
+// karpenterInstanceGroupKinds are the kinds of the objects that kOps generates for each Karpenter
+// instance group, named after the instance group.
+var karpenterInstanceGroupKinds = []schema.GroupKind{
+	{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
+	{Group: "karpenter.sh", Kind: "NodePool"},
+}
+
 func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) error {
 	spec.Prune = &channelsapi.PruneSpec{}
 
@@ -61,10 +68,7 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) erro
 		{Group: "policy", Kind: "PodDisruptionBudget"},
 	}
 	if *spec.Name == "karpenter.sh" {
-		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds,
-			schema.GroupKind{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
-			schema.GroupKind{Group: "karpenter.sh", Kind: "NodePool"},
-		)
+		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds, karpenterInstanceGroupKinds...)
 	}
 	pruneGroupKind := make(map[schema.GroupKind]bool)
 	for _, gk := range alwaysPruneGroupKinds {
