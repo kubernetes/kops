@@ -41,11 +41,10 @@ var karpenterInstanceGroupKinds = []schema.GroupKind{
 }
 
 // buildPruneDirectives configures the pruning of the objects that are not in the manifest, except
-// those of the protected instance groups, see protectedInstanceGroupNames. It reports whether the
+// those of the instance groups returned by protectedInstanceGroupNames. It reports whether the
 // prune spec must be hashed with the manifest.
-func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, modelContext *model.KopsModelContext) (bool, error) {
+func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, modelContext *model.KopsModelContext) (hashPruneSpec bool, err error) {
 	spec.Prune = &channelsapi.PruneSpec{}
-	hashPruneSpec := false
 
 	// We add these labels to all objects we manage, so we reuse them for pruning.
 	selectorMap := map[string]string{
@@ -151,11 +150,10 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, mode
 
 		pruneSpec.LabelSelector = selector.String()
 
-		// The protected instance groups are excluded by name: kops-channels passes the field
-		// selector to the list call that finds the objects to prune. The prune spec is hashed with
-		// the manifest because kops-channels applies and prunes an addon only when its channel
-		// version changes: deleting a protected instance group must change the hash even when the
-		// manifest doesn't.
+		// kops-channels passes the field selector to the list call that finds the objects to prune.
+		// The prune spec is then hashed with the manifest: kops-channels applies and prunes an addon
+		// only when its channel version changes, and deleting a protected instance group must change
+		// the hash even when the manifest doesn't.
 		if slices.Contains(karpenterInstanceGroupKinds, gk) && len(protectedInstanceGroups) != 0 {
 			var nameSelectors []fields.Selector
 			for _, name := range protectedInstanceGroups {
@@ -172,11 +170,11 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, mode
 }
 
 // protectedInstanceGroupNames returns the sorted names of the instance groups whose NodePools and
-// EC2NodeClasses must not be pruned, because Karpenter would terminate their nodes: every Karpenter
-// instance group, since kops-channels can apply the manifest of one update with the prune spec of
-// another, and every node instance group not being updated, since the manifest only has the
-// objects of the instance groups being updated. The latter also keeps the NodePool of an instance
-// group moved to CloudGroup until it is updated.
+// EC2NodeClasses must not be pruned, because Karpenter would terminate their nodes. Every Karpenter
+// instance group is protected: kops-channels can apply the manifest of one update with the prune
+// spec of another. Every node instance group not being updated is protected too: the manifest only
+// has the objects of the instance groups being updated, and an instance group moved to CloudGroup
+// keeps its NodePool until it is updated.
 func protectedInstanceGroupNames(modelContext *model.KopsModelContext) []string {
 	updating := sets.New[string]()
 	for _, ig := range modelContext.InstanceGroups {
