@@ -207,6 +207,8 @@ func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 			modelContext:    b.KopsModelContext,
 			assetBuilder:    b.assetBuilder,
 			serviceAccounts: serviceAccounts,
+
+			instanceGroupKinds: addon.InstanceGroupKinds,
 		}
 		c.AddTask(task)
 		addonTasks = append(addonTasks, task)
@@ -281,6 +283,11 @@ type Addon struct {
 
 	// SkipRender is true when Source is already a rendered manifest.
 	SkipRender bool
+
+	// InstanceGroupKinds are the kinds of the objects that belong to the instance group of the same
+	// name. When only some instance groups are being updated, the objects of the other instance
+	// groups are kept as they are in the manifest in the state store.
+	InstanceGroupKinds []schema.GroupKind
 }
 
 // CollectImages renders template sources under stubbed task funcs and scans
@@ -1169,6 +1176,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		key := "karpenter.sh"
 
 		{
+			// A partial update copies the objects of the other instance groups from the manifest at
+			// this location, so changing the id would make the next partial update prune them.
 			id := "k8s-1.19"
 			location := key + "/" + id + ".yaml"
 			addon := addons.Add(&channelsapi.AddonSpec{
@@ -1181,6 +1190,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				serviceAccountRoles = append(serviceAccountRoles, &karpenter.ServiceAccount{})
 			}
 			addon.BuildPrune = true
+			addon.InstanceGroupKinds = karpenterInstanceGroupKinds
 		}
 	}
 
