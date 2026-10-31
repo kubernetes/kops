@@ -19,6 +19,8 @@ package dump
 import (
 	"context"
 	"io"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -136,5 +138,72 @@ func TestDumpAllNodesNilGranter(t *testing.T) {
 
 	if err := d.DumpAllNodes(context.Background(), nodes, 10, cloudDump); err != nil {
 		t.Fatalf("DumpAllNodes with nil granter: %v", err)
+	}
+}
+
+// fakeLogFilesSSHClient serves a fixed /var/log listing and file contents to the dumper.
+type fakeLogFilesSSHClient struct {
+	files map[string]string
+}
+
+func (fakeLogFilesSSHClient) Close() error { return nil }
+
+func (c fakeLogFilesSSHClient) ExecPiped(ctx context.Context, command string, stdout io.Writer, stderr io.Writer) error {
+	if command == "sudo find /var/log -type f -print0" {
+		for name := range c.files {
+			if _, err := io.WriteString(stdout, name+"\x00"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for name, contents := range c.files {
+		if command == "sudo cat '"+name+"'" {
+			_, err := io.WriteString(stdout, contents)
+			return err
+		}
+	}
+	return nil
+}
+
+// TestDumpCollectsCNIKindnetLog verifies that the node dump copies the cni-kindnet log when the
+// node has it, and that a node without it dumps without errors.
+func TestDumpCollectsCNIKindnetLog(t *testing.T) {
+	grid := []struct {
+		name  string
+		files map[string]string
+	}{
+		{
+			name:  "present",
+			files: map[string]string{"/var/log/cni-kindnet.log": "ADD sandbox\n", "/var/log/syslog": "unrelated\n"},
+		},
+		{
+			name:  "missing",
+			files: map[string]string{"/var/log/syslog": "unrelated\n"},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			d := NewLogDumper("", nil, nil, t.TempDir(), time.Minute)
+			n := &logDumperNode{
+				client: fakeLogFilesSSHClient{files: g.files},
+				dumper: d,
+				dir:    t.TempDir(),
+			}
+			if errs := n.dump(context.Background()); len(errs) != 0 {
+				t.Fatalf("dump: %v", errs)
+			}
+
+			got, err := os.ReadFile(filepath.Join(n.dir, "cni-kindnet.log"))
+			want, present := g.files["/var/log/cni-kindnet.log"]
+			switch {
+			case present && err != nil:
+				t.Fatalf("reading the dumped cni-kindnet log: %v", err)
+			case present && string(got) != want:
+				t.Errorf("dumped cni-kindnet log: got %q, want %q", got, want)
+			case !present && !os.IsNotExist(err):
+				t.Errorf("expected no cni-kindnet log in the dump, got %q, %v", got, err)
+			}
+		})
 	}
 }

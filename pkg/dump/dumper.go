@@ -109,6 +109,8 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 		"docker",
 		"aws-routed-eni/ipamd",
 		"aws-routed-eni/plugin",
+		// cni-kindnet writes its warnings and errors here when containerd's environment sets CNI_LOG_FILE to this file.
+		"cni-kindnet",
 	}
 	d.podSelectors = []string{
 		"k8s-app=external-dns",
