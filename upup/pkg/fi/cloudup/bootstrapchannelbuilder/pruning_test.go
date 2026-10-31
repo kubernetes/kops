@@ -71,6 +71,12 @@ func TestBuildPruneDirectivesProtectedInstanceGroups(t *testing.T) {
 			allInstanceGroups: []*kops.InstanceGroup{controlPlane, nodes},
 			instanceGroups:    []*kops.InstanceGroup{controlPlane, nodes},
 		},
+		{
+			desc:                  "control plane only, without Karpenter instance groups",
+			allInstanceGroups:     []*kops.InstanceGroup{controlPlane, nodes},
+			instanceGroups:        []*kops.InstanceGroup{controlPlane},
+			expectedFieldSelector: "metadata.name!=nodes",
+		},
 	}
 	for _, g := range grid {
 		t.Run(g.desc, func(t *testing.T) {
