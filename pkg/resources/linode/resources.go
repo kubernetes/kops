@@ -35,6 +35,7 @@ const (
 	resourceTypeVPC      = "vpc"
 	resourceTypeSubnet   = "subnet"
 	resourceTypeSSHKey   = "ssh-key"
+	resourceTypeFirewall = "firewall"
 	resourceTypeInstance = "instance"
 	resourceTypeVolume   = "volume"
 )
@@ -56,6 +57,7 @@ func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterI
 		listVPCs,
 		listSubnets,
 		listInstances,
+		listFirewalls,
 		listVolumes,
 		listSSHKeys,
 	}
@@ -104,6 +106,57 @@ func listInstances(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resour
 	}
 
 	return resourceTrackers, nil
+}
+
+func listFirewalls(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
+	c := cloud.(cloudlinode.LinodeCloud)
+	listOptions, err := cloudlinode.ListOptionsForTags(fmt.Sprintf("%s:%s", cloudlinode.TagKubernetesClusterName, clusterInfo.Name))
+	if err != nil {
+		return nil, err
+	}
+
+	firewalls, err := c.Client().ListFirewalls(context.Background(), listOptions)
+	if err != nil {
+		return nil, fmt.Errorf("error listing Akamai (Linode) firewalls: %w", err)
+	}
+
+	resourceTrackers := make([]*resources.Resource, 0, len(firewalls))
+	for _, firewall := range firewalls {
+		resourceTrackers = append(resourceTrackers, &resources.Resource{
+			Name:    firewall.Label,
+			ID:      strconv.Itoa(firewall.ID),
+			Type:    resourceTypeFirewall,
+			Deleter: deleteFirewall,
+			Blocked: firewallInstanceDependencies(firewall),
+			Obj:     firewall,
+		})
+	}
+
+	return resourceTrackers, nil
+}
+
+func firewallInstanceDependencies(firewall linodego.Firewall) []string {
+	dependencies := make(map[string]struct{})
+	for _, entity := range firewall.Entities {
+		instance := entity
+		if entity.Type == linodego.FirewallDeviceLinodeInterface {
+			if entity.ParentEntity == nil {
+				continue
+			}
+			instance = *entity.ParentEntity
+		}
+		if instance.Type != linodego.FirewallDeviceLinode {
+			continue
+		}
+		dependencies[resourceTypeInstance+":"+strconv.Itoa(instance.ID)] = struct{}{}
+	}
+
+	result := make([]string, 0, len(dependencies))
+	for dependency := range dependencies {
+		result = append(result, dependency)
+	}
+	sort.Strings(result)
+	return result
 }
 
 // listVolumes lists Akamai (Linode) block storage volumes owned by the cluster.
@@ -339,6 +392,23 @@ func deleteInstance(cloud fi.Cloud, tracker *resources.Resource) error {
 			return nil
 		}
 		return fmt.Errorf("error deleting Akamai (Linode) instance %s(%s): %w", tracker.Name, tracker.ID, err)
+	}
+
+	return nil
+}
+
+func deleteFirewall(cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(cloudlinode.LinodeCloud)
+	firewallID, err := parseTrackerIntID(tracker)
+	if err != nil {
+		return err
+	}
+
+	if err := c.Client().DeleteFirewall(context.Background(), firewallID); err != nil {
+		if linodego.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("error deleting Akamai (Linode) firewall %s(%s): %w", tracker.Name, tracker.ID, err)
 	}
 
 	return nil
