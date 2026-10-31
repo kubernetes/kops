@@ -151,9 +151,9 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, mode
 		pruneSpec.LabelSelector = selector.String()
 
 		// kops-channels passes the field selector to the list call that finds the objects to prune.
-		// The prune spec is then hashed with the manifest: kops-channels applies and prunes an addon
-		// only when its channel version changes, and deleting a protected instance group must change
-		// the hash even when the manifest doesn't.
+		// The prune spec is then hashed with the manifest: kops-channels applies and prunes an
+		// addon only when its channel version changes, and deleting a protected instance group must
+		// change the hash even when the manifest doesn't.
 		if slices.Contains(karpenterInstanceGroupKinds, gk) && len(protectedInstanceGroups) != 0 {
 			var nameSelectors []fields.Selector
 			for _, name := range protectedInstanceGroups {

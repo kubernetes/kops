@@ -1481,8 +1481,8 @@ func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, c
 		}
 	}
 
-	// Pruning deletes the objects of the kinds in the prune spec that match its selectors,
-	// and are not in the manifest; see channels.Pruner.
+	// Pruning deletes the objects of the kinds in the prune spec that match its selectors, and are
+	// not in the manifest; see channels.Pruner.
 	for _, key := range omitted {
 		object := expectedObjects[key]
 		if object == nil {
@@ -1530,7 +1530,7 @@ func readBootstrapChannel(t *testing.T, filename string) map[string]*channelsapi
 	return addons
 }
 
-// readManifestObjects returns the objects in an addon manifest, keyed as "Kind.group namespace/name".
+// readManifestObjects returns the objects in an addon manifest, by "Kind.group namespace/name".
 func readManifestObjects(t *testing.T, filename string) map[string]*unstructured.Unstructured {
 	data, err := os.ReadFile(filename)
 	if err != nil {

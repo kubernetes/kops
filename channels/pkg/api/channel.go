@@ -54,8 +54,8 @@ type AddonSpec struct {
 	// Manifest is the URL to the manifest that should be applied
 	Manifest *string `json:"manifest,omitempty"`
 
-	// ManifestHash is the sha256 hash of the manifest, and of the prune spec when it has a
-	// field selector. The addon is applied again when it changes.
+	// ManifestHash is the sha256 hash of the manifest, and of the prune spec when it has a field
+	// selector. The addon is applied again when it changes.
 	ManifestHash string `json:"manifestHash,omitempty"`
 
 	// KubernetesVersion is a semver version range on which this version of the addon can be applied
