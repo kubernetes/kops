@@ -237,8 +237,9 @@ func TestAddonCollectImagesRendersTemplateSources(t *testing.T) {
 	}
 }
 
-// kops-channels applies and prunes an addon only when its manifest hash changes, so the hash must
-// change when objects that were kept from pruning are pruned again, even if the manifest does not.
+// kops-channels applies and prunes an addon only when its channel version changes, so the manifest
+// hash must change when objects that were kept from pruning are pruned again, even if the manifest
+// does not.
 func TestAddonManifestNormalizeHashesKeptObjects(t *testing.T) {
 	ctx, err := fi.NewCloudupContext(context.Background(), fi.DeletionProcessingModeDeleteIncludingDeferred, nil, nil, nil, nil, nil, nil, map[string]fi.CloudupTask{})
 	if err != nil {
