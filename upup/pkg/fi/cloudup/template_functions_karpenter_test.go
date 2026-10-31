@@ -828,3 +828,76 @@ func TestKarpenterNodePoolTemplateLabels(t *testing.T) {
 		t.Errorf("expected %#v, got %#v", expected, actual)
 	}
 }
+
+func TestKarpenterSubnetSelectorTerms(t *testing.T) {
+	tf := &TemplateFunctions{}
+	tf.Cluster = &kops.Cluster{}
+	tf.Cluster.Name = "minimal.example.com"
+	tf.Cluster.Spec.CloudProvider.AWS = &kops.AWSSpec{}
+
+	// subnetTags builds the tags NetworkModelBuilder applies to a subnet used by a Karpenter InstanceGroup.
+	subnetTags := func(shared bool, igName string) map[string]string {
+		tags := tf.CloudTags("us-test-1a."+tf.ClusterName(), shared)
+		tags["kops.k8s.io/instance-group/"+igName] = "true"
+		return tags
+	}
+
+	grid := []struct {
+		desc     string
+		tags     map[string]string
+		expected bool
+	}{
+		{
+			desc:     "owned subnet tagged for the instance group",
+			tags:     subnetTags(false, "karpenter-nodes"),
+			expected: true,
+		},
+		{
+			desc:     "shared subnet tagged for the instance group",
+			tags:     subnetTags(true, "karpenter-nodes"),
+			expected: true,
+		},
+		{
+			desc:     "owned subnet tagged for another instance group",
+			tags:     subnetTags(false, "other-nodes"),
+			expected: false,
+		},
+		{
+			desc: "subnet of another cluster tagged for the instance group",
+			tags: map[string]string{
+				"kubernetes.io/cluster/other.example.com":    "shared",
+				"kops.k8s.io/instance-group/karpenter-nodes": "true",
+			},
+			expected: false,
+		},
+	}
+
+	terms := buildKarpenterSubnetSelectorTerms(tf.ClusterName(), "karpenter-nodes")
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			if actual := karpenterSelectorTermsMatch(terms, g.tags); actual != g.expected {
+				t.Errorf("expected match=%v for tags %v, terms %v", g.expected, g.tags, terms)
+			}
+		})
+	}
+}
+
+// karpenterSelectorTermsMatch applies Karpenter's selector semantics: terms are ORed and the tags within a term are ANDed.
+func karpenterSelectorTermsMatch(terms []karpenterSelectorTerm, resourceTags map[string]string) bool {
+	for _, term := range terms {
+		if term.ID != "" || len(term.Tags) == 0 {
+			continue
+		}
+		matched := true
+		for k, v := range term.Tags {
+			if resourceTags[k] != v {
+				matched = false
+				break
+			}
+		}
+		if matched {
+			return true
+		}
+	}
+	return false
+}
