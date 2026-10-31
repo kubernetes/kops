@@ -51,6 +51,8 @@ spec:
   manager: Karpenter
 ```
 
+The manager of an existing InstanceGroup cannot be changed: create a new InstanceGroup with the other manager and delete the old one.
+
 ### EC2NodeClass and NodePool
 {{ kops_feature_table(kops_added_default='1.36') }}
 
