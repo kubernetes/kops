@@ -1414,8 +1414,9 @@ func readTerraformResources(t *testing.T, filename string) map[string]string {
 	return resources
 }
 
-// assertAddonObjectsKept checks that the partial update renders the same objects as the full update
-// for the instance groups being updated, and that its prune spec and the full update's keep the others.
+// assertAddonObjectsProtected checks that the partial update renders the same objects as the full
+// update for the instance groups being updated, and that neither its prune spec nor the full
+// update's prunes the others.
 func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string) {
 	expectedChannel := readBootstrapChannel(t, filepath.Join(expectedDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
 	actualChannel := readBootstrapChannel(t, filepath.Join(actualDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
@@ -1431,8 +1432,8 @@ func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, c
 			t.Errorf("addon %q in the bootstrap channel differs from the full update", name)
 		}
 	}
-	// kops-channels can apply the manifest of one update with the prune spec of another, so the
-	// prune specs of both updates must keep the objects that the partial update doesn't render.
+	// kops-channels can apply the manifest of one update with the prune spec of another, so neither
+	// prune spec may prune the objects that the partial update doesn't render.
 	updates := []struct {
 		name    string
 		channel map[string]*channelsapi.AddonSpec
