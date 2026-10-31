@@ -48,6 +48,7 @@ import (
 	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
@@ -567,6 +568,24 @@ func TestExternalDNSIRSA(t *testing.T) {
 func TestKarpenter(t *testing.T) {
 	test := newIntegrationTest("minimal.example.com", "karpenter")
 	test.runTestTerraformAWS(t)
+}
+
+// TestKarpenterPartialUpdate checks that updating only some instance groups keeps the EC2NodeClass,
+// NodePool and subnet tags of the other Karpenter instance groups.
+func TestKarpenterPartialUpdate(t *testing.T) {
+	addonFile := "aws_s3_object_minimal.example.com-addons-karpenter.sh-k8s-1.19_content"
+	for _, p := range []partialUpdateTest{
+		{name: "control-plane", instanceGroupRoles: controlPlaneRoles},
+		{name: "karpenter-nodes-default", instanceGroups: []string{"karpenter-nodes-default"}},
+	} {
+		t.Run(p.name, func(t *testing.T) {
+			p.clusterResources = []string{"aws_subnet"}
+			p.clusterDataFiles = []string{"aws_s3_object_minimal.example.com-addons-bootstrap_content", addonFile}
+			p.stateStoreFiles = map[string]string{"addons/karpenter.sh/k8s-1.19.yaml": addonFile}
+			newIntegrationTest("minimal.example.com", "karpenter").
+				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
+		})
+	}
 }
 
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
@@ -1225,6 +1244,10 @@ type partialUpdateTest struct {
 	// which checkChangedDataFiles checks instead.
 	changedDataFiles      []string
 	checkChangedDataFiles func(t *testing.T, expectedDataDir, actualDataDir string)
+
+	// stateStoreFiles are the data files of the full update to write to the state store before the
+	// partial update, keyed by their location in the cluster config base.
+	stateStoreFiles map[string]string
 }
 
 // runTestPartialUpdate updates only some instance groups, as "kops update cluster --instance-group"
@@ -1249,6 +1272,26 @@ func (i *integrationTest) runTestPartialUpdate(t *testing.T, cloudProvider kops.
 	var stdout bytes.Buffer
 	i.srcDir = updateClusterTestBase + i.srcDir
 	factory := i.setupCluster(t, ctx, "in-"+i.version+".yaml", stdout)
+	cluster, err := GetCluster(ctx, factory, i.clusterName)
+	if err != nil {
+		t.Fatalf("error getting cluster: %v", err)
+	}
+
+	if len(p.stateStoreFiles) != 0 {
+		configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigStore.Base)
+		if err != nil {
+			t.Fatalf("error parsing config base: %v", err)
+		}
+		for location, filename := range p.stateStoreFiles {
+			data, err := os.ReadFile(filepath.Join(i.srcDir, "data", filename))
+			if err != nil {
+				t.Fatalf("failed to read data file %q: %v", filename, err)
+			}
+			if err := configBase.Join(location).WriteFile(ctx, bytes.NewReader(data), nil); err != nil {
+				t.Fatalf("failed to write %q to the state store: %v", location, err)
+			}
+		}
+	}
 
 	options := &UpdateClusterOptions{}
 	options.InitDefaults()
@@ -1320,10 +1363,6 @@ func (i *integrationTest) runTestPartialUpdate(t *testing.T, cloudProvider kops.
 
 	// Rendering only the instance groups being updated is the purpose of the partial update:
 	// the nodeup config of an instance group, if it has one, is rendered only when it is updated.
-	cluster, err := GetCluster(ctx, factory, i.clusterName)
-	if err != nil {
-		t.Fatalf("error getting cluster: %v", err)
-	}
 	clientset, err := factory.KopsClient()
 	if err != nil {
 		t.Fatalf("error getting clientset: %v", err)
