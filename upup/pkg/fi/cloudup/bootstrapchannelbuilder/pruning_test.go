@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func TestBuildPruneDirectivesSkipPruning(t *testing.T) {
+func TestBuildPruneDirectivesProtectedInstanceGroups(t *testing.T) {
 	manifest := []byte("apiVersion: karpenter.sh/v1\nkind: NodePool\nmetadata:\n  name: nodes-a\n")
 
 	grid := []struct {

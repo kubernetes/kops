@@ -130,35 +130,35 @@ func TestAddonManifestNormalizeProtectedInstanceGroups(t *testing.T) {
 	// The objects rendered when karpenter-a is updated; kOps names them after the InstanceGroup.
 	manifest := "apiVersion: karpenter.k8s.aws/v1\nkind: EC2NodeClass\nmetadata:\n  name: karpenter-a\n---\napiVersion: karpenter.sh/v1\nkind: NodePool\nmetadata:\n  name: karpenter-a\n"
 
-	tests := []struct {
-		name           string
+	grid := []struct {
+		desc           string
 		instanceGroups []*kops.InstanceGroup
-		// wantFieldSelector is expected on the EC2NodeClass and NodePool prune directives only.
-		wantFieldSelector string
+		// expectedFieldSelector is expected on the EC2NodeClass and NodePool prune directives only.
+		expectedFieldSelector string
 	}{
 		{
-			name:              "all instance groups",
-			instanceGroups:    allInstanceGroups,
-			wantFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
+			desc:                  "all instance groups",
+			instanceGroups:        allInstanceGroups,
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
 		},
 		{
-			name:              "control plane only",
-			instanceGroups:    allInstanceGroups[:1],
-			wantFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
+			desc:                  "control plane only",
+			instanceGroups:        allInstanceGroups[:1],
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
 		},
 		{
-			name:              "node instance groups",
-			instanceGroups:    allInstanceGroups[1:],
-			wantFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
+			desc:                  "node instance groups",
+			instanceGroups:        allInstanceGroups[1:],
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
 		},
 		{
-			name:              "one Karpenter instance group",
-			instanceGroups:    allInstanceGroups[1:2],
-			wantFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
+			desc:                  "one Karpenter instance group",
+			instanceGroups:        allInstanceGroups[1:2],
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
 		},
 	}
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
 			ctx, err := fi.NewCloudupContext(context.Background(), fi.DeletionProcessingModeDeleteIncludingDeferred, nil, nil, nil, nil, nil, nil, map[string]fi.CloudupTask{})
 			if err != nil {
 				t.Fatalf("building cloudup context: %v", err)
@@ -174,7 +174,7 @@ func TestAddonManifestNormalizeProtectedInstanceGroups(t *testing.T) {
 				buildPrune: true,
 				modelContext: &model.KopsModelContext{
 					AllInstanceGroups: allInstanceGroups,
-					InstanceGroups:    tc.instanceGroups,
+					InstanceGroups:    g.instanceGroups,
 				},
 			}
 			if err := addon.Normalize(ctx); err != nil {
@@ -183,13 +183,13 @@ func TestAddonManifestNormalizeProtectedInstanceGroups(t *testing.T) {
 
 			karpenterKinds := 0
 			for _, kind := range addon.addonSpec.Prune.Kinds {
-				want := ""
+				expected := ""
 				if slices.Contains(karpenterInstanceGroupKinds, schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
-					want = tc.wantFieldSelector
+					expected = g.expectedFieldSelector
 					karpenterKinds++
 				}
-				if kind.FieldSelector != want {
-					t.Errorf("field selector for %s = %q, want %q", kind.Kind, kind.FieldSelector, want)
+				if kind.FieldSelector != expected {
+					t.Errorf("field selector for %s = %q, want %q", kind.Kind, kind.FieldSelector, expected)
 				}
 			}
 			if karpenterKinds != 2 {
