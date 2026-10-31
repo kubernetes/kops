@@ -58,6 +58,7 @@ The manager of an existing InstanceGroup cannot be changed: create a new Instanc
 
 kOps generates one `EC2NodeClass` and one `NodePool` for each AWS node InstanceGroup with `spec.manager: Karpenter`.
 The generated objects use the InstanceGroup name, are delivered by the `karpenter.sh` addon, and are pruned when the InstanceGroup is removed.
+When `kops update cluster` updates only some InstanceGroups, with `--instance-group` or `--instance-group-roles`, the objects of the other InstanceGroups are kept as the previous update published them, like the rest of their configuration.
 
 The generated `EC2NodeClass` uses:
 
