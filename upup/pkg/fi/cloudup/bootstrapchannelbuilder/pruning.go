@@ -146,8 +146,8 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, prot
 
 		pruneSpec.LabelSelector = selector.String()
 
-		// The objects of the protected instance groups are excluded by name. Since kOps 1.23,
-		// kops-channels passes the field selector to the list call that finds the objects to prune.
+		// The objects of the protected instance groups are excluded by name: kops-channels passes
+		// the field selector to the list call that finds the objects to prune.
 		if slices.Contains(karpenterInstanceGroupKinds, gk) && len(protectedInstanceGroups) != 0 {
 			var nameSelectors []fields.Selector
 			for _, name := range protectedInstanceGroups {
