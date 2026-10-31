@@ -54,7 +54,8 @@ type AddonSpec struct {
 	// Manifest is the URL to the manifest that should be applied
 	Manifest *string `json:"manifest,omitempty"`
 
-	// ManifestHash is the sha256 hash of our manifest
+	// ManifestHash is the sha256 hash of the manifest, and of the prune spec when it has a
+	// field selector. The addon is applied again when it changes.
 	ManifestHash string `json:"manifestHash,omitempty"`
 
 	// KubernetesVersion is a semver version range on which this version of the addon can be applied
@@ -101,8 +102,7 @@ type PruneKindSpec struct {
 	// LabelSelector limits pruning only to objects matching the specified labels.
 	LabelSelector string `json:"labelSelector,omitempty"`
 
-	// FieldSelector allows pruning only of objects matching the field selector.
-	// (This isn't currently used, but adding it now lets us start without worrying about version skew)
+	// FieldSelector limits pruning only to objects matching the field selector.
 	FieldSelector string `json:"fieldSelector,omitempty"`
 }
 
