@@ -1,6 +1,6 @@
 # Testing preview versions
 
-The kOps test infrastructure creates builds of git branches and pull requests.
+The kOps test infrastructure creates builds of git branches.
 These builds can easily be used for testing. Note that these builds are cleaned up after some time, so it is not safe to use these for production clusters.
 
 This is handy as if you do not want to compile e.g the master branch to test a fix.
@@ -29,13 +29,17 @@ Keep in mind you need to set `KOPS_BASE_URL` every time you use `./kops`
 
 ## Testing a pull request
 
-When a PR builds successfully, you can test the PR using the following script:
+The presubmit jobs stage their builds in temporary buckets that are deleted when the job finishes,
+so pull request builds are not kept for testing. Instead, build the pull request yourself with one
+of the development scripts. They upload the build to a bucket in your own account, install `kops`
+to `$GOPATH/bin` and set `KOPS_BASE_URL` and `KOPS_STATE_STORE`:
 
 ```sh
 pr=13208
-sha=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/kubernetes/kops/pulls/${pr} | jq -r .head.sha )
-export KOPS_BASE_URL="https://storage.googleapis.com/k8s-staging-kops/pulls/pull-kops-aws-distro-debian12/pull-${sha}"
-wget -q "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
-chmod +x ./kops
-./kops version
+git fetch https://github.com/kubernetes/kops.git "pull/${pr}/head"
+git checkout FETCH_HEAD
+. hack/dev-build-aws.sh # or . hack/dev-build-gce.sh
+kops version
 ```
+
+See the comments in the scripts for the permissions that the cluster needs to read the build.
