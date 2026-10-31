@@ -591,7 +591,7 @@ func TestKarpenterPartialUpdate(t *testing.T) {
 				"aws_s3_object_minimal.example.com-addons-karpenter.sh-k8s-1.19_content",
 			}
 			p.checkChangedDataFiles = func(t *testing.T, expectedDataDir, actualDataDir string) {
-				assertAddonObjectsKept(t, expectedDataDir, actualDataDir, "minimal.example.com", "karpenter.sh", "k8s-1.19")
+				assertAddonObjectsProtected(t, expectedDataDir, actualDataDir, "minimal.example.com", "karpenter.sh", "k8s-1.19")
 			}
 			newIntegrationTest("minimal.example.com", "karpenter").
 				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
@@ -1416,7 +1416,7 @@ func readTerraformResources(t *testing.T, filename string) map[string]string {
 
 // assertAddonObjectsKept checks that the partial update renders the same objects as the full update
 // for the instance groups being updated, and that its prune spec and the full update's keep the others.
-func assertAddonObjectsKept(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string) {
+func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string) {
 	expectedChannel := readBootstrapChannel(t, filepath.Join(expectedDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
 	actualChannel := readBootstrapChannel(t, filepath.Join(actualDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
 	if len(actualChannel) != len(expectedChannel) {

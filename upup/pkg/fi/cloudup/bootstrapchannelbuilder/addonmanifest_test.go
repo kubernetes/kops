@@ -156,20 +156,20 @@ func TestAddonCollectImagesRendersTemplateSources(t *testing.T) {
 }
 
 // kops-channels applies and prunes an addon only when its channel version changes, so the manifest
-// hash must change when objects that were kept from pruning are pruned again, even if the manifest
-// does not.
-func TestAddonManifestNormalizeHashesKeptObjects(t *testing.T) {
+// hash must change when objects that were protected from pruning are pruned again, even if the
+// manifest does not.
+func TestAddonManifestNormalizeHashesProtectedObjects(t *testing.T) {
 	ctx, err := fi.NewCloudupContext(context.Background(), fi.DeletionProcessingModeDeleteIncludingDeferred, nil, nil, nil, nil, nil, nil, map[string]fi.CloudupTask{})
 	if err != nil {
 		t.Fatalf("building cloudup context: %v", err)
 	}
 
 	// Only the control plane is updated, as in the first step of "kops reconcile cluster", so the
-	// manifest has no objects of the Karpenter instance groups, which are kept from pruning.
+	// manifest has no objects of the Karpenter instance groups, which are protected from pruning.
 	controlPlane := testInstanceGroup("control-plane", kops.InstanceGroupRoleControlPlane, kops.InstanceManagerCloudGroup)
-	build := func(t *testing.T, kept []string) *channels.Addon {
+	build := func(t *testing.T, protected []string) *channels.Addon {
 		allInstanceGroups := []*kops.InstanceGroup{controlPlane}
-		for _, name := range kept {
+		for _, name := range protected {
 			allInstanceGroups = append(allInstanceGroups, testInstanceGroup(name, kops.InstanceGroupRoleNode, kops.InstanceManagerKarpenter))
 		}
 		spec := testAddonSpec("karpenter.sh")
@@ -198,23 +198,23 @@ func TestAddonManifestNormalizeHashesKeptObjects(t *testing.T) {
 		expectUpdate   bool
 	}{
 		{
-			desc:         "the only kept instance group is deleted",
+			desc:         "the only protected instance group is deleted",
 			previous:     []string{"nodes-a"},
 			expectUpdate: true,
 		},
 		{
-			desc:         "one of the kept instance groups is deleted",
+			desc:         "one of the protected instance groups is deleted",
 			previous:     []string{"nodes-a", "nodes-b"},
 			next:         []string{"nodes-b"},
 			expectUpdate: true,
 		},
 		{
-			desc:     "the same instance groups are kept",
+			desc:     "the same instance groups are protected",
 			previous: []string{"nodes-b"},
 			next:     []string{"nodes-b"},
 		},
 		{
-			desc: "no instance groups are kept",
+			desc: "no instance groups are protected",
 		},
 	}
 	for _, g := range grid {
