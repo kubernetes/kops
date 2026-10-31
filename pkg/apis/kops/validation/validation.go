@@ -887,6 +887,13 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableBootstrapTokenAuth"), "bootstrap tokens are not supported"))
 	}
 
+	// kube-apiserver refuses to start if the max token expiration is set outside this range.
+	if d := v.ServiceAccountMaxTokenExpiration; d != nil && d.Duration != 0 {
+		if d.Duration < time.Hour || d.Duration > time.Duration(1<<32)*time.Second {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("serviceAccountMaxTokenExpiration"), d.Duration.String(), "must be between 1h and 2^32 seconds"))
+		}
+	}
+
 	if len(v.AdmissionControl) > 0 {
 		if len(v.DisableAdmissionPlugins) > 0 {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"),
