@@ -21,49 +21,83 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model"
 )
 
 func TestBuildPruneDirectivesProtectedInstanceGroups(t *testing.T) {
-	manifest := []byte("apiVersion: karpenter.sh/v1\nkind: NodePool\nmetadata:\n  name: nodes-a\n")
+	controlPlane := testInstanceGroup("control-plane", kops.InstanceGroupRoleControlPlane, kops.InstanceManagerCloudGroup)
+	karpenterA := testInstanceGroup("karpenter-a", kops.InstanceGroupRoleNode, kops.InstanceManagerKarpenter)
+	karpenterB := testInstanceGroup("karpenter-b", kops.InstanceGroupRoleNode, kops.InstanceManagerKarpenter)
+	// Not managed by Karpenter, for example after being moved to CloudGroup.
+	nodes := testInstanceGroup("nodes", kops.InstanceGroupRoleNode, kops.InstanceManagerCloudGroup)
+	allInstanceGroups := []*kops.InstanceGroup{controlPlane, karpenterA, karpenterB, nodes}
+	// The objects rendered when karpenter-a is updated; kOps names them after the InstanceGroup.
+	manifest := []byte("apiVersion: karpenter.k8s.aws/v1\nkind: EC2NodeClass\nmetadata:\n  name: karpenter-a\n---\napiVersion: karpenter.sh/v1\nkind: NodePool\nmetadata:\n  name: karpenter-a\n")
 
 	grid := []struct {
-		desc                    string
-		protectedInstanceGroups []string
+		desc              string
+		allInstanceGroups []*kops.InstanceGroup
+		instanceGroups    []*kops.InstanceGroup
 		// expectedFieldSelector is expected on the EC2NodeClass and NodePool prune directives only.
 		expectedFieldSelector string
 	}{
 		{
-			desc: "prune all objects that are not in the manifest",
+			desc:                  "all instance groups",
+			allInstanceGroups:     allInstanceGroups,
+			instanceGroups:        allInstanceGroups,
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
 		},
 		{
-			desc:                    "keep the objects of the protected instance groups",
-			protectedInstanceGroups: []string{"nodes-b", "nodes-c"},
-			expectedFieldSelector:   "metadata.name!=nodes-b,metadata.name!=nodes-c",
+			desc:                  "control plane only",
+			allInstanceGroups:     allInstanceGroups,
+			instanceGroups:        []*kops.InstanceGroup{controlPlane},
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
+		},
+		{
+			desc:                  "node instance groups",
+			allInstanceGroups:     allInstanceGroups,
+			instanceGroups:        []*kops.InstanceGroup{karpenterA, karpenterB, nodes},
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
+		},
+		{
+			desc:                  "one Karpenter instance group",
+			allInstanceGroups:     allInstanceGroups,
+			instanceGroups:        []*kops.InstanceGroup{karpenterA},
+			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
+		},
+		{
+			desc:              "no Karpenter instance groups",
+			allInstanceGroups: []*kops.InstanceGroup{controlPlane, nodes},
+			instanceGroups:    []*kops.InstanceGroup{controlPlane, nodes},
 		},
 	}
 	for _, g := range grid {
 		t.Run(g.desc, func(t *testing.T) {
 			spec := testAddonSpec("karpenter.sh")
-			if err := buildPruneDirectives(spec, manifest, g.protectedInstanceGroups); err != nil {
+			modelContext := &model.KopsModelContext{AllInstanceGroups: g.allInstanceGroups, InstanceGroups: g.instanceGroups}
+			hashPruneSpec, err := buildPruneDirectives(spec, manifest, modelContext)
+			if err != nil {
 				t.Fatalf("building prune directives: %v", err)
 			}
+			if expected := g.expectedFieldSelector != ""; hashPruneSpec != expected {
+				t.Errorf("hash prune spec = %v, want %v", hashPruneSpec, expected)
+			}
 
-			pruned := make(map[schema.GroupKind]bool)
+			karpenterKinds := 0
 			for _, kind := range spec.Prune.Kinds {
 				gk := schema.GroupKind{Group: kind.Group, Kind: kind.Kind}
-				pruned[gk] = true
 				expected := ""
 				if slices.Contains(karpenterInstanceGroupKinds, gk) {
 					expected = g.expectedFieldSelector
+					karpenterKinds++
 				}
 				if kind.FieldSelector != expected {
 					t.Errorf("field selector for %v = %q, want %q", gk, kind.FieldSelector, expected)
 				}
 			}
-			for _, gk := range karpenterInstanceGroupKinds {
-				if !pruned[gk] {
-					t.Errorf("%v is not pruned", gk)
-				}
+			if karpenterKinds != len(karpenterInstanceGroupKinds) {
+				t.Errorf("found %d Karpenter kinds in the prune directives, want %d", karpenterKinds, len(karpenterInstanceGroupKinds))
 			}
 		})
 	}

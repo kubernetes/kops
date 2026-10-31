@@ -29,6 +29,7 @@ import (
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 )
 
@@ -39,10 +40,12 @@ var karpenterInstanceGroupKinds = []schema.GroupKind{
 	{Group: "karpenter.sh", Kind: "NodePool"},
 }
 
-// buildPruneDirectives configures pruning of the objects that are not in the manifest, except
-// those of the protectedInstanceGroups, see protectedInstanceGroupNames.
-func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, protectedInstanceGroups []string) error {
+// buildPruneDirectives configures the pruning of the objects that are not in the manifest, except
+// those of the protected instance groups, see protectedInstanceGroupNames. It reports whether the
+// prune spec must be hashed with the manifest.
+func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, modelContext *model.KopsModelContext) (bool, error) {
 	spec.Prune = &channelsapi.PruneSpec{}
+	hashPruneSpec := false
 
 	// We add these labels to all objects we manage, so we reuse them for pruning.
 	selectorMap := map[string]string{
@@ -51,7 +54,7 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, prot
 	}
 	selector, err := labels.ValidatedSelectorFromSet(selectorMap)
 	if err != nil {
-		return fmt.Errorf("error parsing selector %v: %w", selectorMap, err)
+		return false, fmt.Errorf("error parsing selector %v: %w", selectorMap, err)
 	}
 
 	// We always include a set of well-known group kinds,
@@ -71,8 +74,10 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, prot
 		{Group: "rbac.authorization.k8s.io", Kind: "RoleBinding"},
 		{Group: "policy", Kind: "PodDisruptionBudget"},
 	}
+	var protectedInstanceGroups []string
 	if *spec.Name == "karpenter.sh" {
 		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds, karpenterInstanceGroupKinds...)
+		protectedInstanceGroups = protectedInstanceGroupNames(modelContext)
 	}
 	pruneGroupKind := make(map[schema.GroupKind]bool)
 	for _, gk := range alwaysPruneGroupKinds {
@@ -92,17 +97,17 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, prot
 	// Parse the manifest; we use this to scope pruning to namespaces
 	objects, err := kubemanifest.LoadObjectsFrom(manifestData)
 	if err != nil {
-		return fmt.Errorf("failed to parse manifest: %w", err)
+		return false, fmt.Errorf("failed to parse manifest: %w", err)
 	}
 	objectsByGK := make(map[schema.GroupKind][]*kubemanifest.Object)
 	for _, object := range objects {
 		gv, err := schema.ParseGroupVersion(object.APIVersion())
 		if err != nil || gv.Version == "" {
-			return fmt.Errorf("failed to parse apiVersion %q", object.APIVersion())
+			return false, fmt.Errorf("failed to parse apiVersion %q", object.APIVersion())
 		}
 		gvk := gv.WithKind(object.Kind())
 		if gvk.Kind == "" {
-			return fmt.Errorf("failed to get kind for object")
+			return false, fmt.Errorf("failed to get kind for object")
 		}
 
 		gk := gvk.GroupKind()
@@ -146,18 +151,48 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte, prot
 
 		pruneSpec.LabelSelector = selector.String()
 
-		// The objects of the protected instance groups are excluded by name: kops-channels passes
-		// the field selector to the list call that finds the objects to prune.
+		// The protected instance groups are excluded by name: kops-channels passes the field
+		// selector to the list call that finds the objects to prune. The prune spec is hashed with
+		// the manifest because kops-channels applies and prunes an addon only when its channel
+		// version changes: deleting a protected instance group must change the hash even when the
+		// manifest doesn't.
 		if slices.Contains(karpenterInstanceGroupKinds, gk) && len(protectedInstanceGroups) != 0 {
 			var nameSelectors []fields.Selector
 			for _, name := range protectedInstanceGroups {
 				nameSelectors = append(nameSelectors, fields.OneTermNotEqualSelector("metadata.name", name))
 			}
 			pruneSpec.FieldSelector = fields.AndSelectors(nameSelectors...).String()
+			hashPruneSpec = true
 		}
 
 		spec.Prune.Kinds = append(spec.Prune.Kinds, pruneSpec)
 	}
 
-	return nil
+	return hashPruneSpec, nil
+}
+
+// protectedInstanceGroupNames returns the sorted names of the instance groups whose NodePools and
+// EC2NodeClasses must not be pruned: every Karpenter instance group, and every node instance group
+// that is not being updated. The manifest only has the objects of the instance groups being
+// updated, see KarpenterInstanceGroups, and Karpenter terminates the nodes of a deleted NodePool.
+//
+// All Karpenter instance groups are protected, even in full updates, because kops-channels reads
+// the manifest by URL without checking its hash, so it can apply the manifest of one update with
+// the prune spec of another. Protecting the node instance groups not being updated also keeps the
+// NodePool of an instance group moved to CloudGroup until it is updated. Only node instance groups
+// can be managed by Karpenter, so the other roles are left out: their names would only make the
+// prune spec, and the addon hash, differ between updates that render the same manifest. The
+// objects of deleted instance groups are still pruned.
+func protectedInstanceGroupNames(modelContext *model.KopsModelContext) []string {
+	updating := sets.New[string]()
+	for _, ig := range modelContext.InstanceGroups {
+		updating.Insert(ig.Name)
+	}
+	protected := sets.New[string]()
+	for _, ig := range modelContext.AllInstanceGroups {
+		if ig.IsKarpenterManaged() || (ig.Spec.Role.HasNode() && !updating.Has(ig.Name)) {
+			protected.Insert(ig.Name)
+		}
+	}
+	return sets.List(protected)
 }

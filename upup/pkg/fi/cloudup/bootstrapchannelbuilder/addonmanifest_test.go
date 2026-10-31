@@ -18,12 +18,10 @@ package bootstrapchannelbuilder
 
 import (
 	"context"
-	"slices"
 	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/pkg/apis/kops"
@@ -116,86 +114,6 @@ func TestAddonManifestNormalizeRendersTemplateSources(t *testing.T) {
 	}
 	if actual != "apiVersion: v1\nkind: ConfigMap\ndata:\n  literal: rendered" {
 		t.Fatalf("addon contents = %q", actual)
-	}
-}
-
-func TestAddonManifestNormalizeProtectedInstanceGroups(t *testing.T) {
-	allInstanceGroups := []*kops.InstanceGroup{
-		testInstanceGroup("control-plane", kops.InstanceGroupRoleControlPlane, kops.InstanceManagerCloudGroup),
-		testInstanceGroup("karpenter-a", kops.InstanceGroupRoleNode, kops.InstanceManagerKarpenter),
-		testInstanceGroup("karpenter-b", kops.InstanceGroupRoleNode, kops.InstanceManagerKarpenter),
-		// Not managed by Karpenter, for example after being moved to CloudGroup.
-		testInstanceGroup("nodes", kops.InstanceGroupRoleNode, kops.InstanceManagerCloudGroup),
-	}
-	// The objects rendered when karpenter-a is updated; kOps names them after the InstanceGroup.
-	manifest := "apiVersion: karpenter.k8s.aws/v1\nkind: EC2NodeClass\nmetadata:\n  name: karpenter-a\n---\napiVersion: karpenter.sh/v1\nkind: NodePool\nmetadata:\n  name: karpenter-a\n"
-
-	grid := []struct {
-		desc           string
-		instanceGroups []*kops.InstanceGroup
-		// expectedFieldSelector is expected on the EC2NodeClass and NodePool prune directives only.
-		expectedFieldSelector string
-	}{
-		{
-			desc:                  "all instance groups",
-			instanceGroups:        allInstanceGroups,
-			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
-		},
-		{
-			desc:                  "control plane only",
-			instanceGroups:        allInstanceGroups[:1],
-			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
-		},
-		{
-			desc:                  "node instance groups",
-			instanceGroups:        allInstanceGroups[1:],
-			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b",
-		},
-		{
-			desc:                  "one Karpenter instance group",
-			instanceGroups:        allInstanceGroups[1:2],
-			expectedFieldSelector: "metadata.name!=karpenter-a,metadata.name!=karpenter-b,metadata.name!=nodes",
-		},
-	}
-	for _, g := range grid {
-		t.Run(g.desc, func(t *testing.T) {
-			ctx, err := fi.NewCloudupContext(context.Background(), fi.DeletionProcessingModeDeleteIncludingDeferred, nil, nil, nil, nil, nil, nil, map[string]fi.CloudupTask{})
-			if err != nil {
-				t.Fatalf("building cloudup context: %v", err)
-			}
-
-			addon := &AddonManifest{
-				Name:       new("karpenter.sh"),
-				Location:   new("addons/karpenter.sh/k8s-1.19.yaml"),
-				source:     fi.NewBytesResource([]byte(manifest)),
-				skipRender: true,
-				skipRemap:  true,
-				addonSpec:  testAddonSpec("karpenter.sh"),
-				buildPrune: true,
-				modelContext: &model.KopsModelContext{
-					AllInstanceGroups: allInstanceGroups,
-					InstanceGroups:    g.instanceGroups,
-				},
-			}
-			if err := addon.Normalize(ctx); err != nil {
-				t.Fatalf("normalizing addon: %v", err)
-			}
-
-			karpenterKinds := 0
-			for _, kind := range addon.addonSpec.Prune.Kinds {
-				expected := ""
-				if slices.Contains(karpenterInstanceGroupKinds, schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
-					expected = g.expectedFieldSelector
-					karpenterKinds++
-				}
-				if kind.FieldSelector != expected {
-					t.Errorf("field selector for %s = %q, want %q", kind.Kind, kind.FieldSelector, expected)
-				}
-			}
-			if karpenterKinds != 2 {
-				t.Errorf("found %d Karpenter kinds in the prune directives, want 2", karpenterKinds)
-			}
-		})
 	}
 }
 
