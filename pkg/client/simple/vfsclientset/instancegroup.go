@@ -114,6 +114,10 @@ func (c *InstanceGroupVFS) Update(ctx context.Context, g *kopsapi.InstanceGroup,
 		return nil, err
 	}
 
+	if err := validation.ValidateInstanceGroupUpdate(g, old).ToAggregate(); err != nil {
+		return nil, err
+	}
+
 	if !apiequality.Semantic.DeepEqual(old.Spec, g.Spec) {
 		g.SetGeneration(old.GetGeneration() + 1)
 	}

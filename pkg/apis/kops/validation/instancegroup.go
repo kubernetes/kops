@@ -266,6 +266,26 @@ func validateVolumeMountSpec(path *field.Path, spec kops.VolumeMountSpec) field.
 	return allErrs
 }
 
+// ValidateInstanceGroupUpdate validates the changes to an existing instance group.
+func ValidateInstanceGroupUpdate(g, old *kops.InstanceGroup) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// Karpenter and cloud group instance groups have no migration path between them.
+	if instanceManager(g) != instanceManager(old) {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "cannot be changed"))
+	}
+
+	return allErrs
+}
+
+// instanceManager returns the manager of an instance group, which is CloudGroup when not set.
+func instanceManager(g *kops.InstanceGroup) kops.InstanceManager {
+	if g.Spec.Manager == "" {
+		return kops.InstanceManagerCloudGroup
+	}
+	return g.Spec.Manager
+}
+
 // CrossValidateInstanceGroup performs validation of the instance group, including that it is consistent with the Cluster
 // It calls ValidateInstanceGroup, so all that validation is included.
 func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cloud fi.Cloud, strict bool) field.ErrorList {

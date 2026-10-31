@@ -18,12 +18,17 @@ package bootstrapchannelbuilder
 
 import (
 	"fmt"
+	"os"
+	"slices"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 	"k8s.io/kops/pkg/model/iam"
@@ -52,6 +57,10 @@ type AddonManifest struct {
 	modelContext    *model.KopsModelContext
 	assetBuilder    *assets.AssetBuilder
 	serviceAccounts map[types.NamespacedName]iam.Subject
+
+	// instanceGroupKinds are the kinds of the objects that belong to the instance group of the same
+	// name, see Addon.InstanceGroupKinds.
+	instanceGroupKinds []schema.GroupKind
 }
 
 var (
@@ -93,6 +102,13 @@ func (a *AddonManifest) Normalize(c *fi.CloudupContext) error {
 		}
 	}
 
+	if len(a.instanceGroupKinds) != 0 {
+		manifestBytes, err = a.keepInstanceGroupObjects(c, manifestBytes)
+		if err != nil {
+			return fmt.Errorf("error keeping the instance group objects of addon %q: %w", fi.ValueOf(a.Name), err)
+		}
+	}
+
 	if !a.skipRemap {
 		manifestBytes, err = addonmanifests.RemapAddonManifest(a.addonSpec, a.modelContext, a.assetBuilder, manifestBytes, a.serviceAccounts)
 		if err != nil {
@@ -118,6 +134,72 @@ func (a *AddonManifest) Normalize(c *fi.CloudupContext) error {
 	a.Contents = fi.NewBytesResource(manifestBytes)
 
 	return nil
+}
+
+// keepInstanceGroupObjects adds to the manifest the objects of the instance groups not being
+// updated, from the manifest in the state store, so that channels does not prune them. The objects
+// of instance groups go after the others, in the order of AllInstanceGroups, as the template does.
+func (a *AddonManifest) keepInstanceGroupObjects(c *fi.CloudupContext, manifest []byte) ([]byte, error) {
+	updating := sets.New[string]()
+	for _, ig := range a.modelContext.InstanceGroups {
+		updating.Insert(ig.ObjectMeta.Name)
+	}
+	// An instance group that is no longer managed by Karpenter, such as one deleted and created
+	// again with the same name as a cloud group, has no objects to keep.
+	notUpdating := sets.New[string]()
+	for _, ig := range a.modelContext.AllInstanceGroups {
+		if !updating.Has(ig.ObjectMeta.Name) && ig.IsKarpenterManaged() {
+			notUpdating.Insert(ig.ObjectMeta.Name)
+		}
+	}
+	if notUpdating.Len() == 0 {
+		return manifest, nil
+	}
+
+	previousManifest, err := c.T.ClusterConfigBase.Join(fi.ValueOf(a.Location)).ReadFile(c.Context())
+	if err != nil {
+		if os.IsNotExist(err) {
+			// There is no previous manifest, as on a new cluster.
+			return manifest, nil
+		}
+		return nil, fmt.Errorf("reading the previous manifest: %w", err)
+	}
+	previousObjects, err := kubemanifest.LoadObjectsFrom(previousManifest)
+	if err != nil {
+		return nil, fmt.Errorf("parsing the previous manifest: %w", err)
+	}
+
+	objectsByInstanceGroup := make(map[string]kubemanifest.ObjectList)
+	for _, object := range previousObjects {
+		if a.isInstanceGroupObject(object) && notUpdating.Has(object.GetName()) {
+			objectsByInstanceGroup[object.GetName()] = append(objectsByInstanceGroup[object.GetName()], object)
+		}
+	}
+	if len(objectsByInstanceGroup) == 0 {
+		return manifest, nil
+	}
+
+	objects, err := kubemanifest.LoadObjectsFrom(manifest)
+	if err != nil {
+		return nil, fmt.Errorf("parsing the rendered manifest: %w", err)
+	}
+	var merged kubemanifest.ObjectList
+	for _, object := range objects {
+		if a.isInstanceGroupObject(object) && updating.Has(object.GetName()) {
+			objectsByInstanceGroup[object.GetName()] = append(objectsByInstanceGroup[object.GetName()], object)
+		} else {
+			merged = append(merged, object)
+		}
+	}
+	for _, ig := range a.modelContext.AllInstanceGroups {
+		merged = append(merged, objectsByInstanceGroup[ig.ObjectMeta.Name]...)
+	}
+	return merged.ToYAML()
+}
+
+// isInstanceGroupObject reports whether the object belongs to the instance group named after it.
+func (a *AddonManifest) isInstanceGroupObject(object *kubemanifest.Object) bool {
+	return slices.Contains(a.instanceGroupKinds, object.GroupVersionKind().GroupKind())
 }
 
 // Find returns a sparsely-populated AddonManifest reflecting the stored ManagedFile: only the

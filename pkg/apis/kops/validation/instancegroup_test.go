@@ -315,6 +315,27 @@ func TestValidNodeLabels(t *testing.T) {
 	}
 }
 
+func TestValidateInstanceGroupUpdate(t *testing.T) {
+	grid := []struct {
+		desc     string
+		old, new kops.InstanceManager
+		expected []string
+	}{
+		{desc: "same manager", old: kops.InstanceManagerKarpenter, new: kops.InstanceManagerKarpenter},
+		{desc: "manager set to its default", old: "", new: kops.InstanceManagerCloudGroup},
+		{desc: "cloud group to Karpenter", old: kops.InstanceManagerCloudGroup, new: kops.InstanceManagerKarpenter, expected: []string{"Forbidden::spec.manager"}},
+		{desc: "Karpenter to cloud group", old: kops.InstanceManagerKarpenter, new: kops.InstanceManagerCloudGroup, expected: []string{"Forbidden::spec.manager"}},
+		{desc: "Karpenter manager unset", old: kops.InstanceManagerKarpenter, new: "", expected: []string{"Forbidden::spec.manager"}},
+	}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			old := &kops.InstanceGroup{Spec: kops.InstanceGroupSpec{Manager: g.old}}
+			ig := &kops.InstanceGroup{Spec: kops.InstanceGroupSpec{Manager: g.new}}
+			testErrors(t, g.desc, ValidateInstanceGroupUpdate(ig, old), g.expected)
+		})
+	}
+}
+
 func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 	awsCluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
