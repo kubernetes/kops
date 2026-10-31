@@ -579,6 +579,7 @@ func TestKarpenter(t *testing.T) {
 // TestKarpenterPartialUpdate checks that updating only some instance groups keeps the NodePools and
 // EC2NodeClasses of the other Karpenter instance groups, whose nodes Karpenter would terminate.
 func TestKarpenterPartialUpdate(t *testing.T) {
+	karpenterInstanceGroups := []string{"karpenter-nodes-default", "karpenter-nodes-single-machinetype"}
 	for _, p := range []partialUpdateTest{
 		{name: "control-plane", instanceGroupRoles: controlPlaneRoles},
 		{name: "karpenter-nodes-default", instanceGroups: []string{"karpenter-nodes-default"}},
@@ -590,8 +591,15 @@ func TestKarpenterPartialUpdate(t *testing.T) {
 				"aws_s3_object_minimal.example.com-addons-bootstrap_content",
 				"aws_s3_object_minimal.example.com-addons-karpenter.sh-k8s-1.19_content",
 			}
+			// The objects of the Karpenter instance groups not being updated are not rendered.
+			var omitted []string
+			for _, ig := range karpenterInstanceGroups {
+				if !slices.Contains(p.instanceGroups, ig) {
+					omitted = append(omitted, "EC2NodeClass.karpenter.k8s.aws "+ig, "NodePool.karpenter.sh "+ig)
+				}
+			}
 			p.checkChangedDataFiles = func(t *testing.T, expectedDataDir, actualDataDir string) {
-				assertAddonObjectsProtected(t, expectedDataDir, actualDataDir, "minimal.example.com", "karpenter.sh", "k8s-1.19")
+				assertAddonObjectsProtected(t, expectedDataDir, actualDataDir, "minimal.example.com", "karpenter.sh", "k8s-1.19", omitted)
 			}
 			newIntegrationTest("minimal.example.com", "karpenter").
 				runTestPartialUpdate(t, kops.CloudProviderAWS, p)
@@ -1414,10 +1422,10 @@ func readTerraformResources(t *testing.T, filename string) map[string]string {
 	return resources
 }
 
-// assertAddonObjectsProtected checks that the partial update renders the same objects as the full
-// update for the instance groups being updated, and that neither its prune spec nor the full
-// update's prunes the others.
-func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string) {
+// assertAddonObjectsProtected checks that the partial update renders the objects of the full
+// update's addon, except the omitted ones, which neither its prune spec nor the full update's may
+// prune. The objects are keyed as in readManifestObjects.
+func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string, omitted []string) {
 	expectedChannel := readBootstrapChannel(t, filepath.Join(expectedDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
 	actualChannel := readBootstrapChannel(t, filepath.Join(actualDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
 	if len(actualChannel) != len(expectedChannel) {
@@ -1454,21 +1462,32 @@ func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, c
 	filename := "aws_s3_object_" + clusterName + "-addons-" + addonName + "-" + addonID + "_content"
 	expectedObjects := readManifestObjects(t, filepath.Join(expectedDataDir, filename))
 	actualObjects := readManifestObjects(t, filepath.Join(actualDataDir, filename))
-	for key, actual := range actualObjects {
-		if expected, found := expectedObjects[key]; !found {
+	for key := range actualObjects {
+		if _, found := expectedObjects[key]; !found {
 			t.Errorf("object %s is not in the full update's addon", key)
-		} else if !reflect.DeepEqual(actual, expected) {
+		}
+	}
+	for _, key := range slices.Sorted(maps.Keys(expectedObjects)) {
+		actual, found := actualObjects[key]
+		switch {
+		case slices.Contains(omitted, key):
+			if found {
+				t.Errorf("object %s is rendered by the partial update", key)
+			}
+		case !found:
+			t.Errorf("object %s is not rendered by the partial update", key)
+		case !reflect.DeepEqual(actual, expectedObjects[key]):
 			t.Errorf("object %s differs from the full update's addon", key)
 		}
 	}
 
 	// Pruning deletes the objects of the kinds in the prune spec that match its selectors,
 	// and are not in the manifest; see channels.Pruner.
-	for _, key := range slices.Sorted(maps.Keys(expectedObjects)) {
-		if _, found := actualObjects[key]; found {
-			continue
-		}
+	for _, key := range omitted {
 		object := expectedObjects[key]
+		if object == nil {
+			t.Fatalf("object %s is not in the full update's addon", key)
+		}
 		for _, update := range updates {
 			for _, kind := range update.channel[addonName].Prune.Kinds {
 				if object.GroupVersionKind().GroupKind() != (schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
@@ -1487,7 +1506,7 @@ func assertAddonObjectsProtected(t *testing.T, expectedDataDir, actualDataDir, c
 				}
 				if labelSelector.Matches(labels.Set(object.GetLabels())) &&
 					fieldSelector.Matches(fields.Set{"metadata.name": object.GetName(), "metadata.namespace": object.GetNamespace()}) {
-					t.Errorf("object %s of the full update's addon would be pruned by the prune spec of the %s update", key, update.name)
+					t.Errorf("object %s would be pruned by the prune spec of the %s update", key, update.name)
 				}
 			}
 		}
@@ -1511,7 +1530,7 @@ func readBootstrapChannel(t *testing.T, filename string) map[string]*channelsapi
 	return addons
 }
 
-// readManifestObjects returns the objects in an addon manifest, by kind, namespace and name.
+// readManifestObjects returns the objects in an addon manifest, keyed as "Kind.group namespace/name".
 func readManifestObjects(t *testing.T, filename string) map[string]*unstructured.Unstructured {
 	data, err := os.ReadFile(filename)
 	if err != nil {
