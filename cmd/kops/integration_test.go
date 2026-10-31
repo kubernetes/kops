@@ -1415,7 +1415,7 @@ func readTerraformResources(t *testing.T, filename string) map[string]string {
 }
 
 // assertAddonObjectsKept checks that the partial update renders the same objects as the full update
-// for the instance groups being updated, and that its prune spec keeps the others.
+// for the instance groups being updated, and that its prune spec and the full update's keep the others.
 func assertAddonObjectsKept(t *testing.T, expectedDataDir, actualDataDir, clusterName, addonName, addonID string) {
 	expectedChannel := readBootstrapChannel(t, filepath.Join(expectedDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
 	actualChannel := readBootstrapChannel(t, filepath.Join(actualDataDir, "aws_s3_object_"+clusterName+"-addons-bootstrap_content"))
@@ -1431,13 +1431,23 @@ func assertAddonObjectsKept(t *testing.T, expectedDataDir, actualDataDir, cluste
 			t.Errorf("addon %q in the bootstrap channel differs from the full update", name)
 		}
 	}
-	addon := actualChannel[addonName]
-	if addon == nil {
-		t.Fatalf("addon %q is not in the bootstrap channel", addonName)
+	// kops-channels can apply the manifest of one update with the prune spec of another, so the
+	// prune specs of both updates must keep the objects that the partial update doesn't render.
+	updates := []struct {
+		name    string
+		channel map[string]*channelsapi.AddonSpec
+	}{
+		{name: "partial", channel: actualChannel},
+		{name: "full", channel: expectedChannel},
 	}
-	pruneSpec := addon.Prune
-	if pruneSpec == nil {
-		t.Fatalf("addon %q is not pruned by the bootstrap channel", addonName)
+	for _, update := range updates {
+		addon := update.channel[addonName]
+		if addon == nil {
+			t.Fatalf("addon %q is not in the bootstrap channel of the %s update", addonName, update.name)
+		}
+		if addon.Prune == nil {
+			t.Fatalf("addon %q is not pruned by the bootstrap channel of the %s update", addonName, update.name)
+		}
 	}
 
 	filename := "aws_s3_object_" + clusterName + "-addons-" + addonName + "-" + addonID + "_content"
@@ -1458,24 +1468,26 @@ func assertAddonObjectsKept(t *testing.T, expectedDataDir, actualDataDir, cluste
 			continue
 		}
 		object := expectedObjects[key]
-		for _, kind := range pruneSpec.Kinds {
-			if object.GroupVersionKind().GroupKind() != (schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
-				continue
-			}
-			if len(kind.Namespaces) != 0 && !slices.Contains(kind.Namespaces, object.GetNamespace()) {
-				continue
-			}
-			labelSelector, err := labels.Parse(kind.LabelSelector)
-			if err != nil {
-				t.Fatalf("failed to parse label selector %q: %v", kind.LabelSelector, err)
-			}
-			fieldSelector, err := fields.ParseSelector(kind.FieldSelector)
-			if err != nil {
-				t.Fatalf("failed to parse field selector %q: %v", kind.FieldSelector, err)
-			}
-			if labelSelector.Matches(labels.Set(object.GetLabels())) &&
-				fieldSelector.Matches(fields.Set{"metadata.name": object.GetName(), "metadata.namespace": object.GetNamespace()}) {
-				t.Errorf("object %s of the full update's addon would be pruned", key)
+		for _, update := range updates {
+			for _, kind := range update.channel[addonName].Prune.Kinds {
+				if object.GroupVersionKind().GroupKind() != (schema.GroupKind{Group: kind.Group, Kind: kind.Kind}) {
+					continue
+				}
+				if len(kind.Namespaces) != 0 && !slices.Contains(kind.Namespaces, object.GetNamespace()) {
+					continue
+				}
+				labelSelector, err := labels.Parse(kind.LabelSelector)
+				if err != nil {
+					t.Fatalf("failed to parse label selector %q: %v", kind.LabelSelector, err)
+				}
+				fieldSelector, err := fields.ParseSelector(kind.FieldSelector)
+				if err != nil {
+					t.Fatalf("failed to parse field selector %q: %v", kind.FieldSelector, err)
+				}
+				if labelSelector.Matches(labels.Set(object.GetLabels())) &&
+					fieldSelector.Matches(fields.Set{"metadata.name": object.GetName(), "metadata.namespace": object.GetNamespace()}) {
+					t.Errorf("object %s of the full update's addon would be pruned by the prune spec of the %s update", key, update.name)
+				}
 			}
 		}
 	}
