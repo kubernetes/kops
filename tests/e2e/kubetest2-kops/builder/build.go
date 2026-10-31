@@ -17,11 +17,12 @@ limitations under the License.
 package builder
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -30,9 +31,11 @@ import (
 )
 
 type BuildOptions struct {
-	KopsRoot        string `flag:"-"`
-	KubeRoot        string `flag:"-"`
-	StageLocation   string `flag:"-"`
+	KopsRoot      string `flag:"-"`
+	KubeRoot      string `flag:"-"`
+	StageLocation string `flag:"-"`
+	// StageRegion is the AWS region of the bucket when StageLocation is an s3:// path.
+	StageRegion     string `flag:"-"`
 	TargetBuildArch string `flag:"~target-build-arch" desc:"CPU architecture to test against"`
 	BuildKubernetes bool   `flag:"~build-kubernetes" desc:"Set this flag to true to build kubernetes"`
 }
@@ -52,21 +55,18 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	}
 
 	results := &BuildResults{}
+	ctx := context.Background()
+	isS3 := strings.HasPrefix(b.StageLocation, "s3://")
 
 	if b.BuildKubernetes {
-		// Build k/k
-		re := regexp.MustCompile(`^gs://([\w-]+)/(devel|ci)(/.*)?`)
-
-		// StageLocation is often just the root of the bucket. the leading slash has been stripped
-		kubeStageLocation := b.StageLocation + "/ci/kubernetes"
-		mat := re.FindStringSubmatch(kubeStageLocation)
-		if mat == nil || len(mat) < 4 {
-			return nil, fmt.Errorf("invalid stage location: %v. Use gs://<bucket>/<ci|devel>/<optional-suffix>", kubeStageLocation)
+		bucket, bucketRoot, kubeBaseURL, err := b.kubeStageLocation(ctx)
+		if err != nil {
+			return nil, err
 		}
 
 		if err := krel.NewInstance(&krel.Options{
-			Bucket:             mat[1],
-			GCSRoot:            "kubernetes",
+			Bucket:             bucket,
+			BucketRoot:         bucketRoot,
 			AllowDup:           true,
 			CI:                 true,
 			NoUpdateLatest:     false,
@@ -75,7 +75,6 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		}).Build(); err != nil {
 			return nil, fmt.Errorf("stage via krel push: %w", err)
 		}
-		kubeBaseURL := "https://storage.googleapis.com/" + mat[1] + "/kubernetes/latest.txt"
 
 		results = &BuildResults{
 			KubernetesBaseURL: kubeBaseURL,
@@ -83,12 +82,9 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		return results, nil
 	}
 
-	args := []string{"make", "gcs-publish-ci"}
-	cmd := exec.Command(args[0], args[1:]...)
 	env := []string{
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
 		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
-		fmt.Sprintf("GCS_LOCATION=%v", gcsLocation),
 		fmt.Sprintf("GOPATH=%v", os.Getenv("GOPATH")),
 	}
 	// We need to "forward" some variables, in particular the variables like "CI" that change the version we use
@@ -98,16 +94,19 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 			env = append(env, fmt.Sprintf("%s=%s", k, v))
 		}
 	}
-	cmd.SetEnv(env...)
-	cmd.SetDir(b.KopsRoot)
-	exec.InheritOutput(cmd)
-	klog.Infof("Executing %q (in %v) with env %v", strings.Join(args, " "), b.KopsRoot, env)
-	if err := cmd.Run(); err != nil {
-		return nil, err
+	if isS3 {
+		if err := b.publishKopsToS3(ctx, env); err != nil {
+			return nil, err
+		}
+	} else {
+		env = append(env, fmt.Sprintf("GCS_LOCATION=%v", gcsLocation))
+		if err := b.runKopsMake("gcs-publish-ci", env); err != nil {
+			return nil, err
+		}
 	}
 
 	// Get the full path (including subdirectory) that we uploaded to
-	// It is written by gcs-publish-ci to .build/upload/latest-ci.txt
+	// It is written by gcs-publish-ci (or publishKopsToS3) to .build/upload/latest-ci.txt
 	latestPath := filepath.Join(b.KopsRoot, ".build", "upload", "latest-ci.txt")
 	kopsBaseURL, err := os.ReadFile(latestPath)
 	if err != nil {
@@ -134,4 +133,30 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	klog.Infof("wrote file %q with %q", p, results.KopsBaseURL)
 
 	return results, nil
+}
+
+// kubeStageLocation returns the krel bucket and bucket root to stage Kubernetes to, under
+// <stage location>/kubernetes, and the URL of its version marker.
+func (b *BuildOptions) kubeStageLocation(ctx context.Context) (bucket, bucketRoot, markerURL string, err error) {
+	if strings.HasPrefix(b.StageLocation, "s3://") {
+		return b.s3KubeStageLocation(ctx)
+	}
+
+	// krel takes GCS buckets by name.
+	bucket, prefix, _ := strings.Cut(strings.TrimPrefix(b.StageLocation, "gs://"), "/")
+	if bucket == "" {
+		return "", "", "", fmt.Errorf("stage location %q does not contain a bucket name", b.StageLocation)
+	}
+	bucketRoot = path.Join(prefix, "kubernetes")
+	return bucket, bucketRoot, "https://storage.googleapis.com/" + path.Join(bucket, bucketRoot, "latest.txt"), nil
+}
+
+// runKopsMake runs the make target in the kops repository with only the given env vars.
+func (b *BuildOptions) runKopsMake(target string, env []string) error {
+	cmd := exec.Command("make", target)
+	cmd.SetEnv(env...)
+	cmd.SetDir(b.KopsRoot)
+	exec.InheritOutput(cmd)
+	klog.Infof("Executing %q (in %v) with env %v", "make "+target, b.KopsRoot, env)
+	return cmd.Run()
 }

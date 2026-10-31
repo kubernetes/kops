@@ -18,6 +18,7 @@ package deployer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -29,6 +30,28 @@ import (
 )
 
 func (d *deployer) Down() error {
+	err := d.down()
+	if d.KeepStagingStore {
+		return err
+	}
+
+	// Build() creates the S3 staging bucket before there is a cluster, so it is deleted even if
+	// down() found no cluster to delete, or failed to delete it.
+	return errors.Join(err, d.deleteStagingStore())
+}
+
+// deleteStagingStore deletes the S3 staging bucket if the deployer created it.
+func (d *deployer) deleteStagingStore() error {
+	if d.CloudProvider == "aws" && d.createStagingStore {
+		return d.aws.DeleteS3BucketAndObjects(context.Background(), d.stagingStore())
+	}
+	return nil
+}
+
+// down deletes the cluster, and the buckets that Up() created for it. Up() calls it to delete a
+// cluster leaked by an earlier run. Unlike Down(), it keeps the S3 staging bucket, which Build()
+// has already filled for the new cluster.
+func (d *deployer) down() error {
 	if err := d.init(); err != nil {
 		return err
 	}

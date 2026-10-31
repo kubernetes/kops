@@ -23,13 +23,26 @@ make test-e2e-install
 
 cd "${GOPATH}"/src/k8s.io/kubernetes
 
-kubetest2 kops -v=6 \
-    --up --down --build --build-kubernetes=true --target-build-arch=linux/amd64 \
-    --cloud-provider=gce --admin-access=0.0.0.0/0 \
-    --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
-    --create-args "--gce-service-account=default --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
-    --test=kops \
-    -- \
-    --ginkgo-args="--debug" \
-    --use-built-binaries=true \
-    --parallel=25
+if [[ "${CLOUD_PROVIDER:-aws}" == "gce" ]]; then
+    kubetest2 kops -v=6 \
+        --up --down --build --build-kubernetes=true --target-build-arch=linux/"$(go env GOARCH)" \
+        --cloud-provider=gce --admin-access=0.0.0.0/0 \
+        --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
+        --create-args "--gce-service-account=default --networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
+        --test=kops \
+        -- \
+        --ginkgo-args="--debug" \
+        --use-built-binaries=true \
+        --parallel=25
+else
+    kubetest2 kops -v=6 \
+        --up --down --build --build-kubernetes=true --target-build-arch=linux/"$(go env GOARCH)" \
+        --cloud-provider=aws --admin-access=0.0.0.0/0 \
+        --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt \
+        --create-args "--networking=kubenet --set=spec.nodeProblemDetector.enabled=true" \
+        --test=kops \
+        -- \
+        --ginkgo-args="--debug" \
+        --use-built-binaries=true \
+        --parallel=25
+fi

@@ -81,6 +81,7 @@ function kops-upgrade() {
 
     ${KUBETEST2} \
         --down \
+        --keep-staging-store \
         --kops-binary-path="${KOPS_B}" || echo "kubetest2 down failed"
 
     # First kOps version may be a released version. If so, it is prefixed with v
