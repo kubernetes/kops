@@ -17,6 +17,7 @@ limitations under the License.
 package bootstrapchannelbuilder
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -103,14 +104,24 @@ func (a *AddonManifest) Normalize(c *fi.CloudupContext) error {
 
 	manifestBytes = []byte(strings.TrimSpace(string(manifestBytes)))
 
+	hashPruneSpec := false
 	if a.buildPrune {
-		if err := buildPruneDirectives(a.addonSpec, manifestBytes); err != nil {
+		hashPruneSpec, err = buildPruneDirectives(a.addonSpec, manifestBytes, a.modelContext)
+		if err != nil {
 			return fmt.Errorf("failed to configure pruning for %s: %w", fi.ValueOf(a.addonSpec.Name), err)
 		}
 	}
 
-	rawManifest := string(manifestBytes)
-	manifestHash, err := utils.HashString(rawManifest)
+	hashed := string(manifestBytes)
+	if hashPruneSpec {
+		// Other addons hash the manifest alone, so that upgrading kOps doesn't re-apply them.
+		pruneSpec, err := json.Marshal(a.addonSpec.Prune)
+		if err != nil {
+			return fmt.Errorf("error serializing prune spec: %w", err)
+		}
+		hashed += "\n" + string(pruneSpec)
+	}
+	manifestHash, err := utils.HashString(hashed)
 	if err != nil {
 		return fmt.Errorf("error hashing manifest: %v", err)
 	}

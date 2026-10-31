@@ -21,8 +21,12 @@ import (
 	"strings"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	channelsapi "k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/channels/pkg/channels"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -151,10 +155,91 @@ func TestAddonCollectImagesRendersTemplateSources(t *testing.T) {
 	}
 }
 
+// The manifest hash must change when protected objects become prunable, even if the manifest does
+// not: kops-channels applies and prunes an addon only when its channel version changes.
+func TestAddonManifestNormalizeHashesProtectedObjects(t *testing.T) {
+	ctx, err := fi.NewCloudupContext(context.Background(), fi.DeletionProcessingModeDeleteIncludingDeferred, nil, nil, nil, nil, nil, nil, map[string]fi.CloudupTask{})
+	if err != nil {
+		t.Fatalf("building cloudup context: %v", err)
+	}
+
+	// Only the control plane is updated, as in the first step of "kops reconcile cluster", so the
+	// manifest has no objects of the Karpenter instance groups, which are protected from pruning.
+	controlPlane := testInstanceGroup("control-plane", kops.InstanceGroupRoleControlPlane, kops.InstanceManagerCloudGroup)
+	build := func(t *testing.T, protected []string) *channels.Addon {
+		allInstanceGroups := []*kops.InstanceGroup{controlPlane}
+		for _, name := range protected {
+			allInstanceGroups = append(allInstanceGroups, testInstanceGroup(name, kops.InstanceGroupRoleNode, kops.InstanceManagerKarpenter))
+		}
+		spec := testAddonSpec("karpenter.sh")
+		addon := &AddonManifest{
+			Name:       new("karpenter.sh"),
+			Location:   new("addons/karpenter.sh.yaml"),
+			source:     fi.NewStringResource("apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: karpenter\n  namespace: kube-system\n"),
+			skipRender: true,
+			skipRemap:  true,
+			addonSpec:  spec,
+			buildPrune: true,
+			modelContext: &model.KopsModelContext{
+				AllInstanceGroups: allInstanceGroups,
+				InstanceGroups:    []*kops.InstanceGroup{controlPlane},
+			},
+		}
+		if err := addon.Normalize(ctx); err != nil {
+			t.Fatalf("normalizing addon: %v", err)
+		}
+		return &channels.Addon{Name: "karpenter.sh", ChannelName: "bootstrap", Spec: spec}
+	}
+
+	grid := []struct {
+		desc           string
+		previous, next []string
+		expectUpdate   bool
+	}{
+		{
+			desc:         "the only protected instance group is deleted",
+			previous:     []string{"nodes-a"},
+			expectUpdate: true,
+		},
+		{
+			desc:         "one of the protected instance groups is deleted",
+			previous:     []string{"nodes-a", "nodes-b"},
+			next:         []string{"nodes-b"},
+			expectUpdate: true,
+		},
+		{
+			desc:     "the same instance groups are protected",
+			previous: []string{"nodes-b"},
+			next:     []string{"nodes-b"},
+		},
+		{
+			desc: "no instance groups are protected",
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			update, err := build(t, g.next).GetRequiredUpdates(context.Background(), nil, nil, build(t, g.previous).ChannelVersion())
+			if err != nil {
+				t.Fatalf("getting required updates: %v", err)
+			}
+			if actual := update != nil; actual != g.expectUpdate {
+				t.Errorf("addon update required = %v, want %v", actual, g.expectUpdate)
+			}
+		})
+	}
+}
+
 func testAddonSpec(name string) *channelsapi.AddonSpec {
 	return &channelsapi.AddonSpec{
 		Name:     new(name),
 		Selector: map[string]string{"k8s-addon": name},
 		Manifest: new(name + ".yaml"),
+	}
+}
+
+func testInstanceGroup(name string, role kops.InstanceGroupRole, manager kops.InstanceManager) *kops.InstanceGroup {
+	return &kops.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: name},
+		Spec:       kops.InstanceGroupSpec{Role: role, Manager: manager},
 	}
 }
