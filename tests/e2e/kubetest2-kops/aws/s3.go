@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"regexp"
@@ -364,6 +365,19 @@ func PublicObjectURL(ctx context.Context, region, bucket, urlPath string) (strin
 	u := endpoint.URI
 	// The bucket is part of the path for buckets that cannot be addressed as a subdomain.
 	u.Path = path.Join("/", u.Path, urlPath)
+
+	return u.String(), nil
+}
+
+// EndpointObjectURL returns the https:// URL that serves urlPath from a publicly readable bucket at
+// an S3-compatible endpoint outside AWS, which addresses the bucket as a subdomain.
+func EndpointObjectURL(endpoint, bucket, urlPath string) (string, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil || u.Host == "" {
+		return "", fmt.Errorf("invalid S3 endpoint %q", endpoint)
+	}
+	u.Host = bucket + "." + u.Host
+	u.Path = path.Join("/", urlPath)
 
 	return u.String(), nil
 }
