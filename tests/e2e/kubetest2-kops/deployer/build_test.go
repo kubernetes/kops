@@ -56,6 +56,12 @@ func TestVerifyBuildFlagsStageLocation(t *testing.T) {
 			expectedKopsBaseURL: "https://storage.googleapis.com/k8s-staging-kops/pulls/job/pull-abc",
 		},
 		{
+			name:                "digitalocean without a stage location",
+			cloudProvider:       "digitalocean",
+			expectedLocation:    "s3://kops-e2e-staging/pulls/job/pull-abc",
+			expectedKopsBaseURL: "https://kops-e2e-staging.sfo3.digitaloceanspaces.com/pulls/job/pull-abc",
+		},
+		{
 			name:          "aws with a KOPS_STAGING_BUCKET without a scheme",
 			cloudProvider: "aws",
 			stagingBucket: "staging",

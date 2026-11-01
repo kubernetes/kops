@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
@@ -34,8 +35,9 @@ import (
 )
 
 const (
-	defaultJobName = "pull-kops-e2e-kubernetes-aws"
-	defaultGCSPath = "gs://k8s-staging-kops/pulls/%v/pull-%v"
+	defaultJobName    = "pull-kops-e2e-kubernetes-aws"
+	defaultGCSPath    = "gs://k8s-staging-kops/pulls/%v/pull-%v"
+	defaultSpacesPath = "s3://" + do.StagingBucket + "/pulls/%v/pull-%v"
 )
 
 func (d *deployer) Build() (err error) {
@@ -138,8 +140,14 @@ func (d *deployer) verifyBuildFlags() error {
 					return err
 				}
 			}
+		case d.CloudProvider == "digitalocean":
+			stageLocation, err := defaultStageLocation(d.KopsRoot, defaultSpacesPath)
+			if err != nil {
+				return err
+			}
+			d.StageLocation = stageLocation
 		default:
-			stageLocation, err := defaultStageLocation(d.KopsRoot)
+			stageLocation, err := defaultStageLocation(d.KopsRoot, defaultGCSPath)
 			if err != nil {
 				return err
 			}
@@ -153,25 +161,33 @@ func (d *deployer) verifyBuildFlags() error {
 
 	stageURL := strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
 	if strings.HasPrefix(d.StageLocation, "s3://") {
-		if d.aws == nil {
-			return errors.New("an s3:// stage-location requires --cloud-provider=aws")
-		}
 		bucket, prefix, err := aws.SplitS3URL(d.StageLocation)
 		if err != nil {
 			return err
 		}
-		region := d.region
-		if !d.createStagingStore {
-			region, err = d.aws.BucketRegion(ctx, bucket)
+		switch {
+		case d.CloudProvider == "digitalocean":
+			d.BuildOptions.StageEndpoint = do.SpacesEndpoint
+			stageURL, err = aws.EndpointObjectURL(do.SpacesEndpoint, bucket, prefix)
 			if err != nil {
-				return fmt.Errorf("finding the region of stage-location %s: %w", d.StageLocation, err)
+				return err
 			}
+		case d.aws == nil:
+			return errors.New("an s3:// stage-location requires --cloud-provider=aws or --cloud-provider=digitalocean")
+		default:
+			region := d.region
+			if !d.createStagingStore {
+				region, err = d.aws.BucketRegion(ctx, bucket)
+				if err != nil {
+					return fmt.Errorf("finding the region of stage-location %s: %w", d.StageLocation, err)
+				}
+			}
+			stageURL, err = aws.PublicObjectURL(ctx, region, bucket, prefix)
+			if err != nil {
+				return err
+			}
+			d.BuildOptions.StageRegion = region
 		}
-		stageURL, err = aws.PublicObjectURL(ctx, region, bucket, prefix)
-		if err != nil {
-			return err
-		}
-		d.BuildOptions.StageRegion = region
 	}
 	if !d.BuildOptions.BuildKubernetes && d.KopsBaseURL == "" && os.Getenv("KOPS_BASE_URL") == "" {
 		d.KopsBaseURL = stageURL
@@ -186,7 +202,9 @@ func (d *deployer) verifyBuildFlags() error {
 	return nil
 }
 
-func defaultStageLocation(kopsRoot string) (string, error) {
+// defaultStageLocation returns the stage location of the build of the pull request in the bucket
+// of pathFormat.
+func defaultStageLocation(kopsRoot, pathFormat string) (string, error) {
 	jobName := os.Getenv("JOB_NAME")
 	if jobName == "" {
 		jobName = defaultJobName
@@ -204,5 +222,5 @@ func defaultStageLocation(kopsRoot string) (string, error) {
 		}
 		sha = strings.TrimSpace(output[0])
 	}
-	return fmt.Sprintf(defaultGCSPath, jobName, sha), nil
+	return fmt.Sprintf(pathFormat, jobName, sha), nil
 }
