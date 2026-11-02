@@ -587,11 +587,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Subnets = nil
 		}
 
+		// AWS treats 0 as "clear the current value", so only send the field when it changes.
+		// Removing it from the spec shows up here as a change to 0.
 		if changes.MaxInstanceLifetime != nil {
 			request.MaxInstanceLifetime = e.MaxInstanceLifetime
 			changes.MaxInstanceLifetime = nil
-		} else {
-			request.MaxInstanceLifetime = new(int32(0))
 		}
 
 		var updateTagsRequest *autoscaling.CreateOrUpdateTagsInput
