@@ -17,13 +17,18 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"testing"
 
+	"k8s.io/kops/cloudmock/aws/mockautoscaling"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"sigs.k8s.io/yaml"
 )
@@ -496,5 +501,102 @@ func TestTGsARNsChunks(t *testing.T) {
 			t.Errorf("case %d: actual output differed from expected", i)
 			t.Logf("diff:\n%s\n", diffString)
 		}
+	}
+}
+
+func TestAutoscalingGroupMaxInstanceLifetime(t *testing.T) {
+	const asgName = "nodes.cluster.example.com"
+
+	cases := []struct {
+		name string
+		// existing is the MaxInstanceLifetime already set on the ASG, nil when unset.
+		existing *int32
+		// expected is the task value; the model sets 0 when spec.maxInstanceLifetime is unset.
+		expected int32
+		tags     map[string]string
+		want     int32
+	}{
+		{
+			name:     "tag-only change keeps the lifetime",
+			existing: aws.Int32(174000),
+			expected: 174000,
+			tags:     map[string]string{"foo": "baz"},
+			want:     174000,
+		},
+		{
+			name:     "lifetime change sets the new value",
+			existing: aws.Int32(174000),
+			expected: 200000,
+			tags:     map[string]string{"foo": "bar"},
+			want:     200000,
+		},
+		{
+			name:     "lifetime added to an ASG without one",
+			existing: nil,
+			expected: 174000,
+			tags:     map[string]string{"foo": "bar"},
+			want:     174000,
+		},
+		{
+			name:     "lifetime removed from spec clears it",
+			existing: aws.Int32(174000),
+			expected: 0,
+			tags:     map[string]string{"foo": "bar"},
+			want:     0,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.TODO()
+
+			cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+			c := &mockautoscaling.MockAutoscaling{}
+			cloud.MockAutoscaling = c
+
+			_, err := c.CreateAutoScalingGroup(ctx, &autoscaling.CreateAutoScalingGroupInput{
+				AutoScalingGroupName: aws.String(asgName),
+				MinSize:              aws.Int32(1),
+				MaxSize:              aws.Int32(1),
+				MaxInstanceLifetime:  tc.existing,
+				Tags: []autoscalingtypes.Tag{
+					{
+						Key:               aws.String("foo"),
+						Value:             aws.String("bar"),
+						ResourceId:        aws.String(asgName),
+						ResourceType:      aws.String("auto-scaling-group"),
+						PropagateAtLaunch: aws.Bool(true),
+					},
+				},
+			})
+			if err != nil {
+				t.Fatalf("error creating test ASG: %v", err)
+			}
+
+			// We define a function so we can rebuild the tasks, because we modify in-place when running
+			buildTasks := func() map[string]fi.CloudupTask {
+				return map[string]fi.CloudupTask{
+					"asg": &AutoscalingGroup{
+						Name:                aws.String(asgName),
+						Lifecycle:           fi.LifecycleSync,
+						MinSize:             aws.Int32(1),
+						MaxSize:             aws.Int32(1),
+						MaxInstanceLifetime: aws.Int32(tc.expected),
+						LoadBalancers:       []*ClassicLoadBalancer{},
+						TargetGroups:        []*TargetGroup{},
+						SuspendProcesses:    &[]string{},
+						Tags:                tc.tags,
+					},
+				}
+			}
+
+			runTasks(t, cloud, buildTasks())
+
+			if got := aws.ToInt32(c.Groups[asgName].MaxInstanceLifetime); got != tc.want {
+				t.Errorf("unexpected MaxInstanceLifetime: got %d, want %d", got, tc.want)
+			}
+
+			checkNoChanges(t, ctx, cloud, buildTasks())
+		})
 	}
 }

@@ -18,9 +18,12 @@ package mockautoscaling
 
 import (
 	"context"
+	"fmt"
+	"slices"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"k8s.io/klog/v2"
 )
 
@@ -61,4 +64,52 @@ func (m *MockAutoscaling) DescribeTags(ctx context.Context, request *autoscaling
 	}
 
 	return response, nil
+}
+
+func (m *MockAutoscaling) CreateOrUpdateTags(ctx context.Context, request *autoscaling.CreateOrUpdateTagsInput, optFns ...func(*autoscaling.Options)) (*autoscaling.CreateOrUpdateTagsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	klog.V(2).Infof("Mock CreateOrUpdateTags %v", request)
+
+	for _, tag := range request.Tags {
+		g := m.Groups[aws.ToString(tag.ResourceId)]
+		if g == nil {
+			return nil, fmt.Errorf("AutoScaling Group not found: %q", aws.ToString(tag.ResourceId))
+		}
+		desc := autoscalingtypes.TagDescription{
+			Key:               tag.Key,
+			PropagateAtLaunch: tag.PropagateAtLaunch,
+			ResourceId:        tag.ResourceId,
+			ResourceType:      tag.ResourceType,
+			Value:             tag.Value,
+		}
+		i := slices.IndexFunc(g.Tags, func(t autoscalingtypes.TagDescription) bool {
+			return aws.ToString(t.Key) == aws.ToString(tag.Key)
+		})
+		if i >= 0 {
+			g.Tags[i] = desc
+		} else {
+			g.Tags = append(g.Tags, desc)
+		}
+	}
+
+	return &autoscaling.CreateOrUpdateTagsOutput{}, nil
+}
+
+func (m *MockAutoscaling) DeleteTags(ctx context.Context, request *autoscaling.DeleteTagsInput, optFns ...func(*autoscaling.Options)) (*autoscaling.DeleteTagsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	klog.V(2).Infof("Mock DeleteTags %v", request)
+
+	for _, tag := range request.Tags {
+		g := m.Groups[aws.ToString(tag.ResourceId)]
+		if g == nil {
+			return nil, fmt.Errorf("AutoScaling Group not found: %q", aws.ToString(tag.ResourceId))
+		}
+		g.Tags = slices.DeleteFunc(g.Tags, func(t autoscalingtypes.TagDescription) bool {
+			return aws.ToString(t.Key) == aws.ToString(tag.Key)
+		})
+	}
+
+	return &autoscaling.DeleteTagsOutput{}, nil
 }
