@@ -23,6 +23,7 @@ import (
 	"path"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
@@ -82,12 +83,74 @@ func TestBootstrapChannelBuilder_AWSCloudController(t *testing.T) {
 	runChannelBuilderTest(t, "awscloudcontroller", []string{"aws-cloud-controller.addons.k8s.io-k8s-1.18"})
 }
 
-func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
+// TestBootstrapChannelBuilder_InstanceGroupAddonsWhenUpdatingOthers checks that the addons needed by
+// some instance groups are kept in the channel when only other instance groups are being updated.
+func TestBootstrapChannelBuilder_InstanceGroupAddonsWhenUpdatingOthers(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.SetupMockAWS()
+
 	ctx := context.TODO()
+	cluster, cloud, addonTemplates := loadChannelBuilderTestCluster(t, ctx, "simple")
 
-	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
+	controlPlane := &kopsapi.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "control-plane"},
+		Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleControlPlane},
+	}
+	gpuNodes := &kopsapi.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "gpu-nodes"},
+		Spec: kopsapi.InstanceGroupSpec{
+			Role:       kopsapi.InstanceGroupRoleNode,
+			Containerd: &kopsapi.ContainerdConfig{NvidiaGPU: &kopsapi.NvidiaGPUConfig{Enabled: new(true)}},
+		},
+	}
+	gvisorNodes := &kopsapi.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "gvisor-nodes"},
+		Spec: kopsapi.InstanceGroupSpec{
+			Role:       kopsapi.InstanceGroupRoleNode,
+			Containerd: &kopsapi.ContainerdConfig{GVisor: &kopsapi.GVisorConfig{Enabled: new(true)}},
+		},
+	}
+	kopsModel := &model.KopsModelContext{
+		IAMModelContext: iam.IAMModelContext{
+			Cluster:      cluster,
+			AWSAccountID: "123456789012",
+			AWSPartition: "aws-test",
+		},
+		Region:            "us-east-1",
+		AllInstanceGroups: []*kopsapi.InstanceGroup{controlPlane, gpuNodes, gvisorNodes},
+		InstanceGroups:    []*kopsapi.InstanceGroup{controlPlane},
+	}
 
-	clusterYamlPath := path.Join(basedir, "cluster.yaml")
+	bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
+		kopsModel,
+		fi.LifecycleSync,
+		assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false),
+		addonTemplates,
+		nil,
+		&addonTemplateRenderer{modelContext: kopsModel, cloud: cloud},
+	)
+	c := &fi.CloudupModelBuilderContext{
+		Tasks: make(map[string]fi.CloudupTask),
+	}
+	if err := bcb.Build(c); err != nil {
+		t.Fatalf("error from BootstrapChannelBuilder Build: %v", err)
+	}
+
+	for _, addon := range []string{"nvidia.addons.k8s.io-k8s-1.16", "gvisor.addons.k8s.io-k8s-1.20"} {
+		if c.Tasks["AddonManifest/"+cluster.ObjectMeta.Name+"-addons-"+addon] == nil {
+			t.Errorf("addon %q is not in the channel", addon)
+		}
+	}
+}
+
+// loadChannelBuilderTestCluster loads the cluster of a bootstrap channel builder test from
+// tests/bootstrapchannelbuilder/<key>/cluster.yaml, populates its spec and loads the addon templates.
+func loadChannelBuilderTestCluster(t *testing.T, ctx context.Context, key string) (*kopsapi.Cluster, fi.Cloud, *templates.Templates) {
+	t.Helper()
+
+	clusterYamlPath := path.Join("tests/bootstrapchannelbuilder/", key, "cluster.yaml")
 	clusterYaml, err := os.ReadFile(clusterYamlPath)
 	if err != nil {
 		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
@@ -107,16 +170,23 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(ctx, cluster, cloud)
+	cluster, err = mockedPopulateClusterSpec(ctx, cluster, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec for %q: %v", key, err)
 	}
-	cluster = fullSpec
 
-	templates, err := templates.LoadTemplates(ctx, models.NewAssetPath("cloudup/resources"))
+	addonTemplates, err := templates.LoadTemplates(ctx, models.NewAssetPath("cloudup/resources"))
 	if err != nil {
 		t.Fatalf("error building templates for %q: %v", key, err)
 	}
+	return cluster, cloud, addonTemplates
+}
+
+func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
+	ctx := context.TODO()
+
+	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
+	cluster, cloud, addonTemplates := loadChannelBuilderTestCluster(t, ctx, key)
 
 	vfs.Context.ResetMemfsContext(true)
 
@@ -167,7 +237,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		&kopsModel,
 		fi.LifecycleSync,
 		assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false),
-		templates,
+		addonTemplates,
 		nil,
 		addonRenderer,
 	)
