@@ -17,10 +17,12 @@ limitations under the License.
 package builder
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -99,28 +101,76 @@ func TestKopsVersionMatchesKopsVersionGo(t *testing.T) {
 	}
 }
 
-func TestS3URI(t *testing.T) {
+func TestObjectStoreURIs(t *testing.T) {
+	t.Setenv("S3_ACCESS_KEY_ID", "access")
+	t.Setenv("S3_SECRET_ACCESS_KEY", "secret")
+
+	s3, err := (&BuildOptions{StageLocation: "s3://staging/prefix", StageRegion: "us-east-2"}).s3Store()
+	if err != nil {
+		t.Fatalf("s3Store() = %v", err)
+	}
+	spaces, err := (&BuildOptions{StageLocation: "s3://kops-e2e-staging/prefix/", StageEndpoint: "https://sfo3.digitaloceanspaces.com"}).s3Store()
+	if err != nil {
+		t.Fatalf("s3Store() with an endpoint = %v", err)
+	}
+
 	cases := []struct {
-		urlPath  string
-		expected string
+		name        string
+		store       *objectStore
+		urlPath     string
+		expectedURI string
+		expectedURL string
 	}{
 		{
-			urlPath:  "latest-ci.txt",
-			expected: "s3://staging/latest-ci.txt",
+			name:        "s3 marker",
+			store:       s3,
+			urlPath:     "prefix/latest-ci.txt",
+			expectedURI: "s3://staging/prefix/latest-ci.txt",
+			expectedURL: "https://staging.s3.us-east-2.amazonaws.com/prefix/latest-ci.txt",
 		},
 		{
-			urlPath:  "prefix/1.37.0-alpha.1+v1.37.0-alpha.0-12-gabcdef0",
-			expected: "s3://staging/prefix/1.37.0-alpha.1 v1.37.0-alpha.0-12-gabcdef0",
+			name:        "s3 kops version",
+			store:       s3,
+			urlPath:     "prefix/1.37.0-alpha.1+v1.37.0-alpha.0-12-gabcdef0",
+			expectedURI: "s3://staging/prefix/1.37.0-alpha.1 v1.37.0-alpha.0-12-gabcdef0",
+			expectedURL: "https://staging.s3.us-east-2.amazonaws.com/prefix/1.37.0-alpha.1+v1.37.0-alpha.0-12-gabcdef0",
 		},
 		{
-			urlPath:  "kubernetes/v1.37.0-alpha.1.123+0123456789ab",
-			expected: "s3://staging/kubernetes/v1.37.0-alpha.1.123 0123456789ab",
+			name:        "spaces kops version keeps the plus",
+			store:       spaces,
+			urlPath:     "prefix/1.37.0-alpha.1+v1.37.0-alpha.0-12-gabcdef0",
+			expectedURI: "s3://kops-e2e-staging/prefix/1.37.0-alpha.1+v1.37.0-alpha.0-12-gabcdef0",
+			expectedURL: "https://kops-e2e-staging.sfo3.digitaloceanspaces.com/prefix/1.37.0-alpha.1+v1.37.0-alpha.0-12-gabcdef0",
 		},
 	}
 	for _, tc := range cases {
-		if actual := s3URI("staging", tc.urlPath); actual != tc.expected {
-			t.Errorf("s3URI(%q) = %q, expected %q", tc.urlPath, actual, tc.expected)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			if actual := tc.store.uri(tc.urlPath); actual != tc.expectedURI {
+				t.Errorf("uri(%q) = %q, expected %q", tc.urlPath, actual, tc.expectedURI)
+			}
+			actual, err := tc.store.publicURL(context.Background(), tc.urlPath)
+			if err != nil {
+				t.Fatalf("publicURL(%q) = %v", tc.urlPath, err)
+			}
+			if actual != tc.expectedURL {
+				t.Errorf("publicURL(%q) = %q, expected %q", tc.urlPath, actual, tc.expectedURL)
+			}
+		})
+	}
+
+	if spaces.prefix != "prefix" {
+		t.Errorf("spaces prefix = %q, expected %q", spaces.prefix, "prefix")
+	}
+}
+
+// Without the keys of the endpoint, the upload would fail only after kops is built.
+func TestBuildToEndpointRequiresKeys(t *testing.T) {
+	t.Setenv("S3_ACCESS_KEY_ID", "")
+	t.Setenv("S3_SECRET_ACCESS_KEY", "")
+
+	b := &BuildOptions{StageLocation: "s3://kops-e2e-staging", StageEndpoint: "https://sfo3.digitaloceanspaces.com"}
+	if _, err := b.Build(); err == nil || !strings.Contains(err.Error(), "S3_ACCESS_KEY_ID") {
+		t.Errorf("Build() = %v, expected an error about the missing keys", err)
 	}
 }
 

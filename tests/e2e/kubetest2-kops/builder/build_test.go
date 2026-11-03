@@ -26,6 +26,7 @@ func TestKubeStageLocation(t *testing.T) {
 		name               string
 		stageLocation      string
 		stageRegion        string
+		stageEndpoint      string
 		expectedBucket     string
 		expectedBucketRoot string
 		expectedMarkerURL  string
@@ -58,10 +59,16 @@ func TestKubeStageLocation(t *testing.T) {
 			expectedBucketRoot: "prefix/kubernetes",
 			expectedMarkerURL:  "https://staging.s3.us-east-2.amazonaws.com/prefix/kubernetes/latest.txt",
 		},
+		{
+			name:          "s3 at another endpoint",
+			stageLocation: "s3://kops-e2e-staging/prefix",
+			stageEndpoint: "https://sfo3.digitaloceanspaces.com",
+			expectError:   true,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			b := &BuildOptions{StageLocation: tc.stageLocation, StageRegion: tc.stageRegion}
+			b := &BuildOptions{StageLocation: tc.stageLocation, StageRegion: tc.stageRegion, StageEndpoint: tc.stageEndpoint}
 			bucket, bucketRoot, markerURL, err := b.kubeStageLocation(context.Background())
 			if tc.expectError {
 				if err == nil {

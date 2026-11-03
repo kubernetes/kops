@@ -35,7 +35,10 @@ type BuildOptions struct {
 	KubeRoot      string `flag:"-"`
 	StageLocation string `flag:"-"`
 	// StageRegion is the AWS region of the bucket when StageLocation is an s3:// path.
-	StageRegion     string `flag:"-"`
+	StageRegion string `flag:"-"`
+	// StageEndpoint is the S3-compatible endpoint outside AWS, such as DigitalOcean Spaces, of the
+	// bucket when StageLocation is an s3:// path.
+	StageEndpoint   string `flag:"-"`
 	TargetBuildArch string `flag:"~target-build-arch" desc:"CPU architecture to test against"`
 	BuildKubernetes bool   `flag:"~build-kubernetes" desc:"Set this flag to true to build kubernetes"`
 }
@@ -56,7 +59,6 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 
 	results := &BuildResults{}
 	ctx := context.Background()
-	isS3 := strings.HasPrefix(b.StageLocation, "s3://")
 
 	if b.BuildKubernetes {
 		bucket, bucketRoot, kubeBaseURL, err := b.kubeStageLocation(ctx)
@@ -94,8 +96,12 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 			env = append(env, fmt.Sprintf("%s=%s", k, v))
 		}
 	}
-	if isS3 {
-		if err := b.publishKopsToS3(ctx, env); err != nil {
+	if strings.HasPrefix(b.StageLocation, "s3://") {
+		store, err := b.s3Store()
+		if err != nil {
+			return nil, err
+		}
+		if err := b.publishKops(ctx, env, store); err != nil {
 			return nil, err
 		}
 	} else {
@@ -106,7 +112,7 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	}
 
 	// Get the full path (including subdirectory) that we uploaded to
-	// It is written by gcs-publish-ci (or publishKopsToS3) to .build/upload/latest-ci.txt
+	// It is written by gcs-publish-ci (or publishKops) to .build/upload/latest-ci.txt
 	latestPath := filepath.Join(b.KopsRoot, ".build", "upload", "latest-ci.txt")
 	kopsBaseURL, err := os.ReadFile(latestPath)
 	if err != nil {
@@ -138,6 +144,10 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 // kubeStageLocation returns the krel bucket and bucket root to stage Kubernetes to, under
 // <stage location>/kubernetes, and the URL of its version marker.
 func (b *BuildOptions) kubeStageLocation(ctx context.Context) (bucket, bucketRoot, markerURL string, err error) {
+	// krel can push to S3, but neither to another endpoint nor with public-read ACLs.
+	if b.StageEndpoint != "" {
+		return "", "", "", fmt.Errorf("building Kubernetes is not supported with a stage location at %s", b.StageEndpoint)
+	}
 	if strings.HasPrefix(b.StageLocation, "s3://") {
 		return b.s3KubeStageLocation(ctx)
 	}

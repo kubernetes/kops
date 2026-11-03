@@ -116,3 +116,17 @@ func TestPublicObjectURL(t *testing.T) {
 		})
 	}
 }
+
+func TestEndpointObjectURL(t *testing.T) {
+	actual, err := EndpointObjectURL("https://sfo3.digitaloceanspaces.com", "kops-e2e-staging", "/pulls/job/1.37.0-alpha.1+v1.37.0-alpha.0-1-gabcdef/")
+	if err != nil {
+		t.Fatalf("EndpointObjectURL() = %v", err)
+	}
+	if expected := "https://kops-e2e-staging.sfo3.digitaloceanspaces.com/pulls/job/1.37.0-alpha.1+v1.37.0-alpha.0-1-gabcdef"; actual != expected {
+		t.Errorf("EndpointObjectURL() = %q, expected %q", actual, expected)
+	}
+
+	if _, err := EndpointObjectURL("sfo3.digitaloceanspaces.com", "kops-e2e-staging", ""); err == nil {
+		t.Errorf("EndpointObjectURL() with an endpoint without a scheme succeeded, expected an error")
+	}
+}

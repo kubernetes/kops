@@ -35,14 +35,49 @@ import (
 // staging bucket. Their keys follow krel.S3ObjectKey, the convention krel uses for the Kubernetes
 // artifacts, so that the URLs that kops builds from a version containing a "+" resolve.
 
-// publishKopsToS3 is the S3 counterpart of "make gcs-publish-ci". The upload runs outside of make,
-// because the Makefile unexports the AWS credential env vars.
-func (b *BuildOptions) publishKopsToS3(ctx context.Context, env []string) error {
-	bucket, prefix, err := b.s3StageLocation()
-	if err != nil {
-		return err
+// objectStore is an S3-compatible bucket that the AWS CLI uploads the staged artifacts to, and that
+// serves them over https://.
+type objectStore struct {
+	bucket string
+	prefix string
+	// awsArgs select the endpoint of the bucket and the ACL of the uploaded objects.
+	awsArgs []string
+	// awsEnv is the environment of the AWS CLI, or nil to inherit it.
+	awsEnv []string
+	// objectKey returns the key of the object served at urlPath.
+	objectKey func(urlPath string) string
+	// publicURL returns the https:// URL that serves urlPath.
+	publicURL func(ctx context.Context, urlPath string) (string, error)
+}
+
+// s3Store returns the objectStore of the s3:// stage location.
+func (b *BuildOptions) s3Store() (*objectStore, error) {
+	if b.StageEndpoint != "" {
+		bucket, prefix, err := aws.SplitS3URL(b.StageLocation)
+		if err != nil {
+			return nil, err
+		}
+		return endpointStore(b.StageEndpoint, bucket, prefix)
 	}
 
+	bucket, prefix, err := b.s3StageLocation()
+	if err != nil {
+		return nil, err
+	}
+	return &objectStore{
+		bucket:    bucket,
+		prefix:    prefix,
+		awsArgs:   []string{"--region", b.StageRegion},
+		objectKey: krel.S3ObjectKey,
+		publicURL: func(ctx context.Context, urlPath string) (string, error) {
+			return aws.PublicObjectURL(ctx, b.StageRegion, bucket, urlPath)
+		},
+	}, nil
+}
+
+// publishKops is the object store counterpart of "make gcs-publish-ci". The upload runs outside of
+// make, because the Makefile unexports the AWS credential env vars.
+func (b *BuildOptions) publishKops(ctx context.Context, env []string, store *objectStore) error {
 	if err := b.runKopsMake("version-dist-ci", env); err != nil {
 		return err
 	}
@@ -52,12 +87,12 @@ func (b *BuildOptions) publishKopsToS3(ctx context.Context, env []string) error 
 	}
 
 	uploadDir := filepath.Join(b.KopsRoot, ".build", "upload")
-	versionPath := path.Join(prefix, version)
-	if err := s3Sync(filepath.Join(uploadDir, "kops", version), bucket, versionPath, b.StageRegion); err != nil {
+	versionPath := path.Join(store.prefix, version)
+	if err := store.sync(filepath.Join(uploadDir, "kops", version), versionPath); err != nil {
 		return err
 	}
 
-	kopsBaseURL, err := aws.PublicObjectURL(ctx, b.StageRegion, bucket, versionPath)
+	kopsBaseURL, err := store.publicURL(ctx, versionPath)
 	if err != nil {
 		return err
 	}
@@ -66,7 +101,7 @@ func (b *BuildOptions) publishKopsToS3(ctx context.Context, env []string) error 
 	if err := os.WriteFile(latestPath, []byte(kopsBaseURL+"\n"), 0o600); err != nil {
 		return fmt.Errorf("failed to WriteFile(%q): %w", latestPath, err)
 	}
-	return s3Copy(latestPath, bucket, path.Join(prefix, "latest-ci.txt"), b.StageRegion)
+	return store.copy(latestPath, path.Join(store.prefix, "latest-ci.txt"))
 }
 
 // s3KubeStageLocation is the s3:// counterpart of kubeStageLocation.
@@ -115,25 +150,30 @@ func parseKopsVersion(lines []string) (string, error) {
 	return "", fmt.Errorf("no VERSION in the output of tools/get_version.sh: %q", lines)
 }
 
-// s3Sync uploads the contents of dir to the objects served under urlPath in bucket.
-func s3Sync(dir, bucket, urlPath, region string) error {
-	return runAWSCLI("s3", "sync", "--no-progress", "--region", region, dir, s3URI(bucket, urlPath)+"/")
+// sync uploads the contents of dir to the objects served under urlPath.
+func (s *objectStore) sync(dir, urlPath string) error {
+	args := append([]string{"s3", "sync", "--no-progress"}, s.awsArgs...)
+	return s.runAWSCLI(append(args, dir, s.uri(urlPath)+"/")...)
 }
 
-// s3Copy uploads file to the object served at urlPath in bucket.
-func s3Copy(file, bucket, urlPath, region string) error {
-	return runAWSCLI("s3", "cp", "--no-progress", "--region", region, file, s3URI(bucket, urlPath))
+// copy uploads file to the object served at urlPath.
+func (s *objectStore) copy(file, urlPath string) error {
+	args := append([]string{"s3", "cp", "--no-progress"}, s.awsArgs...)
+	return s.runAWSCLI(append(args, file, s.uri(urlPath))...)
 }
 
-// s3URI returns the s3:// URI of the object that S3 serves at urlPath in bucket.
-func s3URI(bucket, urlPath string) string {
-	return "s3://" + bucket + "/" + krel.S3ObjectKey(urlPath)
+// uri returns the s3:// URI of the object served at urlPath.
+func (s *objectStore) uri(urlPath string) string {
+	return "s3://" + s.bucket + "/" + s.objectKey(urlPath)
 }
 
 // runAWSCLI runs the AWS CLI, which, like the gcloud CLI used for GCS, uploads large files in
-// parallel parts. It inherits the environment, which holds the AWS credentials.
-func runAWSCLI(args ...string) error {
+// parallel parts. Its environment holds the credentials.
+func (s *objectStore) runAWSCLI(args ...string) error {
 	cmd := exec.Command("aws", args...)
+	if s.awsEnv != nil {
+		cmd.SetEnv(s.awsEnv...)
+	}
 	exec.InheritOutput(cmd)
 	klog.Infof("Executing %q", "aws "+strings.Join(args, " "))
 	if err := cmd.Run(); err != nil {
