@@ -91,7 +91,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.25
     manifest: networking.projectcalico.org/k8s-1.25.yaml
-    manifestHash: 85fae26a56219a2c5cee385260af6086e5f7d47b4ab3f6cfea6ea98f0bbc9037
+    manifestHash: 4166976321156131d11c60b0f342ce7c9dd730fa0d2ad527ce966d07b1355e1d
     name: networking.projectcalico.org
     prune:
       kinds:
