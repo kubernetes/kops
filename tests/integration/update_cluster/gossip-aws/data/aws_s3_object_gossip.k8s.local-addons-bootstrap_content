@@ -97,7 +97,7 @@ spec:
       k8s-addon: aws-cloud-controller.addons.k8s.io
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: d1aacb41d1191cade2732427f2c7ffccbeb122e593354fee1a8f3a70c7e2258d
+    manifestHash: 275231cf4389b4bb5f846495c8674d7c9e4ab69ef8d5f2c7cbfd55150c6fa854
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io

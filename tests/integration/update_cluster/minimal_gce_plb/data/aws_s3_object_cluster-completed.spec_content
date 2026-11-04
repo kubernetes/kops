@@ -18,7 +18,7 @@ spec:
     gcpPDCSIDriver:
       defaultStorageClassName: balanced-storage
       enabled: true
-      version: v1.26.0
+      version: v1.28.1
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-plb-example-com-k8s-io-role-node
