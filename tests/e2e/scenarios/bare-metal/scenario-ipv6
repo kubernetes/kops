@@ -177,7 +177,7 @@ export CLUSTER_NAME=metalipv6.k8s.local
 ${KOPS} get cluster || true
 
 # Create a cluster
-${KOPS} create cluster --cloud=metal ${CLUSTER_NAME} --zones main --networking cni --ipv6
+${KOPS} create cluster --cloud=metal ${CLUSTER_NAME} --zones main --networking kindnet --ipv6
 
 # Set the IP ingress, required for metal cloud
 # TODO: is this the best option?
@@ -235,13 +235,6 @@ kubectl apply -f ${REPO_ROOT}/k8s/crds/kops.k8s.io_hosts.yaml
 # Create the host record (we can't auto create for control plane nodes)
 ${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group control-plane-main --host ${VM0_IP} --pod-cidr ${VM0_POD_CIDR} --v=2 --build-host | kubectl apply -f -
 
-kubectl get nodes
-kubectl get pods -A
-
-# Install kindnet
-kubectl create -f https://raw.githubusercontent.com/aojea/kindnet/main/install-kindnet.yaml
-echo "Waiting 10 seconds for kindnet to start"
-sleep 10
 kubectl get nodes
 kubectl get pods -A
 
