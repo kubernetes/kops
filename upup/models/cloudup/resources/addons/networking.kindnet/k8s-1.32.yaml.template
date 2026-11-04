@@ -144,6 +144,13 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        # Connect to the apiserver directly instead of through the kubernetes service ClusterIP.
+        # On a new node, kindnet can start before kube-proxy installs the ClusterIP rules,
+        # and a connection made in that window hangs until the dial timeout.
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ APIInternalName }}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
         volumeMounts:
         - name: cni-cfg
           mountPath: /etc/cni/net.d
