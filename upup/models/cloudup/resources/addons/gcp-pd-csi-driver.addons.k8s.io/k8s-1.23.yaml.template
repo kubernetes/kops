@@ -664,6 +664,7 @@ spec:
         - --v=5
         - --csi-address=/csi/csi.sock
         - --kubelet-registration-path=/var/lib/kubelet/plugins/pd.csi.storage.gke.io/csi.sock
+        - --http-endpoint=:9931
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -671,6 +672,17 @@ spec:
               fieldPath: spec.nodeName
         image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.13.0
         name: csi-driver-registrar
+        ports:
+        - containerPort: 9931
+          name: healthz
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 1
+          periodSeconds: 2
+          timeoutSeconds: 2
         volumeMounts:
         - mountPath: /csi
           name: plugin-dir
