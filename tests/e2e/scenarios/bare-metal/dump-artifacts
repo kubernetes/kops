@@ -27,8 +27,12 @@ if [[ -z "${ARTIFACTS:-}" ]]; then
   exit 0
 fi
 
+# The calling scenario sets CLUSTER_NAME; run-test uses the default name.
+CLUSTER_NAME=${CLUSTER_NAME:-metal.k8s.local}
+
 mkdir -p ${ARTIFACTS}/networking/
 ip route 2>&1 > ${ARTIFACTS}/networking/ip-route || true
+ip -6 route 2>&1 > ${ARTIFACTS}/networking/ip6-route || true
 
 ip link 2>&1 > ${ARTIFACTS}/networking/ip-link || true
 
@@ -36,6 +40,8 @@ ip addr 2>&1 > ${ARTIFACTS}/networking/ip-addr || true
 
 sudo iptables --list-rules 2>&1 > ${ARTIFACTS}/networking/iptables-rules || true
 sudo iptables -t nat --list-rules 2>&1 > ${ARTIFACTS}/networking/iptables-nat-rules || true
+sudo ip6tables --list-rules 2>&1 > ${ARTIFACTS}/networking/ip6tables-rules || true
+sudo ip6tables -t nat --list-rules 2>&1 > ${ARTIFACTS}/networking/ip6tables-nat-rules || true
 
 mkdir -p ${ARTIFACTS}/logs/
 journalctl --no-pager --user -xeu qemu-dhcp.service 2>&1 > ${ARTIFACTS}/logs/qemu-dhcp.service || true
@@ -59,9 +65,12 @@ for vm in 0 1 2; do
   ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} journalctl --no-pager -u kops-configuration 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kops-configuration.service || true
 
   ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} ip route 2>&1 > ${ARTIFACTS}/vms/${vm_name}/ip-route || true
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} ip -6 route 2>&1 > ${ARTIFACTS}/vms/${vm_name}/ip6-route || true
   ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} ip addr 2>&1 > ${ARTIFACTS}/vms/${vm_name}/ip-addr || true
   ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} iptables --list-rules 2>&1 > ${ARTIFACTS}/vms/${vm_name}/iptables-rules || true
   ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} iptables -t nat --list-rules 2>&1 > ${ARTIFACTS}/vms/${vm_name}/iptables-nat-rules || true
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} ip6tables --list-rules 2>&1 > ${ARTIFACTS}/vms/${vm_name}/ip6tables-rules || true
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} ip6tables -t nat --list-rules 2>&1 > ${ARTIFACTS}/vms/${vm_name}/ip6tables-nat-rules || true
 done
 
 # Dump the pod logs for all the pods in system namespaces
@@ -81,4 +90,4 @@ ${KOPS} toolbox dump \
   --cloud-resources=false \
   --private-key ${REPO_ROOT}/.build/.ssh/id_ed25519 \
   --ssh-user root \
-  --name metal.k8s.local
+  --name ${CLUSTER_NAME}
