@@ -124,6 +124,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: KUBERNETES_SERVICE_HOST
+          value: api.internal.minimal.example.com
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
         image: registry.example.com/kindnet:v1.0.2-custom
         name: kindnet-cni
         resources:
