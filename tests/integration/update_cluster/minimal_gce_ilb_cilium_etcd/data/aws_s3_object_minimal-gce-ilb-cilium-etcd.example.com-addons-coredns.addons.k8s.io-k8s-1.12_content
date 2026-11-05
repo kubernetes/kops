@@ -129,7 +129,7 @@ spec:
       - args:
         - -conf
         - /etc/coredns/Corefile
-        image: registry.k8s.io/coredns/coredns:v1.14.2
+        image: registry.k8s.io/coredns/coredns:v1.15.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -249,10 +249,11 @@ metadata:
   name: kube-dns
   namespace: kube-system
 spec:
-  maxUnavailable: 50%
+  maxUnavailable: 33%
   selector:
     matchLabels:
       k8s-app: kube-dns
+  unhealthyPodEvictionPolicy: AlwaysAllow
 
 ---
 

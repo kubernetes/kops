@@ -169,7 +169,7 @@ spec:
             k8s-app: kube-dns
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.14.2{{ end }}
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.15.0{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -279,7 +279,8 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-dns
-  maxUnavailable: 50%
+  maxUnavailable: 33%
+  unhealthyPodEvictionPolicy: AlwaysAllow
 ---
 
 # CoreDNS Autoscaler
