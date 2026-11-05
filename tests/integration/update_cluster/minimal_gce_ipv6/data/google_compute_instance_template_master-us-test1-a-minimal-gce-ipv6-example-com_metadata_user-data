@@ -113,7 +113,7 @@ ClusterName: minimal-gce-ipv6.example.com
 ConfigBase: memfs://tests/minimal-gce-ipv6.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: r5WimaoxgB/JCA8UmOpvSLYaGiycxLnAIKBz3ex6Tb4=
+NodeupConfigHash: nL4WZ3ZwgS7OtrPp5VrvOoBQ65MsD5sESANpOmosTEs=
 
 __EOF_KUBE_ENV
 
