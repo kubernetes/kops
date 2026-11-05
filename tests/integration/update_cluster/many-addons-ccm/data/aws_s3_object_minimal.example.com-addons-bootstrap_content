@@ -219,7 +219,7 @@ spec:
       role.kubernetes.io/networking: "1"
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 698dce3de8ecbab17f42fb656c9c6cda6d7c5966c0d9a11e1c74d63fbe57c5cb
+    manifestHash: 173e5f906a96aa6ae7dccdfdd4a03e9c12265d25fe30dcf98fa38ce59d453c4a
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io

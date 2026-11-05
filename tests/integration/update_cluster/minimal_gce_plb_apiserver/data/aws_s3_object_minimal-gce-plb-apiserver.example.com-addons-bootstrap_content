@@ -47,7 +47,7 @@ spec:
       k8s-addon: gcp-pd-csi-driver.addons.k8s.io
   - id: k8s-1.23
     manifest: gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: f2a0c698190155825fd986cd624c0f2ff9635f3e61c4049698ed290ea36fbf90
+    manifestHash: 599c8db88b7c64418b4597b14277d1b24a6f91d08a18d664f57c39df7673def9
     name: gcp-cloud-controller.addons.k8s.io
     prune:
       kinds:

@@ -60,6 +60,6 @@ warmPoolImages:
 - kops.k8s.io/remapped-image/cilium/operator:v1.18.16
 - kops.k8s.io/remapped-image/kube-proxy:v1.32.0
 - kops.k8s.io/remapped-image/provider-aws/aws-ebs-csi-driver:v1.67.2
-- kops.k8s.io/remapped-image/provider-aws/cloud-controller-manager:v1.37.0
+- kops.k8s.io/remapped-image/provider-aws/cloud-controller-manager:v1.37.1
 - kops.k8s.io/remapped-image/sig-storage/csi-node-driver-registrar:v2.18.0
 - kops.k8s.io/remapped-image/sig-storage/livenessprobe:v2.20.0
