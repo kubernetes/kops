@@ -94,7 +94,7 @@ spec:
       k8s-addon: hcloud-config.addons.k8s.io
   - id: k8s-1.22
     manifest: hcloud-cloud-controller.addons.k8s.io/k8s-1.22.yaml
-    manifestHash: af0764b92f14465e82a0506b073c993ac56cb290909750f2cd5b89b836ac6342
+    manifestHash: 64a3a69af740d63719dc5235e9e086f7f58de447332ab8f5f7c27af55b9d248d
     name: hcloud-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: hcloud-cloud-controller.addons.k8s.io
