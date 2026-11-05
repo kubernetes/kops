@@ -61,6 +61,29 @@ allowVolumeExpansion: true
 
 ---
 
+# Hyperdisk Balanced with the GCE baseline performance (3000 IOPS, 140 MiB/s).
+# Unlike balanced-storage, no IOPS or throughput is provisioned, so there is no
+# minimum volume size implied by the provisioned IOPS limit of 500 IOPS per GiB.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: hyperdisk-balanced
+  {{ if eq "hyperdisk-balanced" (GetString .DefaultStorageClassName) }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  {{ end }}
+  labels:
+    kubernetes.io/cluster-service: "true"
+    k8s-addon: gcp-pd-csi-driver.addons.k8s.io
+provisioner: pd.csi.storage.gke.io
+reclaimPolicy: Delete
+parameters:
+  type: hyperdisk-balanced
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+---
+
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
