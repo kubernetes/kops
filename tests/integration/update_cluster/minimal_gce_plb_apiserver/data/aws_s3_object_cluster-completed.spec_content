@@ -16,7 +16,7 @@ spec:
   cloudConfig:
     gceServiceAccount: default
     gcpPDCSIDriver:
-      defaultStorageClassName: balanced-storage
+      defaultStorageClassName: hyperdisk-balanced
       enabled: true
       version: v1.28.1
     manageStorageClasses: true
