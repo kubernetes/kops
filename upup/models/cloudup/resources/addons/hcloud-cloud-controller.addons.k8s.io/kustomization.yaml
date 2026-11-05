@@ -8,7 +8,7 @@ kind: Kustomization
 helmCharts:
   - name: hcloud-cloud-controller-manager
     repo: https://charts.hetzner.cloud
-    version: "1.31.0"
+    version: "1.36.0"
     releaseName: hcloud-cloud-controller-manager
     namespace: kube-system
     valuesFile: helm-values.yaml

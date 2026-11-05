@@ -55,7 +55,7 @@ func (b *LinodeCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.
 	if eccm.Image == "" {
 		// Using the official Akamai (Linode) CCM image
 		// https://github.com/linode/linode-cloud-controller-manager
-		eccm.Image = "linode/linode-cloud-controller-manager:v0.9.5"
+		eccm.Image = "linode/linode-cloud-controller-manager:v0.9.8"
 	}
 
 	return nil
