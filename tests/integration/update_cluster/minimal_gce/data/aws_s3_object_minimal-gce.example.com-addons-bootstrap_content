@@ -41,7 +41,7 @@ spec:
       k8s-addon: storage-gce.addons.k8s.io
   - id: k8s-1.23
     manifest: gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: bacc5c742f681989b23eb9855d213c6041150636902dae9ffaf70afd08632e61
+    manifestHash: 5136d9bd094f08504f756e40a92e2f154c608d08dd018ada6b2e33525805f77c
     name: gcp-cloud-controller.addons.k8s.io
     prune:
       kinds:

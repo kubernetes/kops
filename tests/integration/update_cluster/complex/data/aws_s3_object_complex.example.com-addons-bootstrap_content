@@ -97,13 +97,13 @@ spec:
       role.kubernetes.io/authentication: "1"
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: c940d39dc174317daa586767021529cc44116a756afe2c7b1d35bb9ec49c3a20
+    manifestHash: 83a6825c596809dc030edfa5496274d84fb1727eba92da9952603246fafe48c1
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: ef2ff8652a6f49758bbeca4fa6302b6701f75c8c674b4ef1f096075c337fee4c
+    manifestHash: a76e4ff80186a9061d876ef659432a2d5d9bfa769c0ea98c9a0045c9a3bbb35d
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
