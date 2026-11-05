@@ -85,7 +85,7 @@ spec:
       k8s-addon: azure-cloud-config.addons.k8s.io
   - id: k8s-1.31
     manifest: azure-cloud-controller.addons.k8s.io/k8s-1.31.yaml
-    manifestHash: e47a353ae9c99352de41407fe89225893290211ab1ea941c3076ef6be363265f
+    manifestHash: 28ea4072d8963860e1199fd8b742d7b35e97904a6e5caa32b88070a8855ab99f
     name: azure-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: azure-cloud-controller.addons.k8s.io

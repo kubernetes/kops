@@ -68,8 +68,8 @@ images:
   download: registry.k8s.io/pause:3.10.1
 - canonical: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.67.2
   download: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.67.2
-- canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.0
-  download: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.0
+- canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.1
+  download: registry.k8s.io/provider-aws/cloud-controller-manager:v1.37.1
 - canonical: registry.k8s.io/sig-storage/csi-attacher:v4.13.0
   download: registry.k8s.io/sig-storage/csi-attacher:v4.13.0
 - canonical: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.18.0

@@ -25,7 +25,7 @@ spec:
     clusterName: minimal-gce-example-com
     controllers:
     - '*'
-    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v36.2.4
+    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v37.2.5
     leaderElection:
       leaderElect: true
   cloudProvider: gce
