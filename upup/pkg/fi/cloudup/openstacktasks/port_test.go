@@ -509,6 +509,61 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			desc:      "cloud port found port not nil drops additional security groups not on the port",
+			lifecycle: fi.LifecycleSync,
+			cloud: &portCloud{
+				listSecurityGroups: map[string][]sg.SecGroup{
+					"add-1": {
+						{ID: "add-1-id", Name: "add-1"},
+					},
+					"add-2": {
+						{ID: "add-2-id", Name: "add-2"},
+					},
+				},
+			},
+			cloudPort: &ports.Port{
+				ID:        "id",
+				Name:      "name",
+				NetworkID: "networkID",
+				FixedIPs: []ports.IP{
+					{SubnetID: "subnet-a"},
+				},
+				SecurityGroups: []string{
+					"sg-1",
+					"add-1-id",
+				},
+			},
+			foundPort: &Port{
+				AdditionalSecurityGroups: []string{
+					"add-1",
+					"add-2",
+				},
+			},
+			modifiedFoundPort: &Port{
+				ID: new("id"),
+				AdditionalSecurityGroups: []string{
+					"add-1",
+					"add-2",
+				},
+			},
+			expectedPortTask: &Port{
+				ID:      new("id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
+				SecurityGroups: []*SecurityGroup{
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+				},
+				AdditionalSecurityGroups: []string{
+					"add-1",
+				},
+				Subnets: []*Subnet{
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+				},
+				Lifecycle: fi.LifecycleSync,
+			},
+			expectedError: nil,
+		},
+		{
 			desc:      "cloud port found port not nil honors allowed address pairs",
 			lifecycle: fi.LifecycleSync,
 			cloud:     &portCloud{},
@@ -996,14 +1051,15 @@ func Test_Port_CheckChanges(t *testing.T) {
 
 func Test_Port_RenderOpenstack(t *testing.T) {
 	tests := []struct {
-		desc              string
-		target            *openstack.OpenstackAPITarget
-		actual            *Port
-		expected          *Port
-		changes           *Port
-		expectedCloudPort *ports.Port
-		expectedAfter     *Port
-		expectedError     error
+		desc                    string
+		target                  *openstack.OpenstackAPITarget
+		actual                  *Port
+		expected                *Port
+		changes                 *Port
+		expectedCloudPort       *ports.Port
+		expectedAfter           *Port
+		expectedError           error
+		expectedUpdatePortCalls []updatePortCall
 	}{
 		{
 			desc: "actual not nil",
@@ -1200,6 +1256,58 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 			expectedCloudPort: nil,
 			expectedError:     nil,
 		},
+		{
+			desc: "changes in additional security groups merges with managed security groups",
+			target: &openstack.OpenstackAPITarget{
+				Cloud: &portCloud{
+					updatePort: &ports.Port{ID: "cloud-id"},
+					listSecurityGroups: map[string][]sg.SecGroup{
+						"add-1": {
+							{ID: "add-1-id", Name: "add-1"},
+						},
+					},
+				},
+			},
+			actual: &Port{
+				ID:      new("cloud-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
+				SecurityGroups: []*SecurityGroup{
+					{ID: new("sg-1")},
+				},
+			},
+			expected: &Port{
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
+				SecurityGroups: []*SecurityGroup{
+					{ID: new("sg-1")},
+				},
+				AdditionalSecurityGroups: []string{"add-1"},
+			},
+			changes: &Port{
+				AdditionalSecurityGroups: []string{"add-1"},
+			},
+			expectedAfter: &Port{
+				ID:      new("cloud-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
+				SecurityGroups: []*SecurityGroup{
+					{ID: new("sg-1")},
+				},
+				AdditionalSecurityGroups: []string{"add-1"},
+			},
+			expectedUpdatePortCalls: []updatePortCall{
+				{
+					id: "cloud-id",
+					opts: ports.UpdateOpts{
+						SecurityGroups: &[]string{"sg-1", "add-1-id"},
+					},
+				},
+			},
+			expectedCloudPort: nil,
+			expectedError:     nil,
+		},
 	}
 
 	for _, testCase := range tests {
@@ -1211,6 +1319,13 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 
 			if !reflect.DeepEqual(testCase.expected, testCase.expectedAfter) {
 				t.Errorf("Expected Port task differs:\n%v\n\tinstead of\n%v", testCase.expected, testCase.expectedAfter)
+			}
+
+			if testCase.expectedUpdatePortCalls != nil {
+				cloud := testCase.target.Cloud.(*portCloud)
+				if !reflect.DeepEqual(cloud.updatePortCalls, testCase.expectedUpdatePortCalls) {
+					t.Errorf("UpdatePort calls differ:\n%+v\n\tinstead of\n%+v", cloud.updatePortCalls, testCase.expectedUpdatePortCalls)
+				}
 			}
 		})
 	}
@@ -1342,8 +1457,14 @@ type portCloud struct {
 	createPortError         error
 	updatePort              *ports.Port
 	updatePortError         error
+	updatePortCalls         []updatePortCall
 	listSecurityGroups      map[string][]sg.SecGroup
 	listSecurityGroupsError error
+}
+
+type updatePortCall struct {
+	id   string
+	opts ports.UpdateOptsBuilder
 }
 
 func (p *portCloud) ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error) {
@@ -1359,6 +1480,7 @@ func (p *portCloud) ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error) {
 }
 
 func (p *portCloud) UpdatePort(id string, opt ports.UpdateOptsBuilder) (*ports.Port, error) {
+	p.updatePortCalls = append(p.updatePortCalls, updatePortCall{id: id, opts: opt})
 	return p.updatePort, p.updatePortError
 }
 
