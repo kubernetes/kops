@@ -36,7 +36,7 @@ spec:
   cloudConfig:
     gceServiceAccount: default
     gcpPDCSIDriver:
-      defaultStorageClassName: balanced-storage
+      defaultStorageClassName: hyperdisk-balanced
   iam:
     legacy: false
   kubelet:

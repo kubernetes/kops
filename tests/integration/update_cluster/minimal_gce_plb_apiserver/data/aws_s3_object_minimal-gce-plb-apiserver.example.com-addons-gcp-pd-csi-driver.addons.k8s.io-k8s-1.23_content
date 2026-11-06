@@ -39,8 +39,6 @@ allowVolumeExpansion: true
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
   labels:
     addon.kops.k8s.io/name: gcp-pd-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -50,6 +48,26 @@ metadata:
 parameters:
   provisioned-iops-on-create: "5000"
   provisioned-throughput-on-create: 250Mi
+  type: hyperdisk-balanced
+provisioner: pd.csi.storage.gke.io
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+
+---
+
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  labels:
+    addon.kops.k8s.io/name: gcp-pd-csi-driver.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-pd-csi-driver.addons.k8s.io
+    kubernetes.io/cluster-service: "true"
+  name: hyperdisk-balanced
+parameters:
   type: hyperdisk-balanced
 provisioner: pd.csi.storage.gke.io
 reclaimPolicy: Delete
