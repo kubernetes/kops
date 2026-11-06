@@ -19,6 +19,7 @@ package linodetasks
 import (
 	"net"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/linode/linodego/v2"
@@ -78,8 +79,8 @@ func TestFirewallFindByLabel(t *testing.T) {
 		t.Fatalf("unexpected outbound policy: got %q, want %q", got, want)
 	}
 	if got, want := actual.Rules, []*FirewallRule{
-		{Direction: "in", Protocol: "tcp", Action: new("ACCEPT"), Port: new("22"), SourceIPs: []net.IPNet{mustParseCIDR(t, "192.0.2.0/24")}},
-		{Direction: "out", Protocol: "udp", Action: new("ACCEPT"), SourceIPs: []net.IPNet{mustParseCIDR(t, "2001:db8::/64")}},
+		{Direction: "in", Label: "rule-1", Protocol: "tcp", Action: new("ACCEPT"), Port: new("22"), SourceIPs: []net.IPNet{mustParseCIDR(t, "192.0.2.0/24")}},
+		{Direction: "out", Label: "rule-2", Protocol: "udp", Action: new("ACCEPT"), SourceIPs: []net.IPNet{mustParseCIDR(t, "2001:db8::/64")}},
 	}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("unexpected rules: got %#v, want %#v", got, want)
 	}
@@ -103,8 +104,8 @@ func TestFirewallRenderLinodeCreate(t *testing.T) {
 		Name: new("example-k8s-local-nodes"),
 		Tags: []string{"kops.k8s.io/cluster:example.k8s.local"},
 		Rules: []*FirewallRule{
-			{Direction: "in", Protocol: "tcp", Port: new("22"), SourceIPs: []net.IPNet{mustParseCIDR(t, "192.0.2.0/24")}},
-			{Direction: "out", Protocol: "udp", Port: new("53"), SourceIPs: []net.IPNet{mustParseCIDR(t, "2001:db8::/64")}},
+			{Direction: "in", Label: "ssh", Protocol: "tcp", Port: new("22"), SourceIPs: []net.IPNet{mustParseCIDR(t, "192.0.2.0/24")}},
+			{Direction: "out", Label: "dns", Protocol: "udp", Port: new("53"), SourceIPs: []net.IPNet{mustParseCIDR(t, "2001:db8::/64")}},
 		},
 	}
 
@@ -122,6 +123,12 @@ func TestFirewallRenderLinodeCreate(t *testing.T) {
 	}
 	if got, want := client.LastCreateFirewallOpts.Rules.OutboundPolicy, "ACCEPT"; got != want {
 		t.Fatalf("unexpected outbound policy: got %q, want %q", got, want)
+	}
+	if got, want := client.LastCreateFirewallOpts.Rules.Inbound[0].Label, "ssh"; got != want {
+		t.Fatalf("unexpected inbound rule label: got %q, want %q", got, want)
+	}
+	if got, want := client.LastCreateFirewallOpts.Rules.Outbound[0].Label, "dns"; got != want {
+		t.Fatalf("unexpected outbound rule label: got %q, want %q", got, want)
 	}
 	if got, want := client.LastCreateFirewallOpts.Rules.Inbound[0].Addresses.IPv4, []string{"192.0.2.0/24"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("unexpected inbound IPv4 addresses: got %v, want %v", got, want)
@@ -158,6 +165,18 @@ func TestFirewallRenderLinodeUpdatesRules(t *testing.T) {
 	}
 }
 
+func TestFirewallCheckChangesRejectsInvalidRules(t *testing.T) {
+	expected := &Firewall{
+		Name:  new("example-k8s-local-nodes"),
+		Rules: []*FirewallRule{{Direction: "sideways", Protocol: "tcp"}},
+	}
+
+	err := (&Firewall{}).CheckChanges(nil, expected, &Firewall{})
+	if err == nil || !strings.Contains(err.Error(), "unsupported direction") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestFirewallRenderLinodeRemovesAllRules(t *testing.T) {
 	client := &linode.MockLinodeClient{}
 	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
@@ -179,6 +198,92 @@ func TestFirewallRenderLinodeRemovesAllRules(t *testing.T) {
 	}
 }
 
+func TestFirewallFindApplyTo(t *testing.T) {
+	target := &FirewallTarget{
+		Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-role:Node"},
+	}
+
+	for _, testCase := range []struct {
+		name               string
+		interfaceFirewalls map[int][]linodego.Firewall
+		wantApplied        bool
+		wantError          string
+	}{
+		{name: "missing firewall", interfaceFirewalls: map[int][]linodego.Firewall{}},
+		{
+			name: "expected firewall",
+			interfaceFirewalls: map[int][]linodego.Firewall{
+				201: {{ID: 101, Label: "example-k8s-local-nodes"}},
+			},
+			wantApplied: true,
+		},
+		{
+			name: "unexpected firewall",
+			interfaceFirewalls: map[int][]linodego.Firewall{
+				201: {{ID: 102, Label: "user-managed"}},
+			},
+			wantError: "has firewall \"user-managed\", expected firewall ID 101",
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			client := &linode.MockLinodeClient{
+				ListFirewallsResponse: []linodego.Firewall{{ID: 101, Label: "example-k8s-local-nodes", Rules: linodego.FirewallRules{InboundPolicy: "DROP", OutboundPolicy: "ACCEPT"}}},
+				ListInstancesResponse: []linodego.Instance{{ID: 1, Label: "nodes-us-east-1"}},
+				ListInterfacesResponses: map[int][]linodego.LinodeInterface{
+					1: {{ID: 201, Public: &linodego.PublicInterface{}}},
+				},
+				ListInterfaceFirewallsResponses: testCase.interfaceFirewalls,
+			}
+			ctx := newTestCloudupContext(t, &linode.MockLinodeCloud{Client_: client})
+			task := &Firewall{Name: new("example-k8s-local-nodes"), ApplyTo: []*FirewallTarget{target}}
+
+			actual, err := task.Find(ctx)
+			if testCase.wantError != "" {
+				if err == nil || !strings.Contains(err.Error(), testCase.wantError) {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Find returned error: %v", err)
+			}
+			if got := len(actual.ApplyTo) == 1; got != testCase.wantApplied {
+				t.Fatalf("unexpected ApplyTo state: got %v, want %v", actual.ApplyTo, testCase.wantApplied)
+			}
+		})
+	}
+}
+
+func TestFirewallRunAppliesMissingTargets(t *testing.T) {
+	target := &FirewallTarget{
+		Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-role:Node"},
+	}
+	client := &linode.MockLinodeClient{
+		ListFirewallsResponse: []linodego.Firewall{{ID: 101, Label: "example-k8s-local-nodes", Rules: linodego.FirewallRules{InboundPolicy: "DROP", OutboundPolicy: "ACCEPT"}}},
+		ListInstancesResponse: []linodego.Instance{{ID: 1, Label: "nodes-us-east-1"}},
+		ListInterfacesResponses: map[int][]linodego.LinodeInterface{
+			1: {{ID: 201, Public: &linodego.PublicInterface{}}, {ID: 202, VPC: &linodego.VPCInterface{}}},
+		},
+		ListInterfaceFirewallsResponses: map[int][]linodego.Firewall{},
+	}
+	ctx := newTestCloudupContext(t, &linode.MockLinodeCloud{Client_: client})
+	task := &Firewall{
+		Name:      new("example-k8s-local-nodes"),
+		Lifecycle: fi.LifecycleSync,
+		ApplyTo:   []*FirewallTarget{target},
+	}
+
+	if err := task.Run(ctx); err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if got, want := client.CreatedFirewallDeviceIDs, []int{101}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected attached firewall IDs: got %v, want %v", got, want)
+	}
+	if got, want := client.CreatedFirewallDeviceOpts, []linodego.FirewallDeviceCreateOptions{{ID: 201, Type: linodego.FirewallDeviceLinodeInterface}}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected firewall attachment options: got %v, want %v", got, want)
+	}
+}
+
 func TestFirewallFindDetectsPolicyAndActionChanges(t *testing.T) {
 	client := &linode.MockLinodeClient{
 		ListFirewallsResponse: []linodego.Firewall{{
@@ -189,6 +294,7 @@ func TestFirewallFindDetectsPolicyAndActionChanges(t *testing.T) {
 				OutboundPolicy: "DROP",
 				Inbound: []linodego.FirewallRuleInbound{{
 					Action:   "DROP",
+					Label:    "rule-1",
 					Protocol: linodego.TCP,
 				}},
 			},
@@ -197,7 +303,7 @@ func TestFirewallFindDetectsPolicyAndActionChanges(t *testing.T) {
 	ctx := newTestCloudupContext(t, &linode.MockLinodeCloud{Client_: client})
 	task := &Firewall{
 		Name:  new("example-k8s-local-nodes"),
-		Rules: []*FirewallRule{{Direction: "in", Protocol: "tcp"}},
+		Rules: []*FirewallRule{{Direction: "in", Label: "rule-1", Protocol: "tcp"}},
 	}
 	task.setDefaults()
 
@@ -230,6 +336,7 @@ func TestFirewallFindNormalizesEmptyPort(t *testing.T) {
 				OutboundPolicy: "ACCEPT",
 				Inbound: []linodego.FirewallRuleInbound{{
 					Action:   "ACCEPT",
+					Label:    "rule-1",
 					Protocol: linodego.ICMP,
 				}},
 			},
@@ -238,7 +345,7 @@ func TestFirewallFindNormalizesEmptyPort(t *testing.T) {
 	ctx := newTestCloudupContext(t, &linode.MockLinodeCloud{Client_: client})
 	task := &Firewall{
 		Name:  new("example-k8s-local-nodes"),
-		Rules: []*FirewallRule{{Direction: "in", Protocol: "icmp"}},
+		Rules: []*FirewallRule{{Direction: "in", Label: "rule-1", Protocol: "icmp"}},
 	}
 	task.setDefaults()
 
@@ -251,22 +358,6 @@ func TestFirewallFindNormalizesEmptyPort(t *testing.T) {
 	}
 	if fi.BuildChanges(actual, task, &Firewall{}) {
 		t.Fatalf("expected equivalent omitted ports to produce no changes")
-	}
-}
-
-func TestFirewallRenderLinodeRejectsInvalidRuleDirection(t *testing.T) {
-	client := &linode.MockLinodeClient{}
-	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
-	expected := &Firewall{
-		Name:  new("example-k8s-local-nodes"),
-		Rules: []*FirewallRule{{Direction: "sideways", Protocol: "tcp"}},
-	}
-
-	if err := (&Firewall{}).RenderLinode(target, nil, expected, nil); err == nil {
-		t.Fatalf("expected invalid direction to be rejected")
-	}
-	if got, want := client.CreateFirewallCalls, 0; got != want {
-		t.Fatalf("unexpected create calls: got %d, want %d", got, want)
 	}
 }
 

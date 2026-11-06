@@ -47,6 +47,26 @@ func TestListResources(t *testing.T) {
 			{ID: 801, Label: "kubernetes-example-k8s-local-aa-bb"},
 			{ID: 802, Label: "custom-key"},
 		},
+		ListFirewallsResponse: []linodego.Firewall{
+			{
+				ID:    1201,
+				Label: "example-k8s-local-control-plane",
+				Entities: []linodego.FirewallDeviceEntity{
+					{
+						ID:   2001,
+						Type: linodego.FirewallDeviceLinodeInterface,
+						ParentEntity: &linodego.FirewallDeviceEntity{
+							ID:   1001,
+							Type: linodego.FirewallDeviceLinode,
+						},
+					},
+					{
+						ID:   2002,
+						Type: linodego.FirewallDeviceLinodeInterface,
+					},
+				},
+			},
+		},
 	}
 	cloud := &linode.MockLinodeCloud{Client_: client, Region_: "us-east"}
 
@@ -55,7 +75,7 @@ func TestListResources(t *testing.T) {
 		t.Fatalf("ListResources returned error: %v", err)
 	}
 
-	wantKeys := []string{"instance:1001", "ssh-key:801", "subnet:901", "vpc:701"}
+	wantKeys := []string{"firewall:1201", "instance:1001", "ssh-key:801", "subnet:901", "vpc:701"}
 	if gotKeys := sortedResourceKeys(resourceMap); !reflect.DeepEqual(gotKeys, wantKeys) {
 		t.Fatalf("unexpected resources\nwant: %v\n got: %v", wantKeys, gotKeys)
 	}
@@ -100,6 +120,12 @@ func TestListResources(t *testing.T) {
 		t.Fatalf("unexpected instance Blocks: got %v, want %v", got, want)
 	}
 
+	if r := resourceMap["firewall:1201"]; r == nil {
+		t.Fatalf("missing firewall:1201")
+	} else if got, want := r.Blocked, []string{"instance:1001"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected firewall Blocked: got %v, want %v", got, want)
+	}
+
 	expectedListOptions, err := linode.ListOptionsForLabel("example-k8s-local")
 	if err != nil {
 		t.Fatalf("ListOptionsForLabel returned error: %v", err)
@@ -116,6 +142,13 @@ func TestListResources(t *testing.T) {
 	}
 	if got, want := client.LastListInstancesOpts.Filter, `{"+and":[{"tags":{"+contains":"kops.k8s.io/cluster:example.k8s.local"}}]}`; got != want {
 		t.Fatalf("unexpected instance list filter: got %q, want %q", got, want)
+	}
+
+	if client.LastListFirewallsOpts == nil {
+		t.Fatalf("expected firewall list options to be recorded")
+	}
+	if got, want := client.LastListFirewallsOpts.Filter, `{"+and":[{"tags":{"+contains":"kops.k8s.io/cluster:example.k8s.local"}}]}`; got != want {
+		t.Fatalf("unexpected firewall list filter: got %q, want %q", got, want)
 	}
 }
 
@@ -265,6 +298,30 @@ func TestDeleteInstance(t *testing.T) {
 			}
 			if !reflect.DeepEqual(client.DeletedInstanceIDs, testCase.wantDeleted) {
 				t.Fatalf("unexpected deleted instance IDs: got %v, want %v", client.DeletedInstanceIDs, testCase.wantDeleted)
+			}
+		})
+	}
+}
+
+func TestDeleteFirewall(t *testing.T) {
+	for _, testCase := range []struct {
+		name        string
+		deleteError error
+		wantDeleted []int
+	}{
+		{name: "success", wantDeleted: []int{1201}},
+		{name: "not found", deleteError: &linodego.Error{Code: 404, Message: "not found"}, wantDeleted: []int{1201}},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			client := &linode.MockLinodeClient{DeleteFirewallError: testCase.deleteError}
+			cloud := &linode.MockLinodeCloud{Client_: client}
+
+			tracker := &resources.Resource{Name: "example-k8s-local-control-plane", ID: "1201", Type: resourceTypeFirewall}
+			if err := deleteFirewall(cloud, tracker); err != nil {
+				t.Fatalf("deleteFirewall returned error: %v", err)
+			}
+			if !reflect.DeepEqual(client.DeletedFirewallIDs, testCase.wantDeleted) {
+				t.Fatalf("unexpected deleted firewall IDs: got %v, want %v", client.DeletedFirewallIDs, testCase.wantDeleted)
 			}
 		})
 	}
