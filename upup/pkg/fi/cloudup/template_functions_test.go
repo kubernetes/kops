@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"slices"
 	"testing"
 	"text/template"
 
@@ -582,6 +583,89 @@ func TestGetClusterAutoscalerNodeGroupsGCE(t *testing.T) {
 			}
 			if !reflect.DeepEqual(actual, g.expected) {
 				t.Errorf("expected %+v, got %+v", g.expected, actual)
+			}
+		})
+	}
+}
+
+func TestTemplateFunctionsExternalDNS(t *testing.T) {
+	sharedArgs := []string{
+		"--events",
+		"--source=ingress",
+		"--source=pod",
+		"--source=service",
+		"--compatibility=kops-dns-controller",
+		"--policy=sync",
+		"--ignore-non-host-network-pods",
+	}
+	ownerArgs := []string{
+		"--registry=txt",
+		"--txt-owner-id=kops-cluster.example.com",
+		"--zone-id-filter=Z1AFAKE1ZON3YO",
+	}
+
+	tests := []struct {
+		desc          string
+		cloudProvider kops.CloudProviderSpec
+		expectedImage string
+		expectedArgv  []string
+	}{
+		{
+			desc:          "AWS",
+			cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			expectedImage: "registry.k8s.io/external-dns/external-dns:v0.24.0",
+			expectedArgv: slices.Concat(
+				[]string{"--provider=aws"},
+				sharedArgs,
+				[]string{"--enable-legacy-annotation-prefix", "--expose-internal-ipv6"},
+				ownerArgs,
+			),
+		},
+		{
+			desc:          "GCE",
+			cloudProvider: kops.CloudProviderSpec{GCE: &kops.GCESpec{Project: "testproject"}},
+			expectedImage: "registry.k8s.io/external-dns/external-dns:v0.24.0",
+			expectedArgv: slices.Concat(
+				[]string{"--provider=google", "--google-project=testproject"},
+				sharedArgs,
+				[]string{"--enable-legacy-annotation-prefix", "--expose-internal-ipv6"},
+				ownerArgs,
+			),
+		},
+		{
+			desc:          "OpenStack",
+			cloudProvider: kops.CloudProviderSpec{Openstack: &kops.OpenstackSpec{}},
+			expectedImage: "registry.k8s.io/external-dns/external-dns:v0.16.1",
+			expectedArgv: slices.Concat(
+				[]string{"--provider=designate"},
+				sharedArgs,
+				ownerArgs,
+			),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			tf := &TemplateFunctions{}
+			tf.Cluster = &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{Name: "cluster.example.com"},
+				Spec: kops.ClusterSpec{
+					CloudProvider: test.cloudProvider,
+					DNSZone:       "Z1AFAKE1ZON3YO",
+					ExternalDNS:   &kops.ExternalDNSConfig{Provider: kops.ExternalDNSProviderExternalDNS},
+				},
+			}
+
+			if image := tf.ExternalDNSImage(); image != test.expectedImage {
+				t.Errorf("ExternalDNSImage() = %q, expected %q", image, test.expectedImage)
+			}
+
+			argv, err := tf.ExternalDNSArgv()
+			if err != nil {
+				t.Fatalf("ExternalDNSArgv() error = %v", err)
+			}
+			if !reflect.DeepEqual(argv, test.expectedArgv) {
+				t.Errorf("ExternalDNSArgv() = %q, expected %q", argv, test.expectedArgv)
 			}
 		})
 	}
