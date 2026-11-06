@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-cainjector
   namespace: kube-system
 
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager
   namespace: kube-system
 
@@ -43,7 +43,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook
   namespace: kube-system
 
@@ -59,7 +59,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: challenges.acme.cert-manager.io
 spec:
   group: acme.cert-manager.io
@@ -343,6 +343,22 @@ spec:
                               The TenantID of the Azure Service Principal used to authenticate with Azure DNS.
                               If set, ClientID and ClientSecret must also be set.
                             type: string
+                          zoneType:
+                            description: |-
+                              ZoneType determines which type of Azure DNS zone to use.
+
+                              Valid values are:
+                                - AzurePublicZone  (default): Use a public Azure DNS zone.
+                                - AzurePrivateZone: Use an Azure Private DNS zone.
+
+                              If not specified, AzurePublicZone is used.
+
+                              Support for Azure Private DNS zones is currently
+                              experimental and may change in future releases.
+                            enum:
+                            - AzurePublicZone
+                            - AzurePrivateZone
+                            type: string
                         required:
                         - resourceGroupName
                         - subscriptionID
@@ -523,8 +539,8 @@ spec:
                             description: |-
                               The AccessKeyID is used for authentication.
                               Cannot be set when SecretAccessKeyID is set.
-                              If neither the Access Key nor Key ID are set, we fall-back to using env
-                              vars, shared credentials file or AWS Instance metadata,
+                              If neither the Access Key nor Key ID are set, we fall back to using env
+                              vars, shared credentials file, or AWS Instance metadata,
                               see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                             type: string
                           accessKeyIDSecretRef:
@@ -532,8 +548,8 @@ spec:
                               The SecretAccessKey is used for authentication. If set, pull the AWS
                               access key ID from a key within a Kubernetes Secret.
                               Cannot be set when AccessKeyID is set.
-                              If neither the Access Key nor Key ID are set, we fall-back to using env
-                              vars, shared credentials file or AWS Instance metadata,
+                              If neither the Access Key nor Key ID are set, we fall back to using env
+                              vars, shared credentials file, or AWS Instance metadata,
                               see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                             properties:
                               key:
@@ -625,8 +641,8 @@ spec:
                           secretAccessKeySecretRef:
                             description: |-
                               The SecretAccessKey is used for authentication.
-                              If neither the Access Key nor Key ID are set, we fall-back to using env
-                              vars, shared credentials file or AWS Instance metadata,
+                              If neither the Access Key nor Key ID are set, we fall back to using env
+                              vars, shared credentials file, or AWS Instance metadata,
                               see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                             properties:
                               key:
@@ -2073,9 +2089,10 @@ spec:
                                         operator:
                                           description: |-
                                             Operator represents a key's relationship to the value.
-                                            Valid operators are Exists and Equal. Defaults to Equal.
+                                            Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                                             Exists is equivalent to wildcard for value, so that a pod can
                                             tolerate all taints of a particular category.
+                                            Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                                           type: string
                                         tolerationSeconds:
                                           description: |-
@@ -3376,9 +3393,10 @@ spec:
                                         operator:
                                           description: |-
                                             Operator represents a key's relationship to the value.
-                                            Valid operators are Exists and Equal. Defaults to Equal.
+                                            Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                                             Exists is equivalent to wildcard for value, so that a pod can
                                             tolerate all taints of a particular category.
+                                            Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                                           type: string
                                         tolerationSeconds:
                                           description: |-
@@ -3449,6 +3467,24 @@ spec:
                           this challenge solver will apply to.
                         type: object
                     type: object
+                  waitInsteadOfSelfCheck:
+                    description: |-
+                      WaitInsteadOfSelfCheck, if set, skips cert-manager's self-check and
+                      instead waits this long after presentation before asking the ACME server
+                      to validate the challenge.
+
+                      This is an advanced escape hatch for environments where cert-manager's
+                      self-check cannot succeed from its own network or DNS viewpoint even
+                      though the ACME server can still validate successfully, for example due
+                      to split-horizon DNS or NAT hairpinning.
+
+                      A value of 0 skips the self-check and asks the ACME server to validate
+                      immediately after presentation, relying on the ACME server's own
+                      validation retries (RFC 8555 section 8.2) to succeed once the challenge
+                      has propagated. A negative duration is rejected.
+                      Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration,
+                      for example `30s` or `2m`.
+                    type: string
                 type: object
               token:
                 description: |-
@@ -3487,13 +3523,21 @@ spec:
             properties:
               presented:
                 description: |-
-                  presented will be set to true if the challenge values for this challenge
-                  are currently 'presented'.
-                  This *does not* imply the self check is passing. Only that the values
-                  have been 'submitted' for the appropriate challenge mechanism (i.e. the
-                  DNS01 TXT record has been presented, or the HTTP01 configuration has been
-                  configured).
+                  Presented is true once cert-manager has configured the solver resources
+                  needed to expose this challenge's validation material.
+                  For example, the DNS01 TXT record has been created, or the HTTP01 solver
+                  has been configured to serve the challenge token.
+                  This does not imply the self check is passing, that the ACME server has
+                  validated the challenge, or that cert-manager has already accepted the
+                  challenge with the ACME server.
                 type: boolean
+              presentedAt:
+                description: |-
+                  PresentedAt records when cert-manager first configured the solver
+                  resources for this challenge. This is used by the optional delay-based
+                  readiness logic.
+                format: date-time
+                type: string
               processing:
                 description: |-
                   Used to denote whether this challenge should be processed or not.
@@ -3526,6 +3570,10 @@ spec:
         - metadata
         - spec
         type: object
+    selectableFields:
+    - jsonPath: .spec.issuerRef.group
+    - jsonPath: .spec.issuerRef.kind
+    - jsonPath: .spec.issuerRef.name
     served: true
     storage: true
     subresources:
@@ -3543,7 +3591,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: orders.acme.cert-manager.io
 spec:
   group: acme.cert-manager.io
@@ -3618,7 +3666,7 @@ spec:
               duration:
                 description: |-
                   Duration is the duration for the not after date for the requested certificate.
-                  this is set on order creation as pe the ACME spec.
+                  This is set on order creation as per the ACME spec.
                 type: string
               ipAddresses:
                 description: |-
@@ -3657,6 +3705,15 @@ spec:
                 description: |-
                   Profile allows requesting a certificate profile from the ACME server.
                   Supported profiles are listed by the server's ACME directory URL.
+                type: string
+              replaces:
+                description: |-
+                  Replaces is the ARI CertID (RFC 9773 §4.1) of the certificate that this
+                  Order is intended to replace. When set, cert-manager will include the
+                  "replaces" field on the newOrder request to the ACME server if and only
+                  if the server advertises ARI support in its directory. The CertID has
+                  the form "base64url(AKI).base64url(serial)" and is derived locally from
+                  the currently issued leaf certificate.
                 type: string
               request:
                 description: |-
@@ -3808,6 +3865,10 @@ spec:
         - metadata
         - spec
         type: object
+    selectableFields:
+    - jsonPath: .spec.issuerRef.group
+    - jsonPath: .spec.issuerRef.kind
+    - jsonPath: .spec.issuerRef.name
     served: true
     storage: true
     subresources:
@@ -3825,7 +3886,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: certificaterequests.cert-manager.io
 spec:
   group: cert-manager.io
@@ -4135,6 +4196,10 @@ spec:
                 type: string
             type: object
         type: object
+    selectableFields:
+    - jsonPath: .spec.issuerRef.group
+    - jsonPath: .spec.issuerRef.kind
+    - jsonPath: .spec.issuerRef.name
     served: true
     storage: true
     subresources:
@@ -4152,7 +4217,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: certificates.cert-manager.io
 spec:
   group: cert-manager.io
@@ -4435,10 +4500,16 @@ spec:
                           `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
                           (e.g., because of company policy). Please note that the security of the algorithm is not that important
                           in reality, because the unencrypted certificate and private key are also stored in the Secret.
+                          `Modern2026`: Encodes PKCS#12 files using algorithms that are considered modern as of 2026.
+                          Private keys and certificates are encrypted using PBES2 with PBKDF2-HMAC-SHA-256 and AES-256-CBC.
+                          The MAC algorithm is PBMAC1 with PBKDF2-HMAC-SHA-256 and HMAC-SHA256.
+                          Files produced with this profile can be read by OpenSSL 3.4.0 and higher, Java 26 and higher,
+                          or with Java using compatible versions of Bouncy Castle. Meets FIPS 140-3 requirements.
                         enum:
                         - LegacyRC2
                         - LegacyDES
                         - Modern2023
+                        - Modern2026
                         type: string
                     required:
                     - create
@@ -4607,9 +4678,6 @@ spec:
                       will be generated whenever a re-issuance occurs.
                       Default is `Always`.
                       The default was changed from `Never` to `Always` in cert-manager >=v1.18.0.
-                      The new default can be disabled by setting the
-                      `--feature-gates=DefaultPrivateKeyRotationPolicyAlways=false` option on
-                      the controller component.
                     enum:
                     - Never
                     - Always
@@ -4661,6 +4729,55 @@ spec:
                   Cannot be set if the `renewBefore` field is set.
                 format: int32
                 type: integer
+              renewal:
+                description: |-
+                  `renewal` allows configuration of how your certificate is renewed. If the policy mentioned is
+                  `RenewBefore` then the controller respects `renewBefore` and `renewBeforePercentage`.
+                properties:
+                  policy:
+                    description: '`policy` must be one of `Disabled`, `RenewBefore`.'
+                    enum:
+                    - RenewBefore
+                    - Disabled
+                    type: string
+                  windows:
+                    description: '`windows` mentions the behavior of when the renewal
+                      must happen.'
+                    items:
+                      description: CertificateRenewalWindows is the definition for
+                        renewal windows
+                      properties:
+                        cron:
+                          description: |-
+                            `cron` is a cron compliant string to allow when the renewal should be allowed. Format is as shown below:
+                            * * * * *
+                            | | | | |
+                            | | | | day of the week (0–6) (Sunday to Saturday;
+                            | | | month (1–12)             7 is also Sunday on some systems)
+                            | | day of the month (1–31)
+                            | hour (0–23)
+                            minute (0–59)
+                          minLength: 1
+                          type: string
+                        timezone:
+                          description: |-
+                            `timezone` is IANA compliant timezone. For example America/Denver.
+                            If this field is not set, timezone is treated as UTC.
+                          minLength: 1
+                          type: string
+                        windowDuration:
+                          description: |-
+                            `windowDuration` is how long the cron definition is active for.
+                            Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+                          pattern: ^([0-9]+(\.[0-9]+)?(s|m|h))+$
+                          type: string
+                      required:
+                      - cron
+                      - windowDuration
+                      type: object
+                    type: array
+                    x-kubernetes-list-type: atomic
+                type: object
               revisionHistoryLimit:
                 description: |-
                   The maximum number of CertificateRequest revisions that are maintained in
@@ -4853,6 +4970,59 @@ spec:
               Read-only.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
             properties:
+              acme:
+                description: ACME stores information that is fetched from the ACME
+                  CA server.
+                properties:
+                  ari:
+                    description: |-
+                      ARI stores the ACME Renewal Information that is fetched from the ACME server
+                      in accordance with RFC 9773. This is only populated if the ARI feature gate is enabled.
+                    properties:
+                      certID:
+                        description: |-
+                          CertID is the ARI CertID (RFC 9773) of the certificate this renewal information was
+                          fetched for. This is used to determine if we need to re-fetch the renewal information
+                          as changed cert id means that ARI fetched before is stale.
+                        type: string
+                      explanationURL:
+                        description: |-
+                          ExplanationURL is a human-readable URL that may explain why the suggested window
+                          has its current value.
+                        type: string
+                      lastChecked:
+                        description: LastChecked is the time at which the ACME server
+                          was last checked for renewal information.
+                        format: date-time
+                        type: string
+                      lastError:
+                        description: LastError is the last error encountered when
+                          checking the ACME server for renewal information, if any.
+                        type: string
+                      nextCheck:
+                        description: NextCheck is the time at which the ACME server
+                          will next be checked for renewal information.
+                        format: date-time
+                        type: string
+                      suggestedWindow:
+                        description: SuggestedWindow is the suggested renewal window
+                          as returned by the ACME server in accordance with RFC 9773.
+                        properties:
+                          end:
+                            description: End is the end of the suggested renewal window.
+                            format: date-time
+                            type: string
+                          start:
+                            description: Start is the start of the suggested renewal
+                              window.
+                            format: date-time
+                            type: string
+                        required:
+                        - end
+                        - start
+                        type: object
+                    type: object
+                type: object
               conditions:
                 description: |-
                   List of status conditions to indicate the status of certificates.
@@ -4970,6 +5140,10 @@ spec:
                 type: integer
             type: object
         type: object
+    selectableFields:
+    - jsonPath: .spec.issuerRef.group
+    - jsonPath: .spec.issuerRef.kind
+    - jsonPath: .spec.issuerRef.name
     served: true
     storage: true
     subresources:
@@ -4987,7 +5161,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: clusterissuers.cert-manager.io
 spec:
   group: cert-manager.io
@@ -5387,6 +5561,22 @@ spec:
                                     The TenantID of the Azure Service Principal used to authenticate with Azure DNS.
                                     If set, ClientID and ClientSecret must also be set.
                                   type: string
+                                zoneType:
+                                  description: |-
+                                    ZoneType determines which type of Azure DNS zone to use.
+
+                                    Valid values are:
+                                      - AzurePublicZone  (default): Use a public Azure DNS zone.
+                                      - AzurePrivateZone: Use an Azure Private DNS zone.
+
+                                    If not specified, AzurePublicZone is used.
+
+                                    Support for Azure Private DNS zones is currently
+                                    experimental and may change in future releases.
+                                  enum:
+                                  - AzurePublicZone
+                                  - AzurePrivateZone
+                                  type: string
                               required:
                               - resourceGroupName
                               - subscriptionID
@@ -5568,8 +5758,8 @@ spec:
                                   description: |-
                                     The AccessKeyID is used for authentication.
                                     Cannot be set when SecretAccessKeyID is set.
-                                    If neither the Access Key nor Key ID are set, we fall-back to using env
-                                    vars, shared credentials file or AWS Instance metadata,
+                                    If neither the Access Key nor Key ID are set, we fall back to using env
+                                    vars, shared credentials file, or AWS Instance metadata,
                                     see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                                   type: string
                                 accessKeyIDSecretRef:
@@ -5577,8 +5767,8 @@ spec:
                                     The SecretAccessKey is used for authentication. If set, pull the AWS
                                     access key ID from a key within a Kubernetes Secret.
                                     Cannot be set when AccessKeyID is set.
-                                    If neither the Access Key nor Key ID are set, we fall-back to using env
-                                    vars, shared credentials file or AWS Instance metadata,
+                                    If neither the Access Key nor Key ID are set, we fall back to using env
+                                    vars, shared credentials file, or AWS Instance metadata,
                                     see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                                   properties:
                                     key:
@@ -5670,8 +5860,8 @@ spec:
                                 secretAccessKeySecretRef:
                                   description: |-
                                     The SecretAccessKey is used for authentication.
-                                    If neither the Access Key nor Key ID are set, we fall-back to using env
-                                    vars, shared credentials file or AWS Instance metadata,
+                                    If neither the Access Key nor Key ID are set, we fall back to using env
+                                    vars, shared credentials file, or AWS Instance metadata,
                                     see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                                   properties:
                                     key:
@@ -7141,9 +7331,10 @@ spec:
                                               operator:
                                                 description: |-
                                                   Operator represents a key's relationship to the value.
-                                                  Valid operators are Exists and Equal. Defaults to Equal.
+                                                  Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                                                   Exists is equivalent to wildcard for value, so that a pod can
                                                   tolerate all taints of a particular category.
+                                                  Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                                                 type: string
                                               tolerationSeconds:
                                                 description: |-
@@ -8468,9 +8659,10 @@ spec:
                                               operator:
                                                 description: |-
                                                   Operator represents a key's relationship to the value.
-                                                  Valid operators are Exists and Equal. Defaults to Equal.
+                                                  Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                                                   Exists is equivalent to wildcard for value, so that a pod can
                                                   tolerate all taints of a particular category.
+                                                  Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                                                 type: string
                                               tolerationSeconds:
                                                 description: |-
@@ -8541,6 +8733,24 @@ spec:
                                 this challenge solver will apply to.
                               type: object
                           type: object
+                        waitInsteadOfSelfCheck:
+                          description: |-
+                            WaitInsteadOfSelfCheck, if set, skips cert-manager's self-check and
+                            instead waits this long after presentation before asking the ACME server
+                            to validate the challenge.
+
+                            This is an advanced escape hatch for environments where cert-manager's
+                            self-check cannot succeed from its own network or DNS viewpoint even
+                            though the ACME server can still validate successfully, for example due
+                            to split-horizon DNS or NAT hairpinning.
+
+                            A value of 0 skips the self-check and asks the ACME server to validate
+                            immediately after presentation, relying on the ACME server's own
+                            validation retries (RFC 8555 section 8.2) to succeed once the challenge
+                            has propagated. A negative duration is rejected.
+                            Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration,
+                            for example `30s` or `2m`.
+                          type: string
                       type: object
                     type: array
                     x-kubernetes-list-type: atomic
@@ -8656,6 +8866,64 @@ spec:
                         - roleId
                         - secretRef
                         type: object
+                      aws:
+                        description: |-
+                          AWS authenticates with Vault using AWS IAM authentication.
+                          This allows authentication using IAM roles for service accounts (IRSA),
+                          EKS Pod Identity (PIA), or ambient credentials (EC2 instance profiles, ECS task role).
+                        properties:
+                          iamRoleArn:
+                            description: |-
+                              The ARN of the AWS IAM role to assume using the Kubernetes service account
+                              token. Required when using IRSA (serviceAccountRef is set).
+                              This role must have a trust policy that allows the OIDC provider to assume it.
+                            type: string
+                          mountPath:
+                            description: |-
+                              The Vault mountPath here is the mount path to use when authenticating with
+                              Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+                              `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+                              default value "/v1/auth/aws" will be used.
+                            type: string
+                          region:
+                            description: |-
+                              The AWS region to use for authentication. If not specified, the region
+                              will be determined from AWS_REGION or AWS_DEFAULT_REGION environment
+                              variables, falling back to "us-east-1" if not set.
+                            type: string
+                          role:
+                            description: A required field containing the Vault Role
+                              to assume when authenticating.
+                            minLength: 1
+                            type: string
+                          serviceAccountRef:
+                            description: |-
+                              A reference to a service account that will be used to request a web identity
+                              token for IRSA (IAM Roles for Service Accounts) authentication.
+                            properties:
+                              audiences:
+                                description: |-
+                                  TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+                                  The default audiences are always included in the token.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: atomic
+                              name:
+                                description: Name of the ServiceAccount used to request
+                                  a token.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          vaultHeaderValue:
+                            description: |-
+                              The Vault header value to include in the STS signing request.
+                              This is used to prevent replay attacks.
+                            type: string
+                        required:
+                        - role
+                        type: object
                       clientCertificate:
                         description: |-
                           ClientCertificate authenticates with Vault by presenting a client
@@ -8728,8 +8996,8 @@ spec:
                             properties:
                               audiences:
                                 description: |-
-                                  TokenAudiences is an optional list of extra audiences to include in the token passed to Vault. The default token
-                                  consisting of the issuer's namespace and name is always included.
+                                  TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+                                  The default audiences are always included in the token.
                                 items:
                                   type: string
                                 type: array
@@ -8860,17 +9128,17 @@ spec:
                 type: object
               venafi:
                 description: |-
-                  Venafi configures this issuer to sign certificates using a Venafi TPP
-                  or Venafi Cloud policy zone.
+                  Venafi configures this issuer to sign certificates using a CyberArk Certificate Manager Self-Hosted
+                  or SaaS policy zone.
                 properties:
                   cloud:
                     description: |-
-                      Cloud specifies the Venafi cloud configuration settings.
-                      Only one of TPP or Cloud may be specified.
+                      Cloud specifies the CyberArk Certificate Manager SaaS configuration settings.
+                      Only one of CyberArk Certificate Manager may be specified.
                     properties:
                       apiTokenSecretRef:
                         description: APITokenSecretRef is a secret key selector for
-                          the Venafi Cloud API token.
+                          the CyberArk Certificate Manager SaaS API token.
                         properties:
                           key:
                             description: |-
@@ -8888,21 +9156,61 @@ spec:
                         type: object
                       url:
                         description: |-
-                          URL is the base URL for Venafi Cloud.
+                          URL is the base URL for CyberArk Certificate Manager SaaS.
                           Defaults to "https://api.venafi.cloud/".
                         type: string
                     required:
                     - apiTokenSecretRef
                     type: object
+                  ngts:
+                    description: |-
+                      NGTS specifies Palo Alto Networks Next Generation Trust Services (NGTS) configuration
+                      using OAuth 2.0 Client Credentials. Only one of tpp, cloud, or ngts may be specified.
+                    properties:
+                      credentialsRef:
+                        description: |-
+                          CredentialsRef is a reference to a Kubernetes Secret containing the OAuth 2.0
+                          Client ID and Client Secret. The secret must contain the keys 'client-id' and
+                          'client-secret'.
+                        properties:
+                          name:
+                            description: |-
+                              Name of the resource being referred to.
+                              More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      tokenEndpoint:
+                        description: |-
+                          TokenEndpoint is the OAuth 2.0 token endpoint URL used to obtain access tokens,
+                          for example "https://auth.apps.paloaltonetworks.com/oauth2/access_token".
+                          Defaults to "https://auth.apps.paloaltonetworks.com/oauth2/access_token" if not set.
+                        type: string
+                      tsgID:
+                        description: |-
+                          TSGID is the Tenant Service Group ID used to scope the OAuth 2.0 access token,
+                          for example "1234567890". The tsg_id: prefix is added automatically.
+                          This field is required.
+                        type: string
+                      url:
+                        description: |-
+                          URL is the base URL for the NGTS API endpoint.
+                          Defaults to "https://api.strata.paloaltonetworks.com/ngts" if not set.
+                        type: string
+                    required:
+                    - credentialsRef
+                    - tsgID
+                    type: object
                   tpp:
                     description: |-
-                      TPP specifies Trust Protection Platform configuration settings.
-                      Only one of TPP or Cloud may be specified.
+                      TPP specifies CyberArk Certificate Manager Self-Hosted configuration settings.
+                      Only one of CyberArk Certificate Manager may be specified.
                     properties:
                       caBundle:
                         description: |-
                           Base64-encoded bundle of PEM CAs which will be used to validate the certificate
-                          chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP.
+                          chain presented by the CyberArk Certificate Manager Self-Hosted server. Only used if using HTTPS; ignored for HTTP.
                           If undefined, the certificate bundle in the cert-manager controller container
                           is used to validate the chain.
                         format: byte
@@ -8910,7 +9218,7 @@ spec:
                       caBundleSecretRef:
                         description: |-
                           Reference to a Secret containing a base64-encoded bundle of PEM CAs
-                          which will be used to validate the certificate chain presented by the TPP server.
+                          which will be used to validate the certificate chain presented by the CyberArk Certificate Manager Self-Hosted server.
                           Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
                           If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
                           the cert-manager controller container is used to validate the TLS connection.
@@ -8931,7 +9239,7 @@ spec:
                         type: object
                       credentialsRef:
                         description: |-
-                          CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+                          CredentialsRef is a reference to a Secret containing the CyberArk Certificate Manager Self-Hosted API credentials.
                           The secret must contain the key 'access-token' for the Access Token Authentication,
                           or two keys, 'username' and 'password' for the API Keys Authentication.
                         properties:
@@ -8945,7 +9253,7 @@ spec:
                         type: object
                       url:
                         description: |-
-                          URL is the base URL for the vedsdk endpoint of the Venafi TPP instance,
+                          URL is the base URL for the vedsdk endpoint of the CyberArk Certificate Manager Self-Hosted instance,
                           for example: "https://tpp.example.com/vedsdk".
                         type: string
                     required:
@@ -8954,14 +9262,18 @@ spec:
                     type: object
                   zone:
                     description: |-
-                      Zone is the Venafi Policy Zone to use for this issuer.
-                      All requests made to the Venafi platform will be restricted by the named
+                      Zone is the Certificate Manager Policy Zone to use for this issuer.
+                      All requests made to the Certificate Manager platform will be restricted by the named
                       zone policy.
                       This field is required.
                     type: string
                 required:
                 - zone
                 type: object
+                x-kubernetes-validations:
+                - message: exactly one of tpp, cloud, or ngts must be configured
+                  rule: '(has(self.tpp) ? 1 : 0) + (has(self.cloud) ? 1 : 0) + (has(self.ngts)
+                    ? 1 : 0) == 1'
             type: object
           status:
             description: Status of the ClusterIssuer. This is set and managed automatically.
@@ -9063,7 +9375,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: issuers.cert-manager.io
 spec:
   group: cert-manager.io
@@ -9462,6 +9774,22 @@ spec:
                                     The TenantID of the Azure Service Principal used to authenticate with Azure DNS.
                                     If set, ClientID and ClientSecret must also be set.
                                   type: string
+                                zoneType:
+                                  description: |-
+                                    ZoneType determines which type of Azure DNS zone to use.
+
+                                    Valid values are:
+                                      - AzurePublicZone  (default): Use a public Azure DNS zone.
+                                      - AzurePrivateZone: Use an Azure Private DNS zone.
+
+                                    If not specified, AzurePublicZone is used.
+
+                                    Support for Azure Private DNS zones is currently
+                                    experimental and may change in future releases.
+                                  enum:
+                                  - AzurePublicZone
+                                  - AzurePrivateZone
+                                  type: string
                               required:
                               - resourceGroupName
                               - subscriptionID
@@ -9643,8 +9971,8 @@ spec:
                                   description: |-
                                     The AccessKeyID is used for authentication.
                                     Cannot be set when SecretAccessKeyID is set.
-                                    If neither the Access Key nor Key ID are set, we fall-back to using env
-                                    vars, shared credentials file or AWS Instance metadata,
+                                    If neither the Access Key nor Key ID are set, we fall back to using env
+                                    vars, shared credentials file, or AWS Instance metadata,
                                     see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                                   type: string
                                 accessKeyIDSecretRef:
@@ -9652,8 +9980,8 @@ spec:
                                     The SecretAccessKey is used for authentication. If set, pull the AWS
                                     access key ID from a key within a Kubernetes Secret.
                                     Cannot be set when AccessKeyID is set.
-                                    If neither the Access Key nor Key ID are set, we fall-back to using env
-                                    vars, shared credentials file or AWS Instance metadata,
+                                    If neither the Access Key nor Key ID are set, we fall back to using env
+                                    vars, shared credentials file, or AWS Instance metadata,
                                     see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                                   properties:
                                     key:
@@ -9745,8 +10073,8 @@ spec:
                                 secretAccessKeySecretRef:
                                   description: |-
                                     The SecretAccessKey is used for authentication.
-                                    If neither the Access Key nor Key ID are set, we fall-back to using env
-                                    vars, shared credentials file or AWS Instance metadata,
+                                    If neither the Access Key nor Key ID are set, we fall back to using env
+                                    vars, shared credentials file, or AWS Instance metadata,
                                     see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
                                   properties:
                                     key:
@@ -11216,9 +11544,10 @@ spec:
                                               operator:
                                                 description: |-
                                                   Operator represents a key's relationship to the value.
-                                                  Valid operators are Exists and Equal. Defaults to Equal.
+                                                  Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                                                   Exists is equivalent to wildcard for value, so that a pod can
                                                   tolerate all taints of a particular category.
+                                                  Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                                                 type: string
                                               tolerationSeconds:
                                                 description: |-
@@ -12543,9 +12872,10 @@ spec:
                                               operator:
                                                 description: |-
                                                   Operator represents a key's relationship to the value.
-                                                  Valid operators are Exists and Equal. Defaults to Equal.
+                                                  Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                                                   Exists is equivalent to wildcard for value, so that a pod can
                                                   tolerate all taints of a particular category.
+                                                  Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                                                 type: string
                                               tolerationSeconds:
                                                 description: |-
@@ -12616,6 +12946,24 @@ spec:
                                 this challenge solver will apply to.
                               type: object
                           type: object
+                        waitInsteadOfSelfCheck:
+                          description: |-
+                            WaitInsteadOfSelfCheck, if set, skips cert-manager's self-check and
+                            instead waits this long after presentation before asking the ACME server
+                            to validate the challenge.
+
+                            This is an advanced escape hatch for environments where cert-manager's
+                            self-check cannot succeed from its own network or DNS viewpoint even
+                            though the ACME server can still validate successfully, for example due
+                            to split-horizon DNS or NAT hairpinning.
+
+                            A value of 0 skips the self-check and asks the ACME server to validate
+                            immediately after presentation, relying on the ACME server's own
+                            validation retries (RFC 8555 section 8.2) to succeed once the challenge
+                            has propagated. A negative duration is rejected.
+                            Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration,
+                            for example `30s` or `2m`.
+                          type: string
                       type: object
                     type: array
                     x-kubernetes-list-type: atomic
@@ -12731,6 +13079,64 @@ spec:
                         - roleId
                         - secretRef
                         type: object
+                      aws:
+                        description: |-
+                          AWS authenticates with Vault using AWS IAM authentication.
+                          This allows authentication using IAM roles for service accounts (IRSA),
+                          EKS Pod Identity (PIA), or ambient credentials (EC2 instance profiles, ECS task role).
+                        properties:
+                          iamRoleArn:
+                            description: |-
+                              The ARN of the AWS IAM role to assume using the Kubernetes service account
+                              token. Required when using IRSA (serviceAccountRef is set).
+                              This role must have a trust policy that allows the OIDC provider to assume it.
+                            type: string
+                          mountPath:
+                            description: |-
+                              The Vault mountPath here is the mount path to use when authenticating with
+                              Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+                              `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+                              default value "/v1/auth/aws" will be used.
+                            type: string
+                          region:
+                            description: |-
+                              The AWS region to use for authentication. If not specified, the region
+                              will be determined from AWS_REGION or AWS_DEFAULT_REGION environment
+                              variables, falling back to "us-east-1" if not set.
+                            type: string
+                          role:
+                            description: A required field containing the Vault Role
+                              to assume when authenticating.
+                            minLength: 1
+                            type: string
+                          serviceAccountRef:
+                            description: |-
+                              A reference to a service account that will be used to request a web identity
+                              token for IRSA (IAM Roles for Service Accounts) authentication.
+                            properties:
+                              audiences:
+                                description: |-
+                                  TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+                                  The default audiences are always included in the token.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: atomic
+                              name:
+                                description: Name of the ServiceAccount used to request
+                                  a token.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          vaultHeaderValue:
+                            description: |-
+                              The Vault header value to include in the STS signing request.
+                              This is used to prevent replay attacks.
+                            type: string
+                        required:
+                        - role
+                        type: object
                       clientCertificate:
                         description: |-
                           ClientCertificate authenticates with Vault by presenting a client
@@ -12803,8 +13209,8 @@ spec:
                             properties:
                               audiences:
                                 description: |-
-                                  TokenAudiences is an optional list of extra audiences to include in the token passed to Vault. The default token
-                                  consisting of the issuer's namespace and name is always included.
+                                  TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+                                  The default audiences are always included in the token.
                                 items:
                                   type: string
                                 type: array
@@ -12935,17 +13341,17 @@ spec:
                 type: object
               venafi:
                 description: |-
-                  Venafi configures this issuer to sign certificates using a Venafi TPP
-                  or Venafi Cloud policy zone.
+                  Venafi configures this issuer to sign certificates using a CyberArk Certificate Manager Self-Hosted
+                  or SaaS policy zone.
                 properties:
                   cloud:
                     description: |-
-                      Cloud specifies the Venafi cloud configuration settings.
-                      Only one of TPP or Cloud may be specified.
+                      Cloud specifies the CyberArk Certificate Manager SaaS configuration settings.
+                      Only one of CyberArk Certificate Manager may be specified.
                     properties:
                       apiTokenSecretRef:
                         description: APITokenSecretRef is a secret key selector for
-                          the Venafi Cloud API token.
+                          the CyberArk Certificate Manager SaaS API token.
                         properties:
                           key:
                             description: |-
@@ -12963,21 +13369,61 @@ spec:
                         type: object
                       url:
                         description: |-
-                          URL is the base URL for Venafi Cloud.
+                          URL is the base URL for CyberArk Certificate Manager SaaS.
                           Defaults to "https://api.venafi.cloud/".
                         type: string
                     required:
                     - apiTokenSecretRef
                     type: object
+                  ngts:
+                    description: |-
+                      NGTS specifies Palo Alto Networks Next Generation Trust Services (NGTS) configuration
+                      using OAuth 2.0 Client Credentials. Only one of tpp, cloud, or ngts may be specified.
+                    properties:
+                      credentialsRef:
+                        description: |-
+                          CredentialsRef is a reference to a Kubernetes Secret containing the OAuth 2.0
+                          Client ID and Client Secret. The secret must contain the keys 'client-id' and
+                          'client-secret'.
+                        properties:
+                          name:
+                            description: |-
+                              Name of the resource being referred to.
+                              More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      tokenEndpoint:
+                        description: |-
+                          TokenEndpoint is the OAuth 2.0 token endpoint URL used to obtain access tokens,
+                          for example "https://auth.apps.paloaltonetworks.com/oauth2/access_token".
+                          Defaults to "https://auth.apps.paloaltonetworks.com/oauth2/access_token" if not set.
+                        type: string
+                      tsgID:
+                        description: |-
+                          TSGID is the Tenant Service Group ID used to scope the OAuth 2.0 access token,
+                          for example "1234567890". The tsg_id: prefix is added automatically.
+                          This field is required.
+                        type: string
+                      url:
+                        description: |-
+                          URL is the base URL for the NGTS API endpoint.
+                          Defaults to "https://api.strata.paloaltonetworks.com/ngts" if not set.
+                        type: string
+                    required:
+                    - credentialsRef
+                    - tsgID
+                    type: object
                   tpp:
                     description: |-
-                      TPP specifies Trust Protection Platform configuration settings.
-                      Only one of TPP or Cloud may be specified.
+                      TPP specifies CyberArk Certificate Manager Self-Hosted configuration settings.
+                      Only one of CyberArk Certificate Manager may be specified.
                     properties:
                       caBundle:
                         description: |-
                           Base64-encoded bundle of PEM CAs which will be used to validate the certificate
-                          chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP.
+                          chain presented by the CyberArk Certificate Manager Self-Hosted server. Only used if using HTTPS; ignored for HTTP.
                           If undefined, the certificate bundle in the cert-manager controller container
                           is used to validate the chain.
                         format: byte
@@ -12985,7 +13431,7 @@ spec:
                       caBundleSecretRef:
                         description: |-
                           Reference to a Secret containing a base64-encoded bundle of PEM CAs
-                          which will be used to validate the certificate chain presented by the TPP server.
+                          which will be used to validate the certificate chain presented by the CyberArk Certificate Manager Self-Hosted server.
                           Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
                           If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
                           the cert-manager controller container is used to validate the TLS connection.
@@ -13006,7 +13452,7 @@ spec:
                         type: object
                       credentialsRef:
                         description: |-
-                          CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+                          CredentialsRef is a reference to a Secret containing the CyberArk Certificate Manager Self-Hosted API credentials.
                           The secret must contain the key 'access-token' for the Access Token Authentication,
                           or two keys, 'username' and 'password' for the API Keys Authentication.
                         properties:
@@ -13020,7 +13466,7 @@ spec:
                         type: object
                       url:
                         description: |-
-                          URL is the base URL for the vedsdk endpoint of the Venafi TPP instance,
+                          URL is the base URL for the vedsdk endpoint of the CyberArk Certificate Manager Self-Hosted instance,
                           for example: "https://tpp.example.com/vedsdk".
                         type: string
                     required:
@@ -13029,14 +13475,18 @@ spec:
                     type: object
                   zone:
                     description: |-
-                      Zone is the Venafi Policy Zone to use for this issuer.
-                      All requests made to the Venafi platform will be restricted by the named
+                      Zone is the Certificate Manager Policy Zone to use for this issuer.
+                      All requests made to the Certificate Manager platform will be restricted by the named
                       zone policy.
                       This field is required.
                     type: string
                 required:
                 - zone
                 type: object
+                x-kubernetes-validations:
+                - message: exactly one of tpp, cloud, or ngts must be configured
+                  rule: '(has(self.tpp) ? 1 : 0) + (has(self.cloud) ? 1 : 0) + (has(self.ngts)
+                    ? 1 : 0) == 1'
             type: object
           status:
             description: Status of the Issuer. This is set and managed automatically.
@@ -13138,7 +13588,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-cainjector
 rules:
 - apiGroups:
@@ -13210,7 +13660,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-issuers
 rules:
 - apiGroups:
@@ -13260,7 +13710,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-clusterissuers
 rules:
 - apiGroups:
@@ -13310,7 +13760,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-certificates
 rules:
 - apiGroups:
@@ -13383,7 +13833,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-orders
 rules:
 - apiGroups:
@@ -13426,6 +13876,13 @@ rules:
   verbs:
   - update
 - apiGroups:
+  - cert-manager.io
+  resources:
+  - clusterissuers/finalizers
+  - issuers/finalizers
+  verbs:
+  - update
+- apiGroups:
   - ""
   resources:
   - secrets
@@ -13453,7 +13910,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-challenges
 rules:
 - apiGroups:
@@ -13562,7 +14019,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-ingress-shim
 rules:
 - apiGroups:
@@ -13604,6 +14061,7 @@ rules:
   resources:
   - gateways
   - httproutes
+  - listenersets
   verbs:
   - get
   - list
@@ -13613,6 +14071,7 @@ rules:
   resources:
   - gateways/finalizers
   - httproutes/finalizers
+  - listenersets/finalizers
   verbs:
   - update
 - apiGroups:
@@ -13635,7 +14094,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
     rbac.authorization.k8s.io/aggregate-to-cluster-reader: "true"
   name: cert-manager-cluster-view
 rules:
@@ -13660,7 +14119,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-cluster-reader: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
@@ -13699,7 +14158,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
   name: cert-manager-edit
@@ -13726,13 +14185,18 @@ rules:
   - acme.cert-manager.io
   resources:
   - challenges
-  - orders
   verbs:
-  - create
   - delete
   - deletecollection
   - patch
   - update
+- apiGroups:
+  - acme.cert-manager.io
+  resources:
+  - orders
+  verbs:
+  - delete
+  - deletecollection
 
 ---
 
@@ -13746,7 +14210,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-approve:cert-manager-io
 rules:
 - apiGroups:
@@ -13771,7 +14235,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-certificatesigningrequests
 rules:
 - apiGroups:
@@ -13818,7 +14282,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook:subjectaccessreviews
 rules:
 - apiGroups:
@@ -13840,7 +14304,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-cainjector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -13863,7 +14327,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-issuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -13886,7 +14350,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-clusterissuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -13909,7 +14373,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-certificates
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -13932,7 +14396,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-orders
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -13955,7 +14419,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-challenges
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -13978,7 +14442,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-ingress-shim
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -14001,7 +14465,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-approve:cert-manager-io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -14024,7 +14488,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-controller-certificatesigningrequests
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -14047,7 +14511,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook:subjectaccessreviews
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -14070,7 +14534,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 rules:
@@ -14104,7 +14568,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager:leaderelection
   namespace: kube-system
 rules:
@@ -14132,37 +14596,12 @@ kind: Role
 metadata:
   labels:
     addon.kops.k8s.io/name: certmanager.io
-    app: cert-manager
-    app.kubernetes.io/component: controller
-    app.kubernetes.io/instance: cert-manager
-    app.kubernetes.io/managed-by: kops
-    app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
-  name: cert-manager-tokenrequest
-  namespace: kube-system
-rules:
-- apiGroups:
-  - ""
-  resourceNames:
-  - cert-manager
-  resources:
-  - serviceaccounts/token
-  verbs:
-  - create
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    addon.kops.k8s.io/name: certmanager.io
     app: webhook
     app.kubernetes.io/component: webhook
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 rules:
@@ -14196,7 +14635,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 roleRef:
@@ -14220,37 +14659,13 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager:leaderelection
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: cert-manager:leaderelection
-subjects:
-- kind: ServiceAccount
-  name: cert-manager
-  namespace: kube-system
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    addon.kops.k8s.io/name: certmanager.io
-    app: cert-manager
-    app.kubernetes.io/component: controller
-    app.kubernetes.io/instance: cert-manager
-    app.kubernetes.io/managed-by: kops
-    app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
-  name: cert-manager-tokenrequest
-  namespace: kube-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cert-manager-tokenrequest
 subjects:
 - kind: ServiceAccount
   name: cert-manager
@@ -14268,7 +14683,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 roleRef:
@@ -14292,7 +14707,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-cainjector
   namespace: kube-system
 spec:
@@ -14318,15 +14733,14 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager
   namespace: kube-system
 spec:
   ports:
-  - name: tcp-prometheus-servicemonitor
+  - name: http-metrics
     port: 9402
     protocol: TCP
-    targetPort: http-metrics
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: cert-manager
@@ -14345,7 +14759,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -14376,7 +14790,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-cainjector
   namespace: kube-system
 spec:
@@ -14397,7 +14811,7 @@ spec:
         app.kubernetes.io/component: cainjector
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cainjector
-        app.kubernetes.io/version: v1.19.5
+        app.kubernetes.io/version: v1.21.3
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -14419,7 +14833,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-cainjector:v1.19.5
+        image: quay.io/jetstack/cert-manager-cainjector:v1.21.3
         imagePullPolicy: IfNotPresent
         name: cert-manager-cainjector
         ports:
@@ -14459,7 +14873,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager
   namespace: kube-system
 spec:
@@ -14480,7 +14894,7 @@ spec:
         app.kubernetes.io/component: controller
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cert-manager
-        app.kubernetes.io/version: v1.19.5
+        app.kubernetes.io/version: v1.21.3
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -14498,7 +14912,7 @@ spec:
         - --v=2
         - --cluster-resource-namespace=$(POD_NAMESPACE)
         - --leader-election-namespace=kube-system
-        - --acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.19.5
+        - --acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.21.3
         - --max-concurrent-challenges=60
         - --enable-certificate-owner-ref=true
         - --feature-gates=AdditionalCertificateOutputFormats=true
@@ -14509,7 +14923,7 @@ spec:
               fieldPath: metadata.namespace
         - name: AWS_REGION
           value: us-test-1
-        image: quay.io/jetstack/cert-manager-controller:v1.19.5
+        image: quay.io/jetstack/cert-manager-controller:v1.21.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 8
@@ -14562,7 +14976,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -14583,7 +14997,7 @@ spec:
         app.kubernetes.io/component: webhook
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: webhook
-        app.kubernetes.io/version: v1.19.5
+        app.kubernetes.io/version: v1.21.3
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -14610,7 +15024,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-webhook:v1.19.5
+        image: quay.io/jetstack/cert-manager-webhook:v1.21.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -14678,7 +15092,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:
@@ -14717,7 +15131,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.19.5
+    app.kubernetes.io/version: v1.21.3
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:
