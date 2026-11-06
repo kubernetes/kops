@@ -274,13 +274,14 @@ that package), so **renaming a manifest requires a matching Go edit**.
 `channels/alpha` and `channels/stable` are *not* addon bookkeeping — they hold OS images and
 Kubernetes version recommendations only, and an addon bump never touches them.
 
-### Three pinning patterns
+### Four pinning patterns
 
 | Pattern | Where the tag lives | Examples |
 |---|---|---|
 | **A. Go default fed into the template** | `pkg/model/components/<addon>.go` | cilium, aws-ebs-csi, node-termination-handler, karpenter, kindnet, cluster-autoscaler, node-problem-detector, nodelocaldns |
 | **B. Template literal with an `or` fallback** | the `.yaml.template` itself | calico, aws-load-balancer-controller, coredns, metrics-server |
-| **C. Fully hardcoded in the template** | the `.yaml.template` itself | cert-manager, snapshot-controller, external-dns, flannel, kube-router, amazon-vpc-cni, and the CSI **sidecar** images of aws-ebs-csi |
+| **C. Fully hardcoded in the template** | the `.yaml.template` itself | cert-manager, snapshot-controller, flannel, kube-router, amazon-vpc-cni, and the CSI **sidecar** images of aws-ebs-csi |
+| **D. Go template function** | `upup/pkg/fi/cloudup/template_functions.go` | external-dns (`ExternalDNSImage`, one tag per cloud provider) |
 
 Templates using `{{ .Version }}` open with a `{{ with .Path.To.Spec }}` block — that is why the bare
 field resolves.
