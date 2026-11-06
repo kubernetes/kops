@@ -41,7 +41,7 @@ spec:
       k8s-addon: cluster-autoscaler.addons.k8s.io
   - id: k8s-1.11
     manifest: metrics-server.addons.k8s.io/k8s-1.11.yaml
-    manifestHash: af124c30376f03ec60e86b5852a27b34ffde2844946844ace6f09335380d8c63
+    manifestHash: 8cc3c9ef183820820fb546c7686f386248832f221a0b55d68b898ede95d82032
     name: metrics-server.addons.k8s.io
     needsPKI: true
     selector:
