@@ -158,3 +158,26 @@ func TestPrecreateDNSNames(t *testing.T) {
 		}
 	}
 }
+
+func TestExternalDNSOwnerTXTName(t *testing.T) {
+	grid := []struct {
+		key      recordKey
+		expected string
+	}{
+		{
+			key:      recordKey{hostname: "api.internal.cluster1.example.com.", rrsType: rrstype.A},
+			expected: "a-api.internal.cluster1.example.com.",
+		},
+		{
+			key:      recordKey{hostname: "kops-controller.internal.cluster1.example.com.", rrsType: rrstype.AAAA},
+			expected: "aaaa-kops-controller.internal.cluster1.example.com.",
+		},
+	}
+
+	for _, g := range grid {
+		actual := externalDNSOwnerTXTName(g.key)
+		if actual != g.expected {
+			t.Errorf("unexpected TXT name for %v: expected %q, got %q", g.key, g.expected, actual)
+		}
+	}
+}

@@ -222,6 +222,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	kopscontroller.AddTemplateFunctions(cluster, dest)
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDNSArgv
+	dest["ExternalDNSImage"] = tf.ExternalDNSImage
 	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv
 	dest["AzureCloudConfig"] = tf.AzureCloudConfig
 	// TODO: Only for GCE?
@@ -984,6 +985,15 @@ func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
+// ExternalDNSImage returns the external-dns image used for the cluster's cloud provider.
+func (tf *TemplateFunctions) ExternalDNSImage() string {
+	if tf.Cluster.GetCloudProvider() == kops.CloudProviderOpenstack {
+		// v0.16.1 is the last release with the in-tree OpenStack Designate provider.
+		return "registry.k8s.io/external-dns/external-dns:v0.16.1"
+	}
+	return "registry.k8s.io/external-dns/external-dns:v0.24.0"
+}
+
 func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	cluster := tf.Cluster
 	externalDNS := tf.Cluster.Spec.ExternalDNS
@@ -1012,6 +1022,18 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	argv = append(argv, "--source=pod")
 	argv = append(argv, "--source=service")
 	argv = append(argv, "--compatibility=kops-dns-controller")
+	// external-dns requires an explicit policy; sync also deletes owned records that are no longer wanted.
+	argv = append(argv, "--policy=sync")
+	// Only host network pods (such as kube-apiserver) publish records from the pod source.
+	argv = append(argv, "--ignore-non-host-network-pods")
+	if cloudProvider != kops.CloudProviderOpenstack {
+		// The OpenStack release does not have these flags, and already behaves this way.
+		// Keep reading external-dns.alpha.kubernetes.io/ annotations, so records of objects that still use
+		// that prefix are not seen as unwanted and deleted.
+		argv = append(argv, "--enable-legacy-annotation-prefix")
+		// Publish the IPv6 InternalIP of nodes as a public address, because IPv6 node addresses are routable.
+		argv = append(argv, "--expose-internal-ipv6")
+	}
 	argv = append(argv, "--registry=txt")
 	argv = append(argv, "--txt-owner-id=kops-"+tf.ClusterName())
 	argv = append(argv, "--zone-id-filter="+tf.Cluster.Spec.DNSZone)
