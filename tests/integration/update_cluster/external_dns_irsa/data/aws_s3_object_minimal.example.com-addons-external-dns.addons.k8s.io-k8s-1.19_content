@@ -6,7 +6,6 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: external-dns.addons.k8s.io
     k8s-app: external-dns
-    version: v0.13.1
   name: external-dns
   namespace: kube-system
 spec:
@@ -22,7 +21,6 @@ spec:
         k8s-addon: external-dns.addons.k8s.io
         k8s-app: external-dns
         kops.k8s.io/managed-by: kops
-        version: v0.13.1
     spec:
       affinity:
         nodeAffinity:
@@ -42,6 +40,10 @@ spec:
         - --source=pod
         - --source=service
         - --compatibility=kops-dns-controller
+        - --policy=sync
+        - --ignore-non-host-network-pods
+        - --enable-legacy-annotation-prefix
+        - --expose-internal-ipv6
         - --registry=txt
         - --txt-owner-id=kops-minimal.example.com
         - --zone-id-filter=Z1AFAKE1ZON3YO
@@ -50,11 +52,13 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
+        - name: AWS_REGION
+          value: us-test-1
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/external-dns.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: registry.k8s.io/external-dns/external-dns:v0.14.1
+        image: registry.k8s.io/external-dns/external-dns:v0.24.0
         livenessProbe:
           failureThreshold: 2
           httpGet:
@@ -164,8 +168,15 @@ rules:
   - ""
   resources:
   - services
-  - endpoints
   - pods
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
   verbs:
   - get
   - watch
