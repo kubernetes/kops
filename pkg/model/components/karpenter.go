@@ -36,7 +36,7 @@ func (b *KarpenterOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.Image == "" {
-		c.Image = "public.ecr.aws/karpenter/controller:1.13.0"
+		c.Image = "public.ecr.aws/karpenter/controller:1.15.1"
 	}
 
 	if c.LogEncoding == "" {
