@@ -2432,6 +2432,13 @@ spec:
                     description: SecurePort is the port the kube runs on
                     format: int32
                     type: integer
+                  serviceAccountExtendTokenExpiration:
+                    description: |-
+                      ServiceAccountExtendTokenExpiration changes the default token expiration of 1 year to the requested
+                      expiration for tokens that kubelet requests with the default 3607s lifetime and audience.
+                      The kube-apiserver defaults to true, which extends such tokens to 1 year (ignoring ServiceAccountMaxTokenExpiration).
+                      Setting this to false makes those tokens expire after the requested lifetime.
+                    type: boolean
                   serviceAccountIssuer:
                     description: |-
                       Identifier of the service account token issuer. The issuer will assert this identifier
@@ -2450,6 +2457,11 @@ spec:
                     items:
                       type: string
                     type: array
+                  serviceAccountMaxTokenExpiration:
+                    description: |-
+                      ServiceAccountMaxTokenExpiration is the maximum validity duration of a token created by the service account token issuer.
+                      If an otherwise valid TokenRequest with a validity duration larger than this value is requested, a token will be issued with a validity duration of this value.
+                    type: string
                   serviceAccountSigningKeyFile:
                     description: |-
                       Path to the file that contains the current private key of the service account token issuer.
