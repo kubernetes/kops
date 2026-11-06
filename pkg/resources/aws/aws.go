@@ -1860,9 +1860,15 @@ func ListRoute53Records(cloud fi.Cloud, vpcID, clusterName string) ([]*resources
 				}
 				prefix := strings.TrimSuffix(name, clusterName)
 
-				// Also trim ownership records for AAAA records
-				if rrs.Type == route53types.RRTypeTxt && strings.HasPrefix(prefix, ".aaaa-") {
-					prefix = "." + strings.TrimPrefix(prefix, ".aaaa-")
+				// external-dns names the owner TXT record with the lowercase record type as a prefix,
+				// for example "a-api.internal.<cluster>". Match it to the name of the record it owns.
+				if rrs.Type == route53types.RRTypeTxt {
+					for _, ownerPrefix := range []string{".a-", ".aaaa-"} {
+						if rest, ok := strings.CutPrefix(prefix, ownerPrefix); ok {
+							prefix = "." + rest
+							break
+						}
+					}
 				}
 
 				remove := false

@@ -6,7 +6,6 @@ metadata:
   labels:
     k8s-addon: external-dns.addons.k8s.io
     k8s-app: external-dns
-    version: v0.13.1
 spec:
   replicas: 1
   selector:
@@ -19,7 +18,6 @@ spec:
       labels:
         k8s-addon: external-dns.addons.k8s.io
         k8s-app: external-dns
-        version: v0.13.1
     spec:
       affinity:
         nodeAffinity:
@@ -53,7 +51,7 @@ spec:
           readOnlyRootFilesystem: true
           capabilities:
             drop: ["ALL"]
-        image: registry.k8s.io/external-dns/external-dns:v0.14.1
+        image: {{ ExternalDNSImage }}
         args:
 {{ range $arg := ExternalDnsArgv }}
         - "{{ $arg }}"
@@ -63,6 +61,11 @@ spec:
           value: "127.0.0.1"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
+{{ if eq GetCloudProvider "aws" }}
+        # The AWS SDK does not discover the region on its own, and the Route53 and STS clients need one.
+        - name: AWS_REGION
+          value: {{ Region }}
+{{ end }}
 {{ range $name, $value := DNSControllerEnvs }}
         - name: {{ $name }}
           value: {{ $value }}
@@ -132,8 +135,18 @@ metadata:
   name: kops:external-dns
 rules:
 - apiGroups: [""]
-  resources: ["services","endpoints","pods"]
+  resources: ["services","pods"]
   verbs: ["get","watch","list"]
+{{ if eq GetCloudProvider "openstack" }}
+# The OpenStack release of external-dns reads Endpoints for the service source.
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get","watch","list"]
+{{ else }}
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["get","watch","list"]
+{{ end }}
 - apiGroups: ["extensions","networking.k8s.io"]
   resources: ["ingresses"]
   verbs: ["get","watch","list"]
