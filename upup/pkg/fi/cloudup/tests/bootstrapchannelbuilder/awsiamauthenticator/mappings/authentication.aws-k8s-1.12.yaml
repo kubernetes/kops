@@ -159,7 +159,7 @@ spec:
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
         - --backend-mode=CRD
-        image: public.ecr.aws/eks-distro/kubernetes-sigs/aws-iam-authenticator:v0.6.20-eks-1-30-7
+        image: public.ecr.aws/eks-distro/kubernetes-sigs/aws-iam-authenticator:v0.7.24-cvefix-eks-1-37-4
         livenessProbe:
           httpGet:
             host: 127.0.0.1

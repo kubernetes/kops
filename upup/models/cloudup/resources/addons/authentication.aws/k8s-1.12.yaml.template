@@ -164,7 +164,7 @@ spec:
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
       - name: aws-iam-authenticator
-        image: {{ or .Authentication.AWS.Image "public.ecr.aws/eks-distro/kubernetes-sigs/aws-iam-authenticator:v0.6.20-eks-1-30-7" }}
+        image: {{ or .Authentication.AWS.Image "public.ecr.aws/eks-distro/kubernetes-sigs/aws-iam-authenticator:v0.7.24-cvefix-eks-1-37-4" }}
         args:
         - server
         {{- if or (not .Authentication.AWS.BackendMode) (contains "MountedFile" .Authentication.AWS.BackendMode) }}
