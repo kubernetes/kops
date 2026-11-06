@@ -126,6 +126,10 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 		return fmt.Errorf("reconcile is not supported with terraform")
 	}
 
+	// The update below would otherwise suggest `kops rolling-update cluster`.
+	// Reconcile already rolls the control plane and the nodes.
+	c.SuppressRollingUpdateHint = true
+
 	if !c.Yes {
 		// A reconcile without --yes is the same as a dry run
 		opt := *c
