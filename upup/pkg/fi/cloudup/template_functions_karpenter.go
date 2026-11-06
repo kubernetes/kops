@@ -253,14 +253,7 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 		return nil, fmt.Errorf("building blockDeviceMappings for %q: %w", ig.Name, err)
 	}
 
-	subnetTerms := []karpenterSelectorTerm{
-		{
-			Tags: map[string]string{
-				"KubernetesCluster":                     tf.ClusterName(),
-				"kops.k8s.io/instance-group/" + ig.Name: "true",
-			},
-		},
-	}
+	subnetTerms := buildKarpenterSubnetSelectorTerms(tf.ClusterName(), ig.Name)
 
 	securityGroupTerms := []karpenterSelectorTerm{}
 	if ig.Spec.SecurityGroupOverride != nil {
@@ -296,6 +289,22 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 			Kubelet:                  buildKarpenterKubeletConfiguration(ig),
 		},
 	}, nil
+}
+
+// buildKarpenterSubnetSelectorTerms selects the subnets that kOps tags for the InstanceGroup.
+// Shared subnets carry the cluster ownership tag with the value "shared" and no KubernetesCluster
+// tag, so one term is emitted per ownership value; Karpenter ORs the terms.
+func buildKarpenterSubnetSelectorTerms(clusterName, igName string) []karpenterSelectorTerm {
+	var terms []karpenterSelectorTerm
+	for _, ownership := range []string{"owned", "shared"} {
+		terms = append(terms, karpenterSelectorTerm{
+			Tags: map[string]string{
+				awsup.TagNameClusterOwnershipPrefix + clusterName: ownership,
+				"kops.k8s.io/instance-group/" + igName:            "true",
+			},
+		})
+	}
+	return terms
 }
 
 func buildKarpenterKubeletConfiguration(ig *kops.InstanceGroup) *karpenterKubeletConfiguration {

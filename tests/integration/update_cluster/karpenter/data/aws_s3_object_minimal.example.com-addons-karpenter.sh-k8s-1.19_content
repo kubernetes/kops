@@ -3242,8 +3242,11 @@ spec:
       Name: nodes.minimal.example.com
   subnetSelectorTerms:
   - tags:
-      KubernetesCluster: minimal.example.com
       kops.k8s.io/instance-group/karpenter-nodes-default: "true"
+      kubernetes.io/cluster/minimal.example.com: owned
+  - tags:
+      kops.k8s.io/instance-group/karpenter-nodes-default: "true"
+      kubernetes.io/cluster/minimal.example.com: shared
   tags:
     KubernetesCluster: minimal.example.com
     Name: karpenter-nodes-default.minimal.example.com
@@ -3492,8 +3495,11 @@ spec:
       Name: nodes.minimal.example.com
   subnetSelectorTerms:
   - tags:
-      KubernetesCluster: minimal.example.com
       kops.k8s.io/instance-group/karpenter-nodes-single-machinetype: "true"
+      kubernetes.io/cluster/minimal.example.com: owned
+  - tags:
+      kops.k8s.io/instance-group/karpenter-nodes-single-machinetype: "true"
+      kubernetes.io/cluster/minimal.example.com: shared
   tags:
     KubernetesCluster: minimal.example.com
     Name: karpenter-nodes-single-machinetype.minimal.example.com
