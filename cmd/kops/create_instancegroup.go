@@ -223,8 +223,6 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 		if len(ig.Spec.Zones) == 0 {
 			return fmt.Errorf("zone flag is required for GCE clusters")
 		}
-		fmt.Println("detected a GCE cluster; labeling nodes to receive metadata-proxy.")
-		ig.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
 	}
 
 	if options.DryRun {
