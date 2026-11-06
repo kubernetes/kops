@@ -82,7 +82,7 @@ spec:
       k8s-addon: dns-controller.addons.k8s.io
   - id: k8s-1.19
     manifest: external-dns.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: 5136c3893461763990093efa08dab89e9d929ba6e4a5aea67b6e2ac8780f0882
+    manifestHash: 714d516073e8585f87a69d04e269e11e2add49d1915839e941b598e71cd0ee5c
     name: external-dns.addons.k8s.io
     selector:
       k8s-addon: external-dns.addons.k8s.io
