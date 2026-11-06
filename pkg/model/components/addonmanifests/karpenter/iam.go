@@ -87,8 +87,9 @@ func addKarpenterPermissions(p *iam.Policy) {
 		"ec2:DescribeSpotPriceHistory",
 		"pricing:GetProducts",
 	)
-	// ConditionalEC2Termination
+	// ConditionalEC2Termination; node repair reboots the same instances
 	p.AddUnconditionalActions(
+		"ec2:RebootInstances",
 		"ec2:TerminateInstances",
 	)
 	// PassNodeIAMRole

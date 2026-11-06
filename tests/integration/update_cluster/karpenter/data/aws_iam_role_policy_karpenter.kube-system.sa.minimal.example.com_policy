@@ -35,6 +35,7 @@
         "ec2:DescribeSecurityGroups",
         "ec2:DescribeSpotPriceHistory",
         "ec2:DescribeSubnets",
+        "ec2:RebootInstances",
         "ec2:RunInstances",
         "ec2:TerminateInstances",
         "iam:AddRoleToInstanceProfile",
