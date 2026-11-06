@@ -20,8 +20,15 @@ import (
 	"reflect"
 	"testing"
 
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/cloudmock/aws/mockiam"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/util/stringorset"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 func Test_formatAWSIAMStatement(t *testing.T) {
@@ -107,5 +114,55 @@ func Test_formatAWSIAMStatement(t *testing.T) {
 				t.Errorf("formatAWSIAMStatement() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestIAMFindDeletionsSharedInstanceProfile(t *testing.T) {
+	clusterName := "me.example.com"
+	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
+
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	c := &mockiam.MockIAM{
+		Roles: make(map[string]*iamtypes.Role),
+	}
+	cloud.MockIAM = c
+
+	tags := []iamtypes.Tag{
+		{
+			Key:   &ownershipTagKey,
+			Value: new("owned"),
+		},
+	}
+
+	for _, name := range []string{"nodes." + clusterName, "bastions." + clusterName} {
+		c.Roles[name] = &iamtypes.Role{
+			RoleName: new(name),
+			RoleId:   new(name),
+			Tags:     tags,
+		}
+	}
+
+	b := &IAMModelBuilder{
+		Cluster:   &kops.Cluster{ObjectMeta: metav1.ObjectMeta{Name: clusterName}},
+		Lifecycle: fi.LifecycleSync,
+	}
+	context := &fi.CloudupModelBuilderContext{
+		Tasks: make(map[string]fi.CloudupTask),
+	}
+	context.AddTask(&awstasks.IAMInstanceProfile{
+		Name:      new("nodes." + clusterName),
+		Lifecycle: fi.LifecycleSync,
+		Shared:    new(true),
+	})
+
+	if err := b.FindDeletions(context, cloud); err != nil {
+		t.Fatalf("error finding deletions: %v", err)
+	}
+
+	if _, ok := context.Tasks["IAMRole/nodes."+clusterName]; ok {
+		t.Errorf("IAM role %q was queued for deletion", "nodes."+clusterName)
+	}
+	if _, ok := context.Tasks["IAMRole/bastions."+clusterName]; !ok {
+		t.Errorf("IAM role %q was not queued for deletion", "bastions."+clusterName)
 	}
 }
