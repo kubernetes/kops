@@ -80,12 +80,17 @@ upstream component ships:
 
 | Where | What |
 |---|---|
-| `pkg/model/components/clusterautoscaler.go` | a `switch` on the minor — the new minor becomes `default:` and the previous default gets an explicit `case` |
 | `pkg/nodemodel/wellknownassets/cni.go` | `defaultCNIAsset{Amd64,Arm64}K8s_NN` constants **and a new case at the top of both arch ladders** |
 | `hack/generate-asset-hashes.sh` | a matching `generate_cni_hashes` line, then regenerate |
 | `pkg/model/components/etcd.go` | the `LatestEtcd3XVersion` constants and the mapping ladder, when upstream changes its recommended etcd minor |
 | `pkg/model/components/etcdmanager/options.go` | feature-gate guards keyed on the minor |
 | `pkg/model/components/gcpcloudcontrollermanager.go` | a `switch` on the minor that currently has only a `default:` — it reads like dead code but is the intended hook |
+
+cluster-autoscaler is not keyed on each minor. `pkg/model/components/clusterautoscaler.go` picks
+the latest release for Kubernetes 1.34+ and the v1.34 line for older control planes, because
+cluster-autoscaler v1.35+ requires `resource.k8s.io/v1`, which Kubernetes serves only from 1.34.
+Bump the latest image when upstream ships a new release. Remove the older branch when kOps drops
+support for Kubernetes 1.33.
 
 The AWS and Azure cloud controller managers are not keyed on the minor; they carry a single pinned
 image, so bump the string rather than adding a case. AWS used to have a per-minor `switch` and was
@@ -125,7 +130,7 @@ This is one pull request, and a large one — recent examples touched 90 to 276 
    git grep -n 'IsKubernetesLT("1.NN\|IsGTE("1.NN\|IsLT("1.NN\|case NN:'
    ```
 
-   Expect hits in the CNI ladders, the cluster-autoscaler switch, kubelet and apiserver option
+   Expect hits in the CNI ladders, kubelet and apiserver option
    builders, feature-gate guards in nodeup, addon guards in the bootstrap channel builder, the
    default-image selection in `new_cluster.go`, and version guards inside addon templates. When
    removing a rung leaves a `switch` with only a `default:`, collapse it.
