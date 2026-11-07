@@ -354,9 +354,10 @@ High-coverage cases include `many-addons`, `many-addons-ccm*`, `minimal-aws`, `p
   aws-load-balancer-controller (chart version in two `kustomization.yaml` files, tag in two
   `helm-values.yaml` files), aws-ebs-csi (Go default for the driver, plus the sidecar image literals
   in the template that the chart does not template).
-- **cluster-autoscaler is keyed on the Kubernetes minor**, not a single default —
-  `pkg/model/components/clusterautoscaler.go` is a `switch` over `v.Minor`. Adding a Kubernetes
-  minor means adding a `case`.
+- **cluster-autoscaler has two defaults**, split on the control plane version in
+  `pkg/model/components/clusterautoscaler.go`. Kubernetes 1.34+ gets the latest release. Older
+  control planes get the v1.34 line, because v1.35+ requires `resource.k8s.io/v1`, which
+  Kubernetes serves only from 1.34. Bump both.
 - **Calico has no Go default at all.** The version literal exists only in the template's `or`
   fallbacks, and there is no version-range validation.
 - If the new version adds or removes a resource Kind, check `alwaysPruneGroupKinds` in

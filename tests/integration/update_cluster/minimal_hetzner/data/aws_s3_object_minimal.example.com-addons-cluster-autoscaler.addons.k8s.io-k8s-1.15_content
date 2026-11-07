@@ -406,7 +406,7 @@ spec:
           value: "false"
         - name: HCLOUD_CLUSTER_CONFIG_FILE
           value: /etc/cluster-autoscaler/cluster-config.json
-        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.7
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.34.6
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
