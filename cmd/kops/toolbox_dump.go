@@ -262,7 +262,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		// Karpenter nodes never get the cluster SSH key pair (their EC2NodeClass has no key-name
 		// field). When Karpenter is enabled, grant short-lived access via EC2 Instance Connect
 		// before connecting, using the public key matching --private-key. A no-op without the agent.
-		karpenterEnabled := cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
+		karpenterEnabled := cluster.Spec.Karpenter.IsEnabled()
 		if awsCloud, ok := cloud.(awsup.AWSCloud); ok && karpenterEnabled {
 			publicKey := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(signer.PublicKey())))
 			eicClient := ec2instanceconnect.NewFromConfig(awsCloud.Config())

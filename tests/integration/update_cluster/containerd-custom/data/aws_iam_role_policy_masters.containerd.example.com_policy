@@ -227,9 +227,7 @@
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
         "iam:CreateServiceLinkedRole",
-        "kms:DescribeKey",
-        "sqs:DeleteMessage",
-        "sqs:ReceiveMessage"
+        "kms:DescribeKey"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -267,7 +265,9 @@
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:RegisterTargets",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
+        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+        "sqs:DeleteMessage",
+        "sqs:ReceiveMessage"
       ],
       "Condition": {
         "StringEquals": {

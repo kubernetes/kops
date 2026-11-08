@@ -290,6 +290,11 @@ type KarpenterConfig struct {
 	CPURequest    *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
+// IsEnabled returns true when Karpenter is enabled for the cluster.
+func (k *KarpenterConfig) IsEnabled() bool {
+	return k != nil && k.Enabled
+}
+
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.
 type ServiceAccountIssuerDiscoveryConfig struct {
 	// DiscoveryStore is the VFS path to where OIDC Issuer Discovery metadata is stored.

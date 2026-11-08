@@ -18,6 +18,7 @@ package awsmodel
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
@@ -38,6 +39,11 @@ const (
 type event struct {
 	name    string
 	pattern string
+}
+
+// ruleName returns the name of the EventBridge rule that delivers the event of the cluster.
+func (e event) ruleName(clusterName string) string {
+	return awsup.GetClusterName40(clusterName) + "-" + e.name
 }
 
 var (
@@ -76,22 +82,32 @@ type NodeTerminationHandlerBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-func (b *NodeTerminationHandlerBuilder) karpenterEnabled() bool {
-	return b.Cluster.Spec.Karpenter != nil && b.Cluster.Spec.Karpenter.Enabled
-}
-
 func (b *NodeTerminationHandlerBuilder) rebalanceDrainingEnabled() bool {
 	nth := b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
 	return nth != nil && fi.ValueOf(nth.EnableRebalanceDraining)
 }
 
-func (b *NodeTerminationHandlerBuilder) events() []event {
-	if b.karpenterEnabled() {
-		return append(append([]event(nil), fixedEvents...), rebalanceEvent)
-	}
+// asgLifecycleEnabled returns true when the ASG lifecycle hook and its event are wanted. Karpenter
+// never completes an ASG lifecycle action, so a hook would only hold terminating instances until
+// its heartbeat timeout. A disabled hook task removes the hook that NTH left on the ASG.
+func (b *NodeTerminationHandlerBuilder) asgLifecycleEnabled() bool {
+	return !b.Cluster.Spec.Karpenter.IsEnabled()
+}
 
-	events := append([]event{asgLifecycleEvent}, fixedEvents...)
-	if b.rebalanceDrainingEnabled() {
+// rebalanceEnabled returns true when rebalance recommendations are delivered to the queue.
+// Karpenter always subscribes to them, as its reference setup does.
+func (b *NodeTerminationHandlerBuilder) rebalanceEnabled() bool {
+	return b.Cluster.Spec.Karpenter.IsEnabled() || b.rebalanceDrainingEnabled()
+}
+
+// events returns the EventBridge events delivered to the interruption queue.
+func (b *NodeTerminationHandlerBuilder) events() []event {
+	var events []event
+	if b.asgLifecycleEnabled() {
+		events = append(events, asgLifecycleEvent)
+	}
+	events = append(events, fixedEvents...)
+	if b.rebalanceEnabled() {
 		events = append(events, rebalanceEvent)
 	}
 	return events
@@ -99,7 +115,7 @@ func (b *NodeTerminationHandlerBuilder) events() []event {
 
 func (b *NodeTerminationHandlerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Manager == kops.InstanceManagerCloudGroup && !b.karpenterEnabled() {
+		if ig.Spec.Manager == kops.InstanceManagerCloudGroup {
 			err := b.configureASG(c, ig)
 			if err != nil {
 				return err
@@ -126,7 +142,7 @@ func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.CloudupModelBuilderCo
 		DefaultResult:       aws.String("CONTINUE"),
 		HeartbeatTimeout:    aws.Int32(DefaultMessageRetentionPeriod),
 		LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_TERMINATING"),
-		Enabled:             aws.Bool(true),
+		Enabled:             aws.Bool(b.asgLifecycleEnabled()),
 	}
 
 	c.AddTask(lifecyleTask)
@@ -171,11 +187,9 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) 
 
 	clusterName := b.ClusterName()
 
-	clusterNamePrefix := awsup.GetClusterName40(clusterName)
-
 	for _, event := range b.events() {
 		// build rule
-		ruleName := aws.String(clusterNamePrefix + "-" + event.name)
+		ruleName := aws.String(event.ruleName(clusterName))
 		pattern := event.pattern
 
 		ruleTask := &awstasks.EventBridgeRule{
@@ -204,14 +218,25 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) 
 	return nil
 }
 
+// FindDeletions deletes the rules of the events that the cluster no longer wants, left behind by a
+// configuration that wanted them.
 func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.CloudupModelBuilderContext, cloud fi.Cloud) error {
-	if b.karpenterEnabled() || b.rebalanceDrainingEnabled() {
-		return nil
+	wanted := b.events()
+	for _, e := range slices.Concat([]event{asgLifecycleEvent}, fixedEvents, []event{rebalanceEvent}) {
+		if slices.Contains(wanted, e) {
+			continue
+		}
+		if err := b.findRuleDeletion(c, cloud, e); err != nil {
+			return err
+		}
 	}
+	return nil
+}
 
-	clusterName := b.ClusterName()
-	clusterNamePrefix := awsup.GetClusterName40(clusterName)
-	ruleName := aws.String(clusterNamePrefix + "-" + rebalanceEvent.name)
+// findRuleDeletion adds a task that deletes the rule of the event, if the rule exists and is owned
+// by the cluster.
+func (b *NodeTerminationHandlerBuilder) findRuleDeletion(c *fi.CloudupModelBuilderContext, cloud fi.Cloud, e event) error {
+	ruleName := aws.String(e.ruleName(b.ClusterName()))
 
 	eventBridge := cloud.(awsup.AWSCloud).EventBridge()
 	request := &eventbridge.ListRulesInput{
