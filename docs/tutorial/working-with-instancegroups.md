@@ -198,12 +198,14 @@ using preemptible/spot instances you might be waiting for a long time.
 
 If you are using AWS, you can dynamically fetch instance group images from an AWS SSM Parameter. kOps will automatically fetch SSM Parameter and lookup the AMI ID on every `kops update cluster` run. This is useful if you often update your images and don't want to update your instance group configuration every time. Your SSM Parameter must start with `ssm:` and contain the full path of the SSM Parameter.
 
+Alternatively, you can use `resolve:ssm:<parameter>` (kOps 1.37+) to pass the SSM parameter directly to the AWS Launch Template without resolving it to a static AMI ID during `kops update cluster`. AWS EC2 will dynamically resolve the AMI at instance launch time whenever a new instance is launched (e.g. scale-out or replacement).
+
 An example spec looks like this:
 ```yaml
 metadata:
   name: nodes-us-west-2a
 spec:
-  image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
+  image: resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
   machineType: t3.medium
   maxSize: 1
   minSize: 1

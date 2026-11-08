@@ -36,6 +36,19 @@ func (m *MockEC2) DescribeImages(ctx context.Context, request *ec2.DescribeImage
 	var images []ec2types.Image
 
 	for _, image := range m.Images {
+		if len(request.ImageIds) > 0 {
+			found := false
+			for _, id := range request.ImageIds {
+				if aws.ToString(image.ImageId) == id {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
 		matches, err := m.imageMatchesFilter(image, request.Filters)
 		if err != nil {
 			return nil, err

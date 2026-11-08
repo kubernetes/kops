@@ -77,6 +77,7 @@ Supported image selector forms are:
 
 * `ami-*`
 * `ssm:<parameter>`
+* `resolve:ssm:<parameter>`
 * `<name>`
 * `<owner>/<name>`
 

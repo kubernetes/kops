@@ -468,7 +468,7 @@ func buildKarpenterAMITerms(image string) ([]karpenterAMITerm, error) {
 		return nil, fmt.Errorf("image is required")
 	}
 	if strings.Contains(image, "://") {
-		return nil, fmt.Errorf("image %q must be ami-*, ssm:<parameter>, <name>, or <owner>/<name>", image)
+		return nil, fmt.Errorf("image %q must be ami-*, ssm:<parameter>, resolve:ssm:<parameter>, <name>, or <owner>/<name>", image)
 	}
 	if strings.HasPrefix(image, "ami-") {
 		return []karpenterAMITerm{{ID: image}}, nil
@@ -480,13 +480,20 @@ func buildKarpenterAMITerms(image string) ([]karpenterAMITerm, error) {
 		}
 		return []karpenterAMITerm{{SSMParameter: parameter}}, nil
 	}
+	if strings.HasPrefix(image, "resolve:ssm:") {
+		parameter := strings.TrimPrefix(image, "resolve:ssm:")
+		if parameter == "" {
+			return nil, fmt.Errorf("ssm image parameter is required")
+		}
+		return []karpenterAMITerm{{SSMParameter: parameter}}, nil
+	}
 
 	tokens := strings.SplitN(image, "/", 2)
 	if len(tokens) == 1 {
 		return []karpenterAMITerm{{Name: image, Owner: "self"}}, nil
 	}
 	if tokens[0] == "" || tokens[1] == "" {
-		return nil, fmt.Errorf("image %q must be ami-*, ssm:<parameter>, <name>, or <owner>/<name>", image)
+		return nil, fmt.Errorf("image %q must be ami-*, ssm:<parameter>, resolve:ssm:<parameter>, <name>, or <owner>/<name>", image)
 	}
 	return []karpenterAMITerm{{Owner: awsup.ResolveImageOwnerAlias(tokens[0]), Name: tokens[1]}}, nil
 }

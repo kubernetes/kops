@@ -10,12 +10,14 @@ For AWS, you should set the `image` field in one of the following formats:
 - `<owner>/<name>` specifies an image by its owner's account ID and name properties
 - `<alias>/<name>` specifies an image by its [owner's alias](#owner-aliases) and name properties
 - `ssm:<ssm_parameter>` specifies an image through an SSM parameter (kOps 1.25.3+)
+- `resolve:ssm:<ssm_parameter>` specifies dynamic runtime AMI resolution via SSM in AWS Launch Templates (kOps 1.37+)
 
 ```yaml
 image: ami-00579fbb15b954340
 image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
 image: ubuntu/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260714
 image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
+image: resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
 ```
 
 ## Security Updates

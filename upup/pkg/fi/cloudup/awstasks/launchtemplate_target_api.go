@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -41,11 +42,16 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		return err
 	}
 
+	imageID := image.ImageId
+	if strings.HasPrefix(fi.ValueOf(t.ImageID), "resolve:ssm:") {
+		imageID = t.ImageID
+	}
+
 	// @step: lets build the launch template data
 	data := &ec2types.RequestLaunchTemplateData{
 		DisableApiTermination: new(false),
 		EbsOptimized:          t.RootVolumeOptimization,
-		ImageId:               image.ImageId,
+		ImageId:               imageID,
 		InstanceType:          fi.ValueOf(t.InstanceType),
 		MetadataOptions: &ec2types.LaunchTemplateInstanceMetadataOptionsRequest{
 			HttpPutResponseHopLimit: t.HTTPPutResponseHopLimit,
@@ -337,7 +343,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 	}
 
 	// @step: to avoid spurious changes on ImageId
-	if t.ImageID != nil && actual.ImageID != nil && *actual.ImageID != *t.ImageID {
+	if t.ImageID != nil && actual.ImageID != nil && *actual.ImageID != *t.ImageID && !strings.HasPrefix(*t.ImageID, "resolve:ssm:") {
 		image, err := cloud.ResolveImage(*t.ImageID)
 		if err != nil {
 			klog.Warningf("unable to resolve image: %q: %v", *t.ImageID, err)

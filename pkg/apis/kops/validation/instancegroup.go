@@ -535,7 +535,7 @@ func validateKarpenterAMISelectorImage(image string, fldPath *field.Path) field.
 		return allErrs
 	}
 	if strings.Contains(image, "://") {
-		return append(allErrs, field.Invalid(fldPath, image, "must be ami-*, ssm:<parameter>, <name>, or <owner>/<name>"))
+		return append(allErrs, field.Invalid(fldPath, image, "must be ami-*, ssm:<parameter>, resolve:ssm:<parameter>, <name>, or <owner>/<name>"))
 	}
 	if strings.HasPrefix(image, "ami-") {
 		return allErrs
@@ -546,10 +546,16 @@ func validateKarpenterAMISelectorImage(image string, fldPath *field.Path) field.
 		}
 		return allErrs
 	}
+	if strings.HasPrefix(image, "resolve:ssm:") {
+		if strings.TrimPrefix(image, "resolve:ssm:") == "" {
+			return append(allErrs, field.Invalid(fldPath, image, "ssm image parameter is required"))
+		}
+		return allErrs
+	}
 
 	tokens := strings.SplitN(image, "/", 2)
 	if len(tokens) == 2 && (tokens[0] == "" || tokens[1] == "") {
-		return append(allErrs, field.Invalid(fldPath, image, "must be ami-*, ssm:<parameter>, <name>, or <owner>/<name>"))
+		return append(allErrs, field.Invalid(fldPath, image, "must be ami-*, ssm:<parameter>, resolve:ssm:<parameter>, <name>, or <owner>/<name>"))
 	}
 	return allErrs
 }

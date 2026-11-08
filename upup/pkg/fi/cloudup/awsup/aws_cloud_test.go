@@ -19,14 +19,18 @@ package awsup
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
+	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/cloudmock/aws/mockssm"
 	"k8s.io/kops/pkg/cloudinstances"
 )
 
@@ -342,5 +346,90 @@ func TestGetGroupFailuresCapsPagination(t *testing.T) {
 	if calls := asgMock.ScalingActivityCalls(); calls != maxScalingActivityPages {
 		t.Errorf("getGroupFailures(%q) made %d DescribeScalingActivities calls, want the %d-page cap",
 			asgName, calls, maxScalingActivityPages)
+	}
+}
+
+func TestResolveImage(t *testing.T) {
+	cloud := BuildMockAWSCloud("us-east-1", "a")
+	mockEC2 := &mockec2.MockEC2{}
+	mockSSM := &mockssm.MockSSM{
+		Parameters: map[string]string{
+			"/aws/service/ami-amazon-linux-latest/al2023": "ami-0123456789abcdef0",
+		},
+	}
+	cloud.MockEC2 = mockEC2
+	cloud.MockSSM = mockSSM
+
+	mockEC2.Images = append(mockEC2.Images, &ec2types.Image{
+		ImageId:        aws.String("ami-0123456789abcdef0"),
+		Name:           aws.String("al2023-ami"),
+		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   ec2types.ArchitectureValuesX8664,
+	})
+
+	tests := []struct {
+		name        string
+		imageSpec   string
+		wantImageID string
+		wantErr     bool
+		wantErrMsg  string
+	}{
+		{
+			name:        "exact AMI ID",
+			imageSpec:   "ami-0123456789abcdef0",
+			wantImageID: "ami-0123456789abcdef0",
+		},
+		{
+			name:        "ssm parameter",
+			imageSpec:   "ssm:/aws/service/ami-amazon-linux-latest/al2023",
+			wantImageID: "ami-0123456789abcdef0",
+		},
+		{
+			name:        "resolve ssm parameter",
+			imageSpec:   "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023",
+			wantImageID: "ami-0123456789abcdef0",
+		},
+		{
+			name:       "empty ssm parameter",
+			imageSpec:  "ssm:",
+			wantErr:    true,
+			wantErrMsg: "ssm image parameter is required",
+		},
+		{
+			name:       "empty resolve ssm parameter",
+			imageSpec:  "resolve:ssm:",
+			wantErr:    true,
+			wantErrMsg: "ssm image parameter is required",
+		},
+		{
+			name:       "ssm parameter not found",
+			imageSpec:  "resolve:ssm:/non/existent",
+			wantErr:    true,
+			wantErrMsg: "failed to get value for SSM parameter",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			img, err := cloud.ResolveImage(tc.imageSpec)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("ResolveImage(%q) expected error, got nil", tc.imageSpec)
+				}
+				if tc.wantErrMsg != "" && !strings.Contains(err.Error(), tc.wantErrMsg) {
+					t.Errorf("ResolveImage(%q) error = %v, want substring %q", tc.imageSpec, err, tc.wantErrMsg)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ResolveImage(%q) unexpected error: %v", tc.imageSpec, err)
+			}
+			if img == nil {
+				t.Fatalf("ResolveImage(%q) expected image, got nil", tc.imageSpec)
+			}
+			if aws.ToString(img.ImageId) != tc.wantImageID {
+				t.Errorf("ResolveImage(%q) image ID = %q, want %q", tc.imageSpec, aws.ToString(img.ImageId), tc.wantImageID)
+			}
+		})
 	}
 }

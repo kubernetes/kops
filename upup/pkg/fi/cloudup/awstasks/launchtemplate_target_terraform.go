@@ -19,6 +19,7 @@ package awstasks
 import (
 	"maps"
 	"slices"
+	"strings"
 
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/kops/upup/pkg/fi"
@@ -189,11 +190,15 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 
 	var image *string
 	if e.ImageID != nil {
-		im, err := cloud.ResolveImage(fi.ValueOf(e.ImageID))
-		if err != nil {
-			return err
+		if strings.HasPrefix(fi.ValueOf(e.ImageID), "resolve:ssm:") {
+			image = e.ImageID
+		} else {
+			im, err := cloud.ResolveImage(fi.ValueOf(e.ImageID))
+			if err != nil {
+				return err
+			}
+			image = im.ImageId
 		}
-		image = im.ImageId
 	}
 
 	tf := terraformLaunchTemplate{

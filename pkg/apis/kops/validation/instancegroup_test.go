@@ -374,6 +374,12 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			image:   "ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id",
 		},
 		{
+			desc:    "resolve ssm parameter",
+			cluster: awsCluster,
+			role:    kops.InstanceGroupRoleNode,
+			image:   "resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id",
+		},
+		{
 			desc:    "name",
 			cluster: awsCluster,
 			role:    kops.InstanceGroupRoleNode,
@@ -422,6 +428,13 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			cluster:  awsCluster,
 			role:     kops.InstanceGroupRoleNode,
 			image:    "ssm:",
+			expected: []string{"Invalid value::spec.image"},
+		},
+		{
+			desc:     "empty resolve ssm parameter",
+			cluster:  awsCluster,
+			role:     kops.InstanceGroupRoleNode,
+			image:    "resolve:ssm:",
 			expected: []string{"Invalid value::spec.image"},
 		},
 		{

@@ -1833,6 +1833,9 @@ func (c *awsCloudImplementation) ResolveImage(name string) (*ec2types.Image, err
 }
 
 func resolveSSMParameter(ctx context.Context, ssmClient awsinterfaces.SSMAPI, name string) (string, error) {
+	if ssmClient == nil {
+		return "", fmt.Errorf("ssm client not configured")
+	}
 	klog.V(2).Infof("Resolving SSM parameter %q", name)
 	request := &ssm.GetParameterInput{
 		Name: aws.String(name),
@@ -1854,8 +1857,16 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 	if strings.HasPrefix(name, "ami-") {
 		// ami-xxxxxxxx
 		request.ImageIds = []string{name}
-	} else if strings.HasPrefix(name, "ssm:") {
-		parameter := strings.TrimPrefix(name, "ssm:")
+	} else if strings.HasPrefix(name, "ssm:") || strings.HasPrefix(name, "resolve:ssm:") {
+		var parameter string
+		if strings.HasPrefix(name, "resolve:ssm:") {
+			parameter = strings.TrimPrefix(name, "resolve:ssm:")
+		} else {
+			parameter = strings.TrimPrefix(name, "ssm:")
+		}
+		if parameter == "" {
+			return nil, fmt.Errorf("ssm image parameter is required")
+		}
 
 		image, err := resolveSSMParameter(ctx, ssmClient, parameter)
 		if err != nil {
@@ -1891,7 +1902,7 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 		for _, v := range page.Images {
 			if image == nil {
 				image = &v
-			} else {
+			} else if image.CreationDate != nil && v.CreationDate != nil {
 				itime, _ := time.Parse(time.RFC3339, *image.CreationDate)
 				vtime, _ := time.Parse(time.RFC3339, *v.CreationDate)
 				if vtime.After(itime) {

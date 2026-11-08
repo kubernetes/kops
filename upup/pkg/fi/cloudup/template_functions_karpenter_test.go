@@ -160,6 +160,10 @@ func TestBuildKarpenterAMITerms(t *testing.T) {
 			expected: []karpenterAMITerm{{SSMParameter: "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"}},
 		},
 		{
+			image:    "resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id",
+			expected: []karpenterAMITerm{{SSMParameter: "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"}},
+		},
+		{
 			image:    "kops-node-image",
 			expected: []karpenterAMITerm{{Name: "kops-node-image", Owner: "self"}},
 		},
@@ -197,6 +201,10 @@ func TestBuildKarpenterAMITerms(t *testing.T) {
 		},
 		{
 			image: "ssm:",
+			error: true,
+		},
+		{
+			image: "resolve:ssm:",
 			error: true,
 		},
 		{

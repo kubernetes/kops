@@ -25,6 +25,7 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/cloudmock/aws/mockssm"
 
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
@@ -1181,5 +1182,85 @@ func TestAWSValidateUseIPBasedNodeNames(t *testing.T) {
 		cluster := &kops.Cluster{Spec: g.Input}
 		errs := awsValidateUseIPBasedNodeNames(cluster)
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func TestValidateInstanceGroupSSMImage(t *testing.T) {
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockEC2 := &mockec2.MockEC2{}
+	mockSSM := &mockssm.MockSSM{
+		Parameters: map[string]string{
+			"/aws/service/ami-amazon-linux-latest/al2023-x86_64": "ami-0123456789abcdef0",
+			"/aws/service/ami-amazon-linux-latest/al2023-arm64":  "ami-0123456789abcdef1",
+		},
+	}
+	cloud.MockEC2 = mockEC2
+	cloud.MockSSM = mockSSM
+
+	mockEC2.Images = append(mockEC2.Images,
+		&ec2types.Image{
+			ImageId:        aws.String("ami-0123456789abcdef0"),
+			Name:           aws.String("al2023-x86_64"),
+			RootDeviceName: aws.String("/dev/xvda"),
+			Architecture:   ec2types.ArchitectureValuesX8664,
+		},
+		&ec2types.Image{
+			ImageId:        aws.String("ami-0123456789abcdef1"),
+			Name:           aws.String("al2023-arm64"),
+			RootDeviceName: aws.String("/dev/xvda"),
+			Architecture:   ec2types.ArchitectureValuesArm64,
+		},
+	)
+
+	grid := []struct {
+		desc           string
+		input          kops.InstanceGroupSpec
+		expectedErrors []string
+	}{
+		{
+			desc: "valid dynamic resolve:ssm: image with matching architecture",
+			input: kops.InstanceGroupSpec{
+				Image:       "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-x86_64",
+				MachineType: "t3.medium",
+			},
+			expectedErrors: []string{},
+		},
+		{
+			desc: "valid ssm: image with matching architecture",
+			input: kops.InstanceGroupSpec{
+				Image:       "ssm:/aws/service/ami-amazon-linux-latest/al2023-x86_64",
+				MachineType: "t3.medium",
+			},
+			expectedErrors: []string{},
+		},
+		{
+			desc: "resolve:ssm: image with mismatched architecture",
+			input: kops.InstanceGroupSpec{
+				Image:       "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-arm64",
+				MachineType: "t3.medium",
+			},
+			expectedErrors: []string{"Invalid value::test-nodes.spec.machineType"},
+		},
+		{
+			desc: "resolve:ssm: with non-existent parameter",
+			input: kops.InstanceGroupSpec{
+				Image:       "resolve:ssm:/non/existent",
+				MachineType: "t3.medium",
+			},
+			expectedErrors: []string{"Invalid value::test-nodes.spec.image"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := &kops.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-nodes",
+				},
+				Spec: g.input,
+			}
+			errs := awsValidateInstanceGroup(ig, cloud)
+			testErrors(t, g.input, errs, g.expectedErrors)
+		})
 	}
 }
