@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -38,28 +37,16 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if cas.Image == nil {
-
-		image := ""
-		v, err := util.ParseKubernetesVersion(clusterSpec.KubernetesVersion)
-		if err == nil {
-			switch v.Minor {
-			case 31:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.31.5"
-			case 32:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.7"
-			case 33:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.33.6"
-			case 34:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.34.5"
-			case 35:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.35.2"
-			case 36:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.36.1"
-			default:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.37.0"
-			}
+		// cluster-autoscaler v1.35+ always watches DRA objects through resource.k8s.io/v1,
+		// which the API server serves only from Kubernetes 1.34. On older control planes
+		// those informers never sync and the autoscaler never starts its main loop.
+		// v1.34 handles DRA only when --enable-dynamic-resource-allocation is set, which
+		// kOps does not set.
+		if b.ControlPlaneKubernetesVersion().IsLT("1.34.0") {
+			cas.Image = new("registry.k8s.io/autoscaling/cluster-autoscaler:v1.34.6")
+		} else {
+			cas.Image = new("registry.k8s.io/autoscaling/cluster-autoscaler:v1.37.0")
 		}
-		cas.Image = new(image)
 	}
 
 	if cas.Expander == "" {
