@@ -1613,11 +1613,10 @@ func AddNodeTerminationHandlerSQSPermissions(p *Policy) {
 		"autoscaling:DescribeAutoScalingInstances",
 		"autoscaling:DescribeTags",
 		"ec2:DescribeInstances",
-		// SQS permissions do not support conditions.
-		"sqs:DeleteMessage",
-		"sqs:ReceiveMessage",
 	)
 	p.clusterTaggedAction.Insert(
 		"autoscaling:CompleteLifecycleAction",
+		"sqs:DeleteMessage",
+		"sqs:ReceiveMessage",
 	)
 }

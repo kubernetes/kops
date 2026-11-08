@@ -137,6 +137,12 @@ When set, `maxSize` is mapped to `NodePool.spec.limits.nodes`, capping the numbe
 Karpenter does not allow an existing NodePool to transition between dynamic and static modes.
 Delete the generated NodePool before running `kops update cluster` after adding or removing `minSize`.
 
+## Interruption handling
+
+kOps provisions the SQS queue, the EventBridge rules and the IAM permissions that Karpenter needs for [interruption handling](https://karpenter.sh/docs/concepts/disruption/#interruption). The queue is shared with the Node Termination Handler, so an existing cluster keeps its queue when Karpenter replaces it.
+
+Clusters without internet egress need a VPC endpoint for SQS. Karpenter starts without it, but processes no interruption events until it can reach the queue.
+
 ## Known limitations
 
 * **Upgrade is not supported** from the legacy Karpenter integration (Karpenter v0.x, using the `Provisioner` and `AWSNodeTemplate` resources).

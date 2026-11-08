@@ -17,7 +17,7 @@ limitations under the License.
 package awsmodel
 
 import (
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 
@@ -30,12 +30,11 @@ import (
 
 func TestNodeTerminationHandlerBuilder(t *testing.T) {
 	grid := []struct {
-		name           string
-		nth            *kops.NodeTerminationHandlerSpec
-		karpenter      *kops.KarpenterConfig
-		expectedRules  []string
-		expectedHooks  []string
-		expectedQueues []string
+		name          string
+		nth           *kops.NodeTerminationHandlerSpec
+		karpenter     *kops.KarpenterConfig
+		expectedRules []string
+		expectedHooks []string
 	}{
 		{
 			name: "nth queue mode",
@@ -46,8 +45,7 @@ func TestNodeTerminationHandlerBuilder(t *testing.T) {
 				"testcluster.test.com-InstanceStateChange",
 				"testcluster.test.com-SpotInterruption",
 			},
-			expectedHooks:  []string{"nodes-NTHLifecycleHook"},
-			expectedQueues: []string{"testcluster-test-com-nth"},
+			expectedHooks: []string{"nodes-NTHLifecycleHook"},
 		},
 		{
 			name: "nth queue mode with rebalance draining",
@@ -62,8 +60,7 @@ func TestNodeTerminationHandlerBuilder(t *testing.T) {
 				"testcluster.test.com-RebalanceRecommendation",
 				"testcluster.test.com-SpotInterruption",
 			},
-			expectedHooks:  []string{"nodes-NTHLifecycleHook"},
-			expectedQueues: []string{"testcluster-test-com-nth"},
+			expectedHooks: []string{"nodes-NTHLifecycleHook"},
 		},
 		{
 			name:      "karpenter without nth spec",
@@ -74,7 +71,6 @@ func TestNodeTerminationHandlerBuilder(t *testing.T) {
 				"testcluster.test.com-RebalanceRecommendation",
 				"testcluster.test.com-SpotInterruption",
 			},
-			expectedQueues: []string{"testcluster-test-com-nth"},
 		},
 		{
 			name:      "karpenter with disabled nth spec",
@@ -86,7 +82,6 @@ func TestNodeTerminationHandlerBuilder(t *testing.T) {
 				"testcluster.test.com-RebalanceRecommendation",
 				"testcluster.test.com-SpotInterruption",
 			},
-			expectedQueues: []string{"testcluster-test-com-nth"},
 		},
 	}
 
@@ -127,7 +122,9 @@ func TestNodeTerminationHandlerBuilder(t *testing.T) {
 				case *awstasks.EventBridgeTarget:
 					targets = append(targets, strings.TrimSuffix(fi.ValueOf(task.Name), "-Target"))
 				case *awstasks.AutoscalingLifecycleHook:
-					hooks = append(hooks, fi.ValueOf(task.Name))
+					if fi.ValueOf(task.Enabled) {
+						hooks = append(hooks, fi.ValueOf(task.Name))
+					}
 				case *awstasks.SQS:
 					queues = append(queues, fi.ValueOf(task.Name))
 				}
@@ -136,15 +133,15 @@ func TestNodeTerminationHandlerBuilder(t *testing.T) {
 			assertNames(t, "rules", rules, g.expectedRules)
 			assertNames(t, "targets", targets, g.expectedRules)
 			assertNames(t, "lifecycle hooks", hooks, g.expectedHooks)
-			assertNames(t, "queues", queues, g.expectedQueues)
+			assertNames(t, "queues", queues, []string{"testcluster-test-com-nth"})
 		})
 	}
 }
 
 func assertNames(t *testing.T, kind string, actual, expected []string) {
 	t.Helper()
-	sort.Strings(actual)
-	if strings.Join(actual, ",") != strings.Join(expected, ",") {
+	slices.Sort(actual)
+	if !slices.Equal(actual, expected) {
 		t.Errorf("unexpected %s: got %v, want %v", kind, actual, expected)
 	}
 }

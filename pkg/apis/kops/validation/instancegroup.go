@@ -354,7 +354,7 @@ func validateKarpenterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster
 	if cluster.GetCloudProvider() != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups are only supported on AWS"))
 	}
-	if cluster.Spec.Karpenter == nil || !cluster.Spec.Karpenter.Enabled {
+	if !cluster.Spec.Karpenter.IsEnabled() {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups require cluster.spec.karpenter.enabled"))
 	}
 	if !g.Spec.Role.HasNode() {

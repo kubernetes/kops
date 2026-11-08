@@ -4,15 +4,17 @@
       "Action": [
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeTags",
-        "ec2:DescribeInstances",
-        "sqs:DeleteMessage",
-        "sqs:ReceiveMessage"
+        "ec2:DescribeInstances"
       ],
       "Effect": "Allow",
       "Resource": "*"
     },
     {
-      "Action": "autoscaling:CompleteLifecycleAction",
+      "Action": [
+        "autoscaling:CompleteLifecycleAction",
+        "sqs:DeleteMessage",
+        "sqs:ReceiveMessage"
+      ],
       "Condition": {
         "StringEquals": {
           "aws:ResourceTag/KubernetesCluster": "nthimdsprocessor.longclustername.example.com"
