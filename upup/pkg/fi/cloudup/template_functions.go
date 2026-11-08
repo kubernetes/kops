@@ -62,7 +62,6 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/resources/spotinst"
-	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/third_party/forked/text/template"
 	"k8s.io/kops/upup/pkg/fi"
@@ -445,13 +444,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	if cluster.Spec.CloudProvider.AWS != nil && cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
-			s := truncate.TruncateString(strings.ReplaceAll(tf.ClusterName(), ".", "-"), truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
 			domain := ".amazonaws.com/"
 			if strings.Contains(tf.Region, "cn-") {
 				domain = ".amazonaws.com.cn/"
 			}
-			url := "https://sqs." + tf.Region + domain + tf.AWSAccountID + "/" + s + "-nth"
-			return url
+			return "https://sqs." + tf.Region + domain + tf.AWSAccountID + "/" + model.InterruptionQueueName(tf.ClusterName())
 		}
 
 		dest["EnableSQSTerminationDraining"] = func() bool { return cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.IsQueueMode() }
@@ -464,7 +461,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	// IsControlPlaneMode signals that kOps is used to bootstrap the control plane and the nodes will be created by other means
 	// e.g. by Karpenter or Cluster API
 	dest["IsControlPlaneMode"] = func() bool {
-		return cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
+		return cluster.Spec.Karpenter.IsEnabled()
 	}
 
 	dest["PodIdentityWebhookConfigMapData"] = tf.podIdentityWebhookConfigMapData
@@ -497,6 +494,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["KarpenterEC2NodeClass"] = tf.KarpenterEC2NodeClass
 	dest["KarpenterInstanceGroups"] = tf.KarpenterInstanceGroups
 	dest["KarpenterNodePool"] = tf.KarpenterNodePool
+	dest["InterruptionQueueName"] = func() string {
+		return model.InterruptionQueueName(tf.ClusterName())
+	}
 
 	return nil
 }

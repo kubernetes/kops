@@ -310,7 +310,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
-	if spec.Karpenter != nil && spec.Karpenter.Enabled {
+	if spec.Karpenter.IsEnabled() {
 		fldPath := fieldPath.Child("karpenter", "enabled")
 		if !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))
@@ -2328,7 +2328,7 @@ func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig
 }
 
 func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTerminationHandlerSpec, fldPath *field.Path) (allErrs field.ErrorList) {
-	if (spec.Enabled == nil || *spec.Enabled) && cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled {
+	if (spec.Enabled == nil || *spec.Enabled) && cluster.Spec.Karpenter.IsEnabled() {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "nodeTerminationHandler cannot be used in conjunction with Karpenter"))
 	}
 	if spec.IsQueueMode() {
