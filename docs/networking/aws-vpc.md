@@ -24,7 +24,7 @@ kops create cluster \
   --name myclustername.mydns.io
 ```
 
-**Important:** pods use the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network. In addition, this CNI does not enforce network policies.
+**Important:** pods use the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network. Network policies are not enforced unless enabled as described below.
 
 ## Configuration
 
@@ -39,6 +39,32 @@ kops create cluster \
       - name: AWS_VPC_K8S_CNI_LOGLEVEL
         value: debug
 ```
+
+## Network policies
+{{ kops_feature_table(kops_added_default='1.38') }}
+
+Network policy enforcement is disabled by default. To enable it, set:
+
+```yaml
+  networking:
+    amazonvpc:
+      enableNetworkPolicy: true
+```
+
+This enables the network policy agent in the `aws-node` DaemonSet.
+The node agent uses eBPF and requires a Linux kernel version 5.10 or later.
+
+The [Amazon network policy controller](https://github.com/aws/amazon-network-policy-controller-k8s) must also be deployed, for example as a [custom addon](../addons.md#custom-addons):
+
+```yaml
+spec:
+  addons:
+  - manifest: s3://<state-store-bucket>/<cluster-name>/custom-addons/aws-network-policy-controller.yaml
+```
+
+Include the controller's `networking.k8s.aws` CRDs in the manifest.
+Until they exist, the node agent will keep restarting and new pods will fail to start.
+Run the controller with `--enable-configmap-check=true` so it follows `enableNetworkPolicy`, and cleans up when it is set back to `false`.
 
 ## Troubleshooting
 
