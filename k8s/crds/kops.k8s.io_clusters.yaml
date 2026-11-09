@@ -5306,8 +5306,8 @@ spec:
                     properties:
                       enableNetworkPolicy:
                         description: |-
-                          EnableNetworkPolicy enables enforcement of Kubernetes NetworkPolicy resources by the
-                          network policy agent. The network policy controller must be deployed separately.
+                          EnableNetworkPolicy enables enforcement of Kubernetes NetworkPolicy resources by
+                          running the network policy controller and enabling the network policy agent.
                         type: boolean
                       env:
                         description: Env is a list of environment variables to set
@@ -5345,6 +5345,10 @@ spec:
                       networkPolicyAgentImage:
                         description: NetworkPolicyAgentImage is the container image
                           to use for the network policy agent
+                        type: string
+                      networkPolicyControllerImage:
+                        description: NetworkPolicyControllerImage is the container
+                          image to use for the network policy controller
                         type: string
                     type: object
                   calico:
