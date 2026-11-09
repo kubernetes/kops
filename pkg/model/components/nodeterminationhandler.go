@@ -35,8 +35,9 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o *kops.Cluster) err
 	if clusterSpec.CloudProvider.AWS == nil {
 		return nil
 	}
-	if clusterSpec.Karpenter != nil && clusterSpec.Karpenter.Enabled {
-		// Karpenter manages its own NTH, so we disable the NTH addon.
+	if clusterSpec.Karpenter.IsEnabled() {
+		// Karpenter handles interruptions itself, consuming the queue that NodeTerminationHandlerBuilder
+		// provisions, so the NTH addon stays off.
 		// https://karpenter.sh/docs/troubleshooting/#aws-node-termination-handler-nth-interactions
 		return nil
 	}

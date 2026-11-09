@@ -1199,6 +1199,11 @@ func AddKarpenterPermissions(p *Policy, useCustomInstanceProfiles bool, useCusto
 		"pricing:GetProducts",
 		"ssm:GetParameter",
 	)
+	p.clusterTaggedAction.Insert(
+		"sqs:DeleteMessage",
+		"sqs:GetQueueUrl",
+		"sqs:ReceiveMessage",
+	)
 
 	instanceARN := fmt.Sprintf("arn:%s:ec2:*:*:instance/*", p.partition)
 	launchTemplateARN := fmt.Sprintf("arn:%s:ec2:*:*:launch-template/*", p.partition)
@@ -1608,11 +1613,10 @@ func AddNodeTerminationHandlerSQSPermissions(p *Policy) {
 		"autoscaling:DescribeAutoScalingInstances",
 		"autoscaling:DescribeTags",
 		"ec2:DescribeInstances",
-		// SQS permissions do not support conditions.
-		"sqs:DeleteMessage",
-		"sqs:ReceiveMessage",
 	)
 	p.clusterTaggedAction.Insert(
 		"autoscaling:CompleteLifecycleAction",
+		"sqs:DeleteMessage",
+		"sqs:ReceiveMessage",
 	)
 }

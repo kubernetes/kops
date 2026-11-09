@@ -336,9 +336,7 @@
         "elasticloadbalancing:DescribeTrustStores",
         "elasticloadbalancing:SetRulePriorities",
         "iam:CreateServiceLinkedRole",
-        "kms:DescribeKey",
-        "sqs:DeleteMessage",
-        "sqs:ReceiveMessage"
+        "kms:DescribeKey"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -388,7 +386,9 @@
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
         "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
         "elasticloadbalancing:SetSecurityGroups",
-        "elasticloadbalancing:SetSubnets"
+        "elasticloadbalancing:SetSubnets",
+        "sqs:DeleteMessage",
+        "sqs:ReceiveMessage"
       ],
       "Condition": {
         "StringEquals": {

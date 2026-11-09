@@ -230,3 +230,10 @@ func QueueNamePrefix(clusterName string) string {
 	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
 	return truncate.TruncateString(safeClusterName, truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
 }
+
+// InterruptionQueueName returns the name of the SQS queue that receives the EC2 interruption
+// events of the cluster, consumed by either NTH or Karpenter. The "-nth" suffix is kept so the
+// queue of an existing cluster is reused when Karpenter replaces NTH.
+func InterruptionQueueName(clusterName string) string {
+	return QueueNamePrefix(clusterName) + "-nth"
+}
