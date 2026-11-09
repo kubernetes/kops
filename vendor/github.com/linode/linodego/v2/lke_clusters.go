@@ -25,6 +25,36 @@ const (
 	LKEClusterDualStack LKEClusterStackType = "ipv4-ipv6"
 )
 
+type LKEClusterRoutingMode string
+
+const (
+	LKEClusterRoutingModeNative LKEClusterRoutingMode = "native"
+	LKEClusterRoutingModeVXLAN  LKEClusterRoutingMode = "vxlan"
+)
+
+// LKEClusterNetworking contains the effective, immutable network configuration for an LKE Enterprise cluster.
+type LKEClusterNetworking struct {
+	RoutingMode                     LKEClusterRoutingMode `json:"routing_mode"`
+	ClusterCIDRIPv4                 string                `json:"cluster_cidr_ipv4"`
+	NodeCIDRMaskSizeIPv4            int                   `json:"node_cidr_mask_size_ipv4"`
+	ServiceClusterIPRangeIPv4       string                `json:"service_cluster_ip_range_ipv4"`
+	MaxPods                         int                   `json:"max_pods"`
+	NodeBalancerBackendPrefixLength int                   `json:"nodebalancer_backend_prefix_length"`
+	ClusterCIDRIPv6                 *string               `json:"cluster_cidr_ipv6"`
+	NodeCIDRMaskSizeIPv6            *int                  `json:"node_cidr_mask_size_ipv6"`
+	ServiceClusterIPRangeIPv6       *string               `json:"service_cluster_ip_range_ipv6"`
+}
+
+// LKEClusterNetworkingCreateOptions contains create-time network options for an LKE Enterprise cluster.
+type LKEClusterNetworkingCreateOptions struct {
+	RoutingMode                     *LKEClusterRoutingMode `json:"routing_mode,omitzero"`
+	ClusterCIDRIPv4                 *string                `json:"cluster_cidr_ipv4,omitzero"`
+	NodeCIDRMaskSizeIPv4            *int                   `json:"node_cidr_mask_size_ipv4,omitzero"`
+	ServiceClusterIPRangeIPv4       *string                `json:"service_cluster_ip_range_ipv4,omitzero"`
+	MaxPods                         *int                   `json:"max_pods,omitzero"`
+	NodeBalancerBackendPrefixLength *int                   `json:"nodebalancer_backend_prefix_length,omitzero"`
+}
+
 // LKECluster represents a LKECluster object
 type LKECluster struct {
 	ID           int                    `json:"id"`
@@ -47,6 +77,9 @@ type LKECluster struct {
 	SubnetID  int                 `json:"subnet_id"`
 	VpcID     int                 `json:"vpc_id"`
 	StackType LKEClusterStackType `json:"stack_type"`
+
+	// NOTE: Networking may not currently be available to all users and can only be used with v4beta.
+	Networking *LKEClusterNetworking `json:"networking,omitzero"`
 
 	// NOTE: Locks can only be used with v4beta.
 	Locks []LockType `json:"locks"`
@@ -71,6 +104,9 @@ type LKEClusterCreateOptions struct {
 	SubnetID  *int                 `json:"subnet_id,omitzero"`
 	VpcID     *int                 `json:"vpc_id,omitzero"`
 	StackType *LKEClusterStackType `json:"stack_type,omitzero"`
+
+	// NOTE: Networking may not currently be available to all users and can only be used with v4beta.
+	Networking *LKEClusterNetworkingCreateOptions `json:"networking,omitzero"`
 }
 
 // LKEClusterUpdateOptions fields are those accepted by UpdateLKECluster
@@ -243,6 +279,13 @@ func (c *Client) ListLKEClusters(ctx context.Context, opts *ListOptions) ([]LKEC
 func (c *Client) GetLKECluster(ctx context.Context, clusterID int) (*LKECluster, error) {
 	e := formatAPIPath("lke/clusters/%d", clusterID)
 	return doGETRequest[LKECluster](ctx, c, e)
+}
+
+// GetLKEClusterNetworking gets the effective network configuration for an LKE Enterprise cluster.
+// NOTE: This endpoint may not currently be available to all users and can only be used with v4beta.
+func (c *Client) GetLKEClusterNetworking(ctx context.Context, clusterID int) (*LKEClusterNetworking, error) {
+	e := formatAPIPath("lke/clusters/%d/networking", clusterID)
+	return doGETRequest[LKEClusterNetworking](ctx, c, e)
 }
 
 // CreateLKECluster creates a LKECluster

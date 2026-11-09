@@ -24,6 +24,8 @@ type AccountSettings struct {
 	// Whether or not the Network Helper is enabled for all new Linode Instance Configs on the account.
 	NetworkHelper bool `json:"network_helper"`
 
+	TFAEnforced bool `json:"tfa_enforced"`
+
 	// A plan name like "longview-3"..."longview-100", or a nil value for to cancel any existing subscription plan.
 	LongviewSubscription *string `json:"longview_subscription"`
 
@@ -44,6 +46,8 @@ type AccountSettingsUpdateOptions struct {
 
 	// The default network helper setting for all new Linodes and Linode Configs for all users on the account.
 	NetworkHelper *bool `json:"network_helper,omitzero"`
+
+	TFAEnforced *bool `json:"tfa_enforced,omitzero"`
 
 	// NOTE: Interfaces for new linode setting may not currently be available to all users.
 	// A new configuration flag defines whether new Linodes can use Linode and/or legacy config interfaces.

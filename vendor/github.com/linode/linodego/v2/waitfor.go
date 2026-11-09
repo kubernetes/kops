@@ -428,6 +428,14 @@ var databaseStatusHandlers = map[DatabaseEngineType]databaseStatusFunc{
 
 		return db.Status, nil
 	},
+	DatabaseEngineTypeValkey: func(ctx context.Context, client Client, dbID int) (DatabaseStatus, error) {
+		db, err := client.GetValkeyDatabase(ctx, dbID)
+		if err != nil {
+			return "", err
+		}
+
+		return db.Status, nil
+	},
 }
 
 // WaitForDatabaseStatus waits for the provided database to have the given status.
