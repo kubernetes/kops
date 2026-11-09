@@ -227,12 +227,12 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 
 			haveAPIServerNodes := false
 			for _, ig := range c.InputInstanceGroups {
-				if ig.Spec.Role == kopsapi.InstanceGroupRoleAPIServer {
+				if ig.Spec.Role.HasAPIServer() {
 					haveAPIServerNodes = true
 				}
 			}
 			for _, ig := range c.InputInstanceGroups {
-				if ig.Spec.Role == kopsapi.InstanceGroupRoleAPIServer || (!haveAPIServerNodes && ig.Spec.Role == kopsapi.InstanceGroupRoleControlPlane) {
+				if ig.Spec.Role.HasAPIServer() || (!haveAPIServerNodes && ig.Spec.Role.HasControlPlane()) {
 					for _, subnet := range ig.Spec.Subnets {
 						switch subnetTypesByName[subnet] {
 						case kopsapi.SubnetTypePrivate:

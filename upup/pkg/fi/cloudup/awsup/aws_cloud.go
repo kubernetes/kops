@@ -2156,8 +2156,8 @@ func findDNSName(cloud AWSCloud, cluster *kops.Cluster) (string, error) {
 func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	var candidates []ec2types.InstanceType
 
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleAPIServer:
+	switch {
+	case ig.Spec.Role.HasNode() || ig.Spec.Role.IsControlPlaneType():
 		// t3.medium is the cheapest instance with 4GB of mem, unlimited by default, fast and has decent network
 		// c5.large and c4.large are a good second option in case t3.medium is not available in the AZ
 		candidates = []ec2types.InstanceType{
@@ -2167,7 +2167,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 			ec2types.InstanceTypeT4gMedium,
 		}
 
-	case kops.InstanceGroupRoleBastion:
+	case ig.Spec.Role.HasBastion():
 		candidates = []ec2types.InstanceType{
 			ec2types.InstanceTypeT3Micro,
 			ec2types.InstanceTypeT2Micro,

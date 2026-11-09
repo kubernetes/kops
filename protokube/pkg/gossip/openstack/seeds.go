@@ -57,7 +57,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 				}
 
 				// Seed only from control-plane nodes; workers do not run gossip.
-				if server.Metadata[openstack.TagKopsRole] != string(kops.InstanceGroupRoleControlPlane) {
+				if !kops.InstanceGroupRole(server.Metadata[openstack.TagKopsRole]).HasControlPlane() {
 					continue
 				}
 

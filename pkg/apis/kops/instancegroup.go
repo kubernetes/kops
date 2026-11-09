@@ -73,6 +73,26 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleBastion,
 }
 
+func (r InstanceGroupRole) HasControlPlane() bool {
+	return r == InstanceGroupRoleControlPlane
+}
+
+func (r InstanceGroupRole) HasNode() bool {
+	return r == InstanceGroupRoleNode
+}
+
+func (r InstanceGroupRole) HasBastion() bool {
+	return r == InstanceGroupRoleBastion
+}
+
+func (r InstanceGroupRole) HasAPIServer() bool {
+	return r == InstanceGroupRoleAPIServer
+}
+
+func (r InstanceGroupRole) IsControlPlaneType() bool {
+	return r.HasControlPlane() || r.HasAPIServer()
+}
+
 const (
 	// BtfsFilesystem indicates a btfs filesystem
 	BtfsFilesystem = "btfs"
@@ -345,8 +365,8 @@ type IAMProfileSpec struct {
 
 // IsControlPlane checks if instanceGroup is a control-plane node.
 func (g *InstanceGroup) IsControlPlane() bool {
-	switch g.Spec.Role {
-	case InstanceGroupRoleControlPlane:
+	switch {
+	case g.Spec.Role.HasControlPlane():
 		return true
 	default:
 		return false
@@ -355,8 +375,8 @@ func (g *InstanceGroup) IsControlPlane() bool {
 
 // IsAPIServerOnly checks if instanceGroup runs only the API Server
 func (g *InstanceGroup) IsAPIServerOnly() bool {
-	switch g.Spec.Role {
-	case InstanceGroupRoleAPIServer:
+	switch {
+	case g.Spec.Role.HasAPIServer():
 		return true
 	default:
 		return false
@@ -371,7 +391,7 @@ func (g *InstanceGroup) HasAPIServer() bool {
 // HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.
 // gVisor is only valid on workers; ValidateInstanceGroup rejects it on other roles.
 func (g *InstanceGroup) HasGVisor() bool {
-	return g.Spec.Role == InstanceGroupRoleNode &&
+	return g.Spec.Role.HasNode() &&
 		g.Spec.Containerd != nil &&
 		g.Spec.Containerd.GVisor != nil &&
 		g.Spec.Containerd.GVisor.Enabled != nil &&
@@ -380,8 +400,8 @@ func (g *InstanceGroup) HasGVisor() bool {
 
 // IsBastion checks if instanceGroup is a bastion
 func (g *InstanceGroup) IsBastion() bool {
-	switch g.Spec.Role {
-	case InstanceGroupRoleBastion:
+	switch {
+	case g.Spec.Role.HasBastion():
 		return true
 	default:
 		return false
@@ -401,8 +421,8 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 }
 
 func (r InstanceGroupRole) ToLowerString() string {
-	switch r {
-	case InstanceGroupRoleControlPlane:
+	switch {
+	case r.HasControlPlane():
 		return "control-plane"
 	default:
 		return strings.ToLower(string(r))

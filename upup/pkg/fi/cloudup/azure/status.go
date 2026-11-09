@@ -207,10 +207,11 @@ func keyedByName(instancegroups []*kops.InstanceGroup, clusterName string) (map[
 	m := map[string]*kops.InstanceGroup{}
 	for _, ig := range instancegroups {
 		var name string
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			name = ig.Name + ".masters." + clusterName
-		case kops.InstanceGroupRoleNode, kops.InstanceGroupRoleBastion:
+		case ig.Spec.Role.HasNode(),
+			ig.Spec.Role.HasBastion():
 			name = ig.Name + "." + clusterName
 		default:
 			klog.Warningf("Ignoring InstanceGroup of unknown role %q", ig.Spec.Role)

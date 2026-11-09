@@ -441,12 +441,12 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 	maxSize := new(int32(1))
 	if ig.Spec.MinSize != nil {
 		minSize = new(int32(*ig.Spec.MinSize))
-	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+	} else if ig.Spec.Role.HasNode() {
 		minSize = new(int32(2))
 	}
 	if ig.Spec.MaxSize != nil {
 		maxSize = new(int32(*ig.Spec.MaxSize))
-	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+	} else if ig.Spec.Role.HasNode() {
 		maxSize = new(int32(2))
 	}
 
@@ -507,7 +507,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 			}
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		if ig.Spec.Role.HasBastion() {
 			t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("bastion"))
 		}
 	}

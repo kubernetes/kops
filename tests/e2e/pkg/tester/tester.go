@@ -195,7 +195,7 @@ func (t *Tester) addNodeIG() error {
 
 	var ig *api.InstanceGroup
 	for _, v := range igs {
-		if unversioned.InstanceGroupRole(v.Spec.Role) == unversioned.InstanceGroupRoleNode {
+		if unversioned.InstanceGroupRole(v.Spec.Role).HasNode() {
 			ig = v
 		}
 	}
@@ -366,10 +366,10 @@ func (t *Tester) getSchedulableZones() ([]string, error) {
 
 	var schedulable []*api.InstanceGroup
 	for _, ig := range igs {
-		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleControlPlane {
+		if unversioned.InstanceGroupRole(ig.Spec.Role).HasControlPlane() {
 			continue
 		}
-		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleAPIServer {
+		if unversioned.InstanceGroupRole(ig.Spec.Role).HasAPIServer() {
 			continue
 		}
 

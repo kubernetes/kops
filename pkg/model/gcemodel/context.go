@@ -94,7 +94,7 @@ func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {
 // HasAPIServerOnlyInstanceGroups returns true if the cluster has any APIServer-only instance groups.
 func (c *GCEModelContext) HasAPIServerOnlyInstanceGroups() bool {
 	for _, ig := range c.AllInstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
+		if ig.Spec.Role.HasAPIServer() {
 			return true
 		}
 	}

@@ -100,11 +100,11 @@ func (c *NodeupModelContext) Init() error {
 
 	role := c.BootConfig.InstanceGroupRole
 
-	if role == kops.InstanceGroupRoleControlPlane {
+	if role.HasControlPlane() {
 		c.IsMaster = true
 	}
 
-	if role == kops.InstanceGroupRoleControlPlane || role == kops.InstanceGroupRoleAPIServer {
+	if role.HasControlPlane() || role.HasAPIServer() {
 		c.HasAPIServer = true
 	}
 
@@ -566,7 +566,7 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 // InstallGVisorRuntime returns true if the gVisor (runsc) runtime should be installed.
 func (c *NodeupModelContext) InstallGVisorRuntime() bool {
 	return c.BootConfig != nil &&
-		c.BootConfig.InstanceGroupRole == kops.InstanceGroupRoleNode &&
+		c.BootConfig.InstanceGroupRole.HasNode() &&
 		c.NodeupConfig.GVisor != nil &&
 		fi.ValueOf(c.NodeupConfig.GVisor.Enabled)
 }
