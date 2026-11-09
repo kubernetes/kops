@@ -89,6 +89,15 @@ type StreamUpdateOptions struct {
 	Details      *StreamDetails `json:"details,omitzero"`
 }
 
+// LogStreamQuota represents a per-account log stream limit.
+type LogStreamQuota struct {
+	QuotaID     string `json:"quota_id"`
+	QuotaName   string `json:"quota_name"`
+	QuotaLimit  int    `json:"quota_limit"`
+	QuotaType   string `json:"quota_type"`
+	Description string `json:"description"`
+}
+
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (s *Stream) UnmarshalJSON(b []byte) error {
 	type mask Stream
@@ -145,4 +154,9 @@ func (c *Client) ListLogStreamHistory(ctx context.Context, streamID int, opts *L
 func (c *Client) DeleteLogStream(ctx context.Context, streamID int) error {
 	e := formatAPIPath("monitor/streams/%d", streamID)
 	return doDELETERequest(ctx, c, e)
+}
+
+// ListLogStreamQuotas returns the per-account log stream limits.
+func (c *Client) ListLogStreamQuotas(ctx context.Context, opts *ListOptions) ([]LogStreamQuota, error) {
+	return getPaginatedResults[LogStreamQuota](ctx, c, "monitor/streams/quotas", opts)
 }

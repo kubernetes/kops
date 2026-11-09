@@ -31,6 +31,7 @@ type User struct {
 	UserType            UserType   `json:"user_type"`
 	Restricted          bool       `json:"restricted"`
 	TFAEnabled          bool       `json:"tfa_enabled"`
+	TFAEnforced         bool       `json:"tfa_enforced"`
 	SSHKeys             []string   `json:"ssh_keys"`
 	PasswordCreated     *time.Time `json:"-"`
 	VerifiedPhoneNumber *string    `json:"verified_phone_number"`

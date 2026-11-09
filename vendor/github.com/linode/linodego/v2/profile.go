@@ -33,6 +33,7 @@ type Profile struct {
 	EmailNotifications  bool             `json:"email_notifications"`
 	IPWhitelistEnabled  bool             `json:"ip_whitelist_enabled"`
 	TwoFactorAuth       bool             `json:"two_factor_auth"`
+	TFAEnforced         bool             `json:"tfa_enforced"`
 	Restricted          bool             `json:"restricted"`
 	LishAuthMethod      LishAuthMethod   `json:"lish_auth_method"`
 	Referrals           ProfileReferrals `json:"referrals"`

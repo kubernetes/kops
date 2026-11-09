@@ -71,6 +71,28 @@ type LKENodePoolIsolationCreateOptions struct {
 	PublicIPv6 *bool `json:"public_ipv6,omitzero"`
 }
 
+// LKENodePoolInterfaceType represents the type of a node pool network interface.
+type LKENodePoolInterfaceType string
+
+const (
+	// LKENodePoolInterfaceTypeVPC is a standard VPC interface (must be first and represents the cluster VPC).
+	LKENodePoolInterfaceTypeVPC LKENodePoolInterfaceType = "vpc"
+	// LKENodePoolInterfaceTypeRDMAVPC is an RDMA-capable VPC interface (LKE Enterprise only).
+	LKENodePoolInterfaceTypeRDMAVPC LKENodePoolInterfaceType = "rdma_vpc"
+)
+
+// LKENodePoolInterface describes one VPC-backed interface attached to nodes in the pool.
+type LKENodePoolInterface struct {
+	Type     LKENodePoolInterfaceType `json:"type"`
+	VPCID    int                      `json:"vpc_id"`
+	SubnetID int                      `json:"subnet_id"`
+}
+
+// LKENodePoolNetworking holds the ordered list of VPC-backed interfaces for an LKE Enterprise node pool.
+type LKENodePoolNetworking struct {
+	Interfaces []LKENodePoolInterface `json:"interfaces"`
+}
+
 // LKENodePoolLabels represents Kubernetes labels to add to an LKENodePool
 type LKENodePoolLabels map[string]string
 
@@ -93,6 +115,10 @@ type LKENodePool struct {
 
 	// Isolation may not currently be available to all users.
 	Isolation *LKENodePoolIsolation `json:"isolation"`
+
+	// Networking holds the effective VPC-backed interface configuration for LKE Enterprise node pools.
+	// It is read-only after creation.
+	Networking *LKENodePoolNetworking `json:"networking,omitzero"`
 
 	// K8sVersion and UpdateStrategy are only for LKE Enterprise to support node pool upgrades.
 	// It may not currently be available to all users and is under v4beta.
@@ -118,6 +144,11 @@ type LKENodePoolCreateOptions struct {
 
 	// Isolation may not currently be available to all users.
 	Isolation *LKENodePoolIsolationCreateOptions `json:"isolation,omitzero"`
+
+	// Networking configures the ordered set of VPC-backed interfaces for LKE Enterprise node pools.
+	// Accepted only at creation time; immutable after the pool is created.
+	// NOTE: Networking may not currently be available to all users and can only be used with v4beta.
+	Networking *LKENodePoolNetworking `json:"networking,omitzero"`
 
 	// K8sVersion and UpdateStrategy only works for LKE Enterprise to support node pool upgrades.
 	// It may not currently be available to all users and is under v4beta.
@@ -165,6 +196,8 @@ func (l LKENodePool) GetCreateOptions() (o LKENodePoolCreateOptions) {
 			PublicIPv6: new(l.Isolation.PublicIPv6),
 		}
 	}
+
+	o.Networking = l.Networking
 
 	return o
 }
