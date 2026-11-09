@@ -94,15 +94,15 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0 <1.27.0"
-    - name: ubuntu-os-cloud/ubuntu-2204-jammy-v20261021
+    - name: ubuntu-os-cloud/ubuntu-2204-jammy-v20261105
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261024
+    - name: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261105
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
-    - name: ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20261024
+    - name: ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20261105
       providerID: gce
       architectureID: arm64
       kubernetesVersion: ">=1.32.0"
@@ -114,11 +114,11 @@ spec:
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: Canonical:ubuntu-24_04-lts:server:24.04.202610210
+    - name: Canonical:ubuntu-24_04-lts:server:24.04.202610250
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
-    - name: Canonical:ubuntu-24_04-lts:server-arm64:24.04.202610210
+    - name: Canonical:ubuntu-24_04-lts:server-arm64:24.04.202610250
       providerID: azure
       architectureID: arm64
       kubernetesVersion: ">=1.32.0"
