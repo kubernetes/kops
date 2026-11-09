@@ -319,6 +319,9 @@ type AmazonVPCNetworkingSpec struct {
 	InitImage string `json:"initImageName,omitempty"`
 	// NetworkPolicyAgentImage is the container image to use for the network policy agent
 	NetworkPolicyAgentImage string `json:"networkPolicyAgentImage,omitempty"`
+	// EnableNetworkPolicy enables enforcement of Kubernetes NetworkPolicy resources by the
+	// network policy agent. The network policy controller must be deployed separately.
+	EnableNetworkPolicy bool `json:"enableNetworkPolicy,omitempty"`
 	// Env is a list of environment variables to set in the container.
 	Env []EnvVar `json:"env,omitempty"`
 }

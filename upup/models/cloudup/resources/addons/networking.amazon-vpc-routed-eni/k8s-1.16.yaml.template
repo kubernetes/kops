@@ -82,7 +82,7 @@ metadata:
     app.kubernetes.io/version: "v1.23.2"
 data:
   enable-windows-ipam: "false"
-  enable-network-policy-controller: "false"
+  enable-network-policy-controller: "{{ .Networking.AmazonVPC.EnableNetworkPolicy }}"
   enable-windows-prefix-delegation: "false"
   warm-prefix-target: "0"
   warm-ip-target: "1"
@@ -347,7 +347,7 @@ spec:
                   fieldPath: spec.nodeName
           args:
             - --enable-ipv6=false
-            - --enable-network-policy=false
+            - --enable-network-policy={{ .Networking.AmazonVPC.EnableNetworkPolicy }}
             - --enable-cloudwatch-logs=false
             - --enable-policy-event-logs=false
             - --log-file=/var/log/aws-routed-eni/network-policy-agent.log
