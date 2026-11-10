@@ -1,6 +1,6 @@
 module k8s.io/kops/hack
 
-go 1.27.3
+go 1.27.4
 
 tool (
 	github.com/client9/misspell/cmd/misspell
