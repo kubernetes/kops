@@ -213,35 +213,35 @@ spec:
     requiredVersion: 1.11.10
   kopsVersions:
   - range: ">=1.37.0-alpha.1"
-    recommendedVersion: "1.37.0-beta.1"
+    recommendedVersion: "1.37.0"
     #requiredVersion: 1.37.0
     kubernetesVersion: 1.37.2
   - range: ">=1.36.0-alpha.1"
-    recommendedVersion: "1.36.0-beta.1"
+    recommendedVersion: "1.36.3"
     #requiredVersion: 1.36.0
     kubernetesVersion: 1.36.6
   - range: ">=1.35.0-alpha.1"
-    recommendedVersion: "1.35.1"
+    recommendedVersion: "1.36.3"
     #requiredVersion: 1.35.0
     kubernetesVersion: 1.35.10
   - range: ">=1.34.0-alpha.1"
-    recommendedVersion: "1.35.1"
+    recommendedVersion: "1.36.3"
     #requiredVersion: 1.34.0
     kubernetesVersion: 1.34.13
   - range: ">=1.33.0-alpha.1"
-    recommendedVersion: "1.35.1"
+    recommendedVersion: "1.36.3"
     #requiredVersion: 1.33.0
     kubernetesVersion: 1.33.13
   - range: ">=1.32.0-alpha.1"
-    recommendedVersion: "1.35.1"
+    recommendedVersion: "1.36.3"
     #requiredVersion: 1.32.0
     kubernetesVersion: 1.32.13
   - range: ">=1.31.0-alpha.1"
-    recommendedVersion: "1.35.1"
+    recommendedVersion: "1.36.3"
     #requiredVersion: 1.31.0
     kubernetesVersion: 1.31.14
   - range: ">=1.30.0-alpha.1"
-    recommendedVersion: "1.35.1"
+    recommendedVersion: "1.35.2"
     #requiredVersion: 1.30.0
     kubernetesVersion: 1.30.14
   - range: ">=1.29.0-alpha.1"
@@ -249,11 +249,11 @@ spec:
     #requiredVersion: 1.29.0
     kubernetesVersion: 1.29.15
   - range: ">=1.28.0-alpha.1"
-    recommendedVersion: "1.33.1"
+    recommendedVersion: "1.33.2"
     #requiredVersion: 1.28.0
     kubernetesVersion: 1.28.15
   - range: ">=1.27.0-alpha.1"
-    recommendedVersion: "1.32.2"
+    recommendedVersion: "1.32.4"
     #requiredVersion: 1.27.0
     kubernetesVersion: 1.27.16
   - range: ">=1.26.0-alpha.1"
@@ -273,11 +273,11 @@ spec:
     #requiredVersion: 1.23.0
     kubernetesVersion: 1.23.17
   - range: ">=1.22.0-alpha.1"
-    recommendedVersion: "1.27.0"
+    recommendedVersion: "1.27.3"
     #requiredVersion: 1.22.0
     kubernetesVersion: 1.22.17
   - range: ">=1.21.0-alpha.1"
-    recommendedVersion: "1.26.5"
+    recommendedVersion: "1.26.6"
     #requiredVersion: 1.21.0
     kubernetesVersion: 1.21.14
   - range: ">=1.20.0-alpha.1"
@@ -293,15 +293,15 @@ spec:
     #requiredVersion: 1.18.0
     kubernetesVersion: 1.18.20
   - range: ">=1.17.0-alpha.1"
-    recommendedVersion: "1.22.3"
+    recommendedVersion: "1.22.6"
     #requiredVersion: 1.17.0
     kubernetesVersion: 1.17.17
   - range: ">=1.16.0-alpha.1"
-    recommendedVersion: "1.21.4"
+    recommendedVersion: "1.21.5"
     #requiredVersion: 1.16.0
     kubernetesVersion: 1.16.15
   - range: ">=1.15.0-alpha.1"
-    recommendedVersion: "1.21.4"
+    recommendedVersion: "1.21.5"
     #requiredVersion: 1.15.0
     kubernetesVersion: 1.15.12
   - range: ">=1.14.0-alpha.1"
@@ -313,7 +313,7 @@ spec:
     #requiredVersion: 1.13.0
     kubernetesVersion: 1.13.12
   - range: ">=1.12.0-alpha.1"
-    recommendedVersion: "1.12.1"
+    recommendedVersion: "1.12.3"
     #requiredVersion: 1.12.0
     kubernetesVersion: 1.12.10
   - range: ">=1.11.0-alpha.1"
