@@ -1,6 +1,6 @@
 module k8s.io/kops/tests/e2e/scenarios/ai-conformance
 
-go 1.27.3
+go 1.27.4
 
 require (
 	github.com/yuin/goldmark v1.7.16
