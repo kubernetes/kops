@@ -270,6 +270,7 @@ func TestInstanceRenderLinodeCreateWithPublicAndVPCInterfaces(t *testing.T) {
 		Count:                  1,
 		Subnet:                 &Subnet{ID: new(42)},
 		RequirePublicInterface: &requirePublicInterface,
+		PublicFirewall:         &Firewall{ID: new(55)},
 		Tags:                   []string{"kops.k8s.io/cluster:example.k8s.local"},
 		AuthorizedKeys:         []*SSHKey{{Name: new("example-k8s-local-default"), PublicKey: &publicKey}},
 		UserData:               userData,

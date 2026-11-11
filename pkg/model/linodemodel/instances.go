@@ -46,6 +46,10 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	for _, ig := range b.InstanceGroups {
+		firewallRole, err := linodeFirewallRoleForInstanceGroup(ig.Spec.Role)
+		if err != nil {
+			return err
+		}
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
 			return err
@@ -54,6 +58,14 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return fmt.Errorf("expected exactly one subnet for InstanceGroup %q; subnets was %s", ig.Name, ig.Spec.Subnets)
 		}
 		subnetSpec := subnets[0]
+		requirePublicInterface := requirePublicInterface(subnetSpec, ig)
+		var publicFirewall *linodetasks.Firewall
+		if fi.ValueOf(requirePublicInterface) {
+			publicFirewall, err = findFirewallTask(c, linodeFirewallName(b.ClusterName(), firewallRole))
+			if err != nil {
+				return err
+			}
+		}
 		subnetTaskName := linode.NormalizeLinodeLabel(b.ClusterName() + "-" + subnetSpec.Name)
 		subnetTask, err := findSubnetTask(c, subnetTaskName, ig)
 		if err != nil {
@@ -84,12 +96,13 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Region:                 subnetSpec.Region,
 			Type:                   ig.Spec.MachineType,
 			Subnet:                 subnetTask,
-			RequirePublicInterface: requirePublicInterface(subnetSpec, ig),
+			RequirePublicInterface: requirePublicInterface,
 			AuthorizedKeys:         authorizedKeys,
 			Count:                  int(fi.ValueOf(ig.Spec.MinSize)),
 			Image:                  ig.Spec.Image,
 			UserData:               userData,
 			Tags:                   tags,
+			PublicFirewall:         publicFirewall,
 		}
 
 		c.AddTask(&instanceGroup)
@@ -155,4 +168,17 @@ func findSubnetTask(c *fi.CloudupModelBuilderContext, subnetTaskName string, ig 
 	}
 
 	return nil, fmt.Errorf("subnet task %q not found for InstanceGroup %q", subnetTaskName, ig.Name)
+}
+
+func findFirewallTask(c *fi.CloudupModelBuilderContext, firewallName string) (*linodetasks.Firewall, error) {
+	for _, task := range c.Tasks {
+		firewall, ok := task.(*linodetasks.Firewall)
+		if !ok {
+			continue
+		}
+		if fi.ValueOf(firewall.Name) == firewallName {
+			return firewall, nil
+		}
+	}
+	return nil, fmt.Errorf("firewall task %q not found", firewallName)
 }
