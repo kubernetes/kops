@@ -183,7 +183,11 @@ hostname: ${vm_name}
 manage_etc_hosts: true
 
 locale: en_US.UTF-8
-timezone: Europe/Berlin
+timezone: UTC
+
+# Stop automatic package upgrades, so the VMs do not change during a test.
+bootcmd:
+  - systemctl mask --now apt-daily.timer apt-daily-upgrade.timer
 EOF
 
   cat <<EOF > meta-data
