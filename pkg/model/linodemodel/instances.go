@@ -58,9 +58,9 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return fmt.Errorf("expected exactly one subnet for InstanceGroup %q; subnets was %s", ig.Name, ig.Spec.Subnets)
 		}
 		subnetSpec := subnets[0]
-		requirePublicInterface := requirePublicInterface(subnetSpec, ig)
+		publicInterfaceRequired := requirePublicInterface(subnetSpec, ig)
 		var publicFirewall *linodetasks.Firewall
-		if fi.ValueOf(requirePublicInterface) {
+		if fi.ValueOf(publicInterfaceRequired) {
 			publicFirewall, err = findFirewallTask(c, linodeFirewallName(b.ClusterName(), firewallRole))
 			if err != nil {
 				return err
@@ -96,7 +96,7 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Region:                 subnetSpec.Region,
 			Type:                   ig.Spec.MachineType,
 			Subnet:                 subnetTask,
-			RequirePublicInterface: requirePublicInterface,
+			RequirePublicInterface: publicInterfaceRequired,
 			AuthorizedKeys:         authorizedKeys,
 			Count:                  int(fi.ValueOf(ig.Spec.MinSize)),
 			Image:                  ig.Spec.Image,

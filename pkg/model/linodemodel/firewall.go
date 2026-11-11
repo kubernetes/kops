@@ -85,51 +85,43 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 	}
 
-	for _, firewall := range []struct {
-		role     string
-		firewall *linodetasks.Firewall
-	}{
-		{role: linodeFirewallRoleControlPlane, firewall: controlPlaneFirewall},
-		{role: linodeFirewallRoleNodes, firewall: nodesFirewall},
-		{role: linodeFirewallRoleBastion, firewall: bastionFirewall},
-	} {
-		required, err := b.publicFirewallRequired(firewall.role)
+	firewalls := map[string]*linodetasks.Firewall{
+		linodeFirewallRoleControlPlane: controlPlaneFirewall,
+		linodeFirewallRoleNodes:        nodesFirewall,
+		linodeFirewallRoleBastion:      bastionFirewall,
+	}
+	for _, ig := range b.InstanceGroups {
+		role, err := linodeFirewallRoleForInstanceGroup(ig.Spec.Role)
 		if err != nil {
 			return err
 		}
-		if required {
-			c.AddTask(firewall.firewall)
-		}
-	}
-
-	return nil
-}
-
-func (b *FirewallModelBuilder) publicFirewallRequired(role string) (bool, error) {
-	for _, ig := range b.InstanceGroups {
-		instanceGroupFirewallRole, err := linodeFirewallRoleForInstanceGroup(ig.Spec.Role)
-		if err != nil {
-			return false, err
-		}
-		if role != instanceGroupFirewallRole {
-			continue
-		}
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
-			return false, err
+			return err
 		}
 		for _, subnet := range subnets {
 			if fi.ValueOf(requirePublicInterface(subnet, ig)) {
-				return true, nil
+				firewalls[role].ApplyTo = append(firewalls[role].ApplyTo, &linodetasks.FirewallTarget{
+					Tags: []string{
+						fmt.Sprintf("%s:%s", linode.TagKubernetesClusterName, b.ClusterName()),
+						fmt.Sprintf("%s:%s", linode.TagKubernetesInstanceGroup, ig.Name),
+					},
+				})
+				break
 			}
 		}
 	}
-	return false, nil
+	for _, firewall := range firewalls {
+		if len(firewall.ApplyTo) > 0 {
+			c.AddTask(firewall)
+		}
+	}
+	return nil
 }
 
 func (b *FirewallModelBuilder) newFirewall(role string, sshAccess []net.IPNet) *linodetasks.Firewall {
 	var rules []*linodetasks.FirewallRule
-	if len(sshAccess) > 0 {
+	if len(sshAccess) > 0 && (role == linodeFirewallRoleBastion || !b.UsesSSHBastion()) {
 		rules = []*linodetasks.FirewallRule{{
 			Direction: "in",
 			Label:     "ssh",
@@ -146,34 +138,7 @@ func (b *FirewallModelBuilder) newFirewall(role string, sshAccess []net.IPNet) *
 			fmt.Sprintf("%s:%s", linode.TagKubernetesClusterName, b.ClusterName()),
 			fmt.Sprintf("%s:%s", linode.TagKubernetesFirewallRole, role),
 		},
-		ApplyTo: linodeFirewallTargets(b.ClusterName(), role),
 	}
-}
-
-func linodeFirewallTargets(clusterName, firewallRole string) []*linodetasks.FirewallTarget {
-	clusterTag := fmt.Sprintf("%s:%s", linode.TagKubernetesClusterName, clusterName)
-	var instanceRoles []kops.InstanceGroupRole
-	switch firewallRole {
-	case linodeFirewallRoleControlPlane:
-		instanceRoles = []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer}
-	case linodeFirewallRoleNodes:
-		instanceRoles = []kops.InstanceGroupRole{kops.InstanceGroupRoleNode}
-	case linodeFirewallRoleBastion:
-		instanceRoles = []kops.InstanceGroupRole{kops.InstanceGroupRoleBastion}
-	default:
-		return nil
-	}
-
-	targets := make([]*linodetasks.FirewallTarget, 0, len(instanceRoles))
-	for _, instanceRole := range instanceRoles {
-		targets = append(targets, &linodetasks.FirewallTarget{
-			Tags: []string{
-				clusterTag,
-				fmt.Sprintf("%s:%s", linode.TagKubernetesInstanceRole, instanceRole),
-			},
-		})
-	}
-	return targets
 }
 
 func linodeFirewallName(clusterName, role string) string {

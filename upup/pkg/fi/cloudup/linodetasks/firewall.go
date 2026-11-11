@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"slices"
 	"strings"
 
 	"github.com/linode/linodego/v2"
@@ -33,11 +34,14 @@ type Firewall struct {
 	Lifecycle fi.Lifecycle
 
 	ID             *int
+	Status         *string
 	InboundPolicy  *string
 	OutboundPolicy *string
 	Rules          []*FirewallRule
 	Tags           []string
 	ApplyTo        []*FirewallTarget
+
+	unattachedInstances []linodego.Instance
 }
 
 type FirewallTarget struct {
@@ -81,6 +85,7 @@ func (v *Firewall) Find(c *fi.CloudupContext) (*Firewall, error) {
 		Name:           new(matched.Label),
 		Lifecycle:      v.Lifecycle,
 		ID:             new(matched.ID),
+		Status:         new(string(matched.Status)),
 		InboundPolicy:  new(matched.Rules.InboundPolicy),
 		OutboundPolicy: new(matched.Rules.OutboundPolicy),
 		Tags:           matched.Tags,
@@ -88,11 +93,12 @@ func (v *Firewall) Find(c *fi.CloudupContext) (*Firewall, error) {
 	actual.Rules = append(actual.Rules, firewallRulesFromLinode(matched.Rules)...)
 	v.ID = actual.ID
 	if v.ApplyTo != nil {
-		applied, err := firewallTargetsAreApplied(c.Context(), cloud.Client(), matched.ID, v.ApplyTo)
+		instances, err := findUnattachedFirewallInstances(c.Context(), cloud.Client(), matched.Entities, v.ApplyTo)
 		if err != nil {
 			return nil, err
 		}
-		if applied {
+		actual.unattachedInstances = instances
+		if len(instances) == 0 {
 			actual.ApplyTo = v.ApplyTo
 		}
 	}
@@ -106,6 +112,9 @@ func (v *Firewall) Run(c *fi.CloudupContext) error {
 }
 
 func (v *Firewall) setDefaults() {
+	if v.Status == nil {
+		v.Status = new(string(linodego.FirewallEnabled))
+	}
 	if v.InboundPolicy == nil {
 		v.InboundPolicy = new("DROP")
 	}
@@ -118,6 +127,10 @@ func (v *Firewall) setDefaults() {
 		}
 		if rule != nil && rule.Label == "" {
 			rule.Label = fmt.Sprintf("rule-%d", index+1)
+		}
+		if rule != nil {
+			rule.SourceIPs = slices.Clone(rule.SourceIPs)
+			sortFirewallCIDRs(rule.SourceIPs)
 		}
 	}
 }
@@ -180,8 +193,10 @@ func (*Firewall) RenderLinode(t *linode.APITarget, actual, expected, changes *Fi
 			}
 		}
 
-		if changes.Tags != nil {
-			if _, err := client.UpdateFirewall(context.Background(), fi.ValueOf(actual.ID), linodego.FirewallUpdateOptions{Tags: expected.Tags}); err != nil {
+		if changes.Tags != nil || changes.Status != nil {
+			if _, err := client.UpdateFirewall(context.Background(), fi.ValueOf(actual.ID), linodego.FirewallUpdateOptions{
+				Tags: expected.Tags, Status: linodego.FirewallStatus(fi.ValueOf(expected.Status)),
+			}); err != nil {
 				return fmt.Errorf("error updating Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
 			}
 		}
@@ -193,7 +208,17 @@ func (*Firewall) RenderLinode(t *linode.APITarget, actual, expected, changes *Fi
 	}
 
 	if expected.ApplyTo != nil && (actual == nil || changes.ApplyTo != nil) {
-		if err := applyFirewallToTargets(context.Background(), client, firewallID, expected.ApplyTo); err != nil {
+		var instances []linodego.Instance
+		if actual != nil {
+			instances = actual.unattachedInstances
+		} else {
+			var err error
+			instances, err = findUnattachedFirewallInstances(context.Background(), client, nil, expected.ApplyTo)
+			if err != nil {
+				return err
+			}
+		}
+		if err := applyFirewallToInstances(context.Background(), client, firewallID, instances); err != nil {
 			return err
 		}
 	}
@@ -229,80 +254,71 @@ func validateFirewallTargets(targets []*FirewallTarget) error {
 	return nil
 }
 
-func firewallTargetsAreApplied(ctx context.Context, client linode.LinodeClient, firewallID int, targets []*FirewallTarget) (bool, error) {
-	applied := true
-	err := forEachFirewallTargetInterface(ctx, client, targets, func(instance linodego.Instance, iface linodego.LinodeInterface) error {
-		interfaceApplied, err := firewallIsAppliedToInterface(ctx, client, firewallID, instance, iface)
-		if err != nil {
-			return err
-		}
-		if !interfaceApplied {
-			applied = false
-		}
-		return nil
-	})
-	return applied, err
-}
-
-func applyFirewallToTargets(ctx context.Context, client linode.LinodeClient, firewallID int, targets []*FirewallTarget) error {
-	return forEachFirewallTargetInterface(ctx, client, targets, func(instance linodego.Instance, iface linodego.LinodeInterface) error {
-		interfaceApplied, err := firewallIsAppliedToInterface(ctx, client, firewallID, instance, iface)
-		if err != nil {
-			return err
-		}
-		if interfaceApplied {
-			return nil
-		}
-		if _, err := client.CreateFirewallDevice(ctx, firewallID, linodego.FirewallDeviceCreateOptions{ID: iface.ID, Type: linodego.FirewallDeviceLinodeInterface}); err != nil {
-			return fmt.Errorf("error attaching Akamai (Linode) firewall %d to interface %d on instance %q: %w", firewallID, iface.ID, instance.Label, err)
-		}
-		return nil
-	})
-}
-
-func firewallIsAppliedToInterface(ctx context.Context, client linode.LinodeClient, firewallID int, instance linodego.Instance, iface linodego.LinodeInterface) (bool, error) {
-	firewalls, err := client.ListInterfaceFirewalls(ctx, instance.ID, iface.ID, nil)
-	if err != nil {
-		return false, fmt.Errorf("error listing Akamai (Linode) firewalls for interface %d on instance %q: %w", iface.ID, instance.Label, err)
-	}
-	if len(firewalls) == 0 {
-		return false, nil
-	}
-	if len(firewalls) != 1 || firewalls[0].ID != firewallID {
-		return false, fmt.Errorf("interface %d on instance %q has firewall %q, expected firewall ID %d", iface.ID, instance.Label, firewalls[0].Label, firewallID)
-	}
-	return true, nil
-}
-
-func forEachFirewallTargetInterface(ctx context.Context, client linode.LinodeClient, targets []*FirewallTarget, visit func(linodego.Instance, linodego.LinodeInterface) error) error {
+func findUnattachedFirewallInstances(ctx context.Context, client linode.LinodeClient, entities []linodego.FirewallDeviceEntity, targets []*FirewallTarget) ([]linodego.Instance, error) {
 	if err := validateFirewallTargets(targets); err != nil {
-		return err
+		return nil, err
 	}
-	seenInterfaceIDs := make(map[int]struct{})
+	seen := make(map[int]bool)
+	for _, entity := range entities {
+		if entity.Type == linodego.FirewallDeviceLinodeInterface && entity.ParentEntity != nil {
+			seen[entity.ParentEntity.ID] = true
+		}
+	}
+	var result []linodego.Instance
 	for _, target := range targets {
 		listOptions, err := linode.ListOptionsForTags(target.Tags...)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		instances, err := client.ListInstances(ctx, listOptions)
 		if err != nil {
-			return fmt.Errorf("error listing Akamai (Linode) instances for firewall target: %w", err)
+			return nil, fmt.Errorf("error listing Akamai (Linode) instances for firewall target: %w", err)
 		}
 		for _, instance := range instances {
-			interfaces, err := client.ListInterfaces(ctx, instance.ID, nil)
-			if err != nil {
-				return fmt.Errorf("error listing Akamai (Linode) interfaces for instance %q: %w", instance.Label, err)
+			if !seen[instance.ID] {
+				seen[instance.ID] = true
+				result = append(result, instance)
 			}
-			for _, iface := range interfaces {
-				if iface.Public == nil {
+		}
+	}
+	return result, nil
+}
+
+func applyFirewallToInstances(ctx context.Context, client linode.LinodeClient, firewallID int, instances []linodego.Instance) error {
+	for _, instance := range instances {
+		interfaces, err := client.ListInterfaces(ctx, instance.ID, nil)
+		if err != nil {
+			return fmt.Errorf("error listing Akamai (Linode) interfaces for instance %q: %w", instance.Label, err)
+		}
+		for _, iface := range interfaces {
+			if iface.Public == nil {
+				continue
+			}
+			firewalls, err := client.ListInterfaceFirewalls(ctx, instance.ID, iface.ID, nil)
+			if err != nil {
+				return fmt.Errorf("error listing Akamai (Linode) firewalls for interface %d on instance %q: %w", iface.ID, instance.Label, err)
+			}
+			attached := false
+			for _, firewall := range firewalls {
+				if firewall.ID == firewallID {
+					attached = true
 					continue
 				}
-				if _, found := seenInterfaceIDs[iface.ID]; found {
-					continue
+				devices, err := client.ListFirewallDevices(ctx, firewall.ID, nil)
+				if err != nil {
+					return fmt.Errorf("error listing Akamai (Linode) devices for firewall %d: %w", firewall.ID, err)
 				}
-				seenInterfaceIDs[iface.ID] = struct{}{}
-				if err := visit(instance, iface); err != nil {
-					return err
+				for _, device := range devices {
+					if device.Entity.Type == linodego.FirewallDeviceLinodeInterface && device.Entity.ID == iface.ID {
+						if err := client.DeleteFirewallDevice(ctx, firewall.ID, device.ID); err != nil {
+							return fmt.Errorf("error detaching Akamai (Linode) firewall %d from interface %d: %w", firewall.ID, iface.ID, err)
+						}
+					}
+				}
+			}
+			if !attached {
+				if _, err := client.CreateFirewallDevice(ctx, firewallID, linodego.FirewallDeviceCreateOptions{ID: iface.ID, Type: linodego.FirewallDeviceLinodeInterface}); err != nil {
+					return fmt.Errorf("error attaching Akamai (Linode) firewall %d to interface %d on instance %q: %w", firewallID, iface.ID, instance.Label, err)
 				}
 			}
 		}
@@ -388,7 +404,14 @@ func firewallRuleFromLinode(direction, label, protocol, action, ports string, ad
 			rule.SourceIPs = append(rule.SourceIPs, *ipNet)
 		}
 	}
+	sortFirewallCIDRs(rule.SourceIPs)
 	return rule
+}
+
+func sortFirewallCIDRs(cidrs []net.IPNet) {
+	slices.SortFunc(cidrs, func(a, b net.IPNet) int {
+		return strings.Compare(a.String(), b.String())
+	})
 }
 
 // firewallRuleAddresses converts a slice of net.IPNet objects to Linode's NetworkAddresses format.

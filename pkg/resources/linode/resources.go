@@ -72,6 +72,18 @@ func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterI
 		}
 	}
 
+	for _, tracker := range resourceTrackers {
+		if tracker.Type == resourceTypeFirewall {
+			blocked := tracker.Blocked[:0]
+			for _, dependency := range tracker.Blocked {
+				if _, found := resourceTrackers[dependency]; found {
+					blocked = append(blocked, dependency)
+				}
+			}
+			tracker.Blocked = blocked
+		}
+	}
+
 	return resourceTrackers, nil
 }
 

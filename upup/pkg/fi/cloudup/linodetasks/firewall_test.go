@@ -224,8 +224,9 @@ func TestFirewallFindDetectsPolicyAndActionChanges(t *testing.T) {
 func TestFirewallFindNormalizesEmptyPort(t *testing.T) {
 	client := &linode.MockLinodeClient{
 		ListFirewallsResponse: []linodego.Firewall{{
-			ID:    101,
-			Label: "example-k8s-local-nodes",
+			ID:     101,
+			Label:  "example-k8s-local-nodes",
+			Status: linodego.FirewallEnabled,
 			Rules: linodego.FirewallRules{
 				InboundPolicy:  "DROP",
 				OutboundPolicy: "ACCEPT",

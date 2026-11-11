@@ -62,6 +62,8 @@ type LinodeClient interface {
 	DeleteFirewall(ctx context.Context, firewallID int) error
 	ListInterfaceFirewalls(ctx context.Context, linodeID int, interfaceID int, opts *linodego.ListOptions) ([]linodego.Firewall, error)
 	CreateFirewallDevice(ctx context.Context, firewallID int, opts linodego.FirewallDeviceCreateOptions) (*linodego.FirewallDevice, error)
+	ListFirewallDevices(ctx context.Context, firewallID int, opts *linodego.ListOptions) ([]linodego.FirewallDevice, error)
+	DeleteFirewallDevice(ctx context.Context, firewallID int, deviceID int) error
 	ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error)
 	CreateInstance(ctx context.Context, opts linodego.InstanceCreateOptions) (*linodego.Instance, error)
 	UpdateInstance(ctx context.Context, instanceID int, opts linodego.InstanceUpdateOptions) (*linodego.Instance, error)
