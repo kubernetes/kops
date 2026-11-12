@@ -65,6 +65,7 @@ func (m *MockEC2) CreateEgressOnlyInternetGateway(ctx context.Context, request *
 		EgressOnlyInternetGatewayId: s(id),
 		Attachments: []ec2types.InternetGatewayAttachment{
 			{
+				State: ec2types.AttachmentStatusAttached,
 				VpcId: request.VpcId,
 			},
 		},
