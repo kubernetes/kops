@@ -728,6 +728,10 @@ var perServerBootstrapBackoff = wait.Backoff{
 	Steps:    8,
 }
 
+// bootstrapRetryInterval is the period of the ticker that starts each pass over the servers.
+// It paces failures that return without a backoff, e.g. a DNS record holding the placeholder IP.
+const bootstrapRetryInterval = 10 * time.Second
+
 // getNodeConfigFromServers queries kops-controllers for our node's configuration.
 func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
 	var authenticator bootstrap.Authenticator
@@ -819,9 +823,11 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 	// through the list, rather than spending the whole budget on whichever happens to sort first.
 	client.Backoff = perServerBootstrapBackoff
 
-	deadline := time.Now().Add(bootstrapTimeout)
-	for {
-		var merr error
+	var response *nodeup.BootstrapResponse
+	var merr error
+	// A pass that outlasts the interval is followed by the next one without a further wait.
+	err := wait.PollUntilContextTimeout(ctx, bootstrapRetryInterval, bootstrapTimeout, true, func(context.Context) (bool, error) {
+		merr = nil
 		for _, server := range bootConfig.ConfigServer.Servers {
 			u, err := url.Parse(server)
 			if err != nil {
@@ -840,22 +846,23 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			}
 
 			var resp nodeup.BootstrapResponse
+			// Use the caller's context, not the poll's, so the timeout does not cut a pass short.
 			err = client.Query(ctx, &request, &resp)
 			if err != nil {
 				merr = multierr.Append(merr, err)
 				continue
 			}
-			return &resp, nil
+			response = &resp
+			return true, nil
 		}
 
-		if ctx.Err() != nil {
-			return nil, multierr.Append(merr, ctx.Err())
-		}
-		if !time.Now().Before(deadline) {
-			return nil, merr
-		}
 		klog.Warningf("no kops-controller server responded, retrying all %d servers: %v", len(bootConfig.ConfigServer.Servers), merr)
+		return false, nil
+	})
+	if err != nil {
+		return nil, multierr.Append(merr, err)
 	}
+	return response, nil
 }
 
 func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (string, error) {
