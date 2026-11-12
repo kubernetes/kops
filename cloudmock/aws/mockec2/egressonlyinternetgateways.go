@@ -101,21 +101,10 @@ func (m *MockEC2) DescribeEgressOnlyInternetGateways(ctx context.Context, reques
 		for _, filter := range request.Filters {
 			match := false
 			switch *filter.Name {
-			case "internet-gateway-id":
+			case "egress-only-internet-gateway-id":
 				for _, v := range filter.Values {
 					if id == v {
 						match = true
-					}
-				}
-
-			case "attachment.vpc-id":
-				for _, v := range filter.Values {
-					if internetGateway.Attachments != nil {
-						for _, attachment := range internetGateway.Attachments {
-							if *attachment.VpcId == v {
-								match = true
-							}
-						}
 					}
 				}
 
