@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
@@ -54,7 +55,7 @@ func findEgressOnlyInternetGateway(ctx context.Context, cloud awsup.AWSCloud, re
 	if err != nil {
 		return nil, fmt.Errorf("error listing EgressOnlyInternetGateways: %v", err)
 	}
-	if response == nil || len(response.EgressOnlyInternetGateways) == 0 {
+	if len(response.EgressOnlyInternetGateways) == 0 {
 		return nil, nil
 	}
 
@@ -65,28 +66,48 @@ func findEgressOnlyInternetGateway(ctx context.Context, cloud awsup.AWSCloud, re
 	return &igw, nil
 }
 
+// findEgressOnlyInternetGatewayForVPC returns the EgressOnlyInternetGateway attached to vpcID, or nil if there is none.
+// DescribeEgressOnlyInternetGateways only supports tag filters, so we list all gateways and match client-side.
+// A VPC can have at most one EgressOnlyInternetGateway attached, so the first match is the only match.
+func findEgressOnlyInternetGatewayForVPC(ctx context.Context, cloud awsup.AWSCloud, vpcID string) (*ec2types.EgressOnlyInternetGateway, error) {
+	paginator := ec2.NewDescribeEgressOnlyInternetGatewaysPaginator(cloud.EC2(), &ec2.DescribeEgressOnlyInternetGatewaysInput{})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error listing EgressOnlyInternetGateways: %v", err)
+		}
+		for _, eigw := range page.EgressOnlyInternetGateways {
+			if len(eigw.Attachments) == 1 && eigw.Attachments[0].State == ec2types.AttachmentStatusAttached && aws.ToString(eigw.Attachments[0].VpcId) == vpcID {
+				return &eigw, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
 func (e *EgressOnlyInternetGateway) Find(c *fi.CloudupContext) (*EgressOnlyInternetGateway, error) {
 	ctx := c.Context()
 	cloud := awsup.GetCloud(c)
 
-	request := &ec2.DescribeEgressOnlyInternetGatewaysInput{}
-
 	shared := fi.ValueOf(e.Shared)
-	if shared {
-		if fi.ValueOf(e.VPC.ID) == "" {
+	var eigw *ec2types.EgressOnlyInternetGateway
+	var err error
+	switch {
+	case e.ID != nil:
+		eigw, err = findEgressOnlyInternetGateway(ctx, cloud, &ec2.DescribeEgressOnlyInternetGatewaysInput{
+			EgressOnlyInternetGatewayIds: []string{*e.ID},
+		})
+	case shared:
+		vpcID := fi.ValueOf(e.VPC.ID)
+		if vpcID == "" {
 			return nil, fmt.Errorf("VPC ID is required when EgressOnlyInternetGateway is shared")
 		}
-
-		request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", *e.VPC.ID)}
-	} else {
-		if e.ID != nil {
-			request.EgressOnlyInternetGatewayIds = []string{fi.ValueOf(e.ID)}
-		} else {
-			request.Filters = cloud.BuildFilters(e.Name)
-		}
+		eigw, err = findEgressOnlyInternetGatewayForVPC(ctx, cloud, vpcID)
+	default:
+		eigw, err = findEgressOnlyInternetGateway(ctx, cloud, &ec2.DescribeEgressOnlyInternetGatewaysInput{
+			Filters: cloud.BuildFilters(e.Name),
+		})
 	}
-
-	eigw, err := findEgressOnlyInternetGateway(ctx, cloud, request)
 	if err != nil {
 		return nil, err
 	}
@@ -182,13 +203,12 @@ func (_ *EgressOnlyInternetGateway) RenderTerraform(t *terraform.TerraformTarget
 
 		// But ... attempt to discover the ID so TerraformLink works
 		if e.ID == nil {
-			request := &ec2.DescribeEgressOnlyInternetGatewaysInput{}
 			vpcID := fi.ValueOf(e.VPC.ID)
 			if vpcID == "" {
 				return fmt.Errorf("VPC ID is required when EgressOnlyInternetGateway is shared")
 			}
-			request.Filters = []ec2types.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
-			igw, err := findEgressOnlyInternetGateway(ctx, t.Cloud.(awsup.AWSCloud), request)
+
+			igw, err := findEgressOnlyInternetGatewayForVPC(ctx, t.Cloud.(awsup.AWSCloud), vpcID)
 			if err != nil {
 				return err
 			}
