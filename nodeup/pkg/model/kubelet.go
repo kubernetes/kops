@@ -31,6 +31,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/spf13/pflag"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -311,6 +312,21 @@ func (b *KubeletBuilder) buildKubeletComponentConfig(kubeletConfig *kops.Kubelet
 // Most kubelet CLI flags are deprecated upstream in favor of this config
 // file; fields that have flag:"-" in the kops API land here.
 func (b *KubeletBuilder) kubeletConfiguration(kubeletConfig *kops.KubeletConfigSpec, providerID string) (*kubelet.KubeletConfiguration, error) {
+	// ClusterDNS remains a CSV string in the kOps API. Use the legacy kubelet
+	// flag parser to preserve IP validation, whitespace and quoted CSV behavior.
+	flags := pflag.NewFlagSet("kubelet", pflag.ContinueOnError)
+	ips := flags.IPSlice("cluster-dns", nil, "")
+	if err := flags.Set("cluster-dns", kubeletConfig.ClusterDNS); err != nil {
+		return nil, fmt.Errorf("invalid clusterDNS: %w", err)
+	}
+	if kubeletConfig.ClusterDNS != "" && len(*ips) == 0 {
+		return nil, fmt.Errorf("invalid clusterDNS: expected at least one IP address")
+	}
+	clusterDNS := make([]string, len(*ips))
+	for i, ip := range *ips {
+		clusterDNS[i] = ip.String()
+	}
+
 	cc := &kubelet.KubeletConfiguration{
 		CgroupDriver:                     kubeletConfig.CgroupDriver,
 		CgroupRoot:                       kubeletConfig.CgroupRoot,
@@ -318,7 +334,7 @@ func (b *KubeletBuilder) kubeletConfiguration(kubeletConfig *kops.KubeletConfigS
 		TLSPrivateKeyFile:                filepath.Join(b.PathSrvKubernetes(), "kubelet-server.key"),
 		TLSCipherSuites:                  kubeletConfig.TLSCipherSuites,
 		TLSMinVersion:                    kubeletConfig.TLSMinVersion,
-		ClusterDNS:                       []string{kubeletConfig.ClusterDNS},
+		ClusterDNS:                       clusterDNS,
 		ClusterDomain:                    kubeletConfig.ClusterDomain,
 		EnableDebuggingHandlers:          kubeletConfig.EnableDebuggingHandlers,
 		HairpinMode:                      kubeletConfig.HairpinMode,
