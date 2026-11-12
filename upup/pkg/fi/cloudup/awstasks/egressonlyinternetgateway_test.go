@@ -116,6 +116,7 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 			}),
 			Attachments: []ec2types.InternetGatewayAttachment{
 				{
+					State: ec2types.AttachmentStatusAttached,
 					VpcId: vpc.Vpc.VpcId,
 				},
 			},
