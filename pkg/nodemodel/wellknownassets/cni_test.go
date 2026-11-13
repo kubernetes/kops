@@ -27,7 +27,7 @@ import (
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
-	desiredCNIVersion := "https://dl.k8s.io/network-plugins/cni-TEST-VERSION.tar.gz"
+	desiredCNIVersion := "https://dl.k8s.io/network-plugins/cni-plugins-TEST-VERSION.tar.gz"
 	desiredCNIVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
 	t.Setenv(ENV_VAR_CNI_ASSET_URL, desiredCNIVersion)
@@ -56,6 +56,27 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 	if asset.SHAValue.String() != desiredCNIVersionHash {
 		t.Errorf("Expected empty CNI version hash, but got %v instead", asset.SHAValue.String())
+	}
+}
+
+func Test_FindCNIAssetFromEnvironmentVariableRejectsName(t *testing.T) {
+	t.Setenv(ENV_VAR_CNI_ASSET_URL, "https://dl.k8s.io/network-plugins/cni-TEST-VERSION.tar.gz")
+	t.Setenv(ENV_VAR_CNI_ASSET_HASH, "sha256:0000000000000000000000000000000000000000000000000000000000000000")
+
+	cluster := &api.Cluster{}
+	cluster.Spec.KubernetesVersion = "v1.18.0"
+
+	ig := &api.InstanceGroup{}
+
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false)
+
+	igModel, err := kopsmodel.ForInstanceGroup(cluster, ig)
+	if err != nil {
+		t.Fatalf("building instance group model: %v", err)
+	}
+
+	if _, err := FindCNIAssets(igModel, assetBuilder, architectures.ArchitectureAmd64); err == nil {
+		t.Errorf("Expected an error for a CNI asset URL not named cni-plugins-*.tgz")
 	}
 }
 
