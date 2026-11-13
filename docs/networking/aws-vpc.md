@@ -51,20 +51,12 @@ Network policy enforcement is disabled by default. To enable it, set:
       enableNetworkPolicy: true
 ```
 
-This enables the network policy agent in the `aws-node` DaemonSet.
+This enables the network policy agent in the `aws-node` DaemonSet and deploys the
+[Amazon network policy controller](https://github.com/aws/amazon-network-policy-controller-k8s) on the control plane nodes.
+The controller creates the `networking.k8s.aws` CRDs it needs.
+Setting `enableNetworkPolicy` back to `false` removes the controller.
 The node agent uses eBPF and requires a Linux kernel version 5.10 or later.
-
-The [Amazon network policy controller](https://github.com/aws/amazon-network-policy-controller-k8s) must also be deployed, for example as a [custom addon](../addons.md#custom-addons):
-
-```yaml
-spec:
-  addons:
-  - manifest: s3://<state-store-bucket>/<cluster-name>/custom-addons/aws-network-policy-controller.yaml
-```
-
-Include the controller's `networking.k8s.aws` CRDs in the manifest.
-Until they exist, the node agent will keep restarting and new pods will fail to start.
-Run the controller with `--enable-configmap-check=true` so it follows `enableNetworkPolicy`, and cleans up when it is set back to `false`.
+Override the controller image with `networkPolicyControllerImage`.
 
 ## Troubleshooting
 

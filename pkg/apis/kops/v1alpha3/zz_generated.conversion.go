@@ -1758,6 +1758,7 @@ func autoConvert_v1alpha3_AmazonVPCNetworkingSpec_To_kops_AmazonVPCNetworkingSpe
 	out.InitImage = in.InitImage
 	out.NetworkPolicyAgentImage = in.NetworkPolicyAgentImage
 	out.EnableNetworkPolicy = in.EnableNetworkPolicy
+	out.NetworkPolicyControllerImage = in.NetworkPolicyControllerImage
 	if in.Env != nil {
 		in, out := &in.Env, &out.Env
 		*out = make([]kops.EnvVar, len(*in))
@@ -1782,6 +1783,7 @@ func autoConvert_kops_AmazonVPCNetworkingSpec_To_v1alpha3_AmazonVPCNetworkingSpe
 	out.InitImage = in.InitImage
 	out.NetworkPolicyAgentImage = in.NetworkPolicyAgentImage
 	out.EnableNetworkPolicy = in.EnableNetworkPolicy
+	out.NetworkPolicyControllerImage = in.NetworkPolicyControllerImage
 	if in.Env != nil {
 		in, out := &in.Env, &out.Env
 		*out = make([]EnvVar, len(*in))

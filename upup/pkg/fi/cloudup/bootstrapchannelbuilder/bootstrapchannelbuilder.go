@@ -1027,6 +1027,27 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				NeedsRollingUpdate: channelsapi.NeedsRollingUpdateAll,
 			})
 		}
+
+		{
+			key := "aws-network-policy-controller.addons.k8s.io"
+			id := "k8s-1.25"
+			location := key + "/" + id + ".yaml"
+
+			spec := &channelsapi.AddonSpec{
+				Name:     new(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: new(location),
+				Id:       id,
+			}
+
+			if b.Cluster.Spec.Networking.AmazonVPC.EnableNetworkPolicy {
+				addons.Add(spec)
+			} else {
+				addon := addons.AddWithSource(spec, fi.NewBytesResource(nil))
+				addon.BuildPrune = true
+				addon.SkipRemap = true
+			}
+		}
 	}
 
 	if b.Cluster.Spec.Networking.Kindnet != nil {
