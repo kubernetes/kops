@@ -558,6 +558,15 @@ type KubeAPIServerConfig struct {
 	// ServiceAccountJWKSURI overrides the path for the jwks document; this is useful when we are republishing the service account discovery information elsewhere.
 	ServiceAccountJWKSURI *string `json:"serviceAccountJWKSURI,omitempty" flag:"service-account-jwks-uri"`
 
+	// ServiceAccountExtendTokenExpiration turns on projected service account expiration extension during token generation.
+	// If enabled, admission injected tokens are extended up to 1 year, ignoring ServiceAccountMaxTokenExpiration.
+	// A ServiceAccountMaxTokenExpiration below 3607s prevents the extension. The kube-apiserver default is true.
+	ServiceAccountExtendTokenExpiration *bool `json:"serviceAccountExtendTokenExpiration,omitempty" flag:"service-account-extend-token-expiration"`
+
+	// ServiceAccountMaxTokenExpiration is the maximum validity duration of a token created by the service account token issuer.
+	// If an otherwise valid TokenRequest with a validity duration larger than this value is requested, a token will be issued with a validity duration of this value.
+	ServiceAccountMaxTokenExpiration *metav1.Duration `json:"serviceAccountMaxTokenExpiration,omitempty" flag:"service-account-max-token-expiration"`
+
 	// Identifiers of the API. The service account token authenticator will validate that
 	// tokens used against the API are bound to at least one of these audiences. If the
 	// --service-account-issuer flag is configured and this flag is not, this field

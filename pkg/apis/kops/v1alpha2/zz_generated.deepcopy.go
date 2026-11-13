@@ -3621,6 +3621,16 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ServiceAccountExtendTokenExpiration != nil {
+		in, out := &in.ServiceAccountExtendTokenExpiration, &out.ServiceAccountExtendTokenExpiration
+		*out = new(bool)
+		**out = **in
+	}
+	if in.ServiceAccountMaxTokenExpiration != nil {
+		in, out := &in.ServiceAccountMaxTokenExpiration, &out.ServiceAccountMaxTokenExpiration
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.APIAudiences != nil {
 		in, out := &in.APIAudiences, &out.APIAudiences
 		*out = make([]string, len(*in))
