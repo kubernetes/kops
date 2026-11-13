@@ -53,9 +53,6 @@ func TestInstanceFindDoesNotMutateDesiredTask(t *testing.T) {
 		ListInterfacesResponses: map[int][]linodego.LinodeInterface{
 			101: {{Public: &linodego.PublicInterface{}, VPC: &linodego.VPCInterface{SubnetID: 42}}},
 		},
-		ListInterfaceFirewallsResponses: map[int][]linodego.Firewall{
-			0: {{ID: 43}},
-		},
 	}
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
@@ -70,7 +67,6 @@ func TestInstanceFindDoesNotMutateDesiredTask(t *testing.T) {
 		Count:                  3,
 		Subnet:                 &Subnet{ID: new(42)},
 		RequirePublicInterface: &requirePublicInterface,
-		PublicFirewall:         &Firewall{ID: new(43)},
 		Tags:                   append([]string{}, baseTags...),
 		UserData:               userData,
 	}

@@ -166,9 +166,6 @@ type MockLinodeClient struct {
 	DeleteFirewallError error
 	DeletedFirewallIDs  []int
 
-	ListInterfaceFirewallsResponses map[int][]linodego.Firewall
-	ListInterfaceFirewallsError     error
-
 	CreateInstanceResponse *linodego.Instance
 	CreateInstanceError    error
 	CreateInstanceCalls    int
@@ -381,13 +378,6 @@ func (c *MockLinodeClient) UpdateFirewallRules(ctx context.Context, firewallID i
 func (c *MockLinodeClient) DeleteFirewall(ctx context.Context, firewallID int) error {
 	c.DeletedFirewallIDs = append(c.DeletedFirewallIDs, firewallID)
 	return c.DeleteFirewallError
-}
-
-func (c *MockLinodeClient) ListInterfaceFirewalls(ctx context.Context, linodeID int, interfaceID int, opts *linodego.ListOptions) ([]linodego.Firewall, error) {
-	if c.ListInterfaceFirewallsError != nil {
-		return nil, c.ListInterfaceFirewallsError
-	}
-	return c.ListInterfaceFirewallsResponses[interfaceID], nil
 }
 
 func (c *MockLinodeClient) ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error) {
