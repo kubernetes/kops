@@ -201,6 +201,7 @@ spec:
     memoryRequest: 64Mi
     podTerminationGracePeriod: -1
     prometheusEnable: false
+    sqsMsgVisibilityTimeoutSec: 20
     taintNode: false
     version: v1.25.5
   nonMasqueradeCIDR: 100.64.0.0/10

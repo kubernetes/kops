@@ -209,7 +209,7 @@ spec:
         - name: HEARTBEAT_UNTIL
           value: "-1"
         - name: SQS_MSG_VISIBILITY_TIMEOUT_SEC
-          value: "20"
+          value: "60"
         image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.25.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
