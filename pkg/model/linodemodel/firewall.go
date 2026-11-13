@@ -95,25 +95,19 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
+		if firewalls[role] == nil {
+			continue
+		}
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
 			return err
 		}
 		for _, subnet := range subnets {
 			if fi.ValueOf(requirePublicInterface(subnet, ig)) {
-				firewalls[role].ApplyTo = append(firewalls[role].ApplyTo, &linodetasks.FirewallTarget{
-					Tags: []string{
-						fmt.Sprintf("%s:%s", linode.TagKubernetesClusterName, b.ClusterName()),
-						fmt.Sprintf("%s:%s", linode.TagKubernetesInstanceGroup, ig.Name),
-					},
-				})
+				c.AddTask(firewalls[role])
+				delete(firewalls, role)
 				break
 			}
-		}
-	}
-	for _, firewall := range firewalls {
-		if len(firewall.ApplyTo) > 0 {
-			c.AddTask(firewall)
 		}
 	}
 	return nil

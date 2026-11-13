@@ -135,6 +135,27 @@ func (i *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 			needsUpdate = append(needsUpdate, instance.Label)
 			continue
 		}
+		if fi.ValueOf(i.RequirePublicInterface) {
+			if i.PublicFirewall == nil {
+				return nil, fi.RequiredField("PublicFirewall")
+			}
+			if i.PublicFirewall.ID == nil {
+				needsUpdate = append(needsUpdate, instance.Label)
+				continue
+			}
+			for _, iface := range interfaces {
+				if iface.Public == nil {
+					continue
+				}
+				firewalls, err := cloud.Client().ListInterfaceFirewalls(c.Context(), instance.ID, iface.ID, nil)
+				if err != nil {
+					return nil, fmt.Errorf("error listing Akamai (Linode) firewalls for interface %d on instance %q: %w", iface.ID, instance.Label, err)
+				}
+				if len(firewalls) != 1 || firewalls[0].ID != fi.ValueOf(i.PublicFirewall.ID) {
+					needsUpdate = append(needsUpdate, instance.Label)
+				}
+			}
+		}
 	}
 
 	actual := *i

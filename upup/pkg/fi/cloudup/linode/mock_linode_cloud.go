@@ -169,16 +169,6 @@ type MockLinodeClient struct {
 	ListInterfaceFirewallsResponses map[int][]linodego.Firewall
 	ListInterfaceFirewallsError     error
 
-	CreateFirewallDeviceError error
-	CreatedFirewallDeviceIDs  []int
-	CreatedFirewallDeviceOpts []linodego.FirewallDeviceCreateOptions
-
-	ListFirewallDevicesResponses     map[int][]linodego.FirewallDevice
-	ListFirewallDevicesError         error
-	DeleteFirewallDeviceError        error
-	DeletedFirewallDeviceIDs         []int
-	DeletedFirewallDeviceFirewallIDs []int
-
 	CreateInstanceResponse *linodego.Instance
 	CreateInstanceError    error
 	CreateInstanceCalls    int
@@ -398,25 +388,6 @@ func (c *MockLinodeClient) ListInterfaceFirewalls(ctx context.Context, linodeID 
 		return nil, c.ListInterfaceFirewallsError
 	}
 	return c.ListInterfaceFirewallsResponses[interfaceID], nil
-}
-
-func (c *MockLinodeClient) CreateFirewallDevice(ctx context.Context, firewallID int, opts linodego.FirewallDeviceCreateOptions) (*linodego.FirewallDevice, error) {
-	c.CreatedFirewallDeviceIDs = append(c.CreatedFirewallDeviceIDs, firewallID)
-	c.CreatedFirewallDeviceOpts = append(c.CreatedFirewallDeviceOpts, opts)
-	if c.CreateFirewallDeviceError != nil {
-		return nil, c.CreateFirewallDeviceError
-	}
-	return &linodego.FirewallDevice{}, nil
-}
-
-func (c *MockLinodeClient) ListFirewallDevices(ctx context.Context, firewallID int, opts *linodego.ListOptions) ([]linodego.FirewallDevice, error) {
-	return c.ListFirewallDevicesResponses[firewallID], c.ListFirewallDevicesError
-}
-
-func (c *MockLinodeClient) DeleteFirewallDevice(ctx context.Context, firewallID int, deviceID int) error {
-	c.DeletedFirewallDeviceIDs = append(c.DeletedFirewallDeviceIDs, deviceID)
-	c.DeletedFirewallDeviceFirewallIDs = append(c.DeletedFirewallDeviceFirewallIDs, firewallID)
-	return c.DeleteFirewallDeviceError
 }
 
 func (c *MockLinodeClient) ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error) {
