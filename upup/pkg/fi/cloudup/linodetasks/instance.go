@@ -41,6 +41,7 @@ type Instance struct {
 	Count                  int
 	Subnet                 *Subnet
 	RequirePublicInterface *bool
+	PublicFirewall         *Firewall
 	Tags                   []string
 	AuthorizedKeys         []*SSHKey
 	UserData               fi.Resource
@@ -60,6 +61,9 @@ func (i *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudup
 	var deps []fi.CloudupTask
 	if i.Subnet != nil {
 		deps = append(deps, i.Subnet)
+	}
+	if i.PublicFirewall != nil {
+		deps = append(deps, i.PublicFirewall)
 	}
 	if i.AuthorizedKeys != nil {
 		for _, key := range i.AuthorizedKeys {
@@ -177,6 +181,9 @@ func (i *Instance) CheckChanges(actual, expected, changes *Instance) error {
 		if expected.RequirePublicInterface == nil {
 			return fi.RequiredField("RequirePublicInterface")
 		}
+		if fi.ValueOf(expected.RequirePublicInterface) && expected.PublicFirewall == nil {
+			return fi.RequiredField("PublicFirewall")
+		}
 		if expected.Image == "" {
 			return fi.RequiredField("Image")
 		}
@@ -205,6 +212,9 @@ func (i *Instance) RenderLinode(t *linode.APITarget, actual, expected, changes *
 	if expected.Subnet == nil || expected.Subnet.ID == nil {
 		return fmt.Errorf("Subnet.ID is required")
 	}
+	if fi.ValueOf(expected.RequirePublicInterface) && (expected.PublicFirewall == nil || expected.PublicFirewall.ID == nil) {
+		return fmt.Errorf("PublicFirewall.ID is required")
+	}
 
 	authorizedKeys, err := resolveAuthorizedKeys(t.Cloud.Client(), expected.AuthorizedKeys)
 	if err != nil {
@@ -220,7 +230,11 @@ func (i *Instance) RenderLinode(t *linode.APITarget, actual, expected, changes *
 	instanceTags = append(instanceTags, fmt.Sprintf("%s:%s", linode.TagKubernetesInstanceUserData, userDataHash))
 	encodedUserData := base64.StdEncoding.EncodeToString(userDataBytes)
 
-	interfaces := buildLinodeInterfaces(fi.ValueOf(expected.Subnet.ID), fi.ValueOf(expected.RequirePublicInterface))
+	var publicFirewallID *int
+	if expected.PublicFirewall != nil {
+		publicFirewallID = expected.PublicFirewall.ID
+	}
+	interfaces := buildLinodeInterfaces(fi.ValueOf(expected.Subnet.ID), fi.ValueOf(expected.RequirePublicInterface), publicFirewallID)
 	toCreate := expected.Count - actualCount
 	for range toCreate {
 		label, err := buildLinodeInstanceLabel(fi.ValueOf(expected.Name))
@@ -299,15 +313,18 @@ func resolveAuthorizedKeys(client linode.LinodeClient, keys []*SSHKey) ([]string
 }
 
 // buildLinodeInterfaces builds the Akamai (Linode) interfaces for the instance based on the subnet ID and whether a public interface is required.
-func buildLinodeInterfaces(subnetID int, requirePublicInterface bool) []linodego.LinodeInterfaceCreateOptions {
+func buildLinodeInterfaces(subnetID int, requirePublicInterface bool, publicFirewallID *int) []linodego.LinodeInterfaceCreateOptions {
 	var interfaces []linodego.LinodeInterfaceCreateOptions
 	if requirePublicInterface {
 		interfaces = append(interfaces, linodego.LinodeInterfaceCreateOptions{
-			Public: &linodego.PublicInterfaceCreateOptions{},
+			FirewallID: publicFirewallID,
+			Public:     &linodego.PublicInterfaceCreateOptions{},
 		})
 	}
 	interfaces = append(interfaces, linodego.LinodeInterfaceCreateOptions{
-		VPC: &linodego.VPCInterfaceCreateOptions{SubnetID: subnetID},
+		// Explicitly disable filtering instead of inheriting an account-default firewall.
+		FirewallID: new(-1),
+		VPC:        &linodego.VPCInterfaceCreateOptions{SubnetID: subnetID},
 	})
 
 	return interfaces

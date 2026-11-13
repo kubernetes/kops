@@ -78,8 +78,8 @@ func TestFirewallFindByLabel(t *testing.T) {
 		t.Fatalf("unexpected outbound policy: got %q, want %q", got, want)
 	}
 	if got, want := actual.Rules, []*FirewallRule{
-		{Direction: "in", Protocol: "tcp", Action: new("ACCEPT"), Port: new("22"), SourceIPs: []net.IPNet{mustParseCIDR(t, "192.0.2.0/24")}},
-		{Direction: "out", Protocol: "udp", Action: new("ACCEPT"), SourceIPs: []net.IPNet{mustParseCIDR(t, "2001:db8::/64")}},
+		{Direction: "in", Label: "rule-1", Protocol: "tcp", Action: new("ACCEPT"), Port: new("22"), SourceIPs: []net.IPNet{mustParseCIDR(t, "192.0.2.0/24")}},
+		{Direction: "out", Label: "rule-2", Protocol: "udp", Action: new("ACCEPT"), SourceIPs: []net.IPNet{mustParseCIDR(t, "2001:db8::/64")}},
 	}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("unexpected rules: got %#v, want %#v", got, want)
 	}
@@ -189,6 +189,7 @@ func TestFirewallFindDetectsPolicyAndActionChanges(t *testing.T) {
 				OutboundPolicy: "DROP",
 				Inbound: []linodego.FirewallRuleInbound{{
 					Action:   "DROP",
+					Label:    "rule-1",
 					Protocol: linodego.TCP,
 				}},
 			},
@@ -223,13 +224,15 @@ func TestFirewallFindDetectsPolicyAndActionChanges(t *testing.T) {
 func TestFirewallFindNormalizesEmptyPort(t *testing.T) {
 	client := &linode.MockLinodeClient{
 		ListFirewallsResponse: []linodego.Firewall{{
-			ID:    101,
-			Label: "example-k8s-local-nodes",
+			ID:     101,
+			Label:  "example-k8s-local-nodes",
+			Status: linodego.FirewallEnabled,
 			Rules: linodego.FirewallRules{
 				InboundPolicy:  "DROP",
 				OutboundPolicy: "ACCEPT",
 				Inbound: []linodego.FirewallRuleInbound{{
 					Action:   "ACCEPT",
+					Label:    "rule-1",
 					Protocol: linodego.ICMP,
 				}},
 			},

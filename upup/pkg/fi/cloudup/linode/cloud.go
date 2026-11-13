@@ -39,6 +39,7 @@ const (
 	TagKubernetesClusterName      = "kops.k8s.io/cluster"
 	TagKubernetesInstanceUserData = "kops.k8s.io/instance-userdata"
 	TagKubernetesVolumeRole       = "kops.k8s.io/volume-role"
+	TagKubernetesFirewallRole     = "kops.k8s.io/firewall-role"
 )
 
 // LinodeClient is the subset of the Akamai (Linode) API client used by the Akamai (Linode) cloudup tasks.
@@ -58,6 +59,7 @@ type LinodeClient interface {
 	CreateFirewall(ctx context.Context, opts linodego.FirewallCreateOptions) (*linodego.Firewall, error)
 	UpdateFirewall(ctx context.Context, firewallID int, opts linodego.FirewallUpdateOptions) (*linodego.Firewall, error)
 	UpdateFirewallRules(ctx context.Context, firewallID int, rules linodego.FirewallRulesUpdateOptions) (*linodego.FirewallRules, error)
+	DeleteFirewall(ctx context.Context, firewallID int) error
 	ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error)
 	CreateInstance(ctx context.Context, opts linodego.InstanceCreateOptions) (*linodego.Instance, error)
 	UpdateInstance(ctx context.Context, instanceID int, opts linodego.InstanceUpdateOptions) (*linodego.Instance, error)

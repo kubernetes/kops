@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"slices"
 	"strings"
 
 	"github.com/linode/linodego/v2"
@@ -33,6 +34,7 @@ type Firewall struct {
 	Lifecycle fi.Lifecycle
 
 	ID             *int
+	Status         *string
 	InboundPolicy  *string
 	OutboundPolicy *string
 	Rules          []*FirewallRule
@@ -75,6 +77,7 @@ func (v *Firewall) Find(c *fi.CloudupContext) (*Firewall, error) {
 		Name:           new(matched.Label),
 		Lifecycle:      v.Lifecycle,
 		ID:             new(matched.ID),
+		Status:         new(string(matched.Status)),
 		InboundPolicy:  new(matched.Rules.InboundPolicy),
 		OutboundPolicy: new(matched.Rules.OutboundPolicy),
 		Tags:           matched.Tags,
@@ -91,20 +94,33 @@ func (v *Firewall) Run(c *fi.CloudupContext) error {
 }
 
 func (v *Firewall) setDefaults() {
+	if v.Status == nil {
+		v.Status = new(string(linodego.FirewallEnabled))
+	}
 	if v.InboundPolicy == nil {
 		v.InboundPolicy = new("DROP")
 	}
 	if v.OutboundPolicy == nil {
 		v.OutboundPolicy = new("ACCEPT")
 	}
-	for _, rule := range v.Rules {
+	for index, rule := range v.Rules {
 		if rule != nil && rule.Action == nil {
 			rule.Action = new("ACCEPT")
+		}
+		if rule != nil && rule.Label == "" {
+			rule.Label = fmt.Sprintf("rule-%d", index+1)
+		}
+		if rule != nil {
+			rule.SourceIPs = slices.Clone(rule.SourceIPs)
+			sortFirewallCIDRs(rule.SourceIPs)
 		}
 	}
 }
 
 func (_ *Firewall) CheckChanges(actual, expected, changes *Firewall) error {
+	if _, err := firewallRulesToLinode(expected.InboundPolicy, expected.OutboundPolicy, expected.Rules); err != nil {
+		return fmt.Errorf("invalid firewall rules: %w", err)
+	}
 	if actual != nil {
 		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
@@ -122,12 +138,13 @@ func (_ *Firewall) CheckChanges(actual, expected, changes *Firewall) error {
 
 func (*Firewall) RenderLinode(t *linode.APITarget, actual, expected, changes *Firewall) error {
 	expected.setDefaults()
+	client := t.Cloud.Client()
 	if actual == nil {
 		rules, err := firewallRulesToLinode(expected.InboundPolicy, expected.OutboundPolicy, expected.Rules)
 		if err != nil {
 			return fmt.Errorf("building rules for Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
 		}
-		firewall, err := t.Cloud.Client().CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
+		firewall, err := client.CreateFirewall(context.Background(), linodego.FirewallCreateOptions{
 			Label: fi.ValueOf(expected.Name),
 			Rules: rules,
 			Tags:  expected.Tags,
@@ -136,27 +153,33 @@ func (*Firewall) RenderLinode(t *linode.APITarget, actual, expected, changes *Fi
 			return fmt.Errorf("error creating Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
 		}
 		expected.ID = new(firewall.ID)
-		return nil
-	}
-
-	expected.ID = actual.ID
-	if changes == nil {
-		return nil
-	}
-
-	if changes.Tags != nil {
-		if _, err := t.Cloud.Client().UpdateFirewall(context.Background(), fi.ValueOf(actual.ID), linodego.FirewallUpdateOptions{Tags: expected.Tags}); err != nil {
-			return fmt.Errorf("error updating Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
+	} else {
+		expected.ID = actual.ID
+		if changes == nil {
+			return nil
 		}
-	}
-	rulesChanged := changes.Rules != nil || (actual.Rules != nil && expected.Rules == nil)
-	if changes.InboundPolicy != nil || changes.OutboundPolicy != nil || rulesChanged {
-		rules, err := firewallRulesToUpdateOptions(expected.InboundPolicy, expected.OutboundPolicy, expected.Rules)
-		if err != nil {
-			return fmt.Errorf("building rules for Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
+
+		rulesChanged := changes.Rules != nil || (actual.Rules != nil && expected.Rules == nil)
+		var rules linodego.FirewallRulesUpdateOptions
+		if changes.InboundPolicy != nil || changes.OutboundPolicy != nil || rulesChanged {
+			var err error
+			rules, err = firewallRulesToUpdateOptions(expected.InboundPolicy, expected.OutboundPolicy, expected.Rules)
+			if err != nil {
+				return fmt.Errorf("building rules for Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
+			}
 		}
-		if _, err := t.Cloud.Client().UpdateFirewallRules(context.Background(), fi.ValueOf(actual.ID), rules); err != nil {
-			return fmt.Errorf("error updating rules for Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
+
+		if changes.Tags != nil || changes.Status != nil {
+			if _, err := client.UpdateFirewall(context.Background(), fi.ValueOf(actual.ID), linodego.FirewallUpdateOptions{
+				Tags: expected.Tags, Status: linodego.FirewallStatus(fi.ValueOf(expected.Status)),
+			}); err != nil {
+				return fmt.Errorf("error updating Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
+			}
+		}
+		if changes.InboundPolicy != nil || changes.OutboundPolicy != nil || rulesChanged {
+			if _, err := client.UpdateFirewallRules(context.Background(), fi.ValueOf(actual.ID), rules); err != nil {
+				return fmt.Errorf("error updating rules for Akamai (Linode) firewall %q: %w", fi.ValueOf(expected.Name), err)
+			}
 		}
 	}
 
@@ -166,6 +189,7 @@ func (*Firewall) RenderLinode(t *linode.APITarget, actual, expected, changes *Fi
 // FirewallRule represents a Firewall's rules.
 type FirewallRule struct {
 	Direction string
+	Label     string
 	SourceIPs []net.IPNet
 	Protocol  string
 	Action    *string
@@ -193,7 +217,7 @@ func firewallRulesToLinode(inboundPolicy, outboundPolicy *string, rules []*Firew
 		case "in":
 			options.Inbound = append(options.Inbound, linodego.FirewallRuleInbound{
 				Action:    fi.ValueOf(rule.Action),
-				Label:     fmt.Sprintf("rule-%d", index+1),
+				Label:     rule.Label,
 				Ports:     fi.ValueOf(rule.Port),
 				Protocol:  linodego.NetworkProtocol(strings.ToUpper(rule.Protocol)),
 				Addresses: addresses,
@@ -201,7 +225,7 @@ func firewallRulesToLinode(inboundPolicy, outboundPolicy *string, rules []*Firew
 		case "out":
 			options.Outbound = append(options.Outbound, linodego.FirewallRuleOutbound{
 				Action:    fi.ValueOf(rule.Action),
-				Label:     fmt.Sprintf("rule-%d", index+1),
+				Label:     rule.Label,
 				Ports:     fi.ValueOf(rule.Port),
 				Protocol:  linodego.NetworkProtocol(strings.ToUpper(rule.Protocol)),
 				Addresses: addresses,
@@ -231,18 +255,19 @@ func firewallRulesToUpdateOptions(inboundPolicy, outboundPolicy *string, rules [
 func firewallRulesFromLinode(rules linodego.FirewallRules) []*FirewallRule {
 	var result []*FirewallRule
 	for _, rule := range rules.Inbound {
-		result = append(result, firewallRuleFromLinode("in", string(rule.Protocol), rule.Action, rule.Ports, rule.Addresses))
+		result = append(result, firewallRuleFromLinode("in", rule.Label, string(rule.Protocol), rule.Action, rule.Ports, rule.Addresses))
 	}
 	for _, rule := range rules.Outbound {
-		result = append(result, firewallRuleFromLinode("out", string(rule.Protocol), rule.Action, rule.Ports, rule.Addresses))
+		result = append(result, firewallRuleFromLinode("out", rule.Label, string(rule.Protocol), rule.Action, rule.Ports, rule.Addresses))
 	}
 	return result
 }
 
 // firewallRuleFromLinode converts a single Linode firewall rule to a FirewallRule object.
-func firewallRuleFromLinode(direction, protocol, action, ports string, addresses linodego.NetworkAddresses) *FirewallRule {
+func firewallRuleFromLinode(direction, label, protocol, action, ports string, addresses linodego.NetworkAddresses) *FirewallRule {
 	rule := &FirewallRule{
 		Direction: direction,
+		Label:     label,
 		Protocol:  strings.ToLower(protocol),
 		Action:    new(action),
 	}
@@ -255,7 +280,14 @@ func firewallRuleFromLinode(direction, protocol, action, ports string, addresses
 			rule.SourceIPs = append(rule.SourceIPs, *ipNet)
 		}
 	}
+	sortFirewallCIDRs(rule.SourceIPs)
 	return rule
+}
+
+func sortFirewallCIDRs(cidrs []net.IPNet) {
+	slices.SortFunc(cidrs, func(a, b net.IPNet) int {
+		return strings.Compare(a.String(), b.String())
+	})
 }
 
 // firewallRuleAddresses converts a slice of net.IPNet objects to Linode's NetworkAddresses format.

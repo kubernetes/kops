@@ -75,6 +75,7 @@ func TestInstanceModelBuilderBuildUsesIGSubnetAndAllowsZeroSize(t *testing.T) {
 	if err := networkBuilder.Build(context); err != nil {
 		t.Fatalf("NetworkModelBuilder.Build returned error: %v", err)
 	}
+	context.AddTask(&linodetasks.Firewall{Name: new(linodeFirewallName(cluster.Name, linodeFirewallRoleNodes))})
 
 	builder := &InstanceModelBuilder{
 		LinodeModelContext: &LinodeModelContext{KopsModelContext: modelContext},
