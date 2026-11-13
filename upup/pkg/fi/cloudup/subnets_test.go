@@ -152,6 +152,155 @@ func Test_AssignSubnets(t *testing.T) {
 	}
 }
 
+/*
+- IPv6CIDRの指定あり -> 指定されたIPv6CIDRと同じ
+- IPv6CIDRの指定なし -> 自動で採番されたIPv6CIDRが想定と同じ
+- そもそもIPv6が有効化されていない -> ""であること
+
+cluster.Spec.Networkingがどうやって設定されるのか調査する
+*/
+func Test_AssignSubnetsIPv6(t *testing.T) {
+	/*
+	 * 共有サブネットのIPv6 CIDRが反映されていることを確認するパターン
+	 */
+	cloud := awsup.BuildMockAWSCloud("us-test-1", "abc")
+	mockEC2 := &mockec2.MockEC2{}
+	cloud.MockEC2 = mockEC2
+
+	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
+		CidrBlock: aws.String("172.20.0.0/16"),
+	}, "vpc-12345678")
+	mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
+		VpcId:            aws.String("vpc-12345678"),
+		AvailabilityZone: aws.String("us-test-1a"),
+		CidrBlock:        aws.String("172.20.32.0/19"),
+		Ipv6CidrBlock:    aws.String("2406:da14:13cc:2100::/64"),
+	}, "subnet-a")
+
+	cluster := &kops.Cluster{}
+	cluster.Spec.Networking.NetworkID = "vpc-12345678"
+	cluster.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
+		{Name: "a", Zone: "us-test-1a", IPv6CIDR: "/64#0", ID: "subnet-a", Type: kops.SubnetTypePublic},
+	}
+
+	// NOTE: 本当は"setupTopology()"で各サブネットのIPv6CIDRに/64#Nをセットしたい
+	//opt := &NewClusterOptions{IPv6: true}
+	//if _, err := setupTopology(opt, cluster, nil); err != nil {
+	//	t.Fatalf("unexpected error: %v", err)
+	//}
+
+	if err := assignCIDRsToSubnets(cluster, cloud); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for _, subnet := range cluster.Spec.Networking.Subnets {
+		t.Logf("subnet.IPv6CIDR: %+v", subnet.IPv6CIDR)
+	}
+
+	/*
+	 * 新規作成のためサブネットのIPv6CIDRに/64#Nがセットされたままであることを確認するパターン
+	 */
+	cloud = awsup.BuildMockAWSCloud("us-test-1", "abc")
+	mockEC2 = &mockec2.MockEC2{}
+	cloud.MockEC2 = mockEC2
+
+	cluster = &kops.Cluster{}
+	cluster.Spec.Networking.NetworkCIDR = "10.0.0.0/8"
+	cluster.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
+		{Name: "a", Zone: "us-test-1a", IPv6CIDR: "/64#0", Type: kops.SubnetTypePublic},
+	}
+
+	if err := assignCIDRsToSubnets(cluster, cloud); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for _, subnet := range cluster.Spec.Networking.Subnets {
+		t.Logf("subnet.IPv6CIDR: %+v", subnet.IPv6CIDR)
+	}
+
+	/*
+	 * 共有サブネットのIPv6 CIDRが反映されていないことを確認するパターン
+	 */
+	cloud = awsup.BuildMockAWSCloud("us-test-1", "abc")
+	mockEC2 = &mockec2.MockEC2{}
+	cloud.MockEC2 = mockEC2
+
+	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
+		CidrBlock: aws.String("172.20.0.0/16"),
+	}, "vpc-12345678")
+	mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
+		VpcId:            aws.String("vpc-12345678"),
+		AvailabilityZone: aws.String("us-test-1a"),
+		CidrBlock:        aws.String("172.20.32.0/19"),
+		Ipv6CidrBlock:    aws.String("2406:da14:13cc:2100::/64"),
+	}, "subnet-a")
+
+	cluster = &kops.Cluster{}
+	cluster.Spec.Networking.NetworkID = "vpc-12345678"
+	cluster.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
+		{Name: "a", Zone: "us-test-1a", ID: "subnet-a", Type: kops.SubnetTypePublic},
+	}
+
+	// NOTE: 本当は"setupTopology()"で各サブネットのIPv6CIDRに/64#Nをセットしたい
+	//opt := &NewClusterOptions{IPv6: true}
+	//if _, err := setupTopology(opt, cluster, nil); err != nil {
+	//	t.Fatalf("unexpected error: %v", err)
+	//}
+
+	if err := assignCIDRsToSubnets(cluster, cloud); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for _, subnet := range cluster.Spec.Networking.Subnets {
+		t.Logf("subnet.IPv6CIDR: %+v", subnet.IPv6CIDR)
+	}
+
+	//tests := []struct {
+	//	subnets  []kops.ClusterSubnetSpec
+	//	expected []string
+	//}{
+	//	{
+	//		subnets: []kops.ClusterSubnetSpec{
+	//			{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "", Type: kops.SubnetTypePublic},
+	//		},
+	//		expected: []string{"10.1.0.0/16"},
+	//	},
+	//	{
+	//		subnets: []kops.ClusterSubnetSpec{
+	//			{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "", Type: kops.SubnetTypePublic},
+	//			{Name: "b", Zone: "b", CIDR: "", IPv6CIDR: "", Type: kops.SubnetTypePublic},
+	//		},
+	//		expected: []string{"10.0.0.0/9", "10.128.0.0/9"},
+	//	},
+	//	{
+	//		subnets: []kops.ClusterSubnetSpec{
+	//			{Name: "a", Zone: "a", CIDR: "", IPv6CIDR: "", Type: kops.SubnetTypePublic},
+	//		},
+	//		expected: []string{""},
+	//	},
+	//}
+	//for i, test := range tests {
+	//	t.Run(fmt.Sprintf("test-%d", i+1), func(t *testing.T) {
+	//		c := &kops.Cluster{}
+	//		c.Spec.Networking.NetworkCIDR = "10.0.0.0/8"
+	//		c.Spec.Networking.Subnets = test.subnets
+	//
+	//		err := assignCIDRsToSubnets(c, nil)
+	//		if err != nil {
+	//			t.Fatalf("unexpected error: %v", err)
+	//		}
+	//
+	//		var actual []string
+	//		for _, subnet := range c.Spec.Networking.Subnets {
+	//			actual = append(actual, subnet.IPv6CIDR)
+	//		}
+	//		if !reflect.DeepEqual(actual, test.expected) {
+	//			t.Fatalf("unexpected result of network allocation: actual=%v, expected=%v", actual, test.expected)
+	//		}
+	//	})
+	//}
+}
+
 func Test_AssignSubnetZones(t *testing.T) {
 	buildCloud := func() *awsup.MockAWSCloud {
 		cloud := awsup.BuildMockAWSCloud("us-test-1", "abc")
