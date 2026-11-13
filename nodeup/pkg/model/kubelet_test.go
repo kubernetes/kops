@@ -447,6 +447,35 @@ func Test_BuildComponentConfigFile(t *testing.T) {
 	}
 }
 
+func Test_KubeletConfiguration_ClusterDNS(t *testing.T) {
+	builder := &KubeletBuilder{NodeupModelContext: &NodeupModelContext{
+		NodeupConfig: &nodeup.Config{ContainerdConfig: &kops.ContainerdConfig{}},
+	}}
+	tests := []struct {
+		name  string
+		input string
+		want  []string
+	}{
+		{name: "unset"},
+		{name: "single address", input: "10.0.0.10", want: []string{"10.0.0.10"}},
+		{name: "ordered addresses", input: "10.0.0.20,10.0.0.10", want: []string{"10.0.0.20", "10.0.0.10"}},
+		{name: "whitespace", input: " \t10.0.0.10 , 2001:db8::10\n", want: []string{"10.0.0.10", "2001:db8::10"}},
+		{name: "IPv6 spelling", input: "2001:0db8::10,10.0.0.10", want: []string{"2001:0db8::10", "10.0.0.10"}},
+		{name: "duplicates", input: "10.0.0.10,10.0.0.10", want: []string{"10.0.0.10", "10.0.0.10"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cc, err := builder.kubeletConfiguration(&kops.KubeletConfigSpec{ClusterDNS: tt.input}, "")
+			if err != nil {
+				t.Fatalf("kubeletConfiguration() error = %v", err)
+			}
+			if len(cc.ClusterDNS) != len(tt.want) || (len(tt.want) > 0 && !reflect.DeepEqual(cc.ClusterDNS, tt.want)) {
+				t.Errorf("ClusterDNS = %q, want %q", cc.ClusterDNS, tt.want)
+			}
+		})
+	}
+}
+
 func Test_KubeletConfiguration_KubeAPIRateLimits(t *testing.T) {
 	builder := &KubeletBuilder{NodeupModelContext: &NodeupModelContext{
 		NodeupConfig: &nodeup.Config{

@@ -77,7 +77,7 @@ type KubeletConfigSpec struct {
 	NodeStatusReportFrequency *metav1.Duration `json:"nodeStatusReportFrequency,omitempty"`
 	// ClusterDomain is the DNS domain for this cluster
 	ClusterDomain string `json:"clusterDomain,omitempty" flag:"cluster-domain"`
-	// ClusterDNS is the IP address for a cluster DNS server
+	// ClusterDNS is a comma-separated list of IP addresses for cluster DNS servers
 	ClusterDNS string `json:"clusterDNS,omitempty" flag:"cluster-dns"`
 	// NetworkPluginName is the name of the network plugin to be invoked for various events in kubelet/pod lifecycle
 	NetworkPluginName *string `json:"networkPluginName,omitempty" flag:"network-plugin"`

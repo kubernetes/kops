@@ -311,6 +311,13 @@ func (b *KubeletBuilder) buildKubeletComponentConfig(kubeletConfig *kops.Kubelet
 // Most kubelet CLI flags are deprecated upstream in favor of this config
 // file; fields that have flag:"-" in the kops API land here.
 func (b *KubeletBuilder) kubeletConfiguration(kubeletConfig *kops.KubeletConfigSpec, providerID string) (*kubelet.KubeletConfiguration, error) {
+	var clusterDNS []string
+	if kubeletConfig.ClusterDNS != "" {
+		for _, address := range strings.Split(kubeletConfig.ClusterDNS, ",") {
+			clusterDNS = append(clusterDNS, strings.TrimSpace(address))
+		}
+	}
+
 	cc := &kubelet.KubeletConfiguration{
 		CgroupDriver:                     kubeletConfig.CgroupDriver,
 		CgroupRoot:                       kubeletConfig.CgroupRoot,
@@ -318,7 +325,7 @@ func (b *KubeletBuilder) kubeletConfiguration(kubeletConfig *kops.KubeletConfigS
 		TLSPrivateKeyFile:                filepath.Join(b.PathSrvKubernetes(), "kubelet-server.key"),
 		TLSCipherSuites:                  kubeletConfig.TLSCipherSuites,
 		TLSMinVersion:                    kubeletConfig.TLSMinVersion,
-		ClusterDNS:                       []string{kubeletConfig.ClusterDNS},
+		ClusterDNS:                       clusterDNS,
 		ClusterDomain:                    kubeletConfig.ClusterDomain,
 		EnableDebuggingHandlers:          kubeletConfig.EnableDebuggingHandlers,
 		HairpinMode:                      kubeletConfig.HairpinMode,
