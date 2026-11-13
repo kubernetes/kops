@@ -1,0 +1,29 @@
+node-exporter: add the pressure, stat, schedstat, processes and vmstat
+collectors and the cpu collector's cpu.info option, so the stress tool's
+scrape carries PSI, tasks blocked on I/O, run-queue wait, thread counts
+per state, page-cache dirtying and writeback, and the CPU model. With
+load1 they help tell CPU queueing, I/O wait and other uninterruptible
+sleep apart, and the CPU model tells two runs on different host
+generations apart in the report.
+
+run-test.sh applies this to the agent-sandbox checkout after the tag is
+checked out, and skips it once a tag carries the lines.
+
+diff --git a/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml b/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
+index 0911c2a..c7d1702 100644
+--- a/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
++++ b/test/benchmarks/scenarios/benchmarks-kops-gcp/node-exporter.yaml
+@@ -60,6 +60,13 @@ spec:
+             - --collector.meminfo
+             - --collector.diskstats
+             - --collector.loadavg
++            - --collector.pressure
++            - --collector.stat
++            - --collector.schedstat
++            - --collector.processes
++            - --collector.cpu.info
++            - --collector.vmstat
++            - --collector.vmstat.fields=^(oom_kill|pgpg|pswp|pg.*fault|nr_dirt|nr_written|nr_writeback).*
+             - --collector.textfile
+             - --collector.textfile.directory=/textfile
+           ports:
