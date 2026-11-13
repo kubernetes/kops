@@ -19,7 +19,7 @@ region: "{{`{{ Region }}`}}"
 # rather than `"v3.2.2"` — the chart wraps the final image in double quotes.
 image:
   repository: public.ecr.aws/eks/aws-load-balancer-controller
-  tag: "{{ or .CloudProvider.AWS.LoadBalancerController.Version `v3.6.2` }}"
+  tag: "{{ or .CloudProvider.AWS.LoadBalancerController.Version `v3.6.3` }}"
 
 metricsBindAddr: ":9442"
 
@@ -39,23 +39,13 @@ resources:
 # kustomize and the serving cert is re-pointed at the selfsigned Issuer.
 enableCertManager: true
 
-# Exclude kube-system from the `mservice` webhook so kops-managed Services
-# (e.g. dns-controller) are never routed through the controller.
+# The `mservice` webhook fails closed, so only send it the LoadBalancer Services
+# it mutates. Other Services, such as default/kubernetes and those created by
+# kops addons during bootstrap, can then be created before the controller is up.
 serviceMutatorWebhookConfig:
-  namespaceSelectors:
-    - key: kubernetes.io/metadata.name
-      operator: NotIn
-      values:
-        - kube-system
-  # The webhook may be installed before the apiserver creates default/kubernetes.
-  # Blocking that Service leaves bootstrap components without the injected
-  # KUBERNETES_SERVICE_PORT, so they cannot start and make the webhook available.
-  objectSelector:
-    matchExpressions:
-      - key: component
-        operator: NotIn
-        values:
-          - apiserver
+  matchConditions:
+    - name: include-load-balancer-services
+      expression: object.spec.type == 'LoadBalancer'
 
 replicaCount: 1
 
