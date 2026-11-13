@@ -189,6 +189,9 @@ func (m *MockIAM) DeleteInstanceProfile(ctx context.Context, request *iam.Delete
 	if o == nil {
 		return nil, fmt.Errorf("InstanceProfile %q not found", id)
 	}
+	if len(o.Roles) != 0 {
+		return nil, &iamtypes.DeleteConflictException{}
+	}
 	delete(m.InstanceProfiles, id)
 
 	return &iam.DeleteInstanceProfileOutput{}, nil
