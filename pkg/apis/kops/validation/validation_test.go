@@ -2844,6 +2844,58 @@ func TestValidateFileRepository(t *testing.T) {
 	}
 }
 
+func TestValidateKubeletClusterDNS(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		invalid bool
+	}{
+		{name: "unset"},
+		{name: "IPv4", input: "10.0.0.10"},
+		{name: "IPv6", input: "2001:0db8::10"},
+		{name: "multiple addresses", input: "10.0.0.10,2001:db8::10"},
+		{name: "whitespace", input: " \t10.0.0.10 , 2001:db8::10\n"},
+		{name: "invalid address", input: "10.0.0.10,not-an-ip", invalid: true},
+		{name: "whitespace only", input: " \t\n", invalid: true},
+		{name: "empty entry", input: "10.0.0.10,,2001:db8::10", invalid: true},
+		{name: "leading comma", input: ",10.0.0.10", invalid: true},
+		{name: "trailing comma", input: "10.0.0.10,", invalid: true},
+		{name: "quoted address", input: `"10.0.0.10"`, invalid: true},
+		{name: "quoted list", input: "'10.0.0.10,2001:db8::10'", invalid: true},
+		{name: "newline within entry", input: "10.0.0.10\nnot-an-ip", invalid: true},
+		{name: "CIDR", input: "10.0.0.10/24", invalid: true},
+	}
+	for _, scope := range []string{"kubelet", "controlPlaneKubelet", "instanceGroup"} {
+		t.Run(scope, func(t *testing.T) {
+			for _, tt := range tests {
+				t.Run(tt.name, func(t *testing.T) {
+					config := &kops.KubeletConfigSpec{ClusterDNS: tt.input}
+					var errs field.ErrorList
+					path := "spec." + scope + ".clusterDNS"
+					if scope == "instanceGroup" {
+						group := &kops.InstanceGroup{
+							ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
+							Spec: kops.InstanceGroupSpec{
+								Role:    kops.InstanceGroupRoleNode,
+								Kubelet: config,
+							},
+						}
+						errs = ValidateInstanceGroup(group, nil, false)
+						path = "spec.kubelet.clusterDNS"
+					} else {
+						errs = validateKubelet(config, &kops.Cluster{}, field.NewPath("spec", scope))
+					}
+					var expected []string
+					if tt.invalid {
+						expected = []string{"Invalid value::" + path}
+					}
+					testErrors(t, tt.input, errs, expected)
+				})
+			}
+		})
+	}
+}
+
 func TestValidateKubeletCgroupDriver(t *testing.T) {
 	grid := []struct {
 		Input          kops.KubeletConfigSpec

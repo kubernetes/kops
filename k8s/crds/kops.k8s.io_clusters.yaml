@@ -4312,7 +4312,8 @@ spec:
                     description: CloudProvider is the provider for cloud services.
                     type: string
                   clusterDNS:
-                    description: ClusterDNS is the IP address for a cluster DNS server
+                    description: ClusterDNS is a comma-separated list of IP addresses
+                      for cluster DNS servers
                     type: string
                   clusterDomain:
                     description: ClusterDomain is the DNS domain for this cluster
@@ -4825,7 +4826,8 @@ spec:
                     description: CloudProvider is the provider for cloud services.
                     type: string
                   clusterDNS:
-                    description: ClusterDNS is the IP address for a cluster DNS server
+                    description: ClusterDNS is a comma-separated list of IP addresses
+                      for cluster DNS servers
                     type: string
                   clusterDomain:
                     description: ClusterDomain is the DNS domain for this cluster
