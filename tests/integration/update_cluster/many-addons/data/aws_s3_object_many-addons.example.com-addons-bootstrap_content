@@ -226,7 +226,7 @@ spec:
       k8s-addon: node-problem-detector.addons.k8s.io
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: a360dadc44d31bdb058a940123a8ef58175f8820fc740824c21ee658562bc10b
+    manifestHash: a5d6382c07020b9314f8aa38bab9be929e1123dfd85c9402c78f5fa7411a2935
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     prune:
