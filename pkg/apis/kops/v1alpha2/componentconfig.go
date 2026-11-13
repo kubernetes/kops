@@ -1160,6 +1160,11 @@ type NodeTerminationHandlerSpec struct {
 	// EnableSQSTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
 	// Default: true
 	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
+	// SQSMsgVisibilityTimeoutSec is the duration in seconds that a message is hidden from other consumers
+	// after being retrieved from the SQS queue. Valid range: 1-119.
+	// Only used in Queue Processor mode.
+	// Default: 20
+	SQSMsgVisibilityTimeoutSec *int32 `json:"sqsMsgVisibilityTimeoutSec,omitempty"`
 
 	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.
 	// Default: true

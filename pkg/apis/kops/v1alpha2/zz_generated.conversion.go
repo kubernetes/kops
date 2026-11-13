@@ -7036,6 +7036,7 @@ func autoConvert_v1alpha2_NodeTerminationHandlerSpec_To_kops_NodeTerminationHand
 	out.EnableOutOfServiceTaint = in.EnableOutOfServiceTaint
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
+	out.SQSMsgVisibilityTimeoutSec = in.SQSMsgVisibilityTimeoutSec
 	out.ExcludeFromLoadBalancers = in.ExcludeFromLoadBalancers
 	out.ManagedASGTag = in.ManagedASGTag
 	out.PodTerminationGracePeriod = in.PodTerminationGracePeriod
@@ -7064,6 +7065,7 @@ func autoConvert_kops_NodeTerminationHandlerSpec_To_v1alpha2_NodeTerminationHand
 	out.EnableOutOfServiceTaint = in.EnableOutOfServiceTaint
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
+	out.SQSMsgVisibilityTimeoutSec = in.SQSMsgVisibilityTimeoutSec
 	out.ExcludeFromLoadBalancers = in.ExcludeFromLoadBalancers
 	out.ManagedASGTag = in.ManagedASGTag
 	out.PodTerminationGracePeriod = in.PodTerminationGracePeriod

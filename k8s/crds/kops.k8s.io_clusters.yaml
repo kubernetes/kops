@@ -6555,6 +6555,14 @@ spec:
                       EnablePrometheusMetrics enables the "/metrics" endpoint.
                       Default: false
                     type: boolean
+                  sqsMsgVisibilityTimeoutSec:
+                    description: |-
+                      SQSMsgVisibilityTimeoutSec is the duration in seconds that a message is hidden from other consumers
+                      after being retrieved from the SQS queue. Valid range: 1-119.
+                      Only used in Queue Processor mode.
+                      Default: 20
+                    format: int32
+                    type: integer
                   taintNode:
                     description: |-
                       TaintNode makes node termination handler taint nodes when an interruption event occurs.

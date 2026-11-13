@@ -78,6 +78,7 @@ spec:
   networkCIDR: 172.20.0.0/16
   nodeTerminationHandler:
     managedASGTag: kubernetes.io/cluster/complex.example.com
+    sqsMsgVisibilityTimeoutSec: 60
   additionalNetworkCIDRs:
   - 10.1.0.0/16
   - 10.2.0.0/16

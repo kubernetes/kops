@@ -221,7 +221,7 @@ spec:
             - name: HEARTBEAT_UNTIL
               value: "-1"
             - name: SQS_MSG_VISIBILITY_TIMEOUT_SEC
-              value: "20"
+              value: "{{ .SQSMsgVisibilityTimeoutSec }}"
             {{ if .WebhookTemplate }}
             - name: WEBHOOK_TEMPLATE
               value: '{{ .WebhookTemplate }}'
