@@ -319,6 +319,8 @@ spec:
 
 If `enableSQSTerminationDraining` is not false Node Termination Handler will operate in Queue Processor mode. In addition to the events mentioned above, Queue Processor mode allows Node Termination Handler to take care of ASG Scale-In, AZ-Rebalance, Unhealthy Instances, EC2 Instance Termination via the API or Console, and more. kOps will provision the necessary infrastructure: an SQS queue, EventBridge rules, and ASG Lifecycle hooks. `managedASGTag` can be configured with Queue Processor mode to distinguish resource ownership between multiple clusters.
 
+`sqsMsgVisibilityTimeoutSec` (default `20`, valid range 1-119) sets how long a message is hidden from other consumers after Node Termination Handler retrieves it from the SQS queue.
+
 The kOps CLI requires additional IAM permissions to manage the requisite EventBridge rules and SQS queue:
 
 ```json

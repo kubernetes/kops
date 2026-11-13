@@ -1072,6 +1072,11 @@ type NodeTerminationHandlerSpec struct {
 	// EnableSQSTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
 	// Default: true
 	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
+	// SQSMsgVisibilityTimeoutSec is the duration in seconds that a message is hidden from other consumers
+	// after being retrieved from the SQS queue. Valid range: 1-119.
+	// Only used in Queue Processor mode.
+	// Default: 20
+	SQSMsgVisibilityTimeoutSec *int32 `json:"sqsMsgVisibilityTimeoutSec,omitempty"`
 
 	// ManagedASGTag is the tag used to determine which nodes NTH can take action on
 	// This field has kept its name even though it now maps to the --managed-tag flag due to keeping the API stable.

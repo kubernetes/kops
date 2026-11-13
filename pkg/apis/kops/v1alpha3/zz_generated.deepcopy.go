@@ -5253,6 +5253,11 @@ func (in *NodeTerminationHandlerSpec) DeepCopyInto(out *NodeTerminationHandlerSp
 		*out = new(bool)
 		**out = **in
 	}
+	if in.SQSMsgVisibilityTimeoutSec != nil {
+		in, out := &in.SQSMsgVisibilityTimeoutSec, &out.SQSMsgVisibilityTimeoutSec
+		*out = new(int32)
+		**out = **in
+	}
 	if in.ManagedASGTag != nil {
 		in, out := &in.ManagedASGTag, &out.ManagedASGTag
 		*out = new(string)
