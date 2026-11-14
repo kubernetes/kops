@@ -87,6 +87,10 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o *kops.Cluster) err
 		nth.PodTerminationGracePeriod = new(int32(-1))
 	}
 
+	if nth.SQSMsgVisibilityTimeoutSeconds == nil {
+		nth.SQSMsgVisibilityTimeoutSeconds = new(int32(20))
+	}
+
 	if nth.TaintNode == nil {
 		nth.TaintNode = new(false)
 	}

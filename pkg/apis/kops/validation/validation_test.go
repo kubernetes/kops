@@ -2993,3 +2993,41 @@ func TestValidateKubeletPackages(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func TestValidateNodeTerminationHandlerSQSMsgVisibilityTimeoutSeconds(t *testing.T) {
+	grid := []struct {
+		Input          kops.NodeTerminationHandlerSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input:          kops.NodeTerminationHandlerSpec{Enabled: new(true)},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.NodeTerminationHandlerSpec{Enabled: new(true), SQSMsgVisibilityTimeoutSeconds: new(int32(1))},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.NodeTerminationHandlerSpec{Enabled: new(true), SQSMsgVisibilityTimeoutSeconds: new(int32(119))},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input:          kops.NodeTerminationHandlerSpec{Enabled: new(true), SQSMsgVisibilityTimeoutSeconds: new(int32(0))},
+			ExpectedErrors: []string{"Invalid value::spec.cloudProvider.aws.nodeTerminationHandler.sqsMsgVisibilityTimeoutSeconds"},
+		},
+		{
+			Input:          kops.NodeTerminationHandlerSpec{Enabled: new(true), SQSMsgVisibilityTimeoutSeconds: new(int32(120))},
+			ExpectedErrors: []string{"Invalid value::spec.cloudProvider.aws.nodeTerminationHandler.sqsMsgVisibilityTimeoutSeconds"},
+		},
+		{
+			// Not used outside of Queue Processor mode.
+			Input:          kops.NodeTerminationHandlerSpec{Enabled: new(true), EnableSQSTerminationDraining: new(false), SQSMsgVisibilityTimeoutSeconds: new(int32(120))},
+			ExpectedErrors: []string{},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateNodeTerminationHandler(&kops.Cluster{}, &g.Input, field.NewPath("spec", "cloudProvider", "aws", "nodeTerminationHandler"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

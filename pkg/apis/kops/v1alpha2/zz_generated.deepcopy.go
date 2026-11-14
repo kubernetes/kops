@@ -5348,6 +5348,11 @@ func (in *NodeTerminationHandlerSpec) DeepCopyInto(out *NodeTerminationHandlerSp
 		*out = new(bool)
 		**out = **in
 	}
+	if in.SQSMsgVisibilityTimeoutSeconds != nil {
+		in, out := &in.SQSMsgVisibilityTimeoutSeconds, &out.SQSMsgVisibilityTimeoutSeconds
+		*out = new(int32)
+		**out = **in
+	}
 	if in.ExcludeFromLoadBalancers != nil {
 		in, out := &in.ExcludeFromLoadBalancers, &out.ExcludeFromLoadBalancers
 		*out = new(bool)
