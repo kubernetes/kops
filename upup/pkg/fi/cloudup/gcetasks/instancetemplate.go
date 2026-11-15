@@ -315,6 +315,14 @@ func guessMachineTypeInfo(machineType string) (*MachineTypeInfo, error) {
 		machineTypeInfo.SupportsMigration = false
 	}
 
+	// Bare metal instances (e.g. c4a-highmem-96-metal, c3-standard-192-metal) run directly on a
+	// dedicated host with no hypervisor, so they cannot be live migrated and GCE rejects
+	// onHostMaintenance=MIGRATE for them.
+	// https://docs.cloud.google.com/compute/docs/instances/live-migration-process#limitations
+	if strings.HasSuffix(machineType, "-metal") {
+		machineTypeInfo.SupportsMigration = false
+	}
+
 	return machineTypeInfo, nil
 }
 
