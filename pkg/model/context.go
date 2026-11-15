@@ -197,13 +197,20 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		}
 	}
 
-	// Apply labels for cluster autoscaler node taints
-	for _, v := range ig.Spec.Taints {
-		taint, err := util.ParseTaint(v)
-		if err != nil || taint["effect"] == "" {
-			continue
+	// Apply labels for cluster autoscaler node taints.
+	// Only cluster-autoscaler on AWS reads these tags (from the ASG). OpenStack
+	// already stores them, sanitized, as server metadata, so it keeps them.
+	// Other providers don't get them: the keys aren't valid GCE labels, Hetzner
+	// labels or Linode tags, and nothing reads them there.
+	switch b.Cluster.GetCloudProvider() {
+	case kops.CloudProviderAWS, kops.CloudProviderOpenstack:
+		for _, v := range ig.Spec.Taints {
+			taint, err := util.ParseTaint(v)
+			if err != nil || taint["effect"] == "" {
+				continue
+			}
+			labels[clusterAutoscalerNodeTemplateTaint+taint["key"]] = taint["value"] + ":" + taint["effect"]
 		}
-		labels[clusterAutoscalerNodeTemplateTaint+taint["key"]] = taint["value"] + ":" + taint["effect"]
 	}
 
 	switch b.Cluster.GetCloudProvider() {
