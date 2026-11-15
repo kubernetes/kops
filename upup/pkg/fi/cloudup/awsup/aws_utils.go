@@ -60,10 +60,6 @@ func ValidateRegion(ctx context.Context, region string) error {
 			return fmt.Errorf("error loading AWS config: %v", err)
 		}
 
-		if err != nil {
-			return fmt.Errorf("error starting a new AWS session: %v", err)
-		}
-
 		client := ec2.NewFromConfig(cfg)
 
 		response, err := client.DescribeRegions(ctx, request)
