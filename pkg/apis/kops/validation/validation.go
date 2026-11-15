@@ -2338,6 +2338,9 @@ func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTermin
 		if !fi.ValueOf(spec.EnableRebalanceDraining) && fi.ValueOf(spec.EnableRebalanceMonitoring) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableRebalanceMonitoring"), "rebalance events can only drain in Queue Processor mode"))
 		}
+		if spec.SQSMsgVisibilityTimeoutSeconds != nil && (*spec.SQSMsgVisibilityTimeoutSeconds < 1 || *spec.SQSMsgVisibilityTimeoutSeconds > 119) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("sqsMsgVisibilityTimeoutSeconds"), *spec.SQSMsgVisibilityTimeoutSeconds, "must be between 1 and 119"))
+		}
 	}
 	return allErrs
 }
