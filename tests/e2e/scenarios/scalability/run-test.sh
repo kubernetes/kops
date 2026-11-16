@@ -71,6 +71,8 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}")
   # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
   create_args+=("--dns=none")
+  # Each kubelet reads its CSINode from the API server on every refresh: about 500 GETs per second at 5000 nodes.
+  create_args+=("--set spec.cloudProvider.aws.ebsCSIDriver.nodeAllocatableUpdatePeriodSeconds=0")
 fi
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   if [[ -z "${GCE_VOLUME_TYPE:-}" ]]; then
