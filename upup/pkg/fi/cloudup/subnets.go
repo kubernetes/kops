@@ -20,11 +20,13 @@ import (
 	"fmt"
 	"net"
 	"sort"
+	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // ByZone implements sort.Interface for []*ClusterSubnetSpec based on
@@ -78,6 +80,8 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		for _, subnetInfo := range vpcInfo.Subnets {
 			subnetByID[subnetInfo.ID] = subnetInfo
 		}
+
+		useIPv6 := utils.IsIPv6CIDR(c.Spec.Networking.NonMasqueradeCIDR)
 		for i := range c.Spec.Networking.Subnets {
 			subnet := &c.Spec.Networking.Subnets[i]
 			if subnet.ID != "" {
@@ -85,6 +89,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 				if cloudSubnet == nil {
 					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ID, c.Spec.Networking.NetworkID)
 				}
+
 				if subnet.CIDR == "" {
 					subnet.CIDR = cloudSubnet.CIDR
 					// IPv6-only private subnets do not have an IPv4 CIDR
@@ -93,6 +98,18 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 					}
 				} else if subnet.CIDR != cloudSubnet.CIDR {
 					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ID, subnet.CIDR, cloudSubnet.CIDR)
+				}
+
+				if useIPv6 {
+					// When `--ipv6` flag is given, subnet.IPv6CIDR is pre-set to `/64#N`
+					if subnet.IPv6CIDR == "" || strings.HasPrefix(subnet.IPv6CIDR, "/64#") {
+						subnet.IPv6CIDR = cloudSubnet.IPv6CIDR
+						if subnet.IPv6CIDR == "" {
+							return fmt.Errorf("Subnet %q did not have IPv6CIDR", subnet.ID)
+						}
+					} else if subnet.IPv6CIDR != cloudSubnet.IPv6CIDR {
+						return fmt.Errorf("Subnet %q has configured IPv6CIDR %q, but the actual IPv6CIDR found was %q", subnet.ID, subnet.IPv6CIDR, cloudSubnet.IPv6CIDR)
+					}
 				}
 
 				if needZones && subnet.Zone == "" {
