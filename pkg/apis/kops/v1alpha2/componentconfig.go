@@ -1099,6 +1099,12 @@ type EBSCSIDriverSpec struct {
 	// Default: -
 	VolumeAttachLimit *int `json:"volumeAttachLimit,omitempty"`
 
+	// NodeAllocatableUpdatePeriodSeconds is how often each kubelet refreshes the CSINode
+	// attach limit of the driver. Every refresh reads the CSINode from the API server,
+	// so large clusters may want a longer period. 0 turns the refresh off.
+	// Default: 10
+	NodeAllocatableUpdatePeriodSeconds *int32 `json:"nodeAllocatableUpdatePeriodSeconds,omitempty"`
+
 	// PodAnnotations are the annotations added to AWS EBS CSI node and controller Pods.
 	// Default: none
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`

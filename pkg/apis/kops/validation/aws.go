@@ -103,6 +103,13 @@ func awsValidateEBSCSIDriver(cluster *kops.Cluster) (allErrs field.ErrorList) {
 	if c.CloudProvider.AWS.EBSCSIDriver != nil && c.CloudProvider.AWS.EBSCSIDriver.Enabled != nil && !*c.CloudProvider.AWS.EBSCSIDriver.Enabled {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "must not be disabled"))
 	}
+	if c.CloudProvider.AWS.EBSCSIDriver != nil && c.CloudProvider.AWS.EBSCSIDriver.NodeAllocatableUpdatePeriodSeconds != nil {
+		// Kubernetes rejects a period below 10 seconds.
+		if period := *c.CloudProvider.AWS.EBSCSIDriver.NodeAllocatableUpdatePeriodSeconds; period != 0 && period < 10 {
+			fldPath := field.NewPath("spec", "cloudProvider", "aws", "ebsCSIDriver", "nodeAllocatableUpdatePeriodSeconds")
+			allErrs = append(allErrs, field.Invalid(fldPath, period, "must be 0 or at least 10"))
+		}
+	}
 	return allErrs
 }
 

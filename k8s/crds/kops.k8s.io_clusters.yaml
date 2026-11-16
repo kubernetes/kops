@@ -424,6 +424,14 @@ spec:
                           Managed controls if aws-ebs-csi-driver is manged and deployed by kOps.
                           The deployment of aws-ebs-csi-driver is skipped if this is set to false.
                         type: boolean
+                      nodeAllocatableUpdatePeriodSeconds:
+                        description: |-
+                          NodeAllocatableUpdatePeriodSeconds is how often each kubelet refreshes the CSINode
+                          attach limit of the driver. Every refresh reads the CSINode from the API server,
+                          so large clusters may want a longer period. 0 turns the refresh off.
+                          Default: 10
+                        format: int32
+                        type: integer
                       podAnnotations:
                         additionalProperties:
                           type: string

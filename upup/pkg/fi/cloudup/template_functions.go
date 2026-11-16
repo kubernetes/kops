@@ -170,6 +170,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 		return defaultValue
 	}
+	dest["WithDefaultInt32"] = func(v *int32, defaultValue int32) int32 {
+		if v != nil {
+			return *v
+		}
+		return defaultValue
+	}
 	dest["GetString"] = func(v *string) string {
 		if v != nil {
 			return *v

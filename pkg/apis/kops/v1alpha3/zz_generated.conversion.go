@@ -3995,6 +3995,7 @@ func autoConvert_v1alpha3_EBSCSIDriverSpec_To_kops_EBSCSIDriverSpec(in *EBSCSIDr
 	out.KubeAPIBurst = in.KubeAPIBurst
 	out.HostNetwork = in.HostNetwork
 	out.VolumeAttachLimit = in.VolumeAttachLimit
+	out.NodeAllocatableUpdatePeriodSeconds = in.NodeAllocatableUpdatePeriodSeconds
 	out.PodAnnotations = in.PodAnnotations
 	return nil
 }
@@ -4012,6 +4013,7 @@ func autoConvert_kops_EBSCSIDriverSpec_To_v1alpha3_EBSCSIDriverSpec(in *kops.EBS
 	out.KubeAPIBurst = in.KubeAPIBurst
 	out.HostNetwork = in.HostNetwork
 	out.VolumeAttachLimit = in.VolumeAttachLimit
+	out.NodeAllocatableUpdatePeriodSeconds = in.NodeAllocatableUpdatePeriodSeconds
 	out.PodAnnotations = in.PodAnnotations
 	return nil
 }
