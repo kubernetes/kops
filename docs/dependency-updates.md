@@ -437,7 +437,10 @@ literals.
 
 - NVIDIA: the driver package and device-plugin image are constants in
   `pkg/apis/kops/containerdconfig.go`.
-- gVisor: `nodeup/pkg/model/gvisor.go` uses a rolling apt repository — **nothing to pin**.
+- gVisor: the release tarball URLs and their sha512 checksums are constants in
+  `pkg/nodemodel/wellknownassets/gvisor.go`. Releases are listed under
+  `https://storage.googleapis.com/gvisor/releases/release/`; take the checksum from the
+  `gvisor.tar.zstd.sha512` file next to each tarball.
 
 Docker support has been removed; there is no docker version anywhere, despite `"docker"` still
 appearing as a valid `containerRuntime` string in validation.
