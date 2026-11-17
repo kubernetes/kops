@@ -34,6 +34,9 @@ type InstanceGroup interface {
 	// InstallCNIAssets returns true if CNI network plugins need to be installed
 	InstallCNIAssets() bool
 
+	// HasGVisor returns true if the instance group runs the gVisor (runsc) runtime.
+	HasGVisor() bool
+
 	// KubeletSpec returns the KubeletConfigSpec for the instance group.
 	KubeletSpec() *kops.KubeletConfigSpec
 
@@ -75,6 +78,10 @@ func (m *instanceGroupModel) GetCloudProvider() kops.CloudProviderID {
 
 func (m *instanceGroupModel) InstallCNIAssets() bool {
 	return m.cluster.InstallCNIAssets()
+}
+
+func (m *instanceGroupModel) HasGVisor() bool {
+	return m.ig.HasGVisor()
 }
 
 func (m *instanceGroupModel) KubeletSpec() *kops.KubeletConfigSpec {
