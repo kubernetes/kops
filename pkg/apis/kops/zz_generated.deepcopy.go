@@ -2002,6 +2002,11 @@ func (in *EBSCSIDriverSpec) DeepCopyInto(out *EBSCSIDriverSpec) {
 		*out = new(int)
 		**out = **in
 	}
+	if in.NodeAllocatableUpdatePeriodSeconds != nil {
+		in, out := &in.NodeAllocatableUpdatePeriodSeconds, &out.NodeAllocatableUpdatePeriodSeconds
+		*out = new(int32)
+		**out = **in
+	}
 	if in.PodAnnotations != nil {
 		in, out := &in.PodAnnotations, &out.PodAnnotations
 		*out = make(map[string]string, len(*in))

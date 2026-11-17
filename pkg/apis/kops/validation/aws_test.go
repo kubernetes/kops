@@ -84,6 +84,29 @@ func TestAWSValidateEBSCSIDriver(t *testing.T) {
 				},
 			},
 		},
+		{
+			Input: kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{
+						EBSCSIDriver: &kops.EBSCSIDriverSpec{
+							NodeAllocatableUpdatePeriodSeconds: new(int32(0)),
+						},
+					},
+				},
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{
+						EBSCSIDriver: &kops.EBSCSIDriverSpec{
+							NodeAllocatableUpdatePeriodSeconds: new(int32(5)),
+						},
+					},
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::spec.cloudProvider.aws.ebsCSIDriver.nodeAllocatableUpdatePeriodSeconds"},
+		},
 	}
 	for _, g := range grid {
 		g.Input.KubernetesVersion = "1.35.0"

@@ -1129,7 +1129,10 @@ spec:
   attachRequired: true
   podInfoOnMount: false
 {{ if IsKubernetesGTE "1.35.0" }}
-  nodeAllocatableUpdatePeriodSeconds: 10
+{{- $period := WithDefaultInt32 .NodeAllocatableUpdatePeriodSeconds 10 }}
+{{- if ne $period 0 }}
+  nodeAllocatableUpdatePeriodSeconds: {{ $period }}
+{{- end }}
 {{ end }}
   # Disabled because the field is immutable and kOps doesn't have a way to delete and recreate the resource
   # fsGroupPolicy: File
