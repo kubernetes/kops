@@ -50,6 +50,8 @@ func fileExtensionForSHA(sha string) (string, error) {
 		return ".sha1", nil
 	case 64:
 		return ".sha256", nil
+	case 128:
+		return ".sha512", nil
 	default:
 		return "", fmt.Errorf("unhandled sha length for %q", sha)
 	}

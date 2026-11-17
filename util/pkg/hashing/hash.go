@@ -21,6 +21,7 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
 	"hash"
@@ -36,6 +37,7 @@ import (
 type HashAlgorithm string
 
 const (
+	HashAlgorithmSHA512 HashAlgorithm = "sha512"
 	HashAlgorithmSHA256 HashAlgorithm = "sha256"
 	HashAlgorithmSHA1   HashAlgorithm = "sha1"
 	HashAlgorithmMD5    HashAlgorithm = "md5"
@@ -64,6 +66,9 @@ func (ha HashAlgorithm) NewHasher() hash.Hash {
 
 	case HashAlgorithmSHA256:
 		return sha256.New()
+
+	case HashAlgorithmSHA512:
+		return sha512.New()
 	}
 
 	klog.Exitf("Unknown hash algorithm: %v", ha)
@@ -79,6 +84,8 @@ func (ha HashAlgorithm) FromString(s string) (*Hash, error) {
 		l = 40
 	case HashAlgorithmSHA256:
 		l = 64
+	case HashAlgorithmSHA512:
+		l = 128
 	default:
 		return nil, fmt.Errorf("unknown hash algorithm: %q", ha)
 	}
@@ -103,7 +110,7 @@ func MustFromString(s string) *Hash {
 }
 
 func FromString(s string) (*Hash, error) {
-	for _, ha := range []HashAlgorithm{HashAlgorithmMD5, HashAlgorithmSHA1, HashAlgorithmSHA256} {
+	for _, ha := range []HashAlgorithm{HashAlgorithmMD5, HashAlgorithmSHA1, HashAlgorithmSHA256, HashAlgorithmSHA512} {
 		prefix := fmt.Sprintf("%s:", ha)
 		if strings.HasPrefix(s, prefix) {
 			return ha.FromString(s[len(prefix):])
@@ -118,6 +125,8 @@ func FromString(s string) (*Hash, error) {
 		ha = HashAlgorithmSHA1
 	case 64:
 		ha = HashAlgorithmSHA256
+	case 128:
+		ha = HashAlgorithmSHA512
 	default:
 		return nil, fmt.Errorf("cannot determine algorithm for hash length: %d", len(s))
 	}
