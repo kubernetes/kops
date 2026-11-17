@@ -1023,10 +1023,24 @@ func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.Error
 	return allErrs
 }
 
+func validateClusterDNS(clusterDNS string, fldPath *field.Path) field.ErrorList {
+	var allErrs field.ErrorList
+	if clusterDNS != "" {
+		for _, address := range strings.Split(clusterDNS, ",") {
+			address = strings.TrimSpace(address)
+			if net.ParseIP(address) == nil {
+				allErrs = append(allErrs, field.Invalid(fldPath, address, "must be a valid IP address"))
+			}
+		}
+	}
+	return allErrs
+}
+
 func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if k != nil {
+		allErrs = append(allErrs, validateClusterDNS(k.ClusterDNS, kubeletPath.Child("clusterDNS"))...)
 
 		{
 			// Flag removed in 1.5
