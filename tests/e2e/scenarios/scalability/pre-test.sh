@@ -26,6 +26,5 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
     --set=spec.maxSize=1 --set=spec.minSize=1 --set=spec.rootVolume.type=hyperdisk-balanced \
     --set=spec.image="${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261016}"
   kops update cluster --yes
-  # TODO: Replaced with `kops validate instancegroup --wait 10m` when it's fixed for 5k node clusters.
-  sleep 120 # should take around 2 minutes to get node read
+  kops validate instancegroup addons --wait 10m
 fi

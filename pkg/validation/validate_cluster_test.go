@@ -1418,3 +1418,124 @@ func Test_ValidateGroupFailuresWithUnreachableAPIServer(t *testing.T) {
 	assert.Equal(t, "InstanceGroup \"control-plane-1\" did not have enough nodes 0 vs 1", v.Failures[1].Message)
 	assert.Contains(t, v.Failures[2].Message, "InsufficientInstanceCapacity")
 }
+
+func Test_ValidateInstanceGroups(t *testing.T) {
+	cluster := &kopsapi.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
+		Spec: kopsapi.ClusterSpec{
+			Networking: kopsapi.NetworkingSpec{
+				Topology: &kopsapi.TopologySpec{
+					DNS: kopsapi.DNSTypeNone,
+				},
+			},
+		},
+	}
+
+	addons := &kopsapi.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "addons"},
+		Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+	}
+	addonsNode := &v1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: "addons-1"},
+		Status: v1.NodeStatus{
+			Conditions: []v1.NodeCondition{{Type: "Ready", Status: v1.ConditionTrue}},
+		},
+	}
+	// A node of an instance group that is not being validated.
+	otherNode := &v1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: "nodes-1"},
+		Status: v1.NodeStatus{
+			Conditions: []v1.NodeCondition{{Type: "Ready", Status: v1.ConditionFalse}},
+		},
+	}
+
+	for _, tc := range []struct {
+		name     string
+		pods     []map[string]string
+		expected []*ValidationError
+	}{
+		{
+			name: "failures outside the instance group are ignored",
+			pods: []map[string]string{
+				{
+					"name":              "healthy",
+					"priorityClassName": "system-node-critical",
+					"phase":             string(v1.PodRunning),
+					"ready":             "true",
+					"nodeName":          "addons-1",
+				},
+				{
+					"name":              "on-other-node",
+					"priorityClassName": "system-node-critical",
+					"phase":             string(v1.PodRunning),
+					"ready":             "false",
+					"nodeName":          "nodes-1",
+				},
+				{
+					"name":              "unscheduled",
+					"priorityClassName": "system-cluster-critical",
+					"phase":             string(v1.PodPending),
+				},
+			},
+		},
+		{
+			name: "failures on the nodes of the instance group are reported",
+			pods: []map[string]string{
+				{
+					"name":              "node-critical",
+					"priorityClassName": "system-node-critical",
+					"phase":             string(v1.PodPending),
+					"nodeName":          "addons-1",
+				},
+				{
+					"name":              "cluster-critical",
+					"priorityClassName": "system-cluster-critical",
+					"phase":             string(v1.PodRunning),
+					"ready":             "false",
+					"nodeName":          "addons-1",
+				},
+			},
+			expected: []*ValidationError{
+				{
+					Kind:    "Pod",
+					Name:    "kube-system/cluster-critical",
+					Message: "system-cluster-critical pod \"cluster-critical\" is not ready (container1,container2)",
+				},
+				{
+					Kind:          "Pod",
+					Name:          "kube-system/node-critical",
+					Message:       "system-node-critical pod \"node-critical\" is pending",
+					InstanceGroup: addons,
+				},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			groups := map[string]*cloudinstances.CloudInstanceGroup{
+				"addons": {
+					InstanceGroup: addons,
+					MinSize:       1,
+					TargetSize:    1,
+					Ready:         []*cloudinstances.CloudInstance{{ID: "i-00001", Node: addonsNode}},
+				},
+			}
+
+			// The cloud provider must only be asked about the instance group being validated.
+			mockcloud := BuildMockCloud(t, groups, cluster, []kopsapi.InstanceGroup{*addons})
+
+			objects := append(makePodList(tc.pods), addonsNode, otherNode)
+			restConfig := &rest.Config{Host: "https://api.testcluster.k8s.local"}
+			validator, err := NewInstanceGroupValidator(cluster, mockcloud, []*kopsapi.InstanceGroup{addons}, 0, restConfig, fake.NewClientset(objects...))
+			require.NoError(t, err)
+			v, err := validator.Validate(context.TODO())
+			require.NoError(t, err)
+
+			if !assert.ElementsMatch(t, tc.expected, v.Failures) {
+				printDebug(t, v)
+			}
+			if assert.Len(t, v.Nodes, 1) {
+				assert.Equal(t, "addons-1", v.Nodes[0].Name)
+			}
+		})
+	}
+}
