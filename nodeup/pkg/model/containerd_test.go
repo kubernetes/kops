@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/tomlwriter"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
 )
 
@@ -290,10 +291,11 @@ func TestContainerdConfigNRITimeouts(t *testing.T) {
 
 func TestAppendGVisorRuntimeConfig(t *testing.T) {
 	runtimes := tomlwriter.NewTree()
-	appendGVisorRuntimeConfig(runtimes)
+	appendGVisorRuntimeConfig(runtimes, "/opt/kops/bin")
 
 	expected := `
 [runsc]
+  runtime_path = "/opt/kops/bin/containerd-shim-runsc-v1"
   runtime_type = "io.containerd.runsc.v1"
 
   [runsc.options]
@@ -302,6 +304,80 @@ func TestAppendGVisorRuntimeConfig(t *testing.T) {
 `
 	if actual := runtimes.String(); actual != expected {
 		t.Error(diff.FormatDiff(expected, actual))
+	}
+}
+
+func TestGVisorShimConfig(t *testing.T) {
+	for _, test := range []struct {
+		name         string
+		distribution distributions.Distribution
+		platform     string
+		cgroupDriver string
+		expected     string
+	}{
+		{
+			name:         "defaults",
+			distribution: distributions.DistributionUbuntu2604,
+			expected: `binary_name = "/usr/local/bin/runsc"
+
+[runsc_config]
+  platform = "systrap"
+`,
+		},
+		{
+			name:         "flatcar with systemd cgroups",
+			distribution: distributions.DistributionFlatcar,
+			platform:     "kvm",
+			cgroupDriver: "systemd",
+			expected: `binary_name = "/opt/kops/bin/runsc"
+
+[runsc_config]
+  platform = "kvm"
+  systemd-cgroup = "true"
+`,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			b := &ContainerdBuilder{
+				NodeupModelContext: &NodeupModelContext{
+					Distribution: test.distribution,
+					BootConfig: &nodeup.BootConfig{
+						InstanceGroupRole: kops.InstanceGroupRoleNode,
+					},
+					NodeupConfig: &nodeup.Config{
+						GVisor: &kops.GVisorConfig{
+							Enabled:  new(true),
+							Platform: test.platform,
+						},
+						KubeletConfig: kops.KubeletConfigSpec{
+							CgroupDriver: test.cgroupDriver,
+						},
+					},
+				},
+			}
+
+			c := &fi.NodeupModelBuilderContext{
+				Tasks: make(map[string]fi.NodeupTask),
+			}
+			b.buildGVisorShimConfig(c)
+
+			if len(c.Tasks) != 1 {
+				t.Fatalf("got %d tasks, want 1: %v", len(c.Tasks), c.Tasks)
+			}
+			for _, task := range c.Tasks {
+				file := task.(*nodetasks.File)
+				if file.Path != gVisorShimConfigPath {
+					t.Errorf("shim config written to %q, want %q", file.Path, gVisorShimConfigPath)
+				}
+				config, err := fi.ResourceAsString(file.Contents)
+				if err != nil {
+					t.Fatalf("reading shim config: %v", err)
+				}
+				if config != test.expected {
+					t.Error(diff.FormatDiff(test.expected, config))
+				}
+			}
+		})
 	}
 }
 
