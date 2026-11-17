@@ -30,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/klauspost/compress/zstd"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/hashing"
@@ -286,7 +287,14 @@ func (a *AssetStore) addURLs(ctx context.Context, urls []string, hash *hashing.H
 	file := strings.ToLower(assetPath)
 	// pickup both tar.gz and tgz files
 	if strings.HasSuffix(file, ".tar.gz") || strings.HasSuffix(file, ".tgz") {
-		err = a.addArchive(source, localFile)
+		err = a.addArchive(source, localFile, archiveGzip)
+		if err != nil {
+			return err
+		}
+	}
+	// gVisor publishes its releases as zstd tarballs
+	if strings.HasSuffix(file, ".tar.zst") || strings.HasSuffix(file, ".tar.zstd") {
+		err = a.addArchive(source, localFile, archiveZstd)
 		if err != nil {
 			return err
 		}
@@ -295,7 +303,15 @@ func (a *AssetStore) addURLs(ctx context.Context, urls []string, hash *hashing.H
 	return nil
 }
 
-func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error {
+// archiveCompression is the compression of an archive asset.
+type archiveCompression int
+
+const (
+	archiveGzip archiveCompression = iota
+	archiveZstd
+)
+
+func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string, compression archiveCompression) error {
 	extracted := path.Join(a.cacheDir, "extracted/"+path.Base(archiveFile))
 
 	if _, err := os.Stat(extracted); os.IsNotExist(err) {
@@ -307,12 +323,8 @@ func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error
 			return fmt.Errorf("error creating directories %q: %v", path.Dir(extractedTemp), err)
 		}
 
-		args := []string{"tar", "zxf", archiveFile, "-C", extractedTemp}
-		klog.Infof("running extract command %s", args)
-		cmd := exec.Command(args[0], args[1:]...)
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("error expanding asset file %q %v: %s", archiveFile, err, string(output))
+		if err := extractArchive(archiveFile, extractedTemp, compression); err != nil {
+			return err
 		}
 
 		if err := os.Rename(extractedTemp, extracted); err != nil {
@@ -356,6 +368,46 @@ func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error
 	err := filepath.Walk(localBase, walker)
 	if err != nil {
 		return fmt.Errorf("error adding expanded asset files in %q: %v", extracted, err)
+	}
+	return nil
+}
+
+// extractArchive unpacks archiveFile into dir with the host's tar.
+func extractArchive(archiveFile string, dir string, compression archiveCompression) error {
+	var args []string
+	var stdin io.Reader
+
+	switch compression {
+	case archiveGzip:
+		args = []string{"tar", "zxf", archiveFile, "-C", dir}
+
+	case archiveZstd:
+		// "tar --zstd" needs the zstd binary, which not every distribution
+		// ships, so decompress here and pipe the tar stream into tar.
+		f, err := os.Open(archiveFile)
+		if err != nil {
+			return fmt.Errorf("error opening asset file %q: %w", archiveFile, err)
+		}
+		defer f.Close()
+
+		decoder, err := zstd.NewReader(f)
+		if err != nil {
+			return fmt.Errorf("error reading zstd asset file %q: %w", archiveFile, err)
+		}
+		defer decoder.Close()
+		args = []string{"tar", "xf", "-", "-C", dir}
+		stdin = decoder
+
+	default:
+		return fmt.Errorf("unknown compression %d for asset file %q", compression, archiveFile)
+	}
+
+	klog.Infof("running extract command %s", args)
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdin = stdin
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error expanding asset file %q %v: %s", archiveFile, err, string(output))
 	}
 	return nil
 }
