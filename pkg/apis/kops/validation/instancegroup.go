@@ -115,6 +115,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	}
 
 	if g.Spec.Kubelet != nil {
+		allErrs = append(allErrs, validateClusterDNS(g.Spec.Kubelet.ClusterDNS, field.NewPath("spec", "kubelet", "clusterDNS"))...)
 		if g.Spec.Kubelet.CgroupDriver != "" {
 			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "kubelet", "cgroupDriver"), &g.Spec.Kubelet.CgroupDriver, []string{"systemd", "cgroupfs"})...)
 		}
