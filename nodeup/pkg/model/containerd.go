@@ -617,7 +617,13 @@ func appendNvidiaGPURuntimeConfig(runtimes *tomlwriter.Tree, systemdCgroup bool)
 
 func appendGVisorRuntimeConfig(runtimes *tomlwriter.Tree) {
 	runtimes.SetPath([]string{"runsc", "runtime_type"}, "io.containerd.runsc.v1")
+	// The shim only looks at the ConfigPath option, and its default search
+	// paths do not include the file kops writes.
+	runtimes.SetPath([]string{"runsc", "options", "TypeUrl"}, "io.containerd.runsc.v1.options")
+	runtimes.SetPath([]string{"runsc", "options", "ConfigPath"}, gVisorShimConfigPath)
 }
+
+const gVisorShimConfigPath = "/etc/containerd/runsc.toml"
 
 // buildGVisorShimConfig emits /etc/containerd/runsc.toml, the shim-level
 // configuration consumed by containerd-shim-runsc-v1 at container creation.
@@ -632,7 +638,7 @@ func (b *ContainerdBuilder) buildGVisorShimConfig(c *fi.NodeupModelBuilderContex
 	shimConfig.SetPath([]string{"runsc_config", "platform"}, platform)
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/etc/containerd/runsc.toml",
+		Path:     gVisorShimConfigPath,
 		Contents: fi.NewStringResource(shimConfig.String()),
 		Type:     nodetasks.FileType_File,
 	})
