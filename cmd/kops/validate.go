@@ -31,6 +31,7 @@ func NewCmdValidate(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdValidateCluster(f, out))
+	cmd.AddCommand(NewCmdValidateInstanceGroup(f, out))
 
 	return cmd
 }

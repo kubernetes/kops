@@ -26,4 +26,5 @@ Validate a kOps cluster.
 
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops validate cluster](kops_validate_cluster.md)	 - Validate a kOps cluster.
+* [kops validate instancegroup](kops_validate_instancegroup.md)	 - Validate instance groups of a kOps cluster.
 
