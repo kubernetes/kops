@@ -380,6 +380,7 @@ func registerCloudInstances(instanceGroup *cloudinstances.CloudInstanceGroup, no
 		status := cloudinstances.CloudInstanceStatusUpToDate
 		if newInstanceGroupName != currentInstanceGroupName {
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+			fmt.Printf("InstanceGroup %s needs update: instance %s was created before last group update\n", currentInstanceGroupName, instance.Id())
 		}
 		if _, err := instanceGroup.NewCloudInstance(
 			instance.Id(), status, nodeMap[instance.Id()]); err != nil {
