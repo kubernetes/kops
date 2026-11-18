@@ -13,11 +13,12 @@ As of now the following state stores are supported:
 * Amazon AWS S3 (`s3://`)
 * local filesystem (`file://`) (only for dry-run purposes, see [note](#local-filesystem-state-stores) below)
 * Digital Ocean (`do://`)
-* MemFS (memfs://)
+* MemFS (`memfs://`)
 * Google Cloud (`gs://`)
 * Kubernetes (`k8s://`)
 * OpenStack Swift (`swift://`)
 * Scaleway (`scw://`)
+* Hetzner (`hos://`)
 
 The state store is just files; you can copy the files down and put them into git (or your preferred version control system).
 
@@ -183,3 +184,7 @@ gcsClient, err := storage.New(httpClient)
 ## Scaleway (scw://)
 
 Scaleway storage is configured as a flavor of a S3 store. For more information on how to create a bucket with Scaleway, visit [this page](https://www.scaleway.com/en/docs/storage/object/quickstart/).
+
+## Hetzner (hos://)
+
+Hetzner storage is configured as a flavor of a S3 store.
