@@ -25,7 +25,28 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   kops edit instancegroup addons --set=spec.machineType="${ADDONS_NODE_SIZE:-c3-standard-22}" \
     --set=spec.maxSize=1 --set=spec.minSize=1 --set=spec.rootVolume.type=hyperdisk-balanced \
     --set=spec.image="${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261016}"
-  kops update cluster --yes
-  # TODO: Replaced with `kops validate instancegroup --wait 10m` when it's fixed for 5k node clusters.
-  sleep 120 # should take around 2 minutes to get node read
+elif [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  kops create instancegroup addons --edit=false --role node --subnet us-east-2a
+  kops edit instancegroup addons --set=spec.machineType="${ADDONS_NODE_SIZE:-c7a.8xlarge}" \
+    --set=spec.maxSize=1 --set=spec.minSize=1 \
+    --set=spec.image="${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}"
+  # The ec2 scale jobs set PROMETHEUS_PVC_STORAGE_CLASS=io2. CL2 only puts that name on the PVC of Prometheus,
+  # it does not create the storage class, and kOps does not install one with this name.
+  kubectl apply -f - <<EOF
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: io2
+parameters:
+  type: io2
+  iops: "${KOPS_EBS_CSI_DRIVER_IO2_IOPS:-5000}"
+  encrypted: "true"
+provisioner: ebs.csi.aws.com
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+EOF
 fi
+
+kops update cluster --yes
+# TODO: Replaced with `kops validate instancegroup --wait 10m` when it's fixed for 5k node clusters.
+sleep 120 # should take around 2 minutes to get node read

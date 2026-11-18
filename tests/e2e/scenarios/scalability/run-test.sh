@@ -172,8 +172,6 @@ KOPS_FEATURE_FLAGS="EtcdEventsHTTP,${KOPS_FEATURE_FLAGS:-}"
 
 # AWS ONLY feature flags
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
-  # AWS doesn't run dedicated addons node
-  export CL2_PROMETHEUS_TOLERATE_MASTER="true"
   # Enable creating a single nodes instance group
   KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
