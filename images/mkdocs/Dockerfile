@@ -12,25 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.22
+FROM python:3.12-alpine
 
 RUN apk add --no-cache \
   bash \
   git \
   git-fast-import \
   openssh \
-  python3 \
-  python3-dev \
   curl \
   build-base \
-  && python3 -m ensurepip \
-  && rm -r /usr/lib/python*/ensurepip \
-  && pip3 install --upgrade pip setuptools \
-  && rm -r /root/.cache \
-  && rm -rf /var/cache/apk/*
+  && pip install --no-cache-dir --upgrade pip setuptools
 
 COPY requirements.txt /requirements.txt
-RUN pip install -U -r /requirements.txt
+RUN pip install --no-cache-dir -U -r /requirements.txt
 
 WORKDIR /docs
 
