@@ -14,8 +14,8 @@ func StringPtr(v string) *string {
 // string pointers
 func StringSlicePtr(src []string) []*string {
 	dst := make([]*string, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -29,8 +29,8 @@ func StringsPtr(v []string) *[]string {
 // []string pointers
 func StringsSlicePtr(src [][]string) []*[]string {
 	dst := make([]*[]string, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -44,8 +44,8 @@ func BytesPtr(v []byte) *[]byte {
 // []byte pointers
 func BytesSlicePtr(src [][]byte) []*[]byte {
 	dst := make([]*[]byte, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -59,8 +59,8 @@ func BoolPtr(v bool) *bool {
 // bool pointers
 func BoolSlicePtr(src []bool) []*bool {
 	dst := make([]*bool, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -74,8 +74,8 @@ func Int32Ptr(v int32) *int32 {
 // int32 pointers
 func Int32SlicePtr(src []int32) []*int32 {
 	dst := make([]*int32, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -89,8 +89,8 @@ func Int64Ptr(v int64) *int64 {
 // int64 pointers
 func Int64SlicePtr(src []int64) []*int64 {
 	dst := make([]*int64, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -104,8 +104,8 @@ func Uint32Ptr(v uint32) *uint32 {
 // uint32 pointers
 func Uint32SlicePtr(src []uint32) []*uint32 {
 	dst := make([]*uint32, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -119,8 +119,8 @@ func Uint64Ptr(v uint64) *uint64 {
 // uint64 pointers
 func Uint64SlicePtr(src []uint64) []*uint64 {
 	dst := make([]*uint64, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -134,8 +134,8 @@ func Float32Ptr(v float32) *float32 {
 // float32 pointers
 func Float32SlicePtr(src []float32) []*float32 {
 	dst := make([]*float32, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }
@@ -149,8 +149,8 @@ func Float64Ptr(v float64) *float64 {
 // float64 pointers
 func Float64SlicePtr(src []float64) []*float64 {
 	dst := make([]*float64, len(src))
-	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+	for i := range src {
+		dst[i] = &src[i]
 	}
 	return dst
 }

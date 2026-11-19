@@ -35,6 +35,12 @@ const (
 	ZonePlWaw2 = Zone("pl-waw-2")
 	// ZonePlWaw3 represents the pl-waw-3 zone
 	ZonePlWaw3 = Zone("pl-waw-3")
+	// ZoneItMil1 represents the it-mil-1 zone
+	ZoneItMil1 = Zone("it-mil-1")
+	// ZoneItMil2 represents the it-mil-2 zone
+	ZoneItMil2 = Zone("it-mil-2")
+	// ZoneItMil3 represents the it-mil-3 zone
+	ZoneItMil3 = Zone("it-mil-3")
 )
 
 // AllZones is an array that list all zones
@@ -48,6 +54,9 @@ var AllZones = []Zone{
 	ZonePlWaw1,
 	ZonePlWaw2,
 	ZonePlWaw3,
+	ZoneItMil1,
+	ZoneItMil2,
+	ZoneItMil3,
 }
 
 // Exists checks whether a zone exists
@@ -86,6 +95,8 @@ const (
 	RegionNlAms = Region("nl-ams")
 	// RegionPlWaw represents the pl-waw region
 	RegionPlWaw = Region("pl-waw")
+	// RegionItMil represents the it-mil region
+	RegionItMil = Region("it-mil")
 )
 
 // AllRegions is an array that list all regions
@@ -93,6 +104,7 @@ var AllRegions = []Region{
 	RegionFrPar,
 	RegionNlAms,
 	RegionPlWaw,
+	RegionItMil,
 }
 
 // Exists checks whether a region exists
@@ -114,6 +126,8 @@ func (region Region) GetZones() []Zone {
 		return []Zone{ZoneNlAms1, ZoneNlAms2, ZoneNlAms3}
 	case RegionPlWaw:
 		return []Zone{ZonePlWaw1, ZonePlWaw2, ZonePlWaw3}
+	case RegionItMil:
+		return []Zone{ZoneItMil1}
 	default:
 		return []Zone{}
 	}
@@ -155,6 +169,11 @@ func (zone *Zone) UnmarshalJSON(input []byte) error {
 	err := json.Unmarshal(input, &stringValue)
 	if err != nil {
 		return err
+	}
+
+	// New fields may carry empty value
+	if stringValue == "" {
+		return nil
 	}
 
 	// parse string as Zone
@@ -201,6 +220,11 @@ func (region *Region) UnmarshalJSON(input []byte) error {
 	err := json.Unmarshal(input, &stringValue)
 	if err != nil {
 		return err
+	}
+
+	// New fields may carry empty value
+	if stringValue == "" {
+		return nil
 	}
 
 	// parse string as Region
