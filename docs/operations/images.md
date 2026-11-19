@@ -46,7 +46,7 @@ The following table provides the support status for various distros with regards
 | Debian 10                               |         1.13 |   1.17 |       1.35 |    1.36 |
 | [Debian 11](#debian-11-bullseye)        |       1.21.1 |      - |          - |       - |
 | [Debian 12](#debian-12-bookworm)        |       1.26.3 |      - |          - |       - |
-| [Debian 13](#debian-13-trixie)          |         1.34 |      - |          - |       - |
+| [Debian 13](#debian-13-trixie)          |         1.34 |   1.37 |          - |       - |
 | [Flatcar](#flatcar)                     |       1.15.1 |   1.17 |          - |       - |
 | Kope.io                                 |            - |      - |       1.18 |    1.23 |
 | RHEL 7                                  |            - |    1.5 |       1.21 |    1.23 |
