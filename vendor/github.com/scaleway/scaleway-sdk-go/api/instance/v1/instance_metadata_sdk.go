@@ -18,61 +18,135 @@ import (
 var metadataRetryBindPort = 200
 
 const (
-	metadataAPIv4 = "http://169.254.42.42"
-	metadataAPIv6 = "http://[fd00:42::42]"
+	metadataAPIv4         = "http://169.254.42.42"
+	metadataAPIv6         = "http://[fd00:42::42]"
+	metadataTimeout       = time.Second * 3
+	metadataFallbackDelay = time.Second * -1
 )
+
+var ErrUnexpectedStatus = errors.New("service returned an unexpected status")
+
+// metadataHTTPClient is the default HTTP client used to reach the metadata
+// service. Both metadata addresses (IPv4 link-local 169.254.42.42 and IPv6
+// fd00:42::42) are non globally routable, so we bypass proxy resolution
+// entirely by setting a transport with Proxy: nil.
+var metadataHTTPClient = &http.Client{
+	Timeout: metadataTimeout,
+	Transport: &http.Transport{
+		Proxy: nil,
+	},
+}
+
+// MetadataAPIOption is a function which applies options to a MetadataAPI.
+type MetadataAPIOption func(*MetadataAPI)
+
+// WithMetadataHTTPClient allows passing a custom http.Client which will be used
+// for all metadata requests. This is primarily useful for testing.
+func WithMetadataHTTPClient(client *http.Client) MetadataAPIOption {
+	return func(m *MetadataAPI) {
+		m.httpClient = client
+	}
+}
+
+// UserData represents the user data
+type UserData struct {
+	UserData []string `json:"user_data,omitempty"`
+}
 
 // MetadataAPI metadata API
 type MetadataAPI struct {
 	MetadataURL *string
+	httpClient  *http.Client
 }
 
 // NewMetadataAPI returns a MetadataAPI object from a Scaleway client.
-func NewMetadataAPI() *MetadataAPI {
-	return &MetadataAPI{}
+func NewMetadataAPI(opts ...MetadataAPIOption) *MetadataAPI {
+	meta := &MetadataAPI{
+		httpClient: metadataHTTPClient,
+	}
+
+	for _, opt := range opts {
+		opt(meta)
+	}
+
+	return meta
 }
 
-func (meta *MetadataAPI) getMetadataURL() string {
+// newUserDataHTTPClient returns an HTTP client configured to bind to the
+// given local TCP address. The userdata API requires requests to come from
+// a privileged source port (see ListUserData and friends).
+func newUserDataHTTPClient(localAddr *net.TCPAddr) *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			Proxy: nil,
+			DialContext: (&net.Dialer{
+				LocalAddr:     localAddr,
+				FallbackDelay: metadataFallbackDelay,
+			}).DialContext,
+		},
+	}
+}
+
+func (meta *MetadataAPI) getMetadataURLWithContext(ctx context.Context) string {
 	if meta.MetadataURL != nil {
 		return *meta.MetadataURL
 	}
 
-	ctx := context.Background()
 	for _, url := range []string{metadataAPIv4, metadataAPIv6} {
-		http.DefaultClient.Timeout = 3 * time.Second
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, bytes.NewBufferString(""))
+		req, err := http.NewRequestWithContext(
+			ctx, http.MethodGet, url, bytes.NewBufferString(""),
+		)
 		if err != nil {
 			logger.Warningf("Failed to create metadata URL %s: %v", url, err)
+			continue
 		}
-		resp, err := http.DefaultClient.Do(req)
-		if err == nil && resp.StatusCode == http.StatusOK {
+
+		resp, err := meta.httpClient.Do(req)
+		if err != nil {
+			logger.Warningf("Failed to reach metadata URL %s: %v", url, err)
+			continue
+		}
+
+		if resp.StatusCode == http.StatusOK {
+			resp.Body.Close()
 			meta.MetadataURL = &url
 			return url
 		}
-		defer resp.Body.Close()
+
+		resp.Body.Close()
 	}
+
 	return metadataAPIv4
 }
 
-// GetMetadata returns the metadata available from the server
-func (meta *MetadataAPI) GetMetadata() (m *Metadata, err error) {
-	ctx := context.Background()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, meta.getMetadataURL()+"/conf?format=json", bytes.NewBufferString(""))
+// GetMetadataWithContext returns the metadata available from the server
+func (meta *MetadataAPI) GetMetadataWithContext(ctx context.Context) (m *Metadata, err error) {
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		meta.getMetadataURLWithContext(ctx)+"/conf?format=json",
+		bytes.NewBufferString(""),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := meta.httpClient.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting metadataURL")
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Wrap(ErrUnexpectedStatus, "%d", resp.StatusCode)
+	}
 
 	metadata := &Metadata{}
 	err = json.NewDecoder(resp.Body).Decode(metadata)
 	if err != nil {
 		return nil, errors.Wrap(err, "error decoding metadata")
 	}
+
 	return metadata, nil
 }
 
@@ -203,177 +277,216 @@ type Metadata struct {
 	} `json:"placement_group,omitempty"`
 }
 
-// ListUserData returns the metadata available from the server
-func (meta *MetadataAPI) ListUserData() (res *UserData, err error) {
+// ListUserDataWithContext returns the metadata available from the server
+func (meta *MetadataAPI) ListUserDataWithContext(ctx context.Context) (res *UserData, err error) {
 	retries := 0
-	ctx := context.Background()
 	for retries <= metadataRetryBindPort {
 		port := rand.Intn(1024)
-		localTCPAddr, err := net.ResolveTCPAddr("tcp", ":"+strconv.Itoa(port))
-		if err != nil {
-			return nil, errors.Wrap(err, "error resolving tcp address")
-		}
 
-		userdataClient := &http.Client{
-			Transport: &http.Transport{
-				DialContext: (&net.Dialer{
-					LocalAddr:     localTCPAddr,
-					DualStack:     false,
-					FallbackDelay: time.Second * -1,
-				}).DialContext,
-			},
-		}
-
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, meta.getMetadataURL()+"/user_data?format=json", bytes.NewBufferString(""))
+		body, retry, err := meta.tryUserDataRequest(ctx, http.MethodGet, "", []byte(""), port)
 		if err != nil {
 			return nil, err
 		}
-		resp, err := userdataClient.Do(req)
-		if err != nil {
-			retries++ // retry with a different source port
+
+		// Retriable error
+		if retry {
+			retries++
 			continue
 		}
-		defer resp.Body.Close()
 
 		userdata := &UserData{}
-		err = json.NewDecoder(resp.Body).Decode(userdata)
+		err = json.Unmarshal(body, userdata)
 		if err != nil {
 			return nil, errors.Wrap(err, "error decoding userdata")
 		}
+
 		return userdata, nil
 	}
+
 	return nil, errors.New("too many bind port retries for ListUserData")
 }
 
-// GetUserData returns the value for the given metadata key
-func (meta *MetadataAPI) GetUserData(key string) ([]byte, error) {
+// GetUserDataWithContext returns the value for the given metadata key
+func (meta *MetadataAPI) GetUserDataWithContext(ctx context.Context, key string) ([]byte, error) {
 	if key == "" {
 		return make([]byte, 0), errors.New("key must not be empty in GetUserData")
 	}
 
-	ctx := context.Background()
 	retries := 0
 	for retries <= metadataRetryBindPort {
 		port := rand.Intn(1024)
-		localTCPAddr, err := net.ResolveTCPAddr("tcp", ":"+strconv.Itoa(port))
-		if err != nil {
-			return make([]byte, 0), errors.Wrap(err, "error resolving tcp address")
-		}
 
-		userdataClient := &http.Client{
-			Transport: &http.Transport{
-				DialContext: (&net.Dialer{
-					LocalAddr:     localTCPAddr,
-					DualStack:     false,
-					FallbackDelay: time.Second * -1,
-				}).DialContext,
-			},
-		}
-
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, meta.getMetadataURL()+"/user_data/"+key, bytes.NewBufferString(""))
+		body, retry, err := meta.tryUserDataRequest(ctx, http.MethodGet, key, []byte(""), port)
 		if err != nil {
 			return nil, err
 		}
 
-		resp, err := userdataClient.Do(req)
-		if err != nil {
-			retries++ // retry with a different source port
+		// Retriable error
+		if retry {
+			retries++
 			continue
-		}
-		defer resp.Body.Close()
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return make([]byte, 0), errors.Wrap(err, "error reading userdata body")
 		}
 
 		return body, nil
 	}
-	return make([]byte, 0), errors.New("too may bind port retries for GetUserData")
+
+	return make([]byte, 0), errors.New("too many bind port retries for GetUserData")
 }
 
-// SetUserData sets the userdata key with the given value
-func (meta *MetadataAPI) SetUserData(key string, value []byte) error {
+// SetUserDataWithContext sets the userdata key with the given value
+func (meta *MetadataAPI) SetUserDataWithContext(ctx context.Context, key string, value []byte) error {
 	if key == "" {
 		return errors.New("key must not be empty in SetUserData")
 	}
 
-	ctx := context.Background()
 	retries := 0
 	for retries <= metadataRetryBindPort {
 		port := rand.Intn(1024)
-		localTCPAddr, err := net.ResolveTCPAddr("tcp", ":"+strconv.Itoa(port))
+		_, retry, err := meta.tryUserDataRequest(ctx, http.MethodPatch, key, value, port)
 		if err != nil {
-			return errors.Wrap(err, "error resolving tcp address")
+			return err
 		}
 
-		userdataClient := &http.Client{
-			Transport: &http.Transport{
-				DialContext: (&net.Dialer{
-					LocalAddr:     localTCPAddr,
-					DualStack:     false,
-					FallbackDelay: time.Second * -1,
-				}).DialContext,
-			},
-		}
-		request, err := http.NewRequestWithContext(ctx, http.MethodPatch, meta.getMetadataURL()+"/user_data/"+key, bytes.NewBuffer(value))
-		if err != nil {
-			return errors.Wrap(err, "error creating patch userdata request")
-		}
-		request.Header.Set("Content-Type", "text/plain")
-		resp, err := userdataClient.Do(request)
-		if err != nil {
-			retries++ // retry with a different source port
+		// Retriable error
+		if retry {
+			retries++
 			continue
 		}
-		defer resp.Body.Close()
 
+		// Success
 		return nil
 	}
-	return errors.New("too may bind port retries for SetUserData")
+
+	return errors.New("too many bind port retries for SetUserData")
 }
 
-// DeleteUserData deletes the userdata key and the associated value
-func (meta *MetadataAPI) DeleteUserData(key string) error {
+// DeleteUserDataWithContext deletes the userdata key and the associated value
+func (meta *MetadataAPI) DeleteUserDataWithContext(ctx context.Context, key string) error {
 	if key == "" {
 		return errors.New("key must not be empty in DeleteUserData")
 	}
 
-	ctx := context.Background()
 	retries := 0
 	for retries <= metadataRetryBindPort {
 		port := rand.Intn(1024)
-		localTCPAddr, err := net.ResolveTCPAddr("tcp", ":"+strconv.Itoa(port))
+
+		_, retry, err := meta.tryUserDataRequest(ctx, http.MethodDelete, key, []byte(""), port)
 		if err != nil {
-			return errors.Wrap(err, "error resolving tcp address")
+			return err
 		}
 
-		userdataClient := &http.Client{
-			Transport: &http.Transport{
-				DialContext: (&net.Dialer{
-					LocalAddr:     localTCPAddr,
-					DualStack:     false,
-					FallbackDelay: time.Second * -1,
-				}).DialContext,
-			},
-		}
-		request, err := http.NewRequestWithContext(ctx, http.MethodDelete, meta.getMetadataURL()+"/user_data/"+key, bytes.NewBufferString(""))
-		if err != nil {
-			return errors.Wrap(err, "error creating delete userdata request")
-		}
-		resp, err := userdataClient.Do(request)
-		if err != nil {
-			retries++ // retry with a different source port
+		// Retriable error
+		if retry {
+			retries++
 			continue
 		}
-		defer resp.Body.Close()
 
+		// Success
 		return nil
 	}
-	return errors.New("too may bind port retries for DeleteUserData")
+
+	return errors.New("too many bind port retries for DeleteUserData")
 }
 
-// UserData represents the user data
-type UserData struct {
-	UserData []string `json:"user_data,omitempty"`
+func (meta *MetadataAPI) tryUserDataRequest(
+	ctx context.Context,
+	method string,
+	key string,
+	value []byte,
+	port int,
+) (body []byte, retry bool, err error) {
+	body = make([]byte, 0)
+
+	localTCPAddr, err := net.ResolveTCPAddr("tcp", ":"+strconv.Itoa(port))
+	if err != nil {
+		return body, false, errors.Wrap(err, "error resolving tcp address")
+	}
+
+	userdataClient := newUserDataHTTPClient(localTCPAddr)
+
+	url := meta.getMetadataURLWithContext(ctx)
+	if key != "" {
+		url += "/user_data/" + key
+	} else {
+		url += "/user_data?format=json"
+	}
+
+	request, err := http.NewRequestWithContext(
+		ctx,
+		method,
+		url,
+		bytes.NewBuffer(value),
+	)
+	if err != nil {
+		return body, false, errors.Wrap(err, "error creating userdata request")
+	}
+
+	request.Header.Set("Content-Type", "text/plain")
+
+	resp, err := userdataClient.Do(request)
+	if err != nil {
+		// Retriable error
+		return body, true, nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return body, false, errors.Wrap(ErrUnexpectedStatus, "%d", resp.StatusCode)
+	}
+
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return make([]byte, 0), false, errors.Wrap(err, "error reading userdata body")
+	}
+
+	// Success
+	return body, false, nil
+}
+
+// DeleteUserData deletes the userdata key and the associated value
+//
+// Deprecated: use DeleteUserDataWithContext instead
+//
+//go:fix inline
+func (meta *MetadataAPI) DeleteUserData(key string) error {
+	return meta.DeleteUserDataWithContext(context.Background(), key)
+}
+
+// SetUserData sets the userdata key with the given value
+//
+// Deprecated: use SetUserDataWithContext instead
+//
+//go:fix inline
+func (meta *MetadataAPI) SetUserData(key string, value []byte) error {
+	return meta.SetUserDataWithContext(context.Background(), key, value)
+}
+
+// GetUserData returns the value for the given metadata key
+//
+// Deprecated: use GetUserDataWithContext instead
+//
+//go:fix inline
+func (meta *MetadataAPI) GetUserData(key string) ([]byte, error) {
+	return meta.GetUserDataWithContext(context.Background(), key)
+}
+
+// ListUserData returns the metadata available from the server
+//
+// Deprecated: use ListUserDataWithContext instead
+//
+//go:fix inline
+func (meta *MetadataAPI) ListUserData() (res *UserData, err error) {
+	return meta.ListUserDataWithContext(context.Background())
+}
+
+// GetMetadata returns the metadata available from the server
+//
+// Deprecated: use GetMetadataWithContext instead
+//
+//go:fix inline
+func (meta *MetadataAPI) GetMetadata() (m *Metadata, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), metadataTimeout)
+	defer cancel()
+
+	return meta.GetMetadataWithContext(ctx)
 }

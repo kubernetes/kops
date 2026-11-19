@@ -1,8 +1,6 @@
 package scw
 
 import (
-	"fmt"
-	"runtime"
 	"runtime/debug"
 )
 
@@ -35,5 +33,3 @@ func getVersion() string {
 
 	return defaultVersion
 }
-
-var userAgent = fmt.Sprintf("scaleway-sdk-go/%s (%s; %s; %s)", getVersion(), runtime.Version(), runtime.GOOS, runtime.GOARCH)

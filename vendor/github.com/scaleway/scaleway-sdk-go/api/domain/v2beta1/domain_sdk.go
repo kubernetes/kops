@@ -1689,6 +1689,8 @@ type Record struct {
 	ViewConfig *RecordViewConfig `json:"view_config,omitempty"`
 
 	ID string `json:"id"`
+
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 // RecordIdentifier: record identifier.
@@ -1731,12 +1733,18 @@ type ContactExtensionFR struct {
 
 // ContactExtensionIT: contact extension it.
 type ContactExtensionIT struct {
-	// Deprecated
+	// Deprecated: EuropeanCitizenship: this option is useless anymore.
 	EuropeanCitizenship *string `json:"european_citizenship,omitempty"`
 
-	// Deprecated
+	// Deprecated: TaxCode: tax_code is renamed to pin.
 	TaxCode *string `json:"tax_code,omitempty"`
 
+	// Pin: domain name registrant's Taxcode (mandatory / only optional when the trustee is used)
+	//
+	// If the requester:
+	// * is an Italian natural person it contains his/her Codice Fiscale (16 characters format).
+	// * For others than residents of IT it can contain a document number. (ID Card).
+	// * In all other cases it must be equal to VAT number (in the 16 characters format if nationality is IT) or the numeric Codice Fiscale.
 	Pin string `json:"pin"`
 }
 
@@ -1855,9 +1863,6 @@ type Contact struct {
 
 	Resale bool `json:"resale"`
 
-	// Deprecated
-	Questions *[]*ContactQuestion `json:"questions,omitempty"`
-
 	ExtensionFr *ContactExtensionFR `json:"extension_fr"`
 
 	ExtensionEu *ContactExtensionEU `json:"extension_eu"`
@@ -1875,6 +1880,9 @@ type Contact struct {
 	Status ContactStatus `json:"status"`
 
 	ExtensionIt *ContactExtensionIT `json:"extension_it"`
+
+	// Deprecated
+	Questions *[]*ContactQuestion `json:"questions,omitempty"`
 }
 
 // ContactRolesRoles: contact roles roles.
@@ -1956,9 +1964,6 @@ type NewContact struct {
 
 	Resale bool `json:"resale"`
 
-	// Deprecated
-	Questions *[]*ContactQuestion `json:"questions,omitempty"`
-
 	ExtensionFr *ContactExtensionFR `json:"extension_fr"`
 
 	ExtensionEu *ContactExtensionEU `json:"extension_eu"`
@@ -1970,6 +1975,9 @@ type NewContact struct {
 	ExtensionNl *ContactExtensionNL `json:"extension_nl"`
 
 	ExtensionIt *ContactExtensionIT `json:"extension_it"`
+
+	// Deprecated
+	Questions *[]*ContactQuestion `json:"questions,omitempty"`
 }
 
 // CheckContactsCompatibilityResponseContactCheckResult: check contacts compatibility response contact check result.
@@ -2279,7 +2287,7 @@ type CloneDNSZoneRequest struct {
 
 // CreateDNSZoneRequest: create dns zone request.
 type CreateDNSZoneRequest struct {
-	// Domain: domain in which to crreate the DNS zone.
+	// Domain: domain in which to create the DNS zone.
 	Domain string `json:"domain"`
 
 	// Subdomain: subdomain of the DNS zone to create.
@@ -2977,6 +2985,9 @@ type RegistrarAPIBuyDomainsRequest struct {
 
 	// Precisely one of TechnicalContactID, TechnicalContact must be set.
 	TechnicalContact *NewContact `json:"technical_contact,omitempty"`
+
+	// AutoRenew: enable the `auto renew` feature for all the requested domains. This means the domain will be automatically renewed before its expiry date.
+	AutoRenew bool `json:"auto_renew"`
 }
 
 // RegistrarAPICheckContactsCompatibilityRequest: registrar api check contacts compatibility request.
@@ -3219,6 +3230,9 @@ type RegistrarAPISearchAvailableDomainsRequest struct {
 
 	// StrictSearch: search exact match.
 	StrictSearch bool `json:"-"`
+
+	// IncludeExactMatch: if an exact match is found, include it in response as a separate element.
+	IncludeExactMatch bool `json:"-"`
 }
 
 // RegistrarAPITradeDomainRequest: registrar api trade domain request.
@@ -3295,20 +3309,20 @@ type RegistrarAPIUpdateContactRequest struct {
 
 	Resale *bool `json:"resale,omitempty"`
 
-	// Deprecated
-	Questions *[]*UpdateContactRequestQuestion `json:"questions,omitempty"`
-
 	ExtensionFr *ContactExtensionFR `json:"extension_fr,omitempty"`
 
 	ExtensionEu *ContactExtensionEU `json:"extension_eu,omitempty"`
+
+	ExtensionNl *ContactExtensionNL `json:"extension_nl,omitempty"`
+
+	ExtensionIt *ContactExtensionIT `json:"extension_it,omitempty"`
 
 	WhoisOptIn *bool `json:"whois_opt_in,omitempty"`
 
 	State *string `json:"state,omitempty"`
 
-	ExtensionNl *ContactExtensionNL `json:"extension_nl,omitempty"`
-
-	ExtensionIt *ContactExtensionIT `json:"extension_it,omitempty"`
+	// Deprecated
+	Questions *[]*UpdateContactRequestQuestion `json:"questions,omitempty"`
 }
 
 // RegistrarAPIUpdateDomainHostRequest: registrar api update domain host request.
@@ -3367,6 +3381,9 @@ type SearchAvailableDomainsConsoleResponse struct {
 type SearchAvailableDomainsResponse struct {
 	// AvailableDomains: array of available domains.
 	AvailableDomains []*AvailableDomain `json:"available_domains"`
+
+	// ExactMatchDomain: if an exact match was asked and found, the result is in this field.
+	ExactMatchDomain *AvailableDomain `json:"exact_match_domain"`
 }
 
 // UnauthenticatedRegistrarAPISearchAvailableDomainsConsoleRequest: unauthenticated registrar api search available domains console request.
@@ -3419,7 +3436,7 @@ type UpdateDNSZoneRecordsResponse struct {
 
 // UpdateDNSZoneRequest: update dns zone request.
 type UpdateDNSZoneRequest struct {
-	// DNSZone: DNS zone to update.
+	// DNSZone: the full name of the DNS zone to modify. For a root zone (e.g., example.com), enter `example.com`. For a specific sub-zone (e.g., prod.example.com), enter `prod.example.com`.
 	DNSZone string `json:"-"`
 
 	// NewDNSZone: name of the new DNS zone to create.
@@ -4903,6 +4920,7 @@ func (s *RegistrarAPI) SearchAvailableDomains(req *RegistrarAPISearchAvailableDo
 	parameter.AddToQuery(query, "domains", req.Domains)
 	parameter.AddToQuery(query, "tlds", req.Tlds)
 	parameter.AddToQuery(query, "strict_search", req.StrictSearch)
+	parameter.AddToQuery(query, "include_exact_match", req.IncludeExactMatch)
 
 	scwReq := &scw.ScalewayRequest{
 		Method: "GET",
