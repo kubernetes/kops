@@ -7,11 +7,12 @@ import (
 )
 
 var (
-	isUUIDRegexp  = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
-	isRegionRegex = regexp.MustCompile("^[a-z]{2}-[a-z]{3,7}$")
-	isZoneRegex   = regexp.MustCompile("^[a-z]{2}-[a-z]{3,7}-[0-9]{1,2}$")
-	isAccessKey   = regexp.MustCompile("^SCW[A-Z0-9]{17}$")
-	isEmailRegexp = regexp.MustCompile("^.+@.+$")
+	isUUIDRegexp             = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+	isRegionRegex            = regexp.MustCompile("^[a-z]{2}-[a-z]{3,7}$")
+	isZoneRegex              = regexp.MustCompile("^[a-z]{2}-[a-z]{3,7}-[0-9]{1,2}$")
+	isAccessKey              = regexp.MustCompile("^SCW[A-Z0-9]{17}$")
+	isAccessKeyWithProjectID = regexp.MustCompile("^SCW[A-Z0-9]{17}@[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+	isEmailRegexp            = regexp.MustCompile("^.+@.+$")
 )
 
 // IsUUID returns true if the given string has a valid UUID format.
@@ -22,6 +23,12 @@ func IsUUID(s string) bool {
 // IsAccessKey returns true if the given string has a valid Scaleway access key format.
 func IsAccessKey(s string) bool {
 	return isAccessKey.MatchString(s)
+}
+
+// IsAccessKeyWithProjectID returns true if the given string has a valid
+// Scaleway access key format appended to a project ID.
+func IsAccessKeyWithProjectID(s string) bool {
+	return isAccessKeyWithProjectID.MatchString(s)
 }
 
 // IsSecretKey returns true if the given string has a valid Scaleway secret key format.

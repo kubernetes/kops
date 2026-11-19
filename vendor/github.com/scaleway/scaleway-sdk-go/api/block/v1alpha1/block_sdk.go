@@ -891,7 +891,6 @@ type UpdateVolumeRequest struct {
 	Name *string `json:"name,omitempty"`
 
 	// Size: size in bytes of the volume, with a granularity of 1 GB (10^9 bytes).
-	// Must be compliant with the minimum (1GB) and maximum (10TB) allowed size.
 	Size *scw.Size `json:"size,omitempty"`
 
 	// Tags: list of tags assigned to the volume.

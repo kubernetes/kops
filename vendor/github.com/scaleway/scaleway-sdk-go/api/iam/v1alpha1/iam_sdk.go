@@ -583,6 +583,43 @@ func (enum *ListScimTokensRequestOrderBy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type ListUserWebAuthnAuthenticatorsRequestOrderBy string
+
+const (
+	ListUserWebAuthnAuthenticatorsRequestOrderByCreatedAtAsc  = ListUserWebAuthnAuthenticatorsRequestOrderBy("created_at_asc")
+	ListUserWebAuthnAuthenticatorsRequestOrderByCreatedAtDesc = ListUserWebAuthnAuthenticatorsRequestOrderBy("created_at_desc")
+)
+
+func (enum ListUserWebAuthnAuthenticatorsRequestOrderBy) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(ListUserWebAuthnAuthenticatorsRequestOrderByCreatedAtAsc)
+	}
+	return string(enum)
+}
+
+func (enum ListUserWebAuthnAuthenticatorsRequestOrderBy) Values() []ListUserWebAuthnAuthenticatorsRequestOrderBy {
+	return []ListUserWebAuthnAuthenticatorsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+	}
+}
+
+func (enum ListUserWebAuthnAuthenticatorsRequestOrderBy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListUserWebAuthnAuthenticatorsRequestOrderBy) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListUserWebAuthnAuthenticatorsRequestOrderBy(ListUserWebAuthnAuthenticatorsRequestOrderBy(tmp).String())
+	return nil
+}
+
 type ListUsersRequestOrderBy string
 
 const (
@@ -1103,6 +1140,25 @@ type JWT struct {
 
 	// UserAgent: user-agent used during the creation of the JWT.
 	UserAgent string `json:"user_agent"`
+
+	// Srn: the SRN of the JWT.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *JWT) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.Jti) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/jwts/%s", platform, fmt.Sprint(m.Jti))
+		return
+	}
 }
 
 // RuleSpecs: rule specs.
@@ -1214,6 +1270,25 @@ type APIKey struct {
 
 	// CreationIP: IP address of the device that created the API key.
 	CreationIP string `json:"creation_ip"`
+
+	// Srn: the SRN of the API key.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *APIKey) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.AccessKey) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/api-keys/%s", platform, fmt.Sprint(m.AccessKey))
+		return
+	}
 }
 
 // Application: application.
@@ -1250,6 +1325,25 @@ type Application struct {
 
 	// Tags: tags associated with the user.
 	Tags []string `json:"tags"`
+
+	// Srn: sRN of the application.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *Application) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/applications/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // GracePeriod: grace period.
@@ -1302,6 +1396,31 @@ type Group struct {
 
 	// Managed: defines whether or not the group is managed.
 	Managed bool `json:"managed"`
+
+	// AllUsers: indicates if the group is the special "All Users" group that contains all users of the organization.
+	AllUsers bool `json:"all_users"`
+
+	// AllApplications: indicates if the group is the special "All Applications" group that contains all non-managed applications of the organization.
+	AllApplications bool `json:"all_applications"`
+
+	// Srn: the SRN of the group.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *Group) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/groups/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // Log: log.
@@ -1332,8 +1451,27 @@ type Log struct {
 	// Default value: unknown_resource_type
 	ResourceType LogResourceType `json:"resource_type"`
 
-	// ResourceID: ID of the resource linked  to the log.
+	// ResourceID: ID of the resource linked to the log.
 	ResourceID string `json:"resource_id"`
+
+	// Srn: the SRN of the log.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *Log) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/logs/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // PermissionSet: permission set.
@@ -1411,6 +1549,25 @@ type Policy struct {
 	// NoPrincipal: defines whether or not a policy is attributed to a principal.
 	// Precisely one of UserID, GroupID, ApplicationID, NoPrincipal must be set.
 	NoPrincipal *bool `json:"no_principal,omitempty"`
+
+	// Srn: the SRN of the policy.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *Policy) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/policies/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // Quotum: quotum.
@@ -1441,6 +1598,25 @@ type Quotum struct {
 
 	// Limits: limits per locality.
 	Limits []*QuotumLimit `json:"limits"`
+
+	// Srn: the SRN of the quotum.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *Quotum) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.Name) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/quota/%s", platform, fmt.Sprint(m.Name))
+		return
+	}
 }
 
 // Rule: rule.
@@ -1469,6 +1645,25 @@ type Rule struct {
 	// AccountRootUserID: ID of account root user the rule is scoped to.
 	// Precisely one of ProjectIDs, OrganizationID, AccountRootUserID must be set.
 	AccountRootUserID *string `json:"account_root_user_id,omitempty"`
+
+	// Srn: the SRN of the rule.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *Rule) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/rules/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // SSHKey: ssh key.
@@ -1499,6 +1694,25 @@ type SSHKey struct {
 
 	// Disabled: SSH key status.
 	Disabled bool `json:"disabled"`
+
+	// Srn: the SRN of the SSH key.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *SSHKey) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/ssh-keys/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // SamlCertificate: saml certificate.
@@ -1519,6 +1733,40 @@ type SamlCertificate struct {
 
 	// ExpiresAt: date and time of the SAML certificate expiration.
 	ExpiresAt *time.Time `json:"expires_at"`
+
+	// Srn: the SRN of the SAML certificate.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *SamlCertificate) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/saml-certificates/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
+}
+
+// WebAuthnAuthenticator: web authn authenticator.
+type WebAuthnAuthenticator struct {
+	// ID: the ID of the authenticator.
+	ID string `json:"id"`
+
+	// Name: the name of the authenticator.
+	Name string `json:"name"`
+
+	// CreatedAt: the creation date.
+	CreatedAt *time.Time `json:"created_at"`
+
+	// LastLoginAt: the timestamp of the last successful login using the authenticator.
+	LastLoginAt *time.Time `json:"last_login_at"`
 }
 
 // User: user.
@@ -1581,6 +1829,25 @@ type User struct {
 
 	// Locked: defines whether the user is locked.
 	Locked bool `json:"locked"`
+
+	// Srn: the SRN of the user.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *User) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/users/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // SamlServiceProvider: saml service provider.
@@ -1848,6 +2115,11 @@ type DeleteUserRequest struct {
 	UserID string `json:"-"`
 }
 
+// DeleteWebAuthnAuthenticatorRequest: delete web authn authenticator request.
+type DeleteWebAuthnAuthenticatorRequest struct {
+	AuthenticatorID string `json:"-"`
+}
+
 // EnableOrganizationSamlRequest: enable organization saml request.
 type EnableOrganizationSamlRequest struct {
 	// OrganizationID: ID of the Organization.
@@ -1870,6 +2142,45 @@ type EncodedJWT struct {
 
 	// RenewToken: the encoded renew token. This token is necessary to renew the JWT.
 	RenewToken string `json:"renew_token"`
+}
+
+// FinishUserWebAuthnRegistrationRequest: finish user web authn registration request.
+type FinishUserWebAuthnRegistrationRequest struct {
+	// UserID: the ID of the user on which to finish a webauthn registration.
+	UserID string `json:"-"`
+
+	// CeremonyID: the ceremony ID returned by StartUserWebAuthnRegistration.
+	CeremonyID string `json:"ceremony_id"`
+
+	// AuthenticatorName: name of the WebAuthn Authenticator to create.
+	AuthenticatorName string `json:"authenticator_name"`
+
+	// Origin: the domain on which the registration is occurring.
+	Origin string `json:"origin"`
+
+	// RawID: unique identifier of the key used by the authenticator.
+	RawID []byte `json:"raw_id"`
+
+	// ClientDataJSON: JSON representation of the client data.
+	ClientDataJSON []byte `json:"client_data_json"`
+
+	// AuthenticatorData: data about the authenticator that performed the authentication.
+	AuthenticatorData []byte `json:"authenticator_data"`
+
+	// AttestationObject: attestation Object.
+	AttestationObject []byte `json:"attestation_object"`
+
+	// PublicKey: public key that allows to verify signature.
+	PublicKey []byte `json:"public_key"`
+
+	// PublicKeyAlgorithm: algorithm used for the signature (see https://www.iana.org/assignments/cose/cose.xhtml#algorithms).
+	PublicKeyAlgorithm int32 `json:"public_key_algorithm"`
+}
+
+// FinishUserWebAuthnRegistrationResponse: finish user web authn registration response.
+type FinishUserWebAuthnRegistrationResponse struct {
+	// AuthenticatorID: the ID of the new authenticator created.
+	AuthenticatorID string `json:"authenticator_id"`
 }
 
 // GetAPIKeyRequest: get api key request.
@@ -1944,6 +2255,17 @@ type GetQuotumRequest struct {
 type GetSSHKeyRequest struct {
 	// SSHKeyID: ID of the SSH key.
 	SSHKeyID string `json:"-"`
+}
+
+// GetSamlCertificateRequest: get saml certificate request.
+type GetSamlCertificateRequest struct {
+	// CertificateID: ID of the certificate to get.
+	CertificateID string `json:"-"`
+}
+
+// GetScimTokenRequest: get scim token request.
+type GetScimTokenRequest struct {
+	ScimTokenID string `json:"-"`
 }
 
 // GetUserConnectionsRequest: get user connections request.
@@ -2600,6 +2922,50 @@ func (r *ListScimTokensResponse) UnsafeAppend(res any) (uint64, error) {
 	return uint64(len(results.ScimTokens)), nil
 }
 
+// ListUserWebAuthnAuthenticatorsRequest: list user web authn authenticators request.
+type ListUserWebAuthnAuthenticatorsRequest struct {
+	// UserID: a user ID to filter the authenticators for.
+	UserID string `json:"-"`
+
+	// OrderBy: sort order of the Authenticators.
+	// Default value: created_at_asc
+	OrderBy ListUserWebAuthnAuthenticatorsRequestOrderBy `json:"-"`
+
+	// Page: requested page number. Value must be greater or equal to 1.
+	Page *int32 `json:"-"`
+
+	// PageSize: number of items per page. Value must be between 1 and 100.
+	PageSize *uint32 `json:"-"`
+}
+
+// ListUserWebAuthnAuthenticatorsResponse: list user web authn authenticators response.
+type ListUserWebAuthnAuthenticatorsResponse struct {
+	// TotalCount: the total number of authenticators.
+	TotalCount uint64 `json:"total_count"`
+
+	// Authenticators: the list of authenticators.
+	Authenticators []*WebAuthnAuthenticator `json:"authenticators"`
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListUserWebAuthnAuthenticatorsResponse) UnsafeGetTotalCount() uint64 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListUserWebAuthnAuthenticatorsResponse) UnsafeAppend(res any) (uint64, error) {
+	results, ok := res.(*ListUserWebAuthnAuthenticatorsResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.Authenticators = append(r.Authenticators, results.Authenticators...)
+	r.TotalCount += uint64(len(results.Authenticators))
+	return uint64(len(results.Authenticators)), nil
+}
+
 // ListUsersRequest: list users request.
 type ListUsersRequest struct {
 	// OrderBy: criteria for sorting results.
@@ -2764,6 +3130,25 @@ type Saml struct {
 
 	// SingleSignOnURL: single Sign-On URL of the SAML Identity Provider.
 	SingleSignOnURL string `json:"single_sign_on_url"`
+
+	// Srn: the SRN of the SAML.
+	Srn string `json:"srn"`
+}
+
+//nolint:unused,nolintlint // generated, no check on whether it's used or not
+func (m *Saml) setSRN(platform string) {
+	if m.Srn != "" {
+		// if the field is set server-side, trust the server
+		return
+	}
+
+	// We do not check that *m.XYZ != "", as there are currently no use cases for an
+	// optional value in an SRN where the value set to the empty string makes sense.
+
+	if fmt.Sprint(m.ID) != "" {
+		m.Srn = fmt.Sprintf("srn://iam.%s/saml/%s", platform, fmt.Sprint(m.ID))
+		return
+	}
 }
 
 // Scim: scim.
@@ -2806,6 +3191,33 @@ type SetRulesRequest struct {
 type SetRulesResponse struct {
 	// Rules: rules of the policy.
 	Rules []*Rule `json:"rules"`
+}
+
+// StartUserWebAuthnRegistrationRequest: start user web authn registration request.
+type StartUserWebAuthnRegistrationRequest struct {
+	// UserID: the ID of the user on which to start registering a WebAuthn authenticator.
+	UserID string `json:"-"`
+
+	// Origin: the URL from which the registration request originated.
+	Origin string `json:"-"`
+}
+
+// StartUserWebAuthnRegistrationResponse: start user web authn registration response.
+type StartUserWebAuthnRegistrationResponse struct {
+	// CeremonyID: a unique ID for this registration attempt, to reuse when calling FinishUserWebAuthnRegistration.
+	CeremonyID string `json:"ceremony_id"`
+
+	// Challenge: random bytes constituting the challenge to solve for the credentials creation.
+	Challenge []byte `json:"challenge"`
+
+	// PublicKeyAlgorithms: list of algorithms supported by the relying party, as COSE algorithm identifiers.
+	PublicKeyAlgorithms []int32 `json:"public_key_algorithms"`
+
+	// Timeout: maximum duration of the registration ceremony, in milliseconds.
+	Timeout *scw.Duration `json:"timeout"`
+
+	// ExcludeCredentials: list of credentials that cannot be used to fulfill the ceremony.
+	ExcludeCredentials [][]byte `json:"exclude_credentials"`
 }
 
 // UnlockUserRequest: unlock user request.
@@ -2994,6 +3406,15 @@ type UpdateUserUsernameRequest struct {
 	Username string `json:"username"`
 }
 
+// UpdateWebAuthnAuthenticatorRequest: update web authn authenticator request.
+type UpdateWebAuthnAuthenticatorRequest struct {
+	// AuthenticatorID: the ID of the authenticator to update.
+	AuthenticatorID string `json:"-"`
+
+	// AuthenticatorName: a new name for this authenticator.
+	AuthenticatorName *string `json:"authenticator_name,omitempty"`
+}
+
 // ValidateUserMFAOTPRequest: validate user mfaotp request.
 type ValidateUserMFAOTPRequest struct {
 	// UserID: user ID of the MFA OTP.
@@ -3051,6 +3472,12 @@ func (s *API) ListSSHKeys(req *ListSSHKeysRequest, opts ...scw.RequestOption) (*
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.SSHKeys {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -3083,6 +3510,10 @@ func (s *API) CreateSSHKey(req *CreateSSHKeyRequest, opts ...scw.RequestOption) 
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3104,6 +3535,10 @@ func (s *API) GetSSHKey(req *GetSSHKeyRequest, opts ...scw.RequestOption) (*SSHK
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3131,6 +3566,10 @@ func (s *API) UpdateSSHKey(req *UpdateSSHKeyRequest, opts ...scw.RequestOption) 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3186,6 +3625,12 @@ func (s *API) ListUsers(req *ListUsersRequest, opts ...scw.RequestOption) (*List
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Users {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -3207,6 +3652,10 @@ func (s *API) GetUser(req *GetUserRequest, opts ...scw.RequestOption) (*User, er
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3234,6 +3683,10 @@ func (s *API) UpdateUser(req *UpdateUserRequest, opts ...scw.RequestOption) (*Us
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3283,6 +3736,10 @@ func (s *API) CreateUser(req *CreateUserRequest, opts ...scw.RequestOption) (*Us
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3310,6 +3767,10 @@ func (s *API) UpdateUserUsername(req *UpdateUserUsernameRequest, opts ...scw.Req
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3336,6 +3797,10 @@ func (s *API) UpdateUserPassword(req *UpdateUserPasswordRequest, opts ...scw.Req
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3443,6 +3908,10 @@ func (s *API) LockUser(req *LockUserRequest, opts ...scw.RequestOption) (*User, 
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3469,6 +3938,10 @@ func (s *API) UnlockUser(req *UnlockUserRequest, opts ...scw.RequestOption) (*Us
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3630,6 +4103,12 @@ func (s *API) ListApplications(req *ListApplicationsRequest, opts ...scw.Request
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Applications {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -3662,6 +4141,10 @@ func (s *API) CreateApplication(req *CreateApplicationRequest, opts ...scw.Reque
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3683,6 +4166,10 @@ func (s *API) GetApplication(req *GetApplicationRequest, opts ...scw.RequestOpti
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3710,6 +4197,10 @@ func (s *API) UpdateApplication(req *UpdateApplicationRequest, opts ...scw.Reque
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3771,6 +4262,12 @@ func (s *API) ListGroups(req *ListGroupsRequest, opts ...scw.RequestOption) (*Li
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Groups {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -3803,6 +4300,10 @@ func (s *API) CreateGroup(req *CreateGroupRequest, opts ...scw.RequestOption) (*
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3824,6 +4325,10 @@ func (s *API) GetGroup(req *GetGroupRequest, opts ...scw.RequestOption) (*Group,
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3852,6 +4357,10 @@ func (s *API) UpdateGroup(req *UpdateGroupRequest, opts ...scw.RequestOption) (*
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3878,6 +4387,10 @@ func (s *API) SetGroupMembers(req *SetGroupMembersRequest, opts ...scw.RequestOp
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -3906,6 +4419,10 @@ func (s *API) AddGroupMember(req *AddGroupMemberRequest, opts ...scw.RequestOpti
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3933,6 +4450,10 @@ func (s *API) AddGroupMembers(req *AddGroupMembersRequest, opts ...scw.RequestOp
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -3959,6 +4480,10 @@ func (s *API) RemoveGroupMember(req *RemoveGroupMemberRequest, opts ...scw.Reque
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4023,6 +4548,12 @@ func (s *API) ListPolicies(req *ListPoliciesRequest, opts ...scw.RequestOption) 
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Policies {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -4055,6 +4586,10 @@ func (s *API) CreatePolicy(req *CreatePolicyRequest, opts ...scw.RequestOption) 
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -4076,6 +4611,10 @@ func (s *API) GetPolicy(req *GetPolicyRequest, opts ...scw.RequestOption) (*Poli
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4103,6 +4642,10 @@ func (s *API) UpdatePolicy(req *UpdatePolicyRequest, opts ...scw.RequestOption) 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4150,6 +4693,10 @@ func (s *API) ClonePolicy(req *ClonePolicyRequest, opts ...scw.RequestOption) (*
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4202,6 +4749,12 @@ func (s *API) ListRules(req *ListRulesRequest, opts ...scw.RequestOption) (*List
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Rules {
+			el.setSRN(apiMetadata.Domain)
+		}
 	}
 	return &resp, nil
 }
@@ -4277,6 +4830,12 @@ func (s *API) ListAPIKeys(req *ListAPIKeysRequest, opts ...scw.RequestOption) (*
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.APIKeys {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -4300,6 +4859,10 @@ func (s *API) CreateAPIKey(req *CreateAPIKeyRequest, opts ...scw.RequestOption) 
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -4321,6 +4884,10 @@ func (s *API) GetAPIKey(req *GetAPIKeyRequest, opts ...scw.RequestOption) (*APIK
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4348,6 +4915,10 @@ func (s *API) UpdateAPIKey(req *UpdateAPIKeyRequest, opts ...scw.RequestOption) 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4405,6 +4976,12 @@ func (s *API) ListQuota(req *ListQuotaRequest, opts ...scw.RequestOption) (*List
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Quota {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -4436,6 +5013,10 @@ func (s *API) GetQuotum(req *GetQuotumRequest, opts ...scw.RequestOption) (*Quot
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -4466,6 +5047,12 @@ func (s *API) ListJWTs(req *ListJWTsRequest, opts ...scw.RequestOption) (*ListJW
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Jwts {
+			el.setSRN(apiMetadata.Domain)
+		}
 	}
 	return &resp, nil
 }
@@ -4511,6 +5098,10 @@ func (s *API) GetJWT(req *GetJWTRequest, opts ...scw.RequestOption) (*JWT, error
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4572,6 +5163,12 @@ func (s *API) ListLogs(req *ListLogsRequest, opts ...scw.RequestOption) (*ListLo
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		for _, el := range resp.Logs {
+			el.setSRN(apiMetadata.Domain)
+		}
+	}
 	return &resp, nil
 }
 
@@ -4593,6 +5190,10 @@ func (s *API) GetLog(req *GetLogRequest, opts ...scw.RequestOption) (*Log, error
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4771,6 +5372,10 @@ func (s *API) GetOrganizationSaml(req *GetOrganizationSamlRequest, opts ...scw.R
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -4803,6 +5408,10 @@ func (s *API) EnableOrganizationSaml(req *EnableOrganizationSamlRequest, opts ..
 	if err != nil {
 		return nil, err
 	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
 	return &resp, nil
 }
 
@@ -4829,6 +5438,10 @@ func (s *API) UpdateSaml(req *UpdateSamlRequest, opts ...scw.RequestOption) (*Sa
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -4921,6 +5534,36 @@ func (s *API) AddSamlCertificate(req *AddSamlCertificateRequest, opts ...scw.Req
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
 		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
+	}
+	return &resp, nil
+}
+
+// GetSamlCertificate: Get a SAML certificate.
+func (s *API) GetSamlCertificate(req *GetSamlCertificateRequest, opts ...scw.RequestOption) (*SamlCertificate, error) {
+	var err error
+
+	if fmt.Sprint(req.CertificateID) == "" {
+		return nil, errors.New("field CertificateID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/saml-certificates/" + fmt.Sprint(req.CertificateID) + "",
+	}
+
+	var resp SamlCertificate
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	apiMetadata, err := s.client.GetAPIMetadata()
+	if err == nil {
+		resp.setSRN(apiMetadata.Domain)
 	}
 	return &resp, nil
 }
@@ -5090,6 +5733,166 @@ func (s *API) DeleteScimToken(req *DeleteScimTokenRequest, opts ...scw.RequestOp
 	scwReq := &scw.ScalewayRequest{
 		Method: "DELETE",
 		Path:   "/iam/v1alpha1/scim-tokens/" + fmt.Sprint(req.TokenID) + "",
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetScimToken:
+func (s *API) GetScimToken(req *GetScimTokenRequest, opts ...scw.RequestOption) (*ScimToken, error) {
+	var err error
+
+	if fmt.Sprint(req.ScimTokenID) == "" {
+		return nil, errors.New("field ScimTokenID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/scim-tokens/" + fmt.Sprint(req.ScimTokenID) + "",
+	}
+
+	var resp ScimToken
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// StartUserWebAuthnRegistration: Start registering a WebAuthn authenticator.
+func (s *API) StartUserWebAuthnRegistration(req *StartUserWebAuthnRegistrationRequest, opts ...scw.RequestOption) (*StartUserWebAuthnRegistrationResponse, error) {
+	var err error
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "origin", req.Origin)
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/start-webauthn-registration",
+		Query:  query,
+	}
+
+	var resp StartUserWebAuthnRegistrationResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// FinishUserWebAuthnRegistration: Complete a WebAuthen authenticator registration.
+func (s *API) FinishUserWebAuthnRegistration(req *FinishUserWebAuthnRegistrationRequest, opts ...scw.RequestOption) (*FinishUserWebAuthnRegistrationResponse, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/finish-webauthn-registration",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp FinishUserWebAuthnRegistrationResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ListUserWebAuthnAuthenticators: List all of a user's WebAuthn Authenticators.
+func (s *API) ListUserWebAuthnAuthenticators(req *ListUserWebAuthnAuthenticatorsRequest, opts ...scw.RequestOption) (*ListUserWebAuthnAuthenticatorsResponse, error) {
+	var err error
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/webauthn-authenticators",
+		Query:  query,
+	}
+
+	var resp ListUserWebAuthnAuthenticatorsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UpdateWebAuthnAuthenticator: Update a WebAuthn authenticator.
+func (s *API) UpdateWebAuthnAuthenticator(req *UpdateWebAuthnAuthenticatorRequest, opts ...scw.RequestOption) (*WebAuthnAuthenticator, error) {
+	var err error
+
+	if fmt.Sprint(req.AuthenticatorID) == "" {
+		return nil, errors.New("field AuthenticatorID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "PATCH",
+		Path:   "/iam/v1alpha1/webauthn-authenticator/" + fmt.Sprint(req.AuthenticatorID) + "",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp WebAuthnAuthenticator
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// DeleteWebAuthnAuthenticator: Delete a WebAuthn authenticator.
+func (s *API) DeleteWebAuthnAuthenticator(req *DeleteWebAuthnAuthenticatorRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if fmt.Sprint(req.AuthenticatorID) == "" {
+		return errors.New("field AuthenticatorID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "DELETE",
+		Path:   "/iam/v1alpha1/webauthn-authenticator/" + fmt.Sprint(req.AuthenticatorID) + "",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return err
 	}
 
 	err = s.client.Do(scwReq, nil, opts...)
