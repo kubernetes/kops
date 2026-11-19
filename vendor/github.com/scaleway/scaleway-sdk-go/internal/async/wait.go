@@ -14,7 +14,6 @@ type IntervalStrategy func() <-chan time.Time
 
 // WaitSyncConfig defines the waiting options.
 type WaitSyncConfig struct {
-	// This method will be called from another goroutine.
 	Get              func() (value any, isTerminal bool, err error)
 	IntervalStrategy IntervalStrategy
 	Timeout          time.Duration
@@ -48,42 +47,22 @@ func WaitSync(config *WaitSyncConfig) (terminalValue any, err error) {
 		config.Timeout = defaultTimeout
 	}
 
-	resultValue := make(chan any)
-	resultErr := make(chan error)
-	timeout := make(chan bool)
+	timeoutCh := time.After(config.Timeout)
 
-	go func() {
-		for {
-			// get the payload
-			value, stopCondition, err := config.Get()
-			// send the payload
-			if err != nil {
-				resultErr <- err
-				return
-			}
-			if stopCondition {
-				resultValue <- value
-				return
-			}
-
-			// waiting for an interval before next get() call or a timeout
-			select {
-			case <-timeout:
-				return
-			case <-config.IntervalStrategy():
-				// sleep
-			}
+	for {
+		// get the payload
+		value, stopCondition, err := config.Get()
+		if err != nil {
+			return nil, err
 		}
-	}()
+		if stopCondition {
+			return value, nil
+		}
 
-	// waiting for a result or a timeout
-	select {
-	case val := <-resultValue:
-		return val, nil
-	case err := <-resultErr:
-		return nil, err
-	case <-time.After(config.Timeout):
-		timeout <- true
-		return nil, fmt.Errorf("timeout after %v", config.Timeout)
+		select {
+		case <-timeoutCh:
+			return nil, fmt.Errorf("timeout after %v", config.Timeout)
+		case <-config.IntervalStrategy(): // Sleep before next get() call.
+		}
 	}
 }
