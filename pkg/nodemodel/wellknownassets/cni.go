@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"regexp"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -51,6 +52,8 @@ const (
 	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
 )
 
+var CNIAssetURLPattern = regexp.MustCompile(`/cni-plugins-[^/]*\.(tgz|tar\.gz)$`)
+
 func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	// Override CNI packages from env vars
 	cniAssetURL := os.Getenv(ENV_VAR_CNI_ASSET_URL)
@@ -63,6 +66,10 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 		u, err := url.Parse(cniAssetURL)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
+		}
+
+		if !CNIAssetURLPattern.MatchString(cniAssetURL) {
+			return nil, fmt.Errorf("CNI plugin binaries asset URL %q must point to an archive named cni-plugins-*.tgz, because nodeup finds the archive by its name", cniAssetURL)
 		}
 
 		h, err := hashing.FromString(cniAssetHash)
