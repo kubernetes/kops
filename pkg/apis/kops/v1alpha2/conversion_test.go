@@ -246,38 +246,19 @@ func TestConvertOIDC(t *testing.T) {
 			},
 		},
 		{
-			// This documents a known defect, not desired behaviour: groupsClaims is
-			// stored comma joined in a single flag, so a claim containing a comma comes
-			// back as two claims.
-			name: "a groups claim containing a comma is split in two",
-			in: kops.OIDCAuthenticationSpec{
-				ClientID:     ptr.To("kubernetes"),
-				GroupsClaims: []string{"a,b"},
-			},
-			wantExternal: v1alpha2.KubeAPIServerConfig{
-				OIDCClientID:    ptr.To("kubernetes"),
-				OIDCGroupsClaim: ptr.To("a,b"),
-			},
-			want: kops.OIDCAuthenticationSpec{
-				ClientID:     ptr.To("kubernetes"),
-				GroupsClaims: []string{"a", "b"},
-			},
-		},
-		{
-			// Likewise a known defect: requiredClaims is stored as a list of
-			// "key=value" flags, so an equals sign in a key moves into the value.
-			name: "a required claim key containing an equals sign moves into the value",
+			// An equals sign in the value is fine: the flag is split on the first one.
+			name: "required claim value may contain an equals sign",
 			in: kops.OIDCAuthenticationSpec{
 				ClientID:       ptr.To("kubernetes"),
-				RequiredClaims: map[string]string{"a=b": "c"},
+				RequiredClaims: map[string]string{"hd": "a=b"},
 			},
 			wantExternal: v1alpha2.KubeAPIServerConfig{
 				OIDCClientID:      ptr.To("kubernetes"),
-				OIDCRequiredClaim: []string{"a=b=c"},
+				OIDCRequiredClaim: []string{"hd=a=b"},
 			},
 			want: kops.OIDCAuthenticationSpec{
 				ClientID:       ptr.To("kubernetes"),
-				RequiredClaims: map[string]string{"a": "b=c"},
+				RequiredClaims: map[string]string{"hd": "a=b"},
 			},
 		},
 	} {
@@ -300,6 +281,57 @@ func TestConvertOIDC(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A comma in a groups claim, or an equals sign in a required-claim key, cannot
+// round trip through the v1alpha2 flags. Reject those instead of storing a value
+// that reads back as a different spec.
+func TestConvertOIDCRejectsLossyClaims(t *testing.T) {
+	t.Run("comma in groups claim", func(t *testing.T) {
+		err := testScheme().Convert(&kops.Cluster{Spec: kops.ClusterSpec{
+			Authentication: &kops.AuthenticationSpec{OIDC: &kops.OIDCAuthenticationSpec{
+				ClientID:     ptr.To("kubernetes"),
+				GroupsClaims: []string{"a,b"},
+			}},
+		}}, &v1alpha2.Cluster{}, nil)
+
+		var fieldErr *field.Error
+		if !errors.As(err, &fieldErr) {
+			t.Fatalf("error = %v (%T); want a *field.Error", err, err)
+		}
+		if fieldErr.Type != field.ErrorTypeInvalid {
+			t.Errorf("error type = %v; want %v", fieldErr.Type, field.ErrorTypeInvalid)
+		}
+		if fieldErr.Field != "spec.authentication.oidc.groupsClaims" {
+			t.Errorf("error field = %q", fieldErr.Field)
+		}
+		if fieldErr.BadValue != "a,b" {
+			t.Errorf("error value = %v", fieldErr.BadValue)
+		}
+	})
+
+	t.Run("equals in required claim key", func(t *testing.T) {
+		err := testScheme().Convert(&kops.Cluster{Spec: kops.ClusterSpec{
+			Authentication: &kops.AuthenticationSpec{OIDC: &kops.OIDCAuthenticationSpec{
+				ClientID:       ptr.To("kubernetes"),
+				RequiredClaims: map[string]string{"a=b": "c"},
+			}},
+		}}, &v1alpha2.Cluster{}, nil)
+
+		var fieldErr *field.Error
+		if !errors.As(err, &fieldErr) {
+			t.Fatalf("error = %v (%T); want a *field.Error", err, err)
+		}
+		if fieldErr.Type != field.ErrorTypeInvalid {
+			t.Errorf("error type = %v; want %v", fieldErr.Type, field.ErrorTypeInvalid)
+		}
+		if fieldErr.Field != "spec.authentication.oidc.requiredClaims" {
+			t.Errorf("error field = %q", fieldErr.Field)
+		}
+		if fieldErr.BadValue != "a=b" {
+			t.Errorf("error value = %v", fieldErr.BadValue)
+		}
+	})
 }
 
 // TestConvertOIDCFlagsWinOverInMemorySpec pins the precedence when both OIDC sources are
