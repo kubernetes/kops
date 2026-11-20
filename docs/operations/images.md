@@ -134,7 +134,7 @@ gcloud compute images list --filter debian-12-bookworm- \
 
 # Microsoft Azure
 az vm image list --all --output table \
-  --publisher Debian --offer debian-11 --sku 12-gen2
+  --publisher Debian --offer debian-12 --sku 12-gen2
 ```
 
 ### Debian 13 (Trixie)
@@ -318,7 +318,7 @@ gcloud compute images list --filter ubuntu-2404-noble \
 
 # Microsoft Azure
 az vm image list --all --output table \
-  --publisher Canonical --offer 0001-com-ubuntu-server-jammy --sku 22_04-lts-gen2
+  --publisher Canonical --offer ubuntu-24_04-lts --sku server
 ```
 
 ### Ubuntu 26.04 (Resolute)
@@ -335,12 +335,12 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-*-*"
 
 # Google Cloud Platform (GCP)
-gcloud compute images list --filter ubuntu-2604-resolute-v \
+gcloud compute images list --filter ubuntu-2604-resolute \
   --project ubuntu-os-cloud
 
 # Microsoft Azure
 az vm image list --all --output table \
-  --publisher Canonical --offer 0001-com-ubuntu-server-resolute --sku 26_04-lts-gen2
+  --publisher Canonical --offer ubuntu-26_04-lts --sku server
 ```
 
 ## Owner aliases

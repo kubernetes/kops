@@ -83,7 +83,7 @@ kops create cluster --cloud=scaleway --name=mycluster.k8s.local --zones=nl-ams-2
 These basic commands create a cluster with default parameters:
 - Container Network Interface = `cilium`. To change it, set the flag `--networking=calico`. To see the list of supported CNIs, check the [networking page](../networking.md)
 - Instance type = `DEV1-M`. To change it, set the flag `--node-size=PRO2-XS` and/or `--control-plane-size=PRO2-XS`
-- Instance image = `ubuntu_jammy`. To change it, set the flag `--node-image=ubuntu_focal` and/or `--control-plane-image=ubuntu_focal`
+- Instance image = `ubuntu_noble`. To change it, set the flag `--node-image=ubuntu_jammy` and/or `--control-plane-image=ubuntu_jammy`
 
 **NB:** For now, you can only create a kops cluster in a single availability zone (fr-par-1, fr-par-2, fr-par-3, nl-ams-1, nl-ams-2, nl-ams-3, pl-waw-1, pl-waw-2).
 
