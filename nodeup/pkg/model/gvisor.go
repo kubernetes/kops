@@ -45,7 +45,7 @@ func (b *GVisorBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Name:    "gvisor",
 		Keyring: "https://gvisor.dev/archive.key",
 		Sources: []string{
-			"deb [arch=$(ARCH)] https://storage.googleapis.com/gvisor/releases release main",
+			"deb https://storage.googleapis.com/gvisor/releases release main",
 		},
 	})
 	// The runsc package bundles both runsc and containerd-shim-runsc-v1.
