@@ -319,8 +319,8 @@ Cluster is starting.  It should be ready in a few minutes.
 Suggestions:
  * validate cluster: kops validate cluster
  * list nodes: kubectl get nodes --show-labels
- * ssh to the master: ssh -i ~/.ssh/id_rsa admin@api.mycluster01.kopsclustertest.example.org
-The admin user is specific to Debian. If not using Debian please use the appropriate user based on your OS.
+ * ssh to a control-plane node: ssh -i ~/.ssh/id_rsa ubuntu@api.mycluster01.kopsclustertest.example.org
+ * the ubuntu user is specific to Ubuntu. If not using Ubuntu please use the appropriate user based on your OS.
  * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/operations/addons.md
 ```
 
@@ -379,7 +379,7 @@ ip-172-20-68-15.ec2.internal    Ready     5m        v1.7.2
 Let's try to send a command to our masters using "ssh":
 
 ```bash
-ssh -i ~/.ssh/id_rsa admin@api.mycluster01.kopsclustertest.example.org "ec2metadata --public-ipv4"
+ssh -i ~/.ssh/id_rsa ubuntu@api.mycluster01.kopsclustertest.example.org "ec2metadata --public-ipv4"
 34.206.72.126
 ```
 

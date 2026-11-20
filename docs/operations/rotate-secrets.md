@@ -239,7 +239,7 @@ Now the service account tokens will need to be regenerated inside the cluster:
 
 `kops toolbox dump` and find a master IP
 
-Then `ssh admin@${IP}` and run this to delete all the service account tokens:
+Then `ssh ubuntu@${IP}` and run this to delete all the service account tokens:
 
 ```shell
 # Delete all service account tokens in all namespaces

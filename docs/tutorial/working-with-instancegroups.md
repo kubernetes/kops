@@ -186,7 +186,7 @@ that the instances had not yet been reconfigured. There's a hint at the bottom:
 Changes may require instances to restart: kops rolling-update cluster`
 ```
 
-These changes require your instances to restart (we'll remove the COS images and replace them with Debian images). kOps
+These changes require your instances to restart (we'll remove the Ubuntu images and replace them with Debian images). kOps
 can perform a rolling update to minimize disruption, but even so you might not want to perform the update right away;
 you might want to make more changes or you might want to wait for off-peak hours. You might just want to wait for
 the instances to terminate naturally - new instances will come up with the new configuration - though if you're not

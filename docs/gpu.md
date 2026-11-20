@@ -6,6 +6,8 @@
 
 kOps can install nvidia device drivers, plugin, and runtime, as well as configure containerd to make use of the runtime.
 
+kOps installs the device driver and the NVIDIA container toolkit only on nodes that run Ubuntu.
+
 kOps will also install a RuntimeClass `nvidia`. As the nvidia runtime is not the default runtime, you will need to add `runtimeClassName: nvidia` to any Pod spec you want to use for GPU workloads. The RuntimeClass also configures the appropriate node selectors and tolerations to run on GPU Nodes.
 
 kOps will add `kops.k8s.io/gpu="1"` as node selector as well as the following taint:
