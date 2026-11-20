@@ -17,35 +17,54 @@ limitations under the License.
 package model
 
 import (
+	"strings"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
+	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 )
 
 func TestCloudTagsForInstanceGroup_Taints(t *testing.T) {
+	const clusterName = "testcluster.example.com"
+
+	// clusterFor builds a minimal cluster for providers without a testutils builder.
+	clusterFor := func(cloudProvider kops.CloudProviderSpec) *kops.Cluster {
+		c := testutils.BuildMinimalClusterAWS(clusterName)
+		c.Spec.CloudProvider = cloudProvider
+		return c
+	}
+
 	grid := []struct {
-		name     string
-		taints   []string
+		name    string
+		cluster *kops.Cluster
+		taints  []string
+		// wantTags must be set. No other cluster-autoscaler taint tag may be set.
 		wantTags map[string]string
 	}{
 		{
-			name:   "taint with value and effect",
-			taints: []string{"foo=bar:NoSchedule"},
+			name:    "taint with value and effect",
+			cluster: testutils.BuildMinimalClusterAWS(clusterName),
+			taints:  []string{"foo=bar:NoSchedule"},
 			wantTags: map[string]string{
 				"k8s.io/cluster-autoscaler/node-template/taint/foo": "bar:NoSchedule",
 			},
 		},
 		{
-			name:   "taint without value (key:effect)",
-			taints: []string{"foo:NoSchedule"},
+			name:    "taint without value (key:effect)",
+			cluster: testutils.BuildMinimalClusterAWS(clusterName),
+			taints:  []string{"foo:NoSchedule"},
 			wantTags: map[string]string{
 				"k8s.io/cluster-autoscaler/node-template/taint/foo": ":NoSchedule",
 			},
 		},
 		{
-			name: "mix of taint formats",
+			name:    "mix of taint formats",
+			cluster: testutils.BuildMinimalClusterAWS(clusterName),
 			taints: []string{
 				"foo:NoSchedule",
 				"bar=baz:PreferNoSchedule",
@@ -57,21 +76,63 @@ func TestCloudTagsForInstanceGroup_Taints(t *testing.T) {
 		},
 		{
 			name:     "taint without effect is skipped",
+			cluster:  testutils.BuildMinimalClusterAWS(clusterName),
 			taints:   []string{"foo"},
 			wantTags: map[string]string{},
+		},
+		{
+			name:    "openstack keeps the taint tags",
+			cluster: clusterFor(kops.CloudProviderSpec{Openstack: &kops.OpenstackSpec{}}),
+			taints:  []string{"nvidia.com/gpu=present:NoSchedule"},
+			wantTags: map[string]string{
+				"k8s.io/cluster-autoscaler/node-template/taint/nvidia.com/gpu": "present:NoSchedule",
+				nodeidentityaws.CloudTagInstanceGroupName:                      "nodes",
+			},
+		},
+		{
+			name:    "gce gets no taint tags",
+			cluster: testutils.BuildMinimalClusterGCE(clusterName, "testproject"),
+			taints:  []string{"nvidia.com/gpu=present:NoSchedule"},
+			wantTags: map[string]string{
+				gce.GceLabelNameInstanceGroup: "nodes",
+			},
+		},
+		{
+			name:    "hetzner gets no taint tags",
+			cluster: clusterFor(kops.CloudProviderSpec{Hetzner: &kops.HetznerSpec{}}),
+			taints:  []string{"nvidia.com/gpu=present:NoSchedule"},
+			wantTags: map[string]string{
+				hetzner.TagKubernetesInstanceGroup: "nodes",
+			},
+		},
+		{
+			name:    "linode gets no taint tags",
+			cluster: clusterFor(kops.CloudProviderSpec{Linode: &kops.LinodeSpec{}}),
+			taints:  []string{"nvidia.com/gpu=present:NoSchedule"},
+			wantTags: map[string]string{
+				linode.TagKubernetesInstanceGroup: "nodes",
+			},
+		},
+		{
+			// Providers have to be listed to get the taint tags.
+			name:    "other providers get no taint tags",
+			cluster: clusterFor(kops.CloudProviderSpec{DO: &kops.DOSpec{}}),
+			taints:  []string{"nvidia.com/gpu=present:NoSchedule"},
+			wantTags: map[string]string{
+				nodeidentityaws.CloudTagInstanceGroupName: "nodes",
+			},
 		},
 	}
 
 	for _, tc := range grid {
 		t.Run(tc.name, func(t *testing.T) {
-			cluster := testutils.BuildMinimalClusterAWS("testcluster.test.com")
 			ig := &kops.InstanceGroup{}
 			ig.ObjectMeta.Name = "nodes"
 			ig.Spec.Role = kops.InstanceGroupRoleNode
 			ig.Spec.Taints = tc.taints
 
 			b := &KopsModelContext{
-				IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+				IAMModelContext:   iam.IAMModelContext{Cluster: tc.cluster},
 				AllInstanceGroups: []*kops.InstanceGroup{ig},
 				InstanceGroups:    []*kops.InstanceGroup{ig},
 			}
@@ -82,8 +143,16 @@ func TestCloudTagsForInstanceGroup_Taints(t *testing.T) {
 			}
 
 			for k, want := range tc.wantTags {
-				if got := tags[k]; got != want {
+				if got, ok := tags[k]; !ok || got != want {
 					t.Errorf("tag %q = %q, want %q", k, got, want)
+				}
+			}
+			for k, got := range tags {
+				if !strings.HasPrefix(k, clusterAutoscalerNodeTemplateTaint) {
+					continue
+				}
+				if _, ok := tc.wantTags[k]; !ok {
+					t.Errorf("unexpected cluster-autoscaler taint tag %q = %q", k, got)
 				}
 			}
 		})
