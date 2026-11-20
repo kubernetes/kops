@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/tomlwriter"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
 )
 
@@ -285,6 +286,142 @@ func TestContainerdConfigNRITimeouts(t *testing.T) {
 `
 	if config != expected {
 		t.Error(diff.FormatDiff(expected, config))
+	}
+}
+
+func TestContainerdConfigGVisor(t *testing.T) {
+	for _, test := range []struct {
+		distribution distributions.Distribution
+		binDir       string
+	}{
+		{distribution: distributions.DistributionUbuntu2604, binDir: "/usr/local/bin"},
+		{distribution: distributions.DistributionFlatcar, binDir: "/opt/kops/bin"},
+	} {
+		t.Run(test.binDir, func(t *testing.T) {
+			b := &ContainerdBuilder{
+				NodeupModelContext: &NodeupModelContext{
+					Distribution: test.distribution,
+					BootConfig: &nodeup.BootConfig{
+						InstanceGroupRole: kops.InstanceGroupRoleNode,
+					},
+					NodeupConfig: &nodeup.Config{
+						GVisor: &kops.GVisorConfig{
+							Enabled:  new(true),
+							Platform: "kvm",
+						},
+						ContainerdConfig: &kops.ContainerdConfig{},
+					},
+				},
+			}
+
+			config, err := b.buildContainerdConfig()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			expected := `version = 3
+
+[plugins]
+
+  [plugins."io.containerd.cri.v1.runtime"]
+
+    [plugins."io.containerd.cri.v1.runtime".containerd]
+      default_runtime_name = "runc"
+
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes]
+
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc]
+          runtime_type = "io.containerd.runc.v2"
+
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc.options]
+            SystemdCgroup = false
+
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runsc]
+          runtime_path = "` + test.binDir + `/containerd-shim-runsc-v1"
+          runtime_type = "io.containerd.runsc.v1"
+
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runsc.options]
+            ConfigPath = "/etc/containerd/runsc.toml"
+            TypeUrl = "io.containerd.runsc.v1.options"
+`
+			if config != expected {
+				t.Error(diff.FormatDiff(expected, config))
+			}
+		})
+	}
+}
+
+func TestGVisorShimConfig(t *testing.T) {
+	for _, test := range []struct {
+		name         string
+		distribution distributions.Distribution
+		platform     string
+		cgroupDriver string
+		expected     string
+	}{
+		{
+			name:         "defaults",
+			distribution: distributions.DistributionUbuntu2604,
+			expected: `binary_name = "/usr/local/bin/runsc"
+
+[runsc_config]
+  platform = "systrap"
+`,
+		},
+		{
+			name:         "flatcar with systemd cgroups",
+			distribution: distributions.DistributionFlatcar,
+			platform:     "kvm",
+			cgroupDriver: "systemd",
+			expected: `binary_name = "/opt/kops/bin/runsc"
+
+[runsc_config]
+  platform = "kvm"
+  systemd-cgroup = "true"
+`,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			b := &ContainerdBuilder{
+				NodeupModelContext: &NodeupModelContext{
+					Distribution: test.distribution,
+					BootConfig: &nodeup.BootConfig{
+						InstanceGroupRole: kops.InstanceGroupRoleNode,
+					},
+					NodeupConfig: &nodeup.Config{
+						GVisor: &kops.GVisorConfig{
+							Enabled:  new(true),
+							Platform: test.platform,
+						},
+						KubeletConfig: kops.KubeletConfigSpec{
+							CgroupDriver: test.cgroupDriver,
+						},
+					},
+				},
+			}
+
+			c := &fi.NodeupModelBuilderContext{
+				Tasks: make(map[string]fi.NodeupTask),
+			}
+			b.buildGVisorShimConfig(c)
+
+			if len(c.Tasks) != 1 {
+				t.Fatalf("got %d tasks, want 1: %v", len(c.Tasks), c.Tasks)
+			}
+			for _, task := range c.Tasks {
+				file := task.(*nodetasks.File)
+				if file.Path != gVisorShimConfigPath {
+					t.Errorf("shim config written to %q, want %q", file.Path, gVisorShimConfigPath)
+				}
+				config, err := fi.ResourceAsString(file.Contents)
+				if err != nil {
+					t.Fatalf("reading shim config: %v", err)
+				}
+				if config != test.expected {
+					t.Error(diff.FormatDiff(test.expected, config))
+				}
+			}
+		})
 	}
 }
 

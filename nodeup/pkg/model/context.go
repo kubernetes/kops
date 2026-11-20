@@ -576,6 +576,14 @@ func (c *NodeupModelContext) InstallGVisorRuntime() bool {
 		fi.ValueOf(c.NodeupConfig.GVisor.Enabled)
 }
 
+// GVisorBinDir returns the directory that holds runsc, containerd-shim-runsc-v1
+// and gvisor-bin/: the distro's directory for binaries installed by kOps.
+// containerd's PATH does not include it on every distro (Flatcar), so the
+// containerd and shim configs refer to the binaries by their full path.
+func (c *NodeupModelContext) GVisorBinDir() string {
+	return c.KubectlPath()
+}
+
 // CloudProvider returns the cloud provider we are running on
 func (c *NodeupModelContext) CloudProvider() kops.CloudProviderID {
 	return c.BootConfig.CloudProvider

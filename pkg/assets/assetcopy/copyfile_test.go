@@ -17,6 +17,7 @@ limitations under the License.
 package assetcopy
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -92,6 +93,29 @@ func Test_BuildVFSPath(t *testing.T) {
 
 		if test.pass && path != test.vfsPath {
 			t.Errorf("incorrect url parsed %q", path)
+		}
+	}
+}
+
+func Test_fileExtensionForSHA(t *testing.T) {
+	grid := []struct {
+		sha       string
+		extension string
+		pass      bool
+	}{
+		{strings.Repeat("a", 40), ".sha1", true},
+		{strings.Repeat("a", 64), ".sha256", true},
+		{strings.Repeat("a", 128), ".sha512", true},
+		{strings.Repeat("a", 32), "", false},
+	}
+
+	for _, test := range grid {
+		extension, err := fileExtensionForSHA(test.sha)
+		if (err == nil) != test.pass {
+			t.Errorf("fileExtensionForSHA(%d characters): got error %v, want pass=%v", len(test.sha), err, test.pass)
+		}
+		if extension != test.extension {
+			t.Errorf("fileExtensionForSHA(%d characters) = %q, want %q", len(test.sha), extension, test.extension)
 		}
 	}
 }

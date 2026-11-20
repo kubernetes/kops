@@ -17,39 +17,66 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	"path/filepath"
+	"regexp"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// GVisorBuilder installs the gVisor (runsc) sandboxed runtime.
-// Only supported on Debian-family distributions.
+// GVisorBuilder installs the gVisor (runsc) sandboxed runtime from the gVisor
+// release tarball in the node assets, so it works on every distribution.
 type GVisorBuilder struct {
 	*NodeupModelContext
 }
 
 var _ fi.NodeupModelBuilder = &GVisorBuilder{}
 
-// Build installs gVisor packages via the upstream apt repository.
+// gVisorBinaries are the top-level binaries of the gVisor release tarball.
+var gVisorBinaries = []string{"runsc", "containerd-shim-runsc-v1"}
+
+// Build installs runsc, containerd-shim-runsc-v1 and the gvisor-bin/ directory
+// of sidecar binaries, which runsc runs from next to its own binary.
 func (b *GVisorBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if !b.InstallGVisorRuntime() {
 		return nil
 	}
 
-	// gVisor packages are only published in the upstream apt repository,
-	// so installation is limited to Debian-family distributions (Debian, Ubuntu).
-	if !b.Distribution.IsDebianFamily() {
-		return nil
+	binDir := b.GVisorBinDir()
+
+	for _, name := range gVisorBinaries {
+		assets := b.Assets.FindMatches(regexp.MustCompile("^" + regexp.QuoteMeta(name) + "$"))
+		if len(assets) != 1 {
+			return fmt.Errorf("found %d %q binaries in the gVisor assets, want 1", len(assets), name)
+		}
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(binDir, name),
+			Contents: assets[name],
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		})
 	}
 
-	c.AddTask(&nodetasks.AptSource{
-		Name:    "gvisor",
-		Keyring: "https://gvisor.dev/archive.key",
-		Sources: []string{
-			"deb [arch=$(ARCH)] https://storage.googleapis.com/gvisor/releases release main",
-		},
+	sidecars := b.Assets.FindMatches(regexp.MustCompile(`^gvisor-bin/[^/]+$`))
+	if len(sidecars) == 0 {
+		return fmt.Errorf("found no gvisor-bin/ sidecar binaries in the gVisor assets")
+	}
+	// The sentry may re-execute itself as an unprivileged user, so the
+	// directory and the binaries in it must be readable and executable by all.
+	c.AddTask(&nodetasks.File{
+		Path: filepath.Join(binDir, "gvisor-bin"),
+		Type: nodetasks.FileType_Directory,
+		Mode: s("0755"),
 	})
-	// The runsc package bundles both runsc and containerd-shim-runsc-v1.
-	c.AddTask(&nodetasks.Package{Name: "runsc"})
+	for name, contents := range sidecars {
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(binDir, "gvisor-bin", name),
+			Contents: contents,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		})
+	}
 
 	return nil
 }

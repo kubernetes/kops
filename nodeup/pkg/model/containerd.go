@@ -513,7 +513,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	}
 	// containerd must use the same cgroup driver as the kubelet. With KubeletCgroupDriverFromCRI the kubelet
 	// takes the driver from the runtime, so this is the setting that decides the effective driver on the node.
-	systemdCgroup := b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd"
+	systemdCgroup := b.systemdCgroup()
 	config.SetPath([]string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "default_runtime_name"}, "runc")
 	config.SetPath([]string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
 	config.SetPath([]string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, systemdCgroup)
@@ -529,7 +529,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	}
 
 	if b.InstallGVisorRuntime() {
-		appendGVisorRuntimeConfig(config.Table("plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"))
+		appendGVisorRuntimeConfig(config.Table("plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"), b.GVisorBinDir())
 	}
 
 	if err := applyConfigAdditions(config, containerd.ConfigAdditions); err != nil {
@@ -615,9 +615,21 @@ func appendNvidiaGPURuntimeConfig(runtimes *tomlwriter.Tree, systemdCgroup bool)
 	runtimes.SetPath([]string{"nvidia", "options", "BinaryName"}, "/usr/bin/nvidia-container-runtime")
 }
 
-func appendGVisorRuntimeConfig(runtimes *tomlwriter.Tree) {
-	runtimes.SetPath([]string{"runsc", "runtime_type"}, "io.containerd.runsc.v1")
+// systemdCgroup reports whether the container runtimes use the systemd cgroup driver.
+func (b *ContainerdBuilder) systemdCgroup() bool {
+	return b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd"
 }
+
+func appendGVisorRuntimeConfig(runtimes *tomlwriter.Tree, binDir string) {
+	runtimes.SetPath([]string{"runsc", "runtime_type"}, "io.containerd.runsc.v1")
+	runtimes.SetPath([]string{"runsc", "runtime_path"}, filepath.Join(binDir, "containerd-shim-runsc-v1"))
+	// The shim only looks at the ConfigPath option, and its default search
+	// paths do not include the file kops writes.
+	runtimes.SetPath([]string{"runsc", "options", "TypeUrl"}, "io.containerd.runsc.v1.options")
+	runtimes.SetPath([]string{"runsc", "options", "ConfigPath"}, gVisorShimConfigPath)
+}
+
+const gVisorShimConfigPath = "/etc/containerd/runsc.toml"
 
 // buildGVisorShimConfig emits /etc/containerd/runsc.toml, the shim-level
 // configuration consumed by containerd-shim-runsc-v1 at container creation.
@@ -629,10 +641,16 @@ func (b *ContainerdBuilder) buildGVisorShimConfig(c *fi.NodeupModelBuilderContex
 	}
 
 	shimConfig := tomlwriter.NewTree()
+	shimConfig.SetPath([]string{"binary_name"}, filepath.Join(b.GVisorBinDir(), "runsc"))
 	shimConfig.SetPath([]string{"runsc_config", "platform"}, platform)
+	// runsc detects systemd cgroup paths by itself, but the shim only handles
+	// cgroups as unified (v2) when this is set.
+	if b.systemdCgroup() {
+		shimConfig.SetPath([]string{"runsc_config", "systemd-cgroup"}, "true")
+	}
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/etc/containerd/runsc.toml",
+		Path:     gVisorShimConfigPath,
 		Contents: fi.NewStringResource(shimConfig.String()),
 		Type:     nodetasks.FileType_File,
 	})
