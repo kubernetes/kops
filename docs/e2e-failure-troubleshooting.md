@@ -152,6 +152,7 @@ Each build directory contains the following hierarchy:
         │   # AWS-specific (if applicable):
         ├── aws-routed-eni_ipamd.log   # AWS VPC CNI IPAMD
         ├── aws-routed-eni_plugin.log  # AWS VPC CNI plugin
+        ├── console-output.log         # EC2 serial console; only for unregistered or SSH-unreachable instances
         │
         │   # Pod logs collected via kubectl:
         ├── external-dns.log   # external-dns pod logs
@@ -164,6 +165,14 @@ Nodes are dumped in this priority order (from `pkg/dump/dumper.go`):
 1. **Control plane nodes** — always dumped first
 2. **Unregistered nodes** — cloud instances that didn't join the Kubernetes cluster (indicates bootstrap failure)
 3. **Regular worker nodes** — up to the `--max-nodes` limit
+
+On AWS, unregistered instances and any node the dumper cannot SSH into also get a
+`console-output.log` from `ec2:GetConsoleOutput`. For an instance that failed early in boot
+(for example, cloud-init never installed the SSH key), this is the only log available: it holds
+the kernel boot log, systemd unit failures, and cloud-init stage output. Consoles of instances
+SSH could not dump are capped at 5 per dump, independent of `--max-nodes`. The file sits in the node's usual directory
+(the IP address for an unregistered instance), or in a directory named by instance ID when the
+instance has no address or is past the `--max-nodes` limit.
 
 ## Failure Categories
 

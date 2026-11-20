@@ -86,6 +86,7 @@ type EC2API interface {
 	DisassociateRouteTable(ctx context.Context, params *ec2.DisassociateRouteTableInput, optFns ...func(*ec2.Options)) (*ec2.DisassociateRouteTableOutput, error)
 	DisassociateSubnetCidrBlock(ctx context.Context, params *ec2.DisassociateSubnetCidrBlockInput, optFns ...func(*ec2.Options)) (*ec2.DisassociateSubnetCidrBlockOutput, error)
 	DisassociateVpcCidrBlock(ctx context.Context, params *ec2.DisassociateVpcCidrBlockInput, optFns ...func(*ec2.Options)) (*ec2.DisassociateVpcCidrBlockOutput, error)
+	GetConsoleOutput(ctx context.Context, params *ec2.GetConsoleOutputInput, optFns ...func(*ec2.Options)) (*ec2.GetConsoleOutputOutput, error)
 	GetInstanceTypesFromInstanceRequirements(ctx context.Context, params *ec2.GetInstanceTypesFromInstanceRequirementsInput, optFns ...func(*ec2.Options)) (*ec2.GetInstanceTypesFromInstanceRequirementsOutput, error)
 	ImportKeyPair(ctx context.Context, params *ec2.ImportKeyPairInput, optFns ...func(*ec2.Options)) (*ec2.ImportKeyPairOutput, error)
 	ModifyLaunchTemplate(ctx context.Context, params *ec2.ModifyLaunchTemplateInput, optFns ...func(*ec2.Options)) (*ec2.ModifyLaunchTemplateOutput, error)

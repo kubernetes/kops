@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +28,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2instanceconnect"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
@@ -277,6 +279,13 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			})
 		}
 
+		if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
+			ec2Client := awsCloud.EC2()
+			dumper.SetConsoleOutputFetcher(func(ctx context.Context, instanceID string) ([]byte, error) {
+				return getEC2ConsoleOutput(ctx, ec2Client, instanceID)
+			})
+		}
+
 		if err := dumper.DumpAllNodes(ctx, nodes, options.MaxNodes, cloudResources); err != nil {
 			klog.Warningf("error dumping nodes: %v", err)
 		}
@@ -329,6 +338,41 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		}
 	}
 	return nil
+}
+
+// consoleOutputGetter is the subset of the EC2 API used by getEC2ConsoleOutput.
+type consoleOutputGetter interface {
+	GetConsoleOutput(ctx context.Context, params *ec2.GetConsoleOutputInput, optFns ...func(*ec2.Options)) (*ec2.GetConsoleOutputOutput, error)
+}
+
+// getEC2ConsoleOutput returns an instance's decoded console output, or nil, nil if none is captured
+// yet. Latest is Nitro-only, so UnsupportedOperation falls back to the last snapshot.
+func getEC2ConsoleOutput(ctx context.Context, ec2Client consoleOutputGetter, instanceID string) ([]byte, error) {
+	response, err := ec2Client.GetConsoleOutput(ctx, &ec2.GetConsoleOutputInput{
+		InstanceId: aws.String(instanceID),
+		Latest:     aws.Bool(true),
+	})
+	if awsup.AWSErrorCode(err) == "UnsupportedOperation" {
+		klog.V(2).Infof("latest console output of instance %s unsupported, using last snapshot: %v", instanceID, err)
+		response, err = ec2Client.GetConsoleOutput(ctx, &ec2.GetConsoleOutputInput{
+			InstanceId: aws.String(instanceID),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("getting console output snapshot: %w", err)
+		}
+	} else if err != nil {
+		return nil, fmt.Errorf("getting latest console output: %w", err)
+	}
+
+	encoded := aws.ToString(response.Output)
+	if encoded == "" {
+		return nil, nil
+	}
+	output, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return nil, fmt.Errorf("decoding console output: %w", err)
+	}
+	return output, nil
 }
 
 // dumpCloudInstanceGroups records the cloud provider's view of the instance
