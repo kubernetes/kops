@@ -1,0 +1,17 @@
+# See the OWNERS docs at https://go.k8s.io/owners#owners_aliases
+
+aliases:
+  # The SIG Cluster Lifecycle chairs and technical leads, as listed at
+  # https://github.com/kubernetes/community/tree/main/sig-cluster-lifecycle#leadership
+  sig-cluster-lifecycle-leads:
+    - fabriziopandini
+    - hakman
+    - justinsb
+    - neolit123
+    - sbueringer
+  kops-approvers:
+    - hakman
+    - justinsb
+    - rifelpet
+  kops-reviewers:
+    - moshevayner

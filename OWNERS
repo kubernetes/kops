@@ -19,9 +19,8 @@ emeritus_approvers:
   - rdrgmnzs
   - zetaab
 approvers:
-  - hakman
-  - justinsb
-  - rifelpet
+  - sig-cluster-lifecycle-leads
+  - kops-approvers
 reviewers:
-  - hakman
-  - moshevayner
+  - kops-approvers
+  - kops-reviewers
