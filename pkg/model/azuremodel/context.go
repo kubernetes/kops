@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model"
 	nodeidentityazure "k8s.io/kops/pkg/nodeidentity/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -102,7 +103,10 @@ func (c *AzureModelContext) LinkToApplicationSecurityGroupNodes() *azuretasks.Ap
 func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) map[string]*string {
 	const (
 		clusterNodeTemplateLabel = "k8s.io_cluster_node-template_label_"
-		clusterNodeTemplateTaint = "k8s.io_cluster_node-template_taint_"
+		// The VMSS tag cluster-autoscaler's Azure provider reads node taints from
+		// when it scales a group up from zero. Its suffix is the taint key with
+		// "/" written as "_" and "_" as "~2", and its value is "<value>:<effect>".
+		clusterAutoscalerNodeTemplateTaint = "k8s.io_cluster-autoscaler_node-template_taint_"
 	)
 
 	labels := make(map[string]string)
@@ -125,12 +129,16 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 		i++
 	}
 
-	// Apply labels for cluster node taints.
+	// Apply labels for cluster-autoscaler node taints. Azure tag names can't
+	// contain "/", which most taint keys do (e.g. nvidia.com/gpu), so the key is
+	// encoded the way cluster-autoscaler decodes it.
 	for _, v := range ig.Spec.Taints {
-		splits := strings.SplitN(v, "=", 2)
-		if len(splits) > 1 {
-			labels[clusterNodeTemplateTaint+splits[0]] = splits[1]
+		taint, err := util.ParseTaint(v)
+		if err != nil || taint["effect"] == "" {
+			continue
 		}
+		key := strings.ReplaceAll(strings.ReplaceAll(taint["key"], "_", "~2"), "/", "_")
+		labels[clusterAutoscalerNodeTemplateTaint+key] = taint["value"] + ":" + taint["effect"]
 	}
 
 	// The system tags take priority because the cluster likely breaks without them...
