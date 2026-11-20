@@ -38,6 +38,10 @@ import (
 // instanceID matches resources.Instance.Name. AWS implements this with EC2 Instance Connect.
 type SSHAccessGranter func(ctx context.Context, instanceID string) error
 
+// ConsoleOutputFetcher returns an instance's serial console output. instanceID matches
+// resources.Instance.Name.
+type ConsoleOutputFetcher func(ctx context.Context, instanceID string) ([]byte, error)
+
 // logDumper gets all the nodes from a kubernetes cluster and dumps a well-known set of logs
 type logDumper struct {
 	sshClientFactory sshClientFactory
@@ -57,6 +61,14 @@ type logDumper struct {
 	// sshAccessGranter grants short-lived SSH access to a node before connecting. On AWS it uses
 	// EC2 Instance Connect so Karpenter nodes, lacking the cluster SSH key pair, are reachable.
 	sshAccessGranter SSHAccessGranter
+
+	// consoleOutputFetcher captures the console of unregistered or SSH-unreachable nodes.
+	consoleOutputFetcher ConsoleOutputFetcher
+
+	// consoleOutputsDumped counts capped fetch attempts, including failed ones, against maxConsoleOutputs.
+	consoleOutputsDumped int
+	// consoleOutputLimitLogged makes the cap log once.
+	consoleOutputLimitLogged bool
 }
 
 // NewLogDumper is the constructor for a logDumper
@@ -124,6 +136,11 @@ func (d *logDumper) SetSSHAccessGranter(granter SSHAccessGranter) {
 	d.sshAccessGranter = granter
 }
 
+// SetConsoleOutputFetcher registers a hook to capture a node's serial console output.
+func (d *logDumper) SetConsoleOutputFetcher(fetcher ConsoleOutputFetcher) {
+	d.consoleOutputFetcher = fetcher
+}
+
 // SetDumpBGP enables capturing Calico BIRD session state from each node.
 func (d *logDumper) SetDumpBGP(enabled bool) {
 	d.dumpBGP = enabled
@@ -138,6 +155,60 @@ func (d *logDumper) grantSSHAccess(ctx context.Context, instanceID string) {
 	if err := d.sshAccessGranter(ctx, instanceID); err != nil {
 		klog.Infof("could not grant SSH access to instance %s: %v", instanceID, err)
 	}
+}
+
+// consoleOutputTimeout is separate from nodeDumpTimeout, which a failed SSH dial can use up.
+const consoleOutputTimeout = 30 * time.Second
+
+// maxConsoleOutputs bounds console fetches when SSH fails cluster-wide.
+const maxConsoleOutputs = 5
+
+// dumpConsoleOutput best-effort writes <artifactsDir>/<dirName>/console-output.log.
+func (d *logDumper) dumpConsoleOutput(ctx context.Context, instanceID string, dirName string, capped bool) {
+	// A canceled dump is not an unreachable node, so skip rather than log a false failure.
+	if d.consoleOutputFetcher == nil || instanceID == "" || ctx.Err() != nil {
+		return
+	}
+	if capped {
+		if d.consoleOutputsDumped >= maxConsoleOutputs {
+			if !d.consoleOutputLimitLogged {
+				klog.Infof("reached the limit of %d console output captures; skipping the rest", maxConsoleOutputs)
+				d.consoleOutputLimitLogged = true
+			}
+			klog.V(2).Infof("skipping console output of instance %s: limit of %d reached", instanceID, maxConsoleOutputs)
+			return
+		}
+		d.consoleOutputsDumped++
+	}
+
+	fetchCtx, cancel := context.WithTimeout(ctx, consoleOutputTimeout)
+	defer cancel()
+
+	output, err := d.consoleOutputFetcher(fetchCtx, instanceID)
+	if err != nil {
+		if ctx.Err() != nil {
+			return
+		}
+		klog.Infof("could not get console output of instance %s: %v", instanceID, err)
+		return
+	}
+	// An empty file would look like a blank console.
+	if len(output) == 0 {
+		klog.Infof("no console output available for instance %s", instanceID)
+		return
+	}
+
+	dir := filepath.Join(d.artifactsDir, dirName)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		klog.Warningf("error creating directory %q: %v", dir, err)
+		return
+	}
+	p := filepath.Join(dir, "console-output.log")
+	if err := os.WriteFile(p, output, 0o600); err != nil {
+		klog.Warningf("error writing console output of instance %s: %v", instanceID, err)
+		return
+	}
+	klog.Infof("wrote console output of instance %s to %s", instanceID, p)
 }
 
 // DumpAllNodes connects to every node from kubectl get nodes and dumps the logs.
@@ -208,7 +279,10 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, max
 
 	for i := range missingK8sNodes {
 		if len(dumped) >= maxNodesToDump {
-			klog.Infof("stopping dumping nodes: %d nodes dumped", maxNodesToDump)
+			klog.Infof("stopping dumping nodes: %d nodes dumped; capturing only the console output of the %d remaining unregistered instances", maxNodesToDump, len(missingK8sNodes)-i)
+			for _, node := range missingK8sNodes[i:] {
+				d.dumpConsoleOutput(ctx, node.Name, node.Name, true)
+			}
 			return nil
 		}
 		node := missingK8sNodes[i]
@@ -257,16 +331,24 @@ func (d *logDumper) dumpRegistered(ctx context.Context, node *corev1.Node) (stri
 		}
 	}
 
+	var ip string
+	var err error
 	if publicIP != "" {
-		return publicIP, d.dumpNode(ctx, node.Name, publicIP, false)
+		ip, err = publicIP, d.dumpNode(ctx, node.Name, publicIP, false)
 	} else {
 		useBastion := true
 		if !d.sshClientFactory.HasBastion() {
 			klog.Warningf("no bastion address set, will attempt to connect to node %s directly via private IP %v", node.Name, privateIP)
 			useBastion = false
 		}
-		return privateIP, d.dumpNode(ctx, node.Name, privateIP, useBastion)
+		ip, err = privateIP, d.dumpNode(ctx, node.Name, privateIP, useBastion)
 	}
+
+	// dumpNode fails only without an address or connection, leaving the node with no logs.
+	if err != nil {
+		d.dumpConsoleOutput(ctx, node.Name, node.Name, true)
+	}
+	return ip, err
 }
 
 func (d *logDumper) dumpNotRegistered(ctx context.Context, node *resources.Instance) (string, error) {
@@ -277,14 +359,26 @@ func (d *logDumper) dumpNotRegistered(ctx context.Context, node *resources.Insta
 
 	klog.Infof("dumping node not registered in kubernetes: %s", node.Name)
 	d.grantSSHAccess(ctx, node.Name)
+
+	var ip string
+	useBastion := false
 	if len(node.PublicAddresses) > 0 {
-		return node.PublicAddresses[0], d.dumpNode(ctx, node.PublicAddresses[0], node.PublicAddresses[0], false)
+		ip = node.PublicAddresses[0]
+	} else if len(node.PrivateAddresses) > 0 {
+		ip = node.PrivateAddresses[0]
+		useBastion = true
 	}
 
-	if len(node.PrivateAddresses) > 0 {
-		return node.PrivateAddresses[0], d.dumpNode(ctx, node.PrivateAddresses[0], node.PrivateAddresses[0], true)
+	// Without an address there is no IP-named directory, so key by instance ID.
+	if ip == "" {
+		d.dumpConsoleOutput(ctx, node.Name, node.Name, true)
+		return "", fmt.Errorf("no known addresses for node %s", node.Name)
 	}
-	return "", fmt.Errorf("no known addresses for node %s", node.Name)
+	err := d.dumpNode(ctx, ip, ip, useBastion)
+	// It likely failed during boot, so capture the console even if the SSH dump succeeds.
+	// A successful dump is already bounded by --max-nodes, so only failures use the cap.
+	d.dumpConsoleOutput(ctx, node.Name, ip, err != nil)
+	return ip, err
 }
 
 // defaultNodeDumpTimeout bounds the time spent connecting to and dumping a single node.
@@ -337,7 +431,7 @@ type sshClient interface {
 
 // sshClientFactory is an interface abstracting to a node over SSH
 type sshClientFactory interface {
-	// Dial creates a new sshClient
+	// Dial creates a new sshClient. With useBastion it only reaches the bastion, not host.
 	Dial(ctx context.Context, host string, useBastion bool) (sshClient, error)
 
 	// HasBastion returns true if the sshClientFactory has a bastion configured.
@@ -358,6 +452,17 @@ func (d *logDumper) connectToNode(ctx context.Context, nodeName string, host str
 	client, err := d.sshClientFactory.Dial(ctx, host, useBastion)
 	if err != nil {
 		return nil, fmt.Errorf("unable to SSH to %q: %v", host, err)
+	}
+	// Dial only reached the bastion; probe the hop so a node refusing SSH fails here.
+	if useBastion {
+		var stderr bytes.Buffer
+		if err := client.ExecPiped(ctx, "true", io.Discard, &stderr); err != nil {
+			_ = client.Close()
+			if msg := strings.TrimSpace(stderr.String()); msg != "" {
+				return nil, fmt.Errorf("unable to SSH to %q through the bastion: %w: %s", host, err, msg)
+			}
+			return nil, fmt.Errorf("unable to SSH to %q through the bastion: %w", host, err)
+		}
 	}
 	return &logDumperNode{
 		client: client,
@@ -607,7 +712,7 @@ func (s *sshClientImplementation) ExecPiped(ctx context.Context, cmd string, std
 		session.Stderr = stderr
 
 		if s.forwardTo != "" {
-			cmd = fmt.Sprintf("ssh -o 'StrictHostKeyChecking no' %s %s", quoteShell(s.forwardTo), quoteShell(cmd))
+			cmd = fmt.Sprintf("ssh -o 'StrictHostKeyChecking no' -o ConnectTimeout=5 %s %s", quoteShell(s.forwardTo), quoteShell(cmd))
 		}
 
 		klog.V(2).Infof("running SSH command: %v", cmd)
