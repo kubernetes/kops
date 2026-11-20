@@ -431,7 +431,7 @@ type sshClient interface {
 
 // sshClientFactory is an interface abstracting to a node over SSH
 type sshClientFactory interface {
-	// Dial creates a new sshClient
+	// Dial creates a new sshClient. With useBastion it only reaches the bastion, not host.
 	Dial(ctx context.Context, host string, useBastion bool) (sshClient, error)
 
 	// HasBastion returns true if the sshClientFactory has a bastion configured.
@@ -452,6 +452,17 @@ func (d *logDumper) connectToNode(ctx context.Context, nodeName string, host str
 	client, err := d.sshClientFactory.Dial(ctx, host, useBastion)
 	if err != nil {
 		return nil, fmt.Errorf("unable to SSH to %q: %v", host, err)
+	}
+	// Dial only reached the bastion; probe the hop so a node refusing SSH fails here.
+	if useBastion {
+		var stderr bytes.Buffer
+		if err := client.ExecPiped(ctx, "true", io.Discard, &stderr); err != nil {
+			_ = client.Close()
+			if msg := strings.TrimSpace(stderr.String()); msg != "" {
+				return nil, fmt.Errorf("unable to SSH to %q through the bastion: %w: %s", host, err, msg)
+			}
+			return nil, fmt.Errorf("unable to SSH to %q through the bastion: %w", host, err)
+		}
 	}
 	return &logDumperNode{
 		client: client,
@@ -701,7 +712,7 @@ func (s *sshClientImplementation) ExecPiped(ctx context.Context, cmd string, std
 		session.Stderr = stderr
 
 		if s.forwardTo != "" {
-			cmd = fmt.Sprintf("ssh -o 'StrictHostKeyChecking no' %s %s", quoteShell(s.forwardTo), quoteShell(cmd))
+			cmd = fmt.Sprintf("ssh -o 'StrictHostKeyChecking no' -o ConnectTimeout=5 %s %s", quoteShell(s.forwardTo), quoteShell(cmd))
 		}
 
 		klog.V(2).Infof("running SSH command: %v", cmd)

@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -299,6 +300,116 @@ func TestDumpConsoleOutputNothingToWrite(t *testing.T) {
 				t.Errorf("dumpConsoleOutput(ctx, %q, %q) created %s, want no artifacts (stat err = %v)", g.instanceID, "node", p, err)
 			}
 		})
+	}
+}
+
+// hopRefusingSSHClient reaches the bastion, but the hop to the node is refused.
+type hopRefusingSSHClient struct {
+	closed *int
+}
+
+func (c hopRefusingSSHClient) Close() error {
+	*c.closed++
+	return nil
+}
+
+func (hopRefusingSSHClient) ExecPiped(ctx context.Context, command string, stdout io.Writer, stderr io.Writer) error {
+	_, _ = io.WriteString(stderr, "Permission denied (publickey).\n")
+	return errHopExit
+}
+
+// errHopExit matches the text of *ssh.ExitError.
+var errHopExit = errors.New("Process exited with status 255")
+
+// hopRefusingSSHClientFactory reaches the bastion but not the nodes behind it.
+type hopRefusingSSHClientFactory struct {
+	closed *int
+}
+
+func (f hopRefusingSSHClientFactory) Dial(ctx context.Context, host string, useBastion bool) (sshClient, error) {
+	if !useBastion {
+		return nil, errors.New("ssh: unable to authenticate")
+	}
+	return hopRefusingSSHClient{closed: f.closed}, nil
+}
+
+func (hopRefusingSSHClientFactory) HasBastion() bool { return true }
+
+// TestDumpAllNodesBastionHopRefused verifies that a node refusing SSH behind a bastion is treated as
+// unreachable.
+func TestDumpAllNodesBastionHopRefused(t *testing.T) {
+	nodes := corev1.NodeList{
+		Items: []corev1.Node{
+			{
+				ObjectMeta: metav1.ObjectMeta{Name: "i-private"},
+				Status: corev1.NodeStatus{Addresses: []corev1.NodeAddress{
+					{Type: corev1.NodeInternalIP, Address: "10.0.0.1"},
+				}},
+			},
+		},
+	}
+	cloudDump := &resources.Dump{
+		Instances: []*resources.Instance{{Name: "i-private", PrivateAddresses: []string{"10.0.0.1"}}},
+	}
+
+	grid := []struct {
+		name        string
+		sshFactory  sshClientFactory
+		wantFetched []string
+	}{
+		{name: "hop refused", sshFactory: hopRefusingSSHClientFactory{closed: new(int)}, wantFetched: []string{"i-private"}},
+		{name: "hop succeeds", sshFactory: &fakeSSHClientFactory{bastion: true}},
+	}
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			artifactsDir := t.TempDir()
+			d := &logDumper{
+				sshClientFactory: g.sshFactory,
+				artifactsDir:     artifactsDir,
+				nodeDumpTimeout:  time.Minute,
+			}
+			var fetched []string
+			d.SetConsoleOutputFetcher(func(ctx context.Context, instanceID string) ([]byte, error) {
+				fetched = append(fetched, instanceID)
+				return []byte("console of " + instanceID), nil
+			})
+
+			if err := d.DumpAllNodes(t.Context(), nodes, 10, cloudDump); err != nil {
+				t.Fatalf("DumpAllNodes: %v", err)
+			}
+
+			if !slices.Equal(fetched, g.wantFetched) {
+				t.Errorf("DumpAllNodes() fetched console output for %v, want %v", fetched, g.wantFetched)
+			}
+			if g.wantFetched != nil {
+				p := filepath.Join(artifactsDir, "i-private", "console-output.log")
+				if _, err := os.Stat(p); err != nil {
+					t.Errorf("DumpAllNodes() did not write %s: %v", p, err)
+				}
+				kern := filepath.Join(artifactsDir, "i-private", "kern.log")
+				if _, err := os.Stat(kern); !errors.Is(err, fs.ErrNotExist) {
+					t.Errorf("DumpAllNodes() wrote %s for a node whose bastion hop was refused (stat err = %v)", kern, err)
+				}
+			}
+		})
+	}
+}
+
+// TestConnectToNodeBastionHopRefused verifies that a refused hop closes the bastion client and
+// returns the hop's error and stderr.
+func TestConnectToNodeBastionHopRefused(t *testing.T) {
+	var closed int
+	d := &logDumper{sshClientFactory: hopRefusingSSHClientFactory{closed: &closed}, artifactsDir: t.TempDir()}
+
+	_, err := d.connectToNode(t.Context(), "i-private", "10.0.0.1", true)
+	if !errors.Is(err, errHopExit) {
+		t.Errorf("connectToNode(ctx, %q, %q, true) error = %v, want it to wrap %v", "i-private", "10.0.0.1", err, errHopExit)
+	}
+	if err == nil || !strings.Contains(err.Error(), "Permission denied (publickey).") {
+		t.Errorf("connectToNode(ctx, %q, %q, true) error = %v, want it to include the hop's stderr", "i-private", "10.0.0.1", err)
+	}
+	if closed != 1 {
+		t.Errorf("connectToNode(ctx, %q, %q, true) closed the bastion client %d times, want 1", "i-private", "10.0.0.1", closed)
 	}
 }
 
