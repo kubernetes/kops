@@ -61,7 +61,7 @@ The following table provides the support status for various distros with regards
 | Ubuntu 20.04                            |       1.16.2 |   1.18 |       1.35 |    1.36 |
 | [Ubuntu 22.04](#ubuntu-2204-jammy)      |         1.23 |   1.24 |          - |       - |
 | [Ubuntu 24.04](#ubuntu-2404-noble)      |         1.29 |   1.31 |          - |       - |
-| [Ubuntu 26.04](#ubuntu-2604-resolute)   |         1.36 |      - |          - |       - |
+| [Ubuntu 26.04](#ubuntu-2604-resolute)   |         1.36 |   1.37 |          - |       - |
 
 ## Supported Distros
 
