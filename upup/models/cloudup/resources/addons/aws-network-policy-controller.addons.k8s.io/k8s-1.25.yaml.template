@@ -1,0 +1,249 @@
+# Vendored from https://raw.githubusercontent.com/aws/amazon-network-policy-controller-k8s/v1.1.10/charts/amazon-network-policy-controller-k8s/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+    app.kubernetes.io/name: amazon-network-policy-controller-k8s
+  name: amazon-network-policy-controller-k8s
+  namespace: kube-system
+---
+# Vendored from https://raw.githubusercontent.com/aws/amazon-network-policy-controller-k8s/v1.1.10/charts/amazon-network-policy-controller-k8s/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+    app.kubernetes.io/name: amazon-network-policy-controller-k8s
+  name: amazon-network-policy-controller-k8s-leader-election-role
+  namespace: kube-system
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - amazon-network-policy-controller-k8s
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+    app.kubernetes.io/name: amazon-network-policy-controller-k8s
+  name: amazon-network-policy-controller-k8s
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.aws
+  resources:
+  - applicationnetworkpolicies
+  - clusternetworkpolicies
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.aws
+  resources:
+  - policyendpoints
+  - clusterpolicyendpoints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.aws
+  resources:
+  - policyendpoints/finalizers
+  - applicationnetworkpolicies/finalizers
+  - clusternetworkpolicies/finalizers
+  - clusterpolicyendpoints/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - networking.k8s.aws
+  resources:
+  - applicationnetworkpolicies/status
+  - clusternetworkpolicies/status
+  - clusterpolicyendpoints/status
+  - policyendpoints/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+    app.kubernetes.io/name: amazon-network-policy-controller-k8s
+  name: amazon-network-policy-controller-k8s-leader-election-rolebinding
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: amazon-network-policy-controller-k8s-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: amazon-network-policy-controller-k8s
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+    app.kubernetes.io/name: amazon-network-policy-controller-k8s
+  name: amazon-network-policy-controller-k8s-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: amazon-network-policy-controller-k8s
+subjects:
+- kind: ServiceAccount
+  name: amazon-network-policy-controller-k8s
+  namespace: kube-system
+---
+# Vendored from https://raw.githubusercontent.com/aws/amazon-network-policy-controller-k8s/v1.1.10/charts/amazon-network-policy-controller-k8s/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amazon-network-policy-controller-k8s
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+    app.kubernetes.io/name: amazon-network-policy-controller-k8s
+spec:
+  replicas: {{ ControlPlaneControllerReplicas false }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: amazon-network-policy-controller-k8s
+      app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: amazon-network-policy-controller-k8s
+        app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+      containers:
+      - name: amazon-network-policy-controller-k8s
+        image: "{{- or .Networking.AmazonVPC.NetworkPolicyControllerImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/eks/amazon-network-policy-controller-k8s:v1.1.10-eksbuild.1" }}"
+        imagePullPolicy: IfNotPresent
+        args:
+          - --enable-configmap-check=false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            memory: 30Mi
+            cpu: 0.3
+      priorityClassName: system-cluster-critical
+      serviceAccountName: amazon-network-policy-controller-k8s
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: amazon-network-policy-controller-k8s
+            app.kubernetes.io/name: amazon-network-policy-controller-k8s
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule

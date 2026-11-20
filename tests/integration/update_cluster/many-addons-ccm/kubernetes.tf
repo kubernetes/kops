@@ -707,6 +707,14 @@ resource "aws_s3_object" "minimal-example-com-addons-aws-load-balancer-controlle
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-example-com-addons-aws-network-policy-controller-addons-k8s-io-k8s-1-25" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-aws-network-policy-controller.addons.k8s.io-k8s-1.25_content")
+  key                    = "clusters.example.com/minimal.example.com/addons/aws-network-policy-controller.addons.k8s.io/k8s-1.25.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-bootstrap_content")

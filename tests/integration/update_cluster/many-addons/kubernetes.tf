@@ -692,6 +692,14 @@ resource "aws_s3_object" "many-addons-example-com-addons-aws-load-balancer-contr
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "many-addons-example-com-addons-aws-network-policy-controller-addons-k8s-io-k8s-1-25" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_many-addons.example.com-addons-aws-network-policy-controller.addons.k8s.io-k8s-1.25_content")
+  key                    = "tests/many-addons.example.com/addons/aws-network-policy-controller.addons.k8s.io/k8s-1.25.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "many-addons-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_many-addons.example.com-addons-bootstrap_content")
