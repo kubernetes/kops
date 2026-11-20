@@ -18,14 +18,9 @@ package nodetasks
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"os/exec"
-	"path"
 	"strings"
-	"syscall"
 
-	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
@@ -59,28 +54,8 @@ func (*AptSource) CheckChanges(a, e, changes *AptSource) error {
 func (f *AptSource) RenderLocal(t *local.LocalTarget, a, e, changes *AptSource) error {
 	// Not adding ctx to signature as RenderLocal seems to be part of a common interface
 	ctx := context.TODO()
-	tmpDir, err := os.MkdirTemp("", "aptsource")
-	if err != nil {
-		return fmt.Errorf("error creating temp dir: %v", err)
-	}
-	defer func() {
-		if err := os.RemoveAll(tmpDir); err != nil {
-			klog.Warningf("error deleting temp dir %q: %v", tmpDir, err)
-		}
-	}()
-	filename := path.Join(tmpDir, f.Name+".gpg")
-
-	if _, err := fi.DownloadURL(ctx, f.Keyring, filename, nil); err != nil {
+	if _, err := fi.DownloadURL(ctx, f.Keyring, "/etc/apt/trusted.gpg.d/"+f.Name+".asc", nil); err != nil {
 		return err
-	}
-
-	args := []string{"apt-key", "add", filename}
-
-	klog.Infof("running command %s", args)
-	cmd := exec.Command(args[0], args[1:]...)
-	output, err := cmd.CombinedOutput()
-	if exitCode := cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus(); err != nil && exitCode != 100 {
-		return fmt.Errorf("error adding key: %v: %s", err, string(output))
 	}
 
 	debs := strings.Join(f.Sources, "\n")
