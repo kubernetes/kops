@@ -197,6 +197,18 @@ func TestBuildAPIServerFlags(t *testing.T) {
 			},
 			Expected: "--event-ttl=3h0m0s --secure-port=0",
 		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				ServiceAccountExtendTokenExpiration: new(false),
+			},
+			Expected: "--secure-port=0 --service-account-extend-token-expiration=false",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				ServiceAccountMaxTokenExpiration: &metav1.Duration{Duration: 2 * time.Hour},
+			},
+			Expected: "--secure-port=0 --service-account-max-token-expiration=2h0m0s",
+		},
 	}
 
 	for _, test := range grid {
