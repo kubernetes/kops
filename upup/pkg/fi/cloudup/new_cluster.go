@@ -1524,11 +1524,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	if opt.IPv6 {
 		cluster.Spec.Networking.NonMasqueradeCIDR = "::/0"
 		cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
-		if cluster.GetCloudProvider() == api.CloudProviderAWS {
-			for i := range cluster.Spec.Networking.Subnets {
-				cluster.Spec.Networking.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
-			}
-		} else {
+		if cluster.GetCloudProvider() != api.CloudProviderAWS {
 			klog.Errorf("IPv6 support is available only on AWS")
 		}
 	}

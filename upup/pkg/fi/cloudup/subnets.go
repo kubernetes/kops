@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -65,7 +66,6 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	if c.Spec.Networking.NetworkID != "" {
-
 		vpcInfo, err := cloud.FindVPCInfo(c.Spec.Networking.NetworkID)
 		if err != nil {
 			return err
@@ -78,6 +78,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		for _, subnetInfo := range vpcInfo.Subnets {
 			subnetByID[subnetInfo.ID] = subnetInfo
 		}
+
 		for i := range c.Spec.Networking.Subnets {
 			subnet := &c.Spec.Networking.Subnets[i]
 			if subnet.ID != "" {
@@ -85,6 +86,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 				if cloudSubnet == nil {
 					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ID, c.Spec.Networking.NetworkID)
 				}
+
 				if subnet.CIDR == "" {
 					subnet.CIDR = cloudSubnet.CIDR
 					// IPv6-only private subnets do not have an IPv4 CIDR
@@ -93,6 +95,20 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 					}
 				} else if subnet.CIDR != cloudSubnet.CIDR {
 					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ID, subnet.CIDR, cloudSubnet.CIDR)
+				}
+
+				if c.Spec.IsIPv6Only() {
+					// IPv6 support is available only on AWS
+					if c.GetCloudProvider() == api.CloudProviderAWS {
+						if subnet.IPv6CIDR == "" {
+							subnet.IPv6CIDR = cloudSubnet.IPv6CIDR
+							if subnet.IPv6CIDR == "" {
+								return fmt.Errorf("Subnet %q did not have IPv6CIDR", subnet.ID)
+							}
+						} else if subnet.IPv6CIDR != cloudSubnet.IPv6CIDR {
+							return fmt.Errorf("Subnet %q has configured IPv6CIDR %q, but the actual IPv6CIDR found was %q", subnet.ID, subnet.IPv6CIDR, cloudSubnet.IPv6CIDR)
+						}
+					}
 				}
 
 				if needZones && subnet.Zone == "" {
@@ -237,7 +253,8 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		if subnet.CIDR != "" {
 			continue
 		}
-		if subnet.IPv6CIDR != "" && subnet.Type == kops.SubnetTypePrivate {
+		// IPv6-only private subnets do not have an IPv4 CIDR
+		if c.Spec.IsIPv6Only() && subnet.Type == kops.SubnetTypePrivate {
 			continue
 		}
 
@@ -250,6 +267,22 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		bigCIDRs = bigCIDRs[1:]
 	}
 
+	// Ported from new_cluster.go's "setupTopology()"
+	if c.Spec.IsIPv6Only() {
+		if c.GetCloudProvider() == api.CloudProviderAWS {
+			//reserved []*net.IPNet
+			for i := range c.Spec.Networking.Subnets {
+				// TODO: Assign when IPv6CIDR is empty
+				//       Also prevent already assigned values from being reassigned
+				if c.Spec.Networking.Subnets[i].IPv6CIDR == "" {
+					c.Spec.Networking.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
+				} else {
+					//TODO: validate IPv6CIDR
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -257,15 +290,13 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 func allSubnetsHaveCIDRs(c *kops.Cluster) bool {
 	for i := range c.Spec.Networking.Subnets {
 		subnet := &c.Spec.Networking.Subnets[i]
-		if subnet.CIDR != "" {
-			continue
+		if subnet.CIDR != "" && !(c.Spec.IsIPv6Only() && subnet.Type == kops.SubnetTypePrivate) {
+			return false
 		}
 
-		if subnet.IPv6CIDR != "" && subnet.Type == kops.SubnetTypePrivate {
-			continue
+		if subnet.IPv6CIDR != "" && c.Spec.IsIPv6Only() {
+			return false
 		}
-
-		return false
 	}
 
 	return true
