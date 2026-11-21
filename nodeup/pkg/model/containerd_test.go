@@ -281,53 +281,20 @@ func TestContainerdConfigNRITimeouts(t *testing.T) {
 	}
 }
 
-func TestContainerdConfigGVisor(t *testing.T) {
-	b := &ContainerdBuilder{
-		NodeupModelContext: &NodeupModelContext{
-			BootConfig: &nodeup.BootConfig{
-				InstanceGroupRole: kops.InstanceGroupRoleNode,
-			},
-			NodeupConfig: &nodeup.Config{
-				GVisor: &kops.GVisorConfig{
-					Enabled:  new(true),
-					Platform: "kvm",
-				},
-				ContainerdConfig: &kops.ContainerdConfig{},
-			},
-		},
-	}
+func TestAppendGVisorRuntimeConfig(t *testing.T) {
+	runtimes := tomlwriter.NewTree()
+	appendGVisorRuntimeConfig(runtimes)
 
-	config, err := b.buildContainerdConfig()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	expected := `
+[runsc]
+  runtime_type = "io.containerd.runsc.v1"
 
-	expected := `version = 3
-
-[plugins]
-
-  [plugins."io.containerd.cri.v1.runtime"]
-
-    [plugins."io.containerd.cri.v1.runtime".containerd]
-      default_runtime_name = "runc"
-
-      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes]
-
-        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc]
-          runtime_type = "io.containerd.runc.v2"
-
-          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc.options]
-            SystemdCgroup = false
-
-        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runsc]
-          runtime_type = "io.containerd.runsc.v1"
-
-          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runsc.options]
-            ConfigPath = "/etc/containerd/runsc.toml"
-            TypeUrl = "io.containerd.runsc.v1.options"
+  [runsc.options]
+    ConfigPath = "/etc/containerd/runsc-kops.toml"
+    TypeUrl = "io.containerd.runsc.v1.options"
 `
-	if config != expected {
-		t.Error(diff.FormatDiff(expected, config))
+	if actual := runtimes.String(); actual != expected {
+		t.Error(diff.FormatDiff(expected, actual))
 	}
 }
 

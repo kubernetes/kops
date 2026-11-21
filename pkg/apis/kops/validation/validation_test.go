@@ -1946,6 +1946,7 @@ func Test_Validate_GVisor(t *testing.T) {
 		name            string
 		inClusterConfig bool
 		enabled         *bool
+		platform        string
 		expectedErrors  []string
 	}{
 		{
@@ -1964,12 +1965,29 @@ func Test_Validate_GVisor(t *testing.T) {
 			name:    "enabled in instance group config",
 			enabled: new(true),
 		},
+		{
+			name:     "systrap platform",
+			enabled:  new(true),
+			platform: "systrap",
+		},
+		{
+			name:     "kvm platform",
+			enabled:  new(true),
+			platform: "kvm",
+		},
+		{
+			name:           "invalid platform",
+			enabled:        new(true),
+			platform:       "bogus",
+			expectedErrors: []string{"Unsupported value::containerd.gvisor.platform"},
+		},
 	}
 	for _, g := range grid {
 		t.Run(g.name, func(t *testing.T) {
 			containerd := &kops.ContainerdConfig{
 				GVisor: &kops.GVisorConfig{
-					Enabled: g.enabled,
+					Enabled:  g.enabled,
+					Platform: g.platform,
 				},
 			}
 			errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), g.inClusterConfig)
