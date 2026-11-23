@@ -174,19 +174,21 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 		state := strings.TrimSpace(tokens[0])
 		version := strings.TrimSpace(tokens[1])
 
+		// The state is the desired action, the package status and the error flag.
+		// See the --list legend in https://manpages.debian.org/dpkg-query.1
 		switch state {
-		case "ii":
+		case "ii", "hi":
 			installed = true
 			installedVersion = version
 			healthy = new(true)
-		case "iF", "iU":
+		case "iF", "iU", "iW", "it", "hF", "hU", "hW", "ht":
 			installed = true
 			installedVersion = version
 			healthy = new(false)
-		case "rc":
+		case "rc", "hc":
 			// removed
 			installed = false
-		case "un":
+		case "un", "hn":
 			// unknown
 			installed = false
 		case "n":
@@ -258,6 +260,8 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 }
 
 func (e *Package) Run(c *fi.NodeupContext) error {
+	// Nil expected fields are ignored, so set Healthy to repair unconfigured packages.
+	e.Healthy = new(true)
 	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
@@ -387,9 +391,11 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 	} else {
 		if changes.Healthy != nil {
 			if d.IsDebianFamily() {
-				args := []string{"dpkg", "--configure", "-a"}
+				// Keep locally modified conffiles; without a TTY a conffile prompt fails the repair.
+				args := []string{"dpkg", "--force-confdef", "--force-confold", "--configure", "-a"}
 				klog.Infof("package is not healthy; running command %s", args)
 				cmd := exec.Command(args[0], args[1:]...)
+				cmd.Env = append(os.Environ(), "DEBIAN_FRONTEND=noninteractive")
 				output, err := cmd.CombinedOutput()
 				if err != nil {
 					return fmt.Errorf("error running `dpkg --configure -a`: %v: %s", err, string(output))
