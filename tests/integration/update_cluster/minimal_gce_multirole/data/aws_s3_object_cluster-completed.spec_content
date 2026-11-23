@@ -18,7 +18,7 @@ spec:
     gcpPDCSIDriver:
       defaultStorageClassName: balanced-csi
       enabled: true
-      version: v1.26.0
+      version: v1.28.1
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-multirole-example-com-k8s-io-role-node
@@ -29,7 +29,7 @@ spec:
     clusterName: minimal-gce-multirole-example-com
     controllers:
     - '*'
-    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v36.2.4
+    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v37.2.5
     leaderElection:
       leaderElect: true
   cloudProvider: gce
@@ -53,7 +53,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.5.34
+    version: 3.5.35
   - backups:
       backupStore: memfs://tests/minimal-gce-multirole.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -64,7 +64,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.5.34
+    version: 3.5.35
   externalDns:
     provider: dns-controller
   iam:
