@@ -120,3 +120,37 @@ func TestBuildKubernetesFileAssets_CustomPackages(t *testing.T) {
 		t.Errorf("expected arm64 assets %v to contain %q", arm64URLs, customArm64URL)
 	}
 }
+
+func TestBuildKubernetesFileAssets_GVisor(t *testing.T) {
+	wantURLs := map[architectures.Architecture]string{
+		architectures.ArchitectureAmd64: "https://storage.googleapis.com/gvisor/releases/release/20261109.0/x86_64/gvisor.tar.zstd",
+		architectures.ArchitectureArm64: "https://storage.googleapis.com/gvisor/releases/release/20261109.0/aarch64/gvisor.tar.zstd",
+	}
+
+	for _, enabled := range []bool{false, true} {
+		cluster, ig := buildTestClusterAndIG(nil)
+		ig.Spec.Containerd = &kops.ContainerdConfig{
+			GVisor: &kops.GVisorConfig{Enabled: &enabled},
+		}
+		igModel, err := model.ForInstanceGroup(cluster, ig)
+		if err != nil {
+			t.Fatalf("ForInstanceGroup failed: %v", err)
+		}
+
+		assetBuilder := assets.NewAssetBuilder(vfs.Context, nil, false)
+		fileAssets, err := BuildKubernetesFileAssets(igModel, assetBuilder)
+		if err != nil {
+			t.Fatalf("BuildKubernetesFileAssets failed: %v", err)
+		}
+
+		for arch, wantURL := range wantURLs {
+			var urls []string
+			for _, a := range fileAssets.KubernetesFileAssets[arch] {
+				urls = append(urls, a.Locations...)
+			}
+			if got := slices.Contains(urls, wantURL); got != enabled {
+				t.Errorf("gVisor enabled=%v: %s assets contain %q = %v, want %v", enabled, arch, wantURL, got, enabled)
+			}
+		}
+	}
+}

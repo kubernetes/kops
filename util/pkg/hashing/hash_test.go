@@ -25,6 +25,11 @@ func TestNewHasher(t *testing.T) {
 		expectedNil bool
 	}{
 		{
+			name:        "sha512",
+			HA:          "sha512",
+			expectedNil: false,
+		},
+		{
 			name:        "sha256",
 			HA:          "sha256",
 			expectedNil: false,
@@ -63,6 +68,19 @@ func TestMemberFromString(t *testing.T) {
 		parm     string
 		expected string
 	}{
+		// sha512
+		{
+			name:     "sha512 1",
+			HA:       "sha512",
+			parm:     "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3",
+			expected: "invalid \"sha512\" hash - unexpected length 127",
+		},
+		{
+			name:     "sha512 2",
+			HA:       "sha512",
+			parm:     "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+			expected: "sha512:cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+		},
 		// sha256
 		{
 			name:     "sha256 1",
@@ -146,6 +164,16 @@ func TestFromString(t *testing.T) {
 		parm     string
 		expected string
 	}{
+		{
+			name:     "sha512",
+			parm:     "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+			expected: "sha512:cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+		},
+		{
+			name:     "sha512 prefixed",
+			parm:     "sha512:cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+			expected: "sha512:cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+		},
 		{
 			name:     "sha256",
 			parm:     "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5",

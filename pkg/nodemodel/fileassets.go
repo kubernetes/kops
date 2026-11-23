@@ -154,6 +154,15 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 				}
 			}
 		}
+
+		// gVisor is installed whether or not kOps installs containerd.
+		if ig.HasGVisor() {
+			gVisorAsset, err := wellknownassets.FindGVisorAsset(ig, assetBuilder, arch)
+			if err != nil {
+				return nil, err
+			}
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(gVisorAsset))
+		}
 	}
 
 	return &KubernetesFileAssets{
