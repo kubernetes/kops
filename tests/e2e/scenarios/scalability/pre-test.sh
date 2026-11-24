@@ -51,5 +51,4 @@ fi
 # control plane. A build URL with a suffix, such as a timestamp, fails that check, and kOps then looks for the
 # worker node binaries under dl.k8s.io/release. This cluster is new, so the check has nothing to protect.
 kops update cluster --yes --ignore-kubelet-version-skew
-# TODO: Replaced with `kops validate instancegroup --wait 10m` when it's fixed for 5k node clusters.
-sleep 120 # should take around 2 minutes to get node read
+kops validate cluster --instance-group addons --wait 10m
