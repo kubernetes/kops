@@ -281,6 +281,23 @@ func TestContainerdConfigNRITimeouts(t *testing.T) {
 	}
 }
 
+func TestAppendGVisorRuntimeConfig(t *testing.T) {
+	runtimes := tomlwriter.NewTree()
+	appendGVisorRuntimeConfig(runtimes)
+
+	expected := `
+[runsc]
+  runtime_type = "io.containerd.runsc.v1"
+
+  [runsc.options]
+    ConfigPath = "/etc/containerd/runsc-kops.toml"
+    TypeUrl = "io.containerd.runsc.v1.options"
+`
+	if actual := runtimes.String(); actual != expected {
+		t.Error(diff.FormatDiff(expected, actual))
+	}
+}
+
 func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
 	expectedNewConfig := `version = 2
 

@@ -2032,7 +2032,7 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 	}
 
 	if config.GVisor != nil {
-		allErrs = append(allErrs, validateGVisorConfig(fldPath.Child("gvisor"), inClusterConfig)...)
+		allErrs = append(allErrs, validateGVisorConfig(config.GVisor, fldPath.Child("gvisor"), inClusterConfig)...)
 	}
 
 	return allErrs
@@ -2081,9 +2081,14 @@ func validateNvidiaConfig(cluster *kops.Cluster, nvidia *kops.NvidiaGPUConfig, f
 	return allErrs
 }
 
-func validateGVisorConfig(fldPath *field.Path, inClusterConfig bool) (allErrs field.ErrorList) {
+func validateGVisorConfig(config *kops.GVisorConfig, fldPath *field.Path, inClusterConfig bool) (allErrs field.ErrorList) {
 	if inClusterConfig {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "gVisor can only be configured on instance groups"))
+	}
+	switch config.Platform {
+	case "", "systrap", "kvm":
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("platform"), config.Platform, []string{"kvm", "systrap"}))
 	}
 	return allErrs
 }
