@@ -431,3 +431,41 @@ func TestRenderKarpenterGCEAddonTemplate(t *testing.T) {
 		}
 	}
 }
+
+func TestGetClusterAutoscalerNodeGroupsSkipsKarpenterGCE(t *testing.T) {
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				GCE: &kops.GCESpec{Project: "testproject"},
+			},
+		},
+	}
+	cluster.ObjectMeta.Name = "test.example.com"
+
+	// Karpenter IG without spec.zones must be skipped rather than failing zone lookup or
+	// emitting a non-existent MIG to cluster-autoscaler.
+	karpenterIG := &kops.InstanceGroup{
+		Spec: kops.InstanceGroupSpec{
+			Role:    kops.InstanceGroupRoleNode,
+			Manager: kops.InstanceManagerKarpenter,
+			MaxSize: new(int32(5)),
+		},
+	}
+	karpenterIG.ObjectMeta.Name = "karpenter-nodes"
+
+	tf := &TemplateFunctions{
+		KopsModelContext: model.KopsModelContext{
+			IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+			AllInstanceGroups: []*kops.InstanceGroup{karpenterIG},
+			InstanceGroups:    []*kops.InstanceGroup{karpenterIG},
+		},
+	}
+
+	groups, err := tf.GetClusterAutoscalerNodeGroups()
+	if err != nil {
+		t.Fatalf("GetClusterAutoscalerNodeGroups() error = %v", err)
+	}
+	if len(groups) != 0 {
+		t.Errorf("GetClusterAutoscalerNodeGroups() = %+v, want empty", groups)
+	}
+}

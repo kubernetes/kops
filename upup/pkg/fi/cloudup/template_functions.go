@@ -1156,7 +1156,7 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() (map[string]Cluste
 	}
 	groups := make(map[string]ClusterAutoscalerNodeGroup)
 	for _, ig := range instanceGroups {
-		if ig.Spec.Role.HasNode() && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
+		if ig.Spec.Role.HasNode() && !ig.IsKarpenterManaged() && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
 			group := ClusterAutoscalerNodeGroup{
 				AutoScale: ig.Spec.Autoscale,
 				MinSize:   fi.ValueOf(ig.Spec.MinSize),

@@ -712,6 +712,44 @@ func TestValidateKarpenterInstanceRequirements(t *testing.T) {
 	}
 }
 
+func TestGCEValidateInstanceGroupZones(t *testing.T) {
+	grid := []struct {
+		desc     string
+		manager  kops.InstanceManager
+		zones    []string
+		expected []string
+	}{
+		{
+			desc:     "cloud group without zones",
+			expected: []string{"Required value::spec.zones"},
+		},
+		{
+			desc:  "cloud group with zones",
+			zones: []string{"us-central1-a"},
+		},
+		{
+			desc:    "karpenter without zones",
+			manager: kops.InstanceManagerKarpenter,
+		},
+		{
+			desc:    "karpenter with zones",
+			manager: kops.InstanceManagerKarpenter,
+			zones:   []string{"us-central1-a"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Manager = g.manager
+			ig.Spec.Zones = g.zones
+
+			errs := gceValidateInstanceGroup(ig, nil)
+			testErrors(t, g.desc, errs, g.expected)
+		})
+	}
+}
+
 func TestValidateIGCloudLabels(t *testing.T) {
 	grid := []struct {
 		label    string
