@@ -178,3 +178,40 @@ func TestNewConfigGVisorWorkerOnly(t *testing.T) {
 		})
 	}
 }
+
+func TestNewConfigNvidiaInstanceGroupOverrideDoesNotLeak(t *testing.T) {
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			Containerd: &kops.ContainerdConfig{
+				NvidiaGPU: &kops.NvidiaGPUConfig{DriverPackage: "nvidia-driver-535-server"},
+			},
+			KubernetesVersion: "1.32.0",
+			KubeAPIServer:     &kops.KubeAPIServerConfig{},
+			Networking:        kops.NetworkingSpec{Calico: &kops.CalicoNetworkingSpec{}},
+		},
+	}
+	cluster.Name = "test.example.com"
+
+	override := &kops.InstanceGroup{
+		Spec: kops.InstanceGroupSpec{
+			Role: kops.InstanceGroupRoleNode,
+			Containerd: &kops.ContainerdConfig{
+				NvidiaGPU: &kops.NvidiaGPUConfig{DriverPackage: "nvidia-driver-595-server"},
+			},
+		},
+	}
+	plain := &kops.InstanceGroup{Spec: kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode}}
+
+	overrideConfig, _ := NewConfig(cluster, override)
+	plainConfig, _ := NewConfig(cluster, plain)
+
+	if got := overrideConfig.NvidiaGPU.DriverPackage; got != "nvidia-driver-595-server" {
+		t.Errorf("instance group with override: DriverPackage = %q, want %q", got, "nvidia-driver-595-server")
+	}
+	if got := plainConfig.NvidiaGPU.DriverPackage; got != "nvidia-driver-535-server" {
+		t.Errorf("instance group without override: DriverPackage = %q, want %q", got, "nvidia-driver-535-server")
+	}
+	if got := cluster.Spec.Containerd.NvidiaGPU.DriverPackage; got != "nvidia-driver-535-server" {
+		t.Errorf("cluster spec changed: DriverPackage = %q, want %q", got, "nvidia-driver-535-server")
+	}
+}

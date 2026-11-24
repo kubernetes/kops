@@ -461,7 +461,7 @@ func buildContainerdConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGr
 func buildNvidiaConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.NvidiaGPUConfig {
 	config := &kops.NvidiaGPUConfig{}
 	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil {
-		config = cluster.Spec.Containerd.NvidiaGPU
+		config = cluster.Spec.Containerd.NvidiaGPU.DeepCopy()
 	}
 
 	if instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.NvidiaGPU != nil {
