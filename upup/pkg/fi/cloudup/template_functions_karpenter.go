@@ -44,8 +44,9 @@ const (
 	karpenterNodePoolLabel     = "karpenter.sh/nodepool"
 	karpenterCapacityTypeLabel = "karpenter.sh/capacity-type"
 
-	karpenterOSLabel           = "kubernetes.io/os"
-	karpenterInstanceTypeLabel = "node.kubernetes.io/instance-type"
+	karpenterOSLabel                     = "kubernetes.io/os"
+	karpenterInstanceTypeLabel           = "node.kubernetes.io/instance-type"
+	karpenterCiliumAgentNotReadyTaintKey = "node.cilium.io/agent-not-ready"
 )
 
 type karpenterObjectMeta struct {
@@ -142,9 +143,10 @@ type karpenterNodeClaimMetadata struct {
 }
 
 type karpenterNodeClaimSpec struct {
-	Requirements []karpenterRequirement `json:"requirements,omitempty"`
-	Taints       []karpenterTaint       `json:"taints,omitempty"`
-	NodeClassRef karpenterNodeClassRef  `json:"nodeClassRef"`
+	Requirements  []karpenterRequirement `json:"requirements,omitempty"`
+	Taints        []karpenterTaint       `json:"taints,omitempty"`
+	StartupTaints []karpenterTaint       `json:"startupTaints,omitempty"`
+	NodeClassRef  karpenterNodeClassRef  `json:"nodeClassRef"`
 }
 
 type karpenterRequirement struct {
@@ -443,6 +445,16 @@ func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup, node
 			Key:    taint["key"],
 			Value:  taint["value"],
 			Effect: taint["effect"],
+		})
+	}
+	// Cilium always enables set-cilium-node-taints with agent-not-ready-taint-key in kOps, so
+	// newly registered nodes carry node.cilium.io/agent-not-ready:NoSchedule until cilium-agent
+	// is ready. Declaring it as a startupTaint prevents Karpenter from launching a duplicate
+	// NodeClaim for the pending pod while the first node is still initializing.
+	if tf.Cluster.Spec.Networking.Cilium != nil {
+		template.Spec.StartupTaints = append(template.Spec.StartupTaints, karpenterTaint{
+			Key:    karpenterCiliumAgentNotReadyTaintKey,
+			Effect: "NoSchedule",
 		})
 	}
 

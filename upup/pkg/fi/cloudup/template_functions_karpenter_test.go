@@ -669,6 +669,64 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 	}
 }
 
+func TestKarpenterNodePoolCiliumStartupTaints(t *testing.T) {
+	grid := []struct {
+		desc              string
+		cloudProvider     kops.CloudProviderSpec
+		networking        kops.NetworkingSpec
+		wantStartupTaints []karpenterTaint
+	}{
+		{
+			desc:          "aws with cilium",
+			cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			networking:    kops.NetworkingSpec{Cilium: &kops.CiliumNetworkingSpec{}},
+			wantStartupTaints: []karpenterTaint{
+				{Key: "node.cilium.io/agent-not-ready", Effect: "NoSchedule"},
+			},
+		},
+		{
+			desc:          "gce with cilium",
+			cloudProvider: kops.CloudProviderSpec{GCE: &kops.GCESpec{}},
+			networking:    kops.NetworkingSpec{Cilium: &kops.CiliumNetworkingSpec{}},
+			wantStartupTaints: []karpenterTaint{
+				{Key: "node.cilium.io/agent-not-ready", Effect: "NoSchedule"},
+			},
+		},
+		{
+			desc:          "non-cilium omits startupTaints",
+			cloudProvider: kops.CloudProviderSpec{GCE: &kops.GCESpec{}},
+			networking:    kops.NetworkingSpec{CNI: &kops.CNINetworkingSpec{}},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			tf := &TemplateFunctions{}
+			tf.Cluster = &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: g.cloudProvider,
+					Networking:    g.networking,
+				},
+			}
+			ig := &kops.InstanceGroup{}
+			ig.Name = "nodes"
+			ig.Spec.Role = kops.InstanceGroupRoleNode
+
+			rendered, err := tf.KarpenterNodePool(ig)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			var nodePool karpenterNodePool
+			if err := yaml.Unmarshal([]byte(rendered), &nodePool); err != nil {
+				t.Fatalf("unmarshaling NodePool: %v", err)
+			}
+			if diff := cmp.Diff(g.wantStartupTaints, nodePool.Spec.Template.Spec.StartupTaints); diff != "" {
+				t.Errorf("unexpected startupTaints, diff=%v", diff)
+			}
+		})
+	}
+}
+
 func TestKarpenterRootDeviceNameWithoutAWSCloud(t *testing.T) {
 	tf := &TemplateFunctions{}
 	if _, err := tf.karpenterRootDeviceName("ami-12345678"); err == nil {
