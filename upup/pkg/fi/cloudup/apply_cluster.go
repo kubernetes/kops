@@ -637,7 +637,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			}
 
 			nth := c.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
-			if nth.IsQueueMode() || c.Cluster.Spec.Karpenter.IsEnabled() {
+			if nth.IsQueueMode() || c.Cluster.Spec.Karpenter.IsManaged() {
 				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
 					AWSModelContext: awsModelContext,
 					Lifecycle:       clusterLifecycle,

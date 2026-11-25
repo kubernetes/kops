@@ -280,7 +280,13 @@ type ScalewaySpec struct {
 type LinodeSpec struct{}
 
 type KarpenterConfig struct {
-	Enabled       bool               `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Managed controls if Karpenter is managed and deployed by kOps.
+	// If set to false, kOps keeps the Karpenter integration but does not deploy Karpenter,
+	// generate EC2NodeClass and NodePool objects, or create the Karpenter IAM role and interruption queue.
+	Managed *bool `json:"managed,omitempty"`
+
 	LogEncoding   string             `json:"logFormat,omitempty"`
 	LogLevel      string             `json:"logLevel,omitempty"`
 	Image         string             `json:"image,omitempty"`
@@ -293,6 +299,11 @@ type KarpenterConfig struct {
 // IsEnabled returns true when Karpenter is enabled for the cluster.
 func (k *KarpenterConfig) IsEnabled() bool {
 	return k != nil && k.Enabled
+}
+
+// IsManaged returns true when Karpenter is enabled and deployed by kOps.
+func (k *KarpenterConfig) IsManaged() bool {
+	return k.IsEnabled() && (k.Managed == nil || *k.Managed)
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.

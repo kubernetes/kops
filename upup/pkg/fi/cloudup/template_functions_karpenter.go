@@ -175,7 +175,7 @@ func (tf *TemplateFunctions) KarpenterInstanceGroups() []*kops.InstanceGroup {
 	if tf.Cluster == nil || tf.Cluster.GetCloudProvider() != kops.CloudProviderAWS {
 		return nil
 	}
-	if !tf.Cluster.Spec.Karpenter.IsEnabled() {
+	if !tf.Cluster.Spec.Karpenter.IsManaged() {
 		return nil
 	}
 

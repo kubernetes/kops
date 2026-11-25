@@ -251,3 +251,25 @@ func TestCluster_InstallCNIAssets(t *testing.T) {
 		})
 	}
 }
+
+func TestKarpenterConfig_IsManaged(t *testing.T) {
+	grid := []struct {
+		desc     string
+		config   *KarpenterConfig
+		expected bool
+	}{
+		{desc: "nil"},
+		{desc: "disabled", config: &KarpenterConfig{}},
+		{desc: "disabled and not managed", config: &KarpenterConfig{Managed: new(false)}},
+		{desc: "enabled", config: &KarpenterConfig{Enabled: true}, expected: true},
+		{desc: "enabled and managed", config: &KarpenterConfig{Enabled: true, Managed: new(true)}, expected: true},
+		{desc: "enabled and not managed", config: &KarpenterConfig{Enabled: true, Managed: new(false)}},
+	}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			if actual := g.config.IsManaged(); actual != g.expected {
+				t.Errorf("expected %v, got %v", g.expected, actual)
+			}
+		})
+	}
+}
