@@ -50,6 +50,7 @@ EOF
       --exclude "**/windows/**" \
       --exclude "**/*.docker_tag" \
       --exclude "**/*.spdx" \
+      --exclude "**/*.spdx3.json" \
       --exclude "**/*.tar" \
       --exclude "**/*.tar.gz" \
       | sed "s@files:@# kubernetes ${version}@g" >> "${REPO_ROOT}/pkg/assets/assetdata/k8s-${prefix}.yaml"
@@ -160,9 +161,9 @@ EOF
 generate_k8s_hashes 1.32 13
 generate_k8s_hashes 1.33 13
 generate_k8s_hashes 1.34 13
-generate_k8s_hashes 1.35 10
-generate_k8s_hashes 1.36 6
-generate_k8s_hashes 1.37 2
+generate_k8s_hashes 1.35 11
+generate_k8s_hashes 1.36 7
+generate_k8s_hashes 1.37 3
 
 # Generate runc hashes.
 # The first argument is the major and minor version, the second is the maximum patch version.
