@@ -49,6 +49,8 @@ KOPS_CONTROLLER_MANAGER_BURST="${KOPS_CONTROLLER_MANAGER_BURST:-500}"
 KOPS_APISERVER_MAX_REQUESTS_INFLIGHT="${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT:-640}"
 ETCD_QUOTA_BACKEND_BYTES="${ETCD_QUOTA_BACKEND_BYTES:-8589934592}"
 ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL="${ETCD_WATCH_PROGRESS_NOTIFY_INTERVAL:-5s}"
+# Off by default: recording every blocking event takes about a quarter of kube-apiserver's CPU in the 5000 node tests.
+KOPS_CONTENTION_PROFILING="${KOPS_CONTENTION_PROFILING:-false}"
 echo "KOPS_SCHEDULER_QPS=${KOPS_SCHEDULER_QPS} KOPS_SCHEDULER_BURST=${KOPS_SCHEDULER_BURST}"
 echo "KOPS_CONTROLLER_MANAGER_QPS=${KOPS_CONTROLLER_MANAGER_QPS} KOPS_CONTROLLER_MANAGER_BURST=${KOPS_CONTROLLER_MANAGER_BURST}"
 echo "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT=${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT}"
@@ -133,18 +135,18 @@ create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
 create_args+=("--set spec.kubeScheduler.qps=${KOPS_SCHEDULER_QPS}")
 create_args+=("--set spec.kubeScheduler.burst=${KOPS_SCHEDULER_BURST}")
 create_args+=("--set spec.kubeScheduler.enableProfiling=true")
-create_args+=("--set spec.kubeScheduler.enableContentionProfiling=true")
+create_args+=("--set spec.kubeScheduler.enableContentionProfiling=${KOPS_CONTENTION_PROFILING}")
 create_args+=("--set spec.kubeControllerManager.endpointUpdatesBatchPeriod=500ms")
 create_args+=("--set spec.kubeControllerManager.endpointSliceUpdatesBatchPeriod=500ms")
 create_args+=("--set spec.kubeControllerManager.kubeAPIQPS=${KOPS_CONTROLLER_MANAGER_QPS}")
 create_args+=("--set spec.kubeControllerManager.kubeAPIBurst=${KOPS_CONTROLLER_MANAGER_BURST}")
 create_args+=("--set spec.kubeControllerManager.enableProfiling=true")
-create_args+=("--set spec.kubeControllerManager.enableContentionProfiling=true")
+create_args+=("--set spec.kubeControllerManager.enableContentionProfiling=${KOPS_CONTENTION_PROFILING}")
 # inflight requests are bit higher than what currently upstream uses for GCE scale tests
 create_args+=("--set spec.kubeAPIServer.maxRequestsInflight=${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT}")
 create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=0")
 create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
-create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
+create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=${KOPS_CONTENTION_PROFILING}")
 create_args+=("--set spec.kubeAPIServer.logLevel=3")
 create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=16")
 create_args+=("--set spec.kubeAPIServer.compactionInterval=150s")
