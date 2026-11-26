@@ -49,6 +49,7 @@ type CreateInstanceGroupOptions struct {
 	Role              string
 	Subnets           []string
 	Zones             []string
+	MachineTypes      []string
 	// DryRun mode output an ig manifest of Output type.
 	DryRun bool
 	// Output type during a DryRun
@@ -71,6 +72,10 @@ var (
 		# Create an instancegroup for the k8s-cluster.example.com cluster.
 		kops create instancegroup --name=k8s-cluster.example.com node-example \
 		  --role node --subnet my-subnet-name,my-other-subnet-name
+
+		# Create an instancegroup on AWS that can use any of the listed instance types.
+		kops create instancegroup --name=k8s-cluster.example.com node-example \
+		  --role node --subnet my-subnet-name --machine-type m7a.large,m6a.large
 
 		# Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
 		kops create instancegroup --name=k8s-cluster.example.com node-example \
@@ -155,6 +160,9 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zone", options.Zones, "Zones in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.")
 
+	cmd.Flags().StringSliceVar(&options.MachineTypes, "machine-type", options.MachineTypes, "Machine type(s) for the instance group. On AWS, a comma-separated list of multiple machine types configures a mixed instances policy.")
+	cmd.RegisterFlagCompletionFunc("machine-type", completeMachineType)
+
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "Only print the object that would be created, without created it. This flag can be used to create an instance group YAML or JSON manifest.")
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Output format. One of json or yaml")
@@ -207,6 +215,27 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 	ig.Spec.Subnets = options.Subnets
 
 	ig.Spec.Zones = options.Zones
+
+	// The machine type is set before the defaults are populated, because the default image depends on
+	// the architecture of the machine type.
+	if len(options.MachineTypes) > 0 {
+		for _, machineType := range options.MachineTypes {
+			if machineType == "" {
+				return fmt.Errorf("--machine-type cannot contain an empty machine type")
+			}
+		}
+		ig.Spec.MachineType = options.MachineTypes[0]
+		if len(options.MachineTypes) > 1 {
+			if cluster.GetCloudProvider() != kopsapi.CloudProviderAWS {
+				return fmt.Errorf("multiple machine types are only supported on AWS")
+			}
+			// The autoscaling group only launches the instance types listed in the mixed instances policy,
+			// so the main machine type is listed there as well.
+			ig.Spec.MixedInstancesPolicy = &kopsapi.MixedInstancesPolicySpec{
+				Instances: options.MachineTypes,
+			}
+		}
+	}
 
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
