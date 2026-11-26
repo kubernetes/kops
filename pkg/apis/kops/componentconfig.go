@@ -851,7 +851,7 @@ type KubeSchedulerConfig struct {
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 	// EnableContentionProfiling enables block profiling, if profiling is enabled
-	EnableContentionProfiling *bool `json:"enableContentionProfiling,omitempty" flag:"contention-profiling"`
+	EnableContentionProfiling *bool `json:"enableContentionProfiling,omitempty" flag:"contention-profiling" config:"enableContentionProfiling,omitempty"`
 	// TLSCertFile is the file containing the TLS server certificate.
 	TLSCertFile *string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TLSPrivateKeyFile is the file containing the private key for the TLS server certificate.
