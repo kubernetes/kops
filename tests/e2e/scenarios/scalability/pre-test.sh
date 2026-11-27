@@ -21,14 +21,15 @@ set -x
 # In kubeup we used to call it heapster due to name of first addon, but now we call it addons.
 
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
-  kops create instancegroup addons --edit=false --role node --zone us-east1-b
-  kops edit instancegroup addons --set=spec.machineType="${ADDONS_NODE_SIZE:-c3-standard-22}" \
-    --set=spec.maxSize=1 --set=spec.minSize=1 --set=spec.rootVolume.type=hyperdisk-balanced \
+  kops create instancegroup addons --edit=false --role node --zone us-east1-b \
+    --machine-type="${ADDONS_NODE_SIZE:-c3-standard-22}"
+  kops edit instancegroup addons --set=spec.maxSize=1 --set=spec.minSize=1 \
+    --set=spec.rootVolume.type=hyperdisk-balanced \
     --set=spec.image="${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20261016}"
 elif [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
-  kops create instancegroup addons --edit=false --role node --subnet us-east-2a
-  kops edit instancegroup addons --set=spec.machineType="${ADDONS_NODE_SIZE:-c7a.8xlarge}" \
-    --set=spec.maxSize=1 --set=spec.minSize=1 \
+  kops create instancegroup addons --edit=false --role node --subnet us-east-2a \
+    --machine-type="${ADDONS_NODE_SIZE:-c7a.8xlarge}"
+  kops edit instancegroup addons --set=spec.maxSize=1 --set=spec.minSize=1 \
     --set=spec.image="${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}"
   # The ec2 scale jobs set PROMETHEUS_PVC_STORAGE_CLASS=io2. CL2 only puts that name on the PVC of Prometheus,
   # it does not create the storage class, and kOps does not install one with this name.

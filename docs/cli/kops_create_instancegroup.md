@@ -24,6 +24,10 @@ kops create instancegroup INSTANCE_GROUP [flags]
   kops create instancegroup --name=k8s-cluster.example.com node-example \
   --role node --subnet my-subnet-name,my-other-subnet-name
   
+  # Create an instancegroup on AWS that can use any of the listed instance types.
+  kops create instancegroup --name=k8s-cluster.example.com node-example \
+  --role node --subnet my-subnet-name --machine-type m7a.large,m6a.large
+  
   # Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
   kops create instancegroup --name=k8s-cluster.example.com node-example \
   --role node --subnet my-subnet-name --dry-run -oyaml
@@ -32,13 +36,14 @@ kops create instancegroup INSTANCE_GROUP [flags]
 ### Options
 
 ```
-      --dry-run          Only print the object that would be created, without created it. This flag can be used to create an instance group YAML or JSON manifest.
-      --edit             Open an editor to edit default values (default true)
-  -h, --help             help for instancegroup
-  -o, --output string    Output format. One of json or yaml
-      --role string      Type of instance group to create (control-plane,node,bastion) (default "node")
-      --subnet strings   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
-      --zone strings     Zones in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
+      --dry-run                Only print the object that would be created, without created it. This flag can be used to create an instance group YAML or JSON manifest.
+      --edit                   Open an editor to edit default values (default true)
+  -h, --help                   help for instancegroup
+      --machine-type strings   Machine type(s) for the instance group. On AWS, a comma-separated list of multiple machine types configures a mixed instances policy.
+  -o, --output string          Output format. One of json or yaml
+      --role string            Type of instance group to create (control-plane,node,bastion) (default "node")
+      --subnet strings         Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
+      --zone strings           Zones in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 
 ### Options inherited from parent commands
