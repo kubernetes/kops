@@ -95,6 +95,9 @@ spec:
   manager: Karpenter
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
   machineType: t2.medium
   minSize: 2
   maxSize: 10

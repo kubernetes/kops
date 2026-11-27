@@ -73,6 +73,14 @@ type karpenterEC2NodeClassSpec struct {
 	InstanceProfile          string                         `json:"instanceProfile"`
 	UserData                 string                         `json:"userData"`
 	Kubelet                  *karpenterKubeletConfiguration `json:"kubelet,omitempty"`
+	MetadataOptions          *karpenterMetadataOptions      `json:"metadataOptions,omitempty"`
+}
+
+// karpenterMetadataOptions maps to EC2NodeClass.spec.metadataOptions. Fields left unset
+// take the Karpenter defaults: hop limit 1 and httpTokens required, as for launch templates.
+type karpenterMetadataOptions struct {
+	HTTPPutResponseHopLimit *int64  `json:"httpPutResponseHopLimit,omitempty"`
+	HTTPTokens              *string `json:"httpTokens,omitempty"`
 }
 
 // karpenterKubeletConfiguration maps to EC2NodeClass.spec.kubelet. Surfacing kubelet
@@ -294,6 +302,7 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 			InstanceProfile:          fi.ValueOf(instanceProfile.Name),
 			UserData:                 userData,
 			Kubelet:                  buildKarpenterKubeletConfiguration(ig),
+			MetadataOptions:          buildKarpenterMetadataOptions(ig),
 		},
 	}, nil
 }
@@ -311,6 +320,17 @@ func buildKarpenterKubeletConfiguration(ig *kops.InstanceGroup) *karpenterKubele
 		return nil
 	}
 	return kubelet
+}
+
+func buildKarpenterMetadataOptions(ig *kops.InstanceGroup) *karpenterMetadataOptions {
+	instanceMetadata := ig.Spec.InstanceMetadata
+	if instanceMetadata == nil || (instanceMetadata.HTTPPutResponseHopLimit == nil && instanceMetadata.HTTPTokens == nil) {
+		return nil
+	}
+	return &karpenterMetadataOptions{
+		HTTPPutResponseHopLimit: instanceMetadata.HTTPPutResponseHopLimit,
+		HTTPTokens:              instanceMetadata.HTTPTokens,
+	}
 }
 
 func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName string) ([]karpenterBlockDeviceMapping, error) {

@@ -65,6 +65,7 @@ The generated `EC2NodeClass` uses:
 * `amiFamily: Custom`
 * the InstanceGroup image translated into `amiSelectorTerms`
 * the InstanceGroup `spec.rootVolume` translated into `blockDeviceMappings`
+* the InstanceGroup `spec.instanceMetadata` translated into `metadataOptions`
 * the kOps node instance profile
 * the kOps node security groups
 * the subnets tagged for the InstanceGroup

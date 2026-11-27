@@ -49,6 +49,7 @@ spec:
 
 By default, IMDSv2 is enabled for newly created clusters. As of Kubernetes 1.27, this default is applied to existing clusters as well.
 The default hop limit is 1 for all node roles. 
+On Karpenter-managed InstanceGroups, `spec.instanceMetadata` is applied through `EC2NodeClass.spec.metadataOptions`.
 
 To enable IMDSv2, add the following configuration to the instance group:
 
