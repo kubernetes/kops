@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model/awsmodel"
@@ -82,7 +83,22 @@ type karpenterKubeletConfiguration struct {
 	MaxPods        *int32            `json:"maxPods,omitempty"`
 	SystemReserved map[string]string `json:"systemReserved,omitempty"`
 	KubeReserved   map[string]string `json:"kubeReserved,omitempty"`
+	EvictionHard   map[string]string `json:"evictionHard,omitempty"`
 }
+
+// karpenterEvictionSignals are the eviction signals that Karpenter accepts in
+// EC2NodeClass.spec.kubelet (evictionSignals in karpenter-provider-aws
+// pkg/apis/v1/kubeletconfiguration_validation.go). Karpenter rejects an EC2NodeClass
+// with any other signal and launches no nodes for it, so other signals are only set by the
+// nodeup kubelet config.
+var karpenterEvictionSignals = sets.New(
+	"memory.available",
+	"nodefs.available",
+	"nodefs.inodesFree",
+	"imagefs.available",
+	"imagefs.inodesFree",
+	"pid.available",
+)
 
 // karpenterBlockDeviceMapping maps to EC2NodeClass.spec.blockDeviceMappings[]. kOps
 // emits exactly one mapping, for the root volume, built from the InstanceGroup's
@@ -240,6 +256,10 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 	if err != nil {
 		return nil, err
 	}
+	kubelet, err := buildKarpenterKubeletConfiguration(ig)
+	if err != nil {
+		return nil, fmt.Errorf("building kubelet configuration for %q: %w", ig.Name, err)
+	}
 	userData, err := tf.managedFileContents("nodeupscript-" + ig.Name)
 	if err != nil {
 		return nil, fmt.Errorf("reading userData for %q: %w", ig.Name, err)
@@ -293,24 +313,55 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 			SecurityGroupTerms:       securityGroupTerms,
 			InstanceProfile:          fi.ValueOf(instanceProfile.Name),
 			UserData:                 userData,
-			Kubelet:                  buildKarpenterKubeletConfiguration(ig),
+			Kubelet:                  kubelet,
 		},
 	}, nil
 }
 
-func buildKarpenterKubeletConfiguration(ig *kops.InstanceGroup) *karpenterKubeletConfiguration {
+// buildKarpenterKubeletConfiguration reads the InstanceGroup kubelet configuration, which
+// PopulateInstanceGroupSpec has already merged with the cluster spec.kubelet.
+func buildKarpenterKubeletConfiguration(ig *kops.InstanceGroup) (*karpenterKubeletConfiguration, error) {
 	if ig.Spec.Kubelet == nil {
-		return nil
+		return nil, nil
+	}
+	evictionHard, err := karpenterEvictionThresholds(ig.Spec.Kubelet.EvictionHard)
+	if err != nil {
+		return nil, err
 	}
 	kubelet := &karpenterKubeletConfiguration{
 		MaxPods:        ig.Spec.Kubelet.MaxPods,
 		SystemReserved: ig.Spec.Kubelet.SystemReserved,
 		KubeReserved:   ig.Spec.Kubelet.KubeReserved,
+		EvictionHard:   evictionHard,
 	}
-	if kubelet.MaxPods == nil && len(kubelet.SystemReserved) == 0 && len(kubelet.KubeReserved) == 0 {
-		return nil
+	if kubelet.MaxPods == nil && len(kubelet.SystemReserved) == 0 && len(kubelet.KubeReserved) == 0 && len(kubelet.EvictionHard) == 0 {
+		return nil, nil
 	}
-	return kubelet
+	return kubelet, nil
+}
+
+// karpenterEvictionThresholds converts the kOps "signal<value,..." eviction threshold list
+// into a map of the signals Karpenter accepts. It parses the list like nodeup does for the
+// kubelet, but rejects an empty signal or value, which the kubelet would reject too.
+func karpenterEvictionThresholds(thresholds *string) (map[string]string, error) {
+	if thresholds == nil || *thresholds == "" {
+		return nil, nil
+	}
+	result := make(map[string]string)
+	for threshold := range strings.SplitSeq(*thresholds, ",") {
+		signal, value, found := strings.Cut(threshold, "<")
+		signal, value = strings.TrimSpace(signal), strings.TrimSpace(value)
+		if !found || signal == "" || value == "" {
+			return nil, fmt.Errorf("invalid eviction threshold %q (expected signal<value)", threshold)
+		}
+		if karpenterEvictionSignals.Has(signal) {
+			result[signal] = value
+		}
+	}
+	if len(result) == 0 {
+		return nil, nil
+	}
+	return result, nil
 }
 
 func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName string) ([]karpenterBlockDeviceMapping, error) {

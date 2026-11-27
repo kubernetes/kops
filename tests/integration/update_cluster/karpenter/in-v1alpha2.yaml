@@ -120,6 +120,7 @@ metadata:
 spec:
   manager: Karpenter
   kubelet:
+    evictionHard: memory.available<300Mi,nodefs.available<15%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     maxPods: 50
     systemReserved:
       cpu: 500m
