@@ -93,8 +93,8 @@ type karpenterKubeletConfiguration struct {
 }
 
 // karpenterBlockDeviceMapping maps to EC2NodeClass.spec.blockDeviceMappings[]. kOps
-// emits exactly one mapping, for the root volume, built from the InstanceGroup's
-// spec.rootVolume with the same defaults the ASG launch template applies.
+// emits one mapping for the root volume, built from the InstanceGroup's spec.rootVolume,
+// and one for each of its spec.volumes, with the same defaults the ASG launch template applies.
 type karpenterBlockDeviceMapping struct {
 	DeviceName string                   `json:"deviceName,omitempty"`
 	EBS        *karpenterBlockDeviceEBS `json:"ebs,omitempty"`
@@ -398,13 +398,74 @@ func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName st
 		ebs.Throughput = new(int64(fi.ValueOf(throughput)))
 	}
 
-	return []karpenterBlockDeviceMapping{
+	mappings := []karpenterBlockDeviceMapping{
 		{
 			DeviceName: rootDeviceName,
 			EBS:        ebs,
 			RootVolume: new(true),
 		},
-	}, nil
+	}
+	for i, volume := range ig.Spec.Volumes {
+		if strings.TrimPrefix(volume.Device, "/dev/") == strings.TrimPrefix(rootDeviceName, "/dev/") {
+			return nil, fmt.Errorf("spec.volumes[%d].device %q conflicts with the image root device %q", i, volume.Device, rootDeviceName)
+		}
+		mappings = append(mappings, buildKarpenterVolumeBlockDeviceMapping(volume))
+	}
+	return mappings, nil
+}
+
+// buildKarpenterVolumeBlockDeviceMapping builds the mapping for one of the InstanceGroup's
+// spec.volumes. nodeup formats and mounts the volume from spec.volumeMounts, as on ASG nodes.
+func buildKarpenterVolumeBlockDeviceMapping(volume kops.VolumeSpec) karpenterBlockDeviceMapping {
+	volumeType := ec2types.VolumeType(volume.Type)
+	if volumeType == "" {
+		volumeType = awsmodel.DefaultVolumeType
+	}
+	iops, throughput := volume.IOPS, volume.Throughput
+	switch volumeType {
+	case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
+		if iops == nil {
+			iops = new(int64(awsmodel.DefaultVolumeIonIops))
+		}
+		throughput = nil
+	case ec2types.VolumeTypeGp3:
+		if iops == nil {
+			iops = new(int64(awsmodel.DefaultVolumeGp3Iops))
+		}
+		if throughput == nil {
+			throughput = new(int64(awsmodel.DefaultVolumeGp3Throughput))
+		}
+	default:
+		iops = nil
+		throughput = nil
+	}
+
+	deleteOnTermination := awsmodel.DefaultVolumeDeleteOnTermination
+	if volume.DeleteOnTermination != nil {
+		deleteOnTermination = fi.ValueOf(volume.DeleteOnTermination)
+	}
+	encrypted := awsmodel.DefaultVolumeEncryption
+	if volume.Encrypted != nil {
+		encrypted = fi.ValueOf(volume.Encrypted)
+	}
+	// EC2 rejects a key for an unencrypted volume. The launch template task drops it too.
+	var kmsKeyID *string
+	if encrypted && fi.ValueOf(volume.Key) != "" {
+		kmsKeyID = volume.Key
+	}
+
+	return karpenterBlockDeviceMapping{
+		DeviceName: volume.Device,
+		EBS: &karpenterBlockDeviceEBS{
+			DeleteOnTermination: new(deleteOnTermination),
+			Encrypted:           new(encrypted),
+			IOPS:                iops,
+			KMSKeyID:            kmsKeyID,
+			Throughput:          throughput,
+			VolumeSize:          fmt.Sprintf("%dGi", volume.Size),
+			VolumeType:          string(volumeType),
+		},
+	}
 }
 
 // karpenterRootDeviceName resolves the root device name of the InstanceGroup image, so

@@ -64,7 +64,7 @@ The generated `EC2NodeClass` uses:
 
 * `amiFamily: Custom`
 * the InstanceGroup image translated into `amiSelectorTerms`
-* the InstanceGroup `spec.rootVolume` translated into `blockDeviceMappings`
+* the InstanceGroup `spec.rootVolume` and `spec.volumes` translated into `blockDeviceMappings`
 * the InstanceGroup `spec.instanceMetadata` translated into `metadataOptions`
 * the kOps node instance profile
 * the kOps node security groups
@@ -153,5 +153,4 @@ Clusters without internet egress need a VPC endpoint for SQS. Karpenter starts w
 * `spec.instanceStorePolicy` configuration is not supported in `EC2NodeClass`.
 * `spec.kubelet` settings that affect Karpenter scheduling (`maxPods`, `systemReserved`, `kubeReserved`) are mapped to `EC2NodeClass.spec.kubelet` so Karpenter computes node allocatable capacity correctly. Other `spec.kubelet` settings are applied via the nodeup bootstrap script but are not surfaced to `EC2NodeClass`.
 * `spec.rootVolume.optimization` has no `EC2NodeClass` equivalent and is ignored on Karpenter-managed InstanceGroups. Modern instance types are EBS-optimized by default.
-* `spec.volumes` and `spec.volumeMounts` (additional, non-root volumes) are not mapped to `EC2NodeClass.spec.blockDeviceMappings`.
 * The Karpenter controller policy grants `iam:PassRole` only for the kOps-managed node role. When a Karpenter-managed InstanceGroup uses a custom `spec.iam.profile`, kOps cannot determine the role inside the custom instance profile, so the policy allows passing any role to EC2 instead.
