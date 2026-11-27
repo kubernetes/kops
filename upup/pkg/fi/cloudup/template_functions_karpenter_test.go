@@ -469,6 +469,52 @@ func TestBuildKarpenterKubeletConfiguration(t *testing.T) {
 			desc:    "unsupported field only is ignored",
 			kubelet: &kops.KubeletConfigSpec{KubeReservedCgroup: "/kube"},
 		},
+		{
+			desc: "evictionHard kOps default",
+			kubelet: &kops.KubeletConfigSpec{
+				EvictionHard: new("memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%"),
+			},
+			expected: &karpenterKubeletConfiguration{
+				EvictionHard: map[string]string{
+					"memory.available":   "100Mi",
+					"nodefs.available":   "10%",
+					"nodefs.inodesFree":  "5%",
+					"imagefs.available":  "10%",
+					"imagefs.inodesFree": "5%",
+				},
+			},
+		},
+		{
+			desc: "evictionHard signals that Karpenter rejects are left out",
+			kubelet: &kops.KubeletConfigSpec{
+				EvictionHard: new("memory.available<250Mi, pid.available<5%, allocatableMemory.available<100Mi,containerfs.available<10%"),
+			},
+			expected: &karpenterKubeletConfiguration{
+				EvictionHard: map[string]string{
+					"memory.available": "250Mi",
+					"pid.available":    "5%",
+				},
+			},
+		},
+		{
+			desc: "evictionHard with only signals that Karpenter rejects",
+			kubelet: &kops.KubeletConfigSpec{
+				EvictionHard: new("allocatableMemory.available<100Mi"),
+			},
+		},
+		{
+			desc: "evictionHard duplicate signal, last value wins",
+			kubelet: &kops.KubeletConfigSpec{
+				EvictionHard: new("memory.available<250Mi,memory.available<500Mi"),
+			},
+			expected: &karpenterKubeletConfiguration{
+				EvictionHard: map[string]string{"memory.available": "500Mi"},
+			},
+		},
+		{
+			desc:    "empty evictionHard",
+			kubelet: &kops.KubeletConfigSpec{EvictionHard: new("")},
+		},
 	}
 
 	for _, g := range grid {
@@ -479,9 +525,34 @@ func TestBuildKarpenterKubeletConfiguration(t *testing.T) {
 					Kubelet: g.kubelet,
 				},
 			}
-			actual := buildKarpenterKubeletConfiguration(ig)
+			actual, err := buildKarpenterKubeletConfiguration(ig)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
 			if !reflect.DeepEqual(actual, g.expected) {
 				t.Errorf("expected %#v, got %#v", g.expected, actual)
+			}
+		})
+	}
+}
+
+func TestBuildKarpenterKubeletConfigurationInvalidEvictionHard(t *testing.T) {
+	for _, evictionHard := range []string{
+		"memory.available",
+		"memory.available<100Mi,",
+		"<100Mi",
+		"memory.available<",
+		"memory.available>100Mi",
+	} {
+		t.Run(evictionHard, func(t *testing.T) {
+			ig := &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupRoleNode,
+					Kubelet: &kops.KubeletConfigSpec{EvictionHard: new(evictionHard)},
+				},
+			}
+			if _, err := buildKarpenterKubeletConfiguration(ig); err == nil {
+				t.Errorf("expected an error for evictionHard %q", evictionHard)
 			}
 		})
 	}

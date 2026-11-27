@@ -34,7 +34,7 @@ KubeletConfig:
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  evictionHard: memory.available<300Mi,nodefs.available<15%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   kubeReserved:
     cpu: 500m
     memory: 1G

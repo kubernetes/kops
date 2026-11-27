@@ -3231,6 +3231,12 @@ spec:
     rootVolume: true
   instanceProfile: nodes.minimal.example.com
   kubelet:
+    evictionHard:
+      imagefs.available: 10%
+      imagefs.inodesFree: 5%
+      memory.available: 300Mi
+      nodefs.available: 15%
+      nodefs.inodesFree: 5%
     kubeReserved:
       cpu: 500m
       memory: 1G
@@ -3392,7 +3398,7 @@ spec:
       - https://kops-controller.internal.minimal.example.com:3988/
     InstanceGroupName: karpenter-nodes-default
     InstanceGroupRole: Node
-    NodeupConfigHash: EAmpK0iG6ORF5m1m/9T5lJPh7/MUtRwqlnNvgzRFdo4=
+    NodeupConfigHash: uAFugr0wB1ZsPsBh8zwAvXISKc+qLom6KBkeFs+7unU=
 
     __EOF_KUBE_ENV
 
@@ -3488,6 +3494,13 @@ spec:
       volumeType: gp3
     rootVolume: true
   instanceProfile: nodes.minimal.example.com
+  kubelet:
+    evictionHard:
+      imagefs.available: 10%
+      imagefs.inodesFree: 5%
+      memory.available: 100Mi
+      nodefs.available: 10%
+      nodefs.inodesFree: 5%
   securityGroupSelectorTerms:
   - tags:
       KubernetesCluster: minimal.example.com
