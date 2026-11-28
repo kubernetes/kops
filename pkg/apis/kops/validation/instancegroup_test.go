@@ -1216,3 +1216,57 @@ func TestValidateInstanceGroupKubeletPackages(t *testing.T) {
 		testErrors(t, g.Description, errs, g.ExpectedErrors)
 	}
 }
+
+func TestValidateInstanceGroupVolumes(t *testing.T) {
+	grid := []struct {
+		desc           string
+		volumes        []kops.VolumeSpec
+		volumeMounts   []kops.VolumeMountSpec
+		expectedErrors []string
+	}{
+		{
+			desc: "different devices and paths",
+			volumes: []kops.VolumeSpec{
+				{Device: "/dev/sdf", Size: 10},
+				{Device: "/dev/sdg", Size: 10},
+			},
+			volumeMounts: []kops.VolumeMountSpec{
+				{Device: "/dev/sdf", Filesystem: "ext4", Path: "/data"},
+				{Device: "/dev/sdg", Filesystem: "ext4", Path: "/logs"},
+			},
+		},
+		{
+			desc: "duplicate volume device",
+			volumes: []kops.VolumeSpec{
+				{Device: "/dev/sdf", Size: 10},
+				{Device: "/dev/sdf", Size: 20},
+			},
+			expectedErrors: []string{"Duplicate value::spec.volumes[1].device"},
+		},
+		{
+			desc: "one device mounted on two paths",
+			volumeMounts: []kops.VolumeMountSpec{
+				{Device: "/dev/sdf", Filesystem: "ext4", Path: "/data"},
+				{Device: "/dev/sdf", Filesystem: "ext4", Path: "/logs"},
+			},
+		},
+		{
+			desc: "duplicate volume mount path",
+			volumeMounts: []kops.VolumeMountSpec{
+				{Device: "/dev/sdf", Filesystem: "ext4", Path: "/data"},
+				{Device: "/dev/sdg", Filesystem: "ext4", Path: "/data"},
+			},
+			expectedErrors: []string{"Duplicate value::spec.volumeMounts[1].path"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Volumes = g.volumes
+			ig.Spec.VolumeMounts = g.volumeMounts
+			errs := ValidateInstanceGroup(ig, nil, true)
+			testErrors(t, g.desc, errs, g.expectedErrors)
+		})
+	}
+}

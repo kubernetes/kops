@@ -153,8 +153,8 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	}
 
 	// @step: iterate and check the volume specs
+	devices := make(map[string]bool)
 	for i, x := range g.Spec.Volumes {
-		devices := make(map[string]bool)
 		path := field.NewPath("spec", "volumes").Index(i)
 
 		allErrs = append(allErrs, validateVolumeSpec(path, x)...)
@@ -168,17 +168,16 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	}
 
 	// @step: iterate and check the volume mount specs
+	mountPaths := make(map[string]bool)
 	for i, x := range g.Spec.VolumeMounts {
-		used := make(map[string]bool)
 		path := field.NewPath("spec", "volumeMounts").Index(i)
 
 		allErrs = append(allErrs, validateVolumeMountSpec(path, x)...)
-		if _, found := used[x.Device]; found {
-			allErrs = append(allErrs, field.Duplicate(path.Child("device"), x.Device))
-		}
-		if _, found := used[x.Path]; found {
+		if _, found := mountPaths[x.Path]; found {
 			allErrs = append(allErrs, field.Duplicate(path.Child("path"), x.Path))
 		}
+
+		mountPaths[x.Path] = true
 	}
 
 	allErrs = append(allErrs, validateInstanceProfile(g.Spec.IAM, field.NewPath("spec", "iam"))...)
