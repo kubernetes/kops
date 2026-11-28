@@ -491,6 +491,7 @@ func TestBuildKarpenterMetadataOptions(t *testing.T) {
 	grid := []struct {
 		desc             string
 		instanceMetadata *kops.InstanceMetadataOptions
+		ipv6Only         bool
 		expected         *karpenterMetadataOptions
 	}{
 		{
@@ -521,6 +522,20 @@ func TestBuildKarpenterMetadataOptions(t *testing.T) {
 				HTTPTokens:              new("required"),
 			},
 		},
+		{
+			desc:     "IPv6-only cluster enables the IPv6 endpoint",
+			ipv6Only: true,
+			expected: &karpenterMetadataOptions{HTTPProtocolIPv6: new("enabled")},
+		},
+		{
+			desc:             "IPv6-only cluster with hop limit set",
+			instanceMetadata: &kops.InstanceMetadataOptions{HTTPPutResponseHopLimit: new(int64(2))},
+			ipv6Only:         true,
+			expected: &karpenterMetadataOptions{
+				HTTPProtocolIPv6:        new("enabled"),
+				HTTPPutResponseHopLimit: new(int64(2)),
+			},
+		},
 	}
 
 	for _, g := range grid {
@@ -531,7 +546,7 @@ func TestBuildKarpenterMetadataOptions(t *testing.T) {
 					InstanceMetadata: g.instanceMetadata,
 				},
 			}
-			actual := buildKarpenterMetadataOptions(ig)
+			actual := buildKarpenterMetadataOptions(ig, g.ipv6Only)
 			if diff := cmp.Diff(g.expected, actual); diff != "" {
 				t.Errorf("unexpected metadataOptions (-want +got):\n%s", diff)
 			}

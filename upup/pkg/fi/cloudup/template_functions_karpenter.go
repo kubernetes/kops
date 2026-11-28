@@ -76,9 +76,10 @@ type karpenterEC2NodeClassSpec struct {
 	MetadataOptions          *karpenterMetadataOptions      `json:"metadataOptions,omitempty"`
 }
 
-// karpenterMetadataOptions maps to EC2NodeClass.spec.metadataOptions. Fields left unset
-// take the Karpenter defaults: hop limit 1 and httpTokens required, as for launch templates.
+// karpenterMetadataOptions maps to EC2NodeClass.spec.metadataOptions. Fields left unset take the
+// Karpenter defaults: IPv6 endpoint disabled, hop limit 1 and httpTokens required.
 type karpenterMetadataOptions struct {
+	HTTPProtocolIPv6        *string `json:"httpProtocolIPv6,omitempty"`
 	HTTPPutResponseHopLimit *int64  `json:"httpPutResponseHopLimit,omitempty"`
 	HTTPTokens              *string `json:"httpTokens,omitempty"`
 }
@@ -302,7 +303,7 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 			InstanceProfile:          fi.ValueOf(instanceProfile.Name),
 			UserData:                 userData,
 			Kubelet:                  buildKarpenterKubeletConfiguration(ig),
-			MetadataOptions:          buildKarpenterMetadataOptions(ig),
+			MetadataOptions:          buildKarpenterMetadataOptions(ig, tf.Cluster.Spec.IsIPv6Only()),
 		},
 	}, nil
 }
@@ -322,15 +323,21 @@ func buildKarpenterKubeletConfiguration(ig *kops.InstanceGroup) *karpenterKubele
 	return kubelet
 }
 
-func buildKarpenterMetadataOptions(ig *kops.InstanceGroup) *karpenterMetadataOptions {
-	instanceMetadata := ig.Spec.InstanceMetadata
-	if instanceMetadata == nil || (instanceMetadata.HTTPPutResponseHopLimit == nil && instanceMetadata.HTTPTokens == nil) {
+func buildKarpenterMetadataOptions(ig *kops.InstanceGroup, ipv6Only bool) *karpenterMetadataOptions {
+	metadataOptions := karpenterMetadataOptions{}
+	// The EC2NodeClass default disables the IPv6 metadata endpoint. On an IPv6-only cluster, pods
+	// and the EBS CSI driver can reach the instance metadata service only through it.
+	if ipv6Only {
+		metadataOptions.HTTPProtocolIPv6 = new(string(ec2types.LaunchTemplateInstanceMetadataProtocolIpv6Enabled))
+	}
+	if instanceMetadata := ig.Spec.InstanceMetadata; instanceMetadata != nil {
+		metadataOptions.HTTPPutResponseHopLimit = instanceMetadata.HTTPPutResponseHopLimit
+		metadataOptions.HTTPTokens = instanceMetadata.HTTPTokens
+	}
+	if metadataOptions == (karpenterMetadataOptions{}) {
 		return nil
 	}
-	return &karpenterMetadataOptions{
-		HTTPPutResponseHopLimit: instanceMetadata.HTTPPutResponseHopLimit,
-		HTTPTokens:              instanceMetadata.HTTPTokens,
-	}
+	return &metadataOptions
 }
 
 func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName string) ([]karpenterBlockDeviceMapping, error) {

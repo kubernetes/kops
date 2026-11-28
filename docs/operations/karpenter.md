@@ -66,6 +66,7 @@ The generated `EC2NodeClass` uses:
 * the InstanceGroup image translated into `amiSelectorTerms`
 * the InstanceGroup `spec.rootVolume` translated into `blockDeviceMappings`
 * the InstanceGroup `spec.instanceMetadata` translated into `metadataOptions`
+* the IPv6 endpoint of the instance metadata service enabled in `metadataOptions` on IPv6-only clusters
 * the kOps node instance profile
 * the kOps node security groups
 * the subnets tagged for the InstanceGroup
