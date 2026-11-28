@@ -153,32 +153,38 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	}
 
 	// @step: iterate and check the volume specs
+	devices := make(map[string]bool)
 	for i, x := range g.Spec.Volumes {
-		devices := make(map[string]bool)
 		path := field.NewPath("spec", "volumes").Index(i)
 
 		allErrs = append(allErrs, validateVolumeSpec(path, x)...)
 
-		// @check the device name has not been used already
-		if _, found := devices[x.Device]; found {
+		// @check the device name has not been used already. An empty device is
+		// reported as required by validateVolumeSpec, so it is not a duplicate.
+		if x.Device != "" && devices[x.Device] {
 			allErrs = append(allErrs, field.Duplicate(path.Child("device"), x.Device))
 		}
 
 		devices[x.Device] = true
 	}
 
-	// @step: iterate and check the volume mount specs
+	// @step: iterate and check the volume mount specs. Devices and paths are
+	// tracked separately because a path may equal the device of another mount.
+	mountDevices := make(map[string]bool)
+	mountPaths := make(map[string]bool)
 	for i, x := range g.Spec.VolumeMounts {
-		used := make(map[string]bool)
 		path := field.NewPath("spec", "volumeMounts").Index(i)
 
 		allErrs = append(allErrs, validateVolumeMountSpec(path, x)...)
-		if _, found := used[x.Device]; found {
+		if x.Device != "" && mountDevices[x.Device] {
 			allErrs = append(allErrs, field.Duplicate(path.Child("device"), x.Device))
 		}
-		if _, found := used[x.Path]; found {
+		if x.Path != "" && mountPaths[x.Path] {
 			allErrs = append(allErrs, field.Duplicate(path.Child("path"), x.Path))
 		}
+
+		mountDevices[x.Device] = true
+		mountPaths[x.Path] = true
 	}
 
 	allErrs = append(allErrs, validateInstanceProfile(g.Spec.IAM, field.NewPath("spec", "iam"))...)
