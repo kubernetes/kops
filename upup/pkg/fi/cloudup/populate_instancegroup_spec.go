@@ -147,7 +147,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	if ig.Spec.Image == "" {
-		architecture, err := MachineArchitecture(cloud, ig.Spec.MachineType)
+		architecture, err := instanceGroupArchitecture(cloud, ig)
 		if err != nil {
 			return nil, fmt.Errorf("unable to determine machine architecture for InstanceGroup %q: %v", ig.ObjectMeta.Name, err)
 		}

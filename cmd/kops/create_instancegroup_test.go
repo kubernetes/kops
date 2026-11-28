@@ -23,6 +23,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/testutils"
@@ -166,4 +167,59 @@ func TestRunCreateInstanceGroupMachineTypes(t *testing.T) {
 			t.Fatalf("Expected error for an empty machine type, got nil")
 		}
 	})
+
+	// All the machine types are launched with the image selected for the first one.
+	invalid := []struct {
+		name          string
+		machineTypes  []string
+		dryRun        bool
+		expectedError string
+	}{
+		{
+			name:          "mixed-architecture",
+			machineTypes:  []string{"m5.large", "m6g.xlarge"},
+			expectedError: `machine types "m5.large" and "m6g.xlarge" have different architectures (amd64 and arm64)`,
+		},
+		{
+			name:          "mixed-architecture-arm64-first",
+			machineTypes:  []string{"m6g.xlarge", "m5.large"},
+			expectedError: `machine types "m6g.xlarge" and "m5.large" have different architectures (arm64 and amd64)`,
+		},
+		{
+			name:          "mixed-architecture-dry-run",
+			machineTypes:  []string{"m5.large", "m6g.xlarge"},
+			dryRun:        true,
+			expectedError: `machine types "m5.large" and "m6g.xlarge" have different architectures (amd64 and arm64)`,
+		},
+		{
+			name:          "unknown",
+			machineTypes:  []string{"m5.large", "t2.invalidType"},
+			expectedError: `invalid instance type "t2.invalidType" specified`,
+		},
+	}
+	for _, g := range invalid {
+		t.Run(g.name, func(t *testing.T) {
+			var stdout bytes.Buffer
+			options := &CreateInstanceGroupOptions{
+				ClusterName:       clusterName,
+				InstanceGroupName: "nodes-" + g.name,
+				Role:              "Node",
+				Subnets:           []string{"subnet-us-test-1a"},
+				MachineTypes:      g.machineTypes,
+				DryRun:            g.dryRun,
+				Output:            OutputYaml,
+			}
+			err := RunCreateInstanceGroup(ctx, f, &stdout, options)
+			if err == nil || !strings.Contains(err.Error(), g.expectedError) {
+				t.Fatalf("expected error containing %q, got %v", g.expectedError, err)
+			}
+			// A rejected instance group is neither printed nor stored.
+			if stdout.Len() != 0 {
+				t.Errorf("expected no output, got %q", stdout.String())
+			}
+			if _, err := clientset.InstanceGroupsFor(cluster).Get(ctx, options.InstanceGroupName, metav1.GetOptions{}); !errors.IsNotFound(err) {
+				t.Errorf("expected instance group to not exist, got %v", err)
+			}
+		})
+	}
 }

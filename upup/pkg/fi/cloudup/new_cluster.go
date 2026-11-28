@@ -21,6 +21,7 @@ import (
 	"crypto/x509/pkix"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -217,6 +218,14 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 
 	if opt.ClusterName == "" {
 		return nil, fmt.Errorf("name is required")
+	}
+
+	// Several machine types are stored in spec.mixedInstancesPolicy.instances, where an empty one is invalid.
+	if len(opt.ControlPlaneSizes) > 1 && slices.Contains(opt.ControlPlaneSizes, "") {
+		return nil, fmt.Errorf("--control-plane-size cannot contain an empty machine type")
+	}
+	if len(opt.NodeSizes) > 1 && slices.Contains(opt.NodeSizes, "") {
+		return nil, fmt.Errorf("--node-size cannot contain an empty machine type")
 	}
 
 	if opt.Channel == "" {
@@ -569,9 +578,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			if opt.Image != "" {
 				instanceGroup.Spec.Image = opt.Image
 			} else {
-				architecture, err := MachineArchitecture(cloud, instanceGroup.Spec.MachineType)
+				architecture, err := instanceGroupArchitecture(cloud, instanceGroup)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("unable to determine machine architecture for InstanceGroup %q: %v", instanceGroup.ObjectMeta.Name, err)
 				}
 				instanceGroup.Spec.Image, err = defaultImage(cluster, channel, architecture)
 				if err != nil {
@@ -1788,6 +1797,34 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 		// No other clouds are known to support any other architectures at this time
 		return architectures.ArchitectureAmd64, nil
 	}
+}
+
+// instanceGroupArchitecture returns the architecture of the group, or an error if it has several.
+func instanceGroupArchitecture(cloud fi.Cloud, ig *api.InstanceGroup) (architectures.Architecture, error) {
+	architecture, err := MachineArchitecture(cloud, ig.Spec.MachineType)
+	if err != nil {
+		return "", err
+	}
+	// Without a machine type the architecture is a default, so there is nothing to compare with.
+	if ig.Spec.MachineType == "" || ig.Spec.MixedInstancesPolicy == nil {
+		return architecture, nil
+	}
+	for _, instances := range ig.Spec.MixedInstancesPolicy.Instances {
+		// An entry can be empty or hold several comma-separated machine types.
+		for _, machineType := range strings.Split(instances, ",") {
+			if machineType == "" {
+				continue
+			}
+			other, err := MachineArchitecture(cloud, machineType)
+			if err != nil {
+				return "", err
+			}
+			if other != architecture {
+				return "", fmt.Errorf("machine types %q and %q have different architectures (%s and %s)", ig.Spec.MachineType, machineType, architecture, other)
+			}
+		}
+	}
+	return architecture, nil
 }
 
 // discoveryUniverseID returns the universe ID for the cluster's discovery service,
