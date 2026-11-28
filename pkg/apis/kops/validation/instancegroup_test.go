@@ -986,6 +986,102 @@ func TestValidInstanceGroup(t *testing.T) {
 	}
 }
 
+func TestValidateInstanceGroupVolumes(t *testing.T) {
+	for _, test := range []struct {
+		name         string
+		volumes      []kops.VolumeSpec
+		volumeMounts []kops.VolumeMountSpec
+		expected     []string
+	}{
+		{
+			name: "distinct volume devices",
+			volumes: []kops.VolumeSpec{
+				{Device: "/dev/xvdd", Size: 20},
+				{Device: "/dev/xvde", Size: 20},
+			},
+		},
+		{
+			name: "duplicate volume device",
+			volumes: []kops.VolumeSpec{
+				{Device: "/dev/xvdd", Size: 20},
+				{Device: "/dev/xvde", Size: 20},
+				{Device: "/dev/xvdd", Size: 40},
+			},
+			expected: []string{"Duplicate value::spec.volumes[2].device"},
+		},
+		{
+			name: "empty volume devices are only reported as required",
+			volumes: []kops.VolumeSpec{
+				{Size: 20},
+				{Size: 20},
+			},
+			expected: []string{
+				"Required value::spec.volumes[0].device",
+				"Required value::spec.volumes[1].device",
+			},
+		},
+		{
+			name: "distinct volume mounts",
+			volumeMounts: []kops.VolumeMountSpec{
+				{Device: "/dev/xvdd", Filesystem: "ext4", Path: "/mnt/a"},
+				{Device: "/dev/xvde", Filesystem: "ext4", Path: "/mnt/b"},
+			},
+		},
+		{
+			name: "duplicate volume mount device",
+			volumeMounts: []kops.VolumeMountSpec{
+				{Device: "/dev/xvdd", Filesystem: "ext4", Path: "/mnt/a"},
+				{Device: "/dev/xvdd", Filesystem: "ext4", Path: "/mnt/b"},
+			},
+			expected: []string{"Duplicate value::spec.volumeMounts[1].device"},
+		},
+		{
+			name: "duplicate volume mount path",
+			volumeMounts: []kops.VolumeMountSpec{
+				{Device: "/dev/xvdd", Filesystem: "ext4", Path: "/mnt/a"},
+				{Device: "/dev/xvde", Filesystem: "ext4", Path: "/mnt/a"},
+			},
+			expected: []string{"Duplicate value::spec.volumeMounts[1].path"},
+		},
+		{
+			// Devices and paths are tracked separately, so a mount path that
+			// equals the device of another mount is not a duplicate.
+			name: "volume mount path equal to another device",
+			volumeMounts: []kops.VolumeMountSpec{
+				{Device: "/dev/xvdd", Filesystem: "ext4", Path: "/mnt/a"},
+				{Device: "/dev/xvde", Filesystem: "ext4", Path: "/dev/xvdd"},
+			},
+		},
+		{
+			name: "empty volume mount devices and paths are only reported as required",
+			volumeMounts: []kops.VolumeMountSpec{
+				{Filesystem: "ext4"},
+				{Filesystem: "ext4"},
+			},
+			expected: []string{
+				"Required value::spec.volumeMounts[0].device",
+				"Required value::spec.volumeMounts[0].path",
+				"Required value::spec.volumeMounts[1].device",
+				"Required value::spec.volumeMounts[1].path",
+			},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Subnets = []string{"eu-central-1a"}
+			ig.Spec.Volumes = test.volumes
+			ig.Spec.VolumeMounts = test.volumeMounts
+
+			errs := ValidateInstanceGroup(ig, nil, true)
+			testErrors(t, test.name, errs, test.expected)
+			// testErrors only checks that the expected errors are present.
+			if len(errs) != len(test.expected) {
+				t.Errorf("expected %d errors, got %d: %v", len(test.expected), len(errs), errs)
+			}
+		})
+	}
+}
+
 func createMinimalInstanceGroup() *kops.InstanceGroup {
 	ig := &kops.InstanceGroup{
 		ObjectMeta: v1.ObjectMeta{
