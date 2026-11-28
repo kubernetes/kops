@@ -277,7 +277,7 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 		securityGroupTerms = append(securityGroupTerms, karpenterSelectorTerm{
 			Tags: map[string]string{
 				"KubernetesCluster": tf.ClusterName(),
-				"Name":              fi.ValueOf(tf.LinkToSecurityGroup(ig.Spec.Role).Name),
+				"Name":              fi.ValueOf(tf.LinkToSecurityGroup(ig.Spec.Role.PrimaryRole()).Name),
 			},
 		})
 	}
@@ -334,7 +334,7 @@ func buildKarpenterMetadataOptions(ig *kops.InstanceGroup) *karpenterMetadataOpt
 }
 
 func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName string) ([]karpenterBlockDeviceMapping, error) {
-	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role.PrimaryRole())
 	if err != nil {
 		return nil, err
 	}

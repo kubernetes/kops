@@ -230,7 +230,7 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, bootstrapData *Boot
 
 	// We can't create the host resource in the API server for control-plane nodes,
 	// because the API server (likely) isn't running yet.
-	if !ig.IsControlPlane() && !ig.IsEtcdOnly() && !ig.IsAPIServerOnly() {
+	if !ig.IsControlPlaneType() {
 		if err := kubeClient.Create(ctx, hostData); err != nil {
 			return fmt.Errorf("failed to create host %s/%s: %w", hostData.Namespace, hostData.Name, err)
 		}
@@ -803,7 +803,18 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 		return nil, err
 	}
 
-	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, encryptionConfigSecretHash)
+	// The full set, not just the instance group being enrolled: where the scheduled cluster
+	// components are placed depends on what the other instance groups claim.
+	instanceGroupList, err := b.GetInstanceGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	instanceGroups := make([]*kops.InstanceGroup, 0, len(instanceGroupList.Items))
+	for i := range instanceGroupList.Items {
+		instanceGroups = append(instanceGroups, &instanceGroupList.Items[i])
+	}
+
+	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, instanceGroups, assetBuilder, encryptionConfigSecretHash)
 	if err != nil {
 		return nil, err
 	}

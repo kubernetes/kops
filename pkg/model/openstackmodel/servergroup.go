@@ -130,7 +130,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 	}
 
 	var securityGroups []*openstacktasks.SecurityGroup
-	securityGroupName := b.SecurityGroupName(ig.Spec.Role)
+	securityGroupName := b.SecurityGroupName(ig.Spec.Role.PrimaryRole())
 	securityGroups = append(securityGroups, b.LinkToSecurityGroup(securityGroupName))
 
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer == nil && ig.Spec.Role.HasControlPlane() {

@@ -174,7 +174,7 @@ func (b *SpotInstanceGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) 
 		}
 
 		klog.V(2).Infof("Building instance group: %q", name)
-		switch ig.Spec.Role {
+		switch ig.Spec.Role.PrimaryRole() {
 
 		// Create both Master and Bastion instance groups as Elastigroups.
 		case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleBastion:
@@ -690,7 +690,7 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 func (b *SpotInstanceGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBuilderContext,
 	ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
 	securityGroups := []*awstasks.SecurityGroup{
-		b.LinkToSecurityGroup(ig.Spec.Role),
+		b.LinkToSecurityGroup(ig.Spec.Role.PrimaryRole()),
 	}
 
 	for _, id := range ig.Spec.AdditionalSecurityGroups {
@@ -794,7 +794,7 @@ func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGro
 
 	if size == 0 {
 		var err error
-		size, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+		size, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role.PrimaryRole())
 		if err != nil {
 			return nil, err
 		}
@@ -892,7 +892,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 		ClusterID: new(clusterID),
 	}
 
-	switch ig.Spec.Role {
+	switch ig.Spec.Role.PrimaryRole() {
 	case kops.InstanceGroupRoleControlPlane:
 		return opts, nil
 
@@ -1168,7 +1168,7 @@ func parseStringSlice(str string) ([]string, error) {
 func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {
 	var percentage float64
 
-	switch ig.Spec.Role {
+	switch ig.Spec.Role.PrimaryRole() {
 	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleBastion:
 		percentage = 0
 	case kops.InstanceGroupRoleNode:

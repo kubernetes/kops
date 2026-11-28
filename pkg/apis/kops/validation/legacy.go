@@ -303,7 +303,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 		if g.RunsScheduler() {
 			schedulerGroupCount++
 		}
-		if g.IsEtcdOnly() || g.IsSchedulerOnly() || g.IsKubeControllerManagerOnly() {
+		if g.Spec.Role.HasEtcd() || g.Spec.Role.HasScheduler() || g.Spec.Role.HasKubeControllerManager() {
 			splitRoleCount++
 		}
 	}
@@ -318,6 +318,18 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 
 	if nodeGroupCount == 0 {
 		return fmt.Errorf("must configure at least one Node InstanceGroup")
+	}
+
+	if err := validateInstanceGroupRoleCombinations(c, groups); err != nil {
+		return err
+	}
+
+	if err := validateWellKnownServiceCoverage(c, groups); err != nil {
+		return err
+	}
+
+	if err := validateHostedComponentCoverage(c, groups); err != nil {
+		return err
 	}
 
 	for _, g := range groups {
@@ -338,4 +350,97 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 
 func isExperimentalClusterDNS(k *kops.KubeletConfigSpec, dns *kops.KubeDNSConfig) bool {
 	return k != nil && k.ClusterDNS != dns.ServerIP && dns.NodeLocalDNS != nil && k.ClusterDNS != dns.NodeLocalDNS.LocalIP
+}
+
+// validateInstanceGroupRoleCombinations gates instance groups that carry more than one role.
+// Only GCE wires up the per-role network tags, load balancer membership and addressing that a
+// split control plane needs; on other clouds a composite role would be silently ignored.
+func validateInstanceGroupRoleCombinations(c *kops.Cluster, groups []*kops.InstanceGroup) error {
+	for _, g := range groups {
+		if len(g.Spec.Role.Roles()) < 2 {
+			continue
+		}
+		if c.GetCloudProvider() != kops.CloudProviderGCE {
+			return fmt.Errorf("InstanceGroup %q combines several roles, which is only supported on GCE", g.ObjectMeta.Name)
+		}
+	}
+	return nil
+}
+
+// validateWellKnownServiceCoverage checks that something in the cluster serves each endpoint the
+// cluster cannot work without. Instance groups that do not set spec.servesWellKnownServices
+// derive it from their roles, so this passes for any cluster that predates the field.
+func validateWellKnownServiceCoverage(c *kops.Cluster, groups []*kops.InstanceGroup) error {
+	served := map[kops.WellKnownService]int{}
+	for _, g := range groups {
+		for _, service := range g.ServedWellKnownServices() {
+			served[service]++
+		}
+	}
+
+	required := []kops.WellKnownService{
+		kops.WellKnownServiceKubeAPIServerInternal,
+		kops.WellKnownServiceKopsController,
+		kops.WellKnownServiceEtcdMain,
+	}
+	// Only require an externally reachable API server when the cluster actually exposes one.
+	if c.Spec.API.LoadBalancer != nil || c.Spec.API.DNS != nil {
+		required = append(required, kops.WellKnownServiceKubeAPIServerExternal)
+	}
+
+	for _, service := range required {
+		if served[service] == 0 {
+			return fmt.Errorf("no InstanceGroup serves the %q endpoint; set spec.servesWellKnownServices on the InstanceGroup that should", service)
+		}
+	}
+
+	return nil
+}
+
+// validateHostedComponentCoverage checks that every component the cluster will install is hosted
+// somewhere. kOps schedules these rather than running them as static pods, placing them by node
+// label, so a component no instance group claims is never scheduled at all.
+//
+// Only checked once an instance group configures spec.hostedComponents. Until then every
+// instance group with an API server claims every component, so there is nothing to get wrong.
+func validateHostedComponentCoverage(c *kops.Cluster, groups []*kops.InstanceGroup) error {
+	explicit := false
+	for _, g := range groups {
+		if g.Spec.HostedComponents != nil {
+			explicit = true
+			break
+		}
+	}
+	if !explicit {
+		return nil
+	}
+
+	hosted := map[kops.ClusterComponent]bool{}
+	for _, g := range groups {
+		for _, component := range g.Spec.HostedComponents {
+			hosted[component] = true
+		}
+	}
+
+	// kops-channels installs the addons and kops-controller signs certificates and labels
+	// nodes; a cluster cannot come up without either.
+	required := []kops.ClusterComponent{
+		kops.ClusterComponentKopsChannel,
+		kops.ClusterComponentKopsController,
+	}
+	if c.Spec.ExternalCloudControllerManager != nil {
+		required = append(required, kops.ClusterComponentCloudControllerManager)
+	}
+	if c.Spec.CertManager != nil && fi.ValueOf(c.Spec.CertManager.Enabled) &&
+		(c.Spec.CertManager.Managed == nil || fi.ValueOf(c.Spec.CertManager.Managed)) {
+		required = append(required, kops.ClusterComponentCertManager)
+	}
+
+	for _, component := range required {
+		if !hosted[component] {
+			return fmt.Errorf("no InstanceGroup hosts the %q component; add it to spec.hostedComponents on the InstanceGroup that should run it", component)
+		}
+	}
+
+	return nil
 }

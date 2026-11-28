@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -46,11 +47,15 @@ type nodeUpConfigBuilder struct {
 	configBase                 vfs.Path
 	cluster                    *kops.Cluster
 	etcdManifests              map[string][]string
+	instanceGroups             []*kops.InstanceGroup
 	images                     map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
 	encryptionConfigSecretHash string
 }
 
-func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
+// NewNodeUpConfigBuilder builds the per-instance-group nodeup configuration. instanceGroups is
+// the cluster's full set, which some decisions need: where the scheduled cluster components are
+// placed depends on what the other instance groups claim.
+func NewNodeUpConfigBuilder(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, assetBuilder *assets.AssetBuilder, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
@@ -66,7 +71,6 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		isControlPlaneType := role.IsControlPlaneType()
 		hasControlPlane := role.HasControlPlane()
 		hasAPIServer := role.HasAPIServer()
-		hasEtcd := role.HasEtcd()
 		hasScheduler := role.HasScheduler()
 		hasKCM := role.HasKubeControllerManager()
 
@@ -154,17 +158,16 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 				}
 			}
 		}
+	}
 
-		if hasControlPlane || hasEtcd {
-			for _, etcdCluster := range cluster.Spec.EtcdClusters {
-				for _, member := range etcdCluster.Members {
-					instanceGroup := fi.ValueOf(member.InstanceGroup)
-					etcdManifest := fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, instanceGroup)
-					entry := configBase.Join(etcdManifest).Path()
-					if !slices.Contains(etcdManifests[instanceGroup], entry) {
-						etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], entry)
-					}
-				}
+	// etcd manifests are keyed by instance group name, so collecting them is independent of role.
+	for _, etcdCluster := range cluster.Spec.EtcdClusters {
+		for _, member := range etcdCluster.Members {
+			instanceGroup := fi.ValueOf(member.InstanceGroup)
+			etcdManifest := fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, instanceGroup)
+			entry := configBase.Join(etcdManifest).Path()
+			if !slices.Contains(etcdManifests[instanceGroup], entry) {
+				etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], entry)
 			}
 		}
 	}
@@ -174,6 +177,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		channelsManifest:           channelsManifest,
 		configBase:                 configBase,
 		cluster:                    cluster,
+		instanceGroups:             instanceGroups,
 		etcdManifests:              etcdManifests,
 		images:                     images,
 		encryptionConfigSecretHash: encryptionConfigSecretHash,
@@ -197,6 +201,13 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	isMaster := role.HasControlPlane()
 	hasAPIServer := isMaster || role.HasAPIServer()
+
+	// hostsEtcd is true when this instance group backs an etcd member. etcd can be co-located
+	// with any control-plane role, so membership -- not role -- decides which instances receive
+	// the etcd manifests, cluster names and etcd-manager/peer CAs. The role checks are kept
+	// alongside it so existing clusters, where a control-plane group may carry etcd material
+	// without being referenced as a member, are unaffected.
+	hostsEtcd := isMaster || role.HasEtcd() || isEtcdMember(cluster, ig.ObjectMeta.Name)
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
 
@@ -238,7 +249,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 		}
 
-		if isMaster || role.HasEtcd() {
+		if hostsEtcd {
 			if err := loadCertificates(keysets, "etcd-clients-ca", config, true); err != nil {
 				return nil, nil, err
 			}
@@ -265,7 +276,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 				config.KeypairIDs[fi.DiscoveryCAID] = keysets[fi.DiscoveryCAID].Primary.Id
 			}
 		}
-		if !isMaster && !role.HasEtcd() {
+		if !hostsEtcd {
 			if keysets["etcd-client-cilium"] != nil {
 				config.KeypairIDs["etcd-client-cilium"] = keysets["etcd-client-cilium"].Primary.Id
 			}
@@ -375,13 +386,22 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	config.Images = n.images[role]
 
-	if isMaster || role.HasEtcd() {
+	if hostsEtcd {
 		for _, etcdCluster := range cluster.Spec.EtcdClusters {
 			config.EtcdClusterNames = append(config.EtcdClusterNames, etcdCluster.Name)
 		}
 		config.EtcdManifests = n.etcdManifests[ig.Name]
 	}
-	if isMaster || role.HasAPIServer() {
+	// Historically every instance group with an API server ran kops-channels. When the cluster
+	// places the scheduled components explicitly, only the groups that claim one need to: the
+	// others would apply the channel redundantly and hold a cluster-admin kubeconfig they have
+	// no use for. Control-plane groups always run it, since they install the addons.
+	runsChannels := isMaster || role.HasAPIServer()
+	if n.usesExplicitHostedComponents() {
+		config.ChannelsNodeLabels = nodelabels.ChannelsNodeLabels(cluster, n.instanceGroups, ig)
+		runsChannels = isMaster || len(config.ChannelsNodeLabels) > 0
+	}
+	if runsChannels {
 		config.ChannelsManifest = n.channelsManifest
 	}
 
@@ -395,6 +415,18 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	config.Packages = append(config.Packages, ig.Spec.Packages...)
 
 	return config, bootConfig, nil
+}
+
+// isEtcdMember reports whether any etcd cluster member is hosted on the named instance group.
+func isEtcdMember(cluster *kops.Cluster, instanceGroupName string) bool {
+	for _, etcdCluster := range cluster.Spec.EtcdClusters {
+		for _, member := range etcdCluster.Members {
+			if fi.ValueOf(member.InstanceGroup) == instanceGroupName {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // selectControlPlaneIPs narrows the addresses that reach the API server down to the ones a node
@@ -551,4 +583,16 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 	sort.Strings(unique)
 
 	return unique
+}
+
+// usesExplicitHostedComponents reports whether any instance group configures
+// spec.hostedComponents. While none does, the cluster-wide default in the shared kops-channels
+// manifest applies and nothing needs to be sent per instance group.
+func (n *nodeUpConfigBuilder) usesExplicitHostedComponents() bool {
+	for _, ig := range n.instanceGroups {
+		if ig.Spec.HostedComponents != nil {
+			return true
+		}
+	}
+	return false
 }

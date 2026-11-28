@@ -597,7 +597,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				}
 			}
 		} else {
-			if g.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
+			if g.Spec.Role.HasAPIServer() && !featureflag.APIServerNodes.Enabled() {
 				return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
 			}
 			if !featureflag.ExperimentalRoles.Enabled() {
@@ -634,7 +634,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			if len(ig.Spec.Subnets) == 0 {
 				return nil, fmt.Errorf("control-plane InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
 			}
-		} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
+		} else if ig.Spec.Role.HasAPIServer() && cluster.Spec.IsIPv6Only() {
 			if len(ig.Spec.Subnets) == 0 {
 				for _, subnet := range cluster.Spec.Networking.Subnets {
 					if subnet.Type != api.SubnetTypePrivate && subnet.Type != api.SubnetTypeUtility {
