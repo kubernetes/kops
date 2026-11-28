@@ -36,18 +36,24 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 		"node_label/key": "node_label_value",
 	}
 	ig.Spec.Taints = []string{
+		"nvidia.com/gpu=present:NoSchedule",
+		"dedicated:NoExecute",
+		"example.com/my_taint=value:PreferNoSchedule",
+		// No effect: not a valid taint, skipped.
 		"taint_key=taint_value",
 	}
 
 	actual := c.CloudTagsForInstanceGroup(c.InstanceGroups[0])
 	expected := map[string]*string{
-		"cluster_label_key":                            new("cluster_label_value"),
-		"ig_label_key":                                 new("ig_label_value"),
-		"test_label":                                   new("from_ig"),
-		"k8s.io_cluster_node-template_label_0":         new("node_label/key=node_label_value"),
-		"k8s.io_cluster_node-template_taint_taint_key": new("taint_value"),
-		"k8s.io_role_node":                             new("1"),
-		"kops.k8s.io_instancegroup":                    new("nodes"),
+		"cluster_label_key":                    new("cluster_label_value"),
+		"ig_label_key":                         new("ig_label_value"),
+		"test_label":                           new("from_ig"),
+		"k8s.io_cluster_node-template_label_0": new("node_label/key=node_label_value"),
+		"k8s.io_cluster-autoscaler_node-template_taint_nvidia.com_gpu":        new("present:NoSchedule"),
+		"k8s.io_cluster-autoscaler_node-template_taint_dedicated":             new(":NoExecute"),
+		"k8s.io_cluster-autoscaler_node-template_taint_example.com_my~2taint": new("value:PreferNoSchedule"),
+		"k8s.io_role_node":          new("1"),
+		"kops.k8s.io_instancegroup": new("nodes"),
 	}
 
 	if !reflect.DeepEqual(actual, expected) {
