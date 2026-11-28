@@ -487,6 +487,58 @@ func TestBuildKarpenterKubeletConfiguration(t *testing.T) {
 	}
 }
 
+func TestBuildKarpenterMetadataOptions(t *testing.T) {
+	grid := []struct {
+		desc             string
+		instanceMetadata *kops.InstanceMetadataOptions
+		expected         *karpenterMetadataOptions
+	}{
+		{
+			desc: "no instanceMetadata",
+		},
+		{
+			desc:             "empty instanceMetadata",
+			instanceMetadata: &kops.InstanceMetadataOptions{},
+		},
+		{
+			desc:             "hop limit set",
+			instanceMetadata: &kops.InstanceMetadataOptions{HTTPPutResponseHopLimit: new(int64(3))},
+			expected:         &karpenterMetadataOptions{HTTPPutResponseHopLimit: new(int64(3))},
+		},
+		{
+			desc:             "httpTokens set",
+			instanceMetadata: &kops.InstanceMetadataOptions{HTTPTokens: new("optional")},
+			expected:         &karpenterMetadataOptions{HTTPTokens: new("optional")},
+		},
+		{
+			desc: "both set",
+			instanceMetadata: &kops.InstanceMetadataOptions{
+				HTTPPutResponseHopLimit: new(int64(2)),
+				HTTPTokens:              new("required"),
+			},
+			expected: &karpenterMetadataOptions{
+				HTTPPutResponseHopLimit: new(int64(2)),
+				HTTPTokens:              new("required"),
+			},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role:             kops.InstanceGroupRoleNode,
+					InstanceMetadata: g.instanceMetadata,
+				},
+			}
+			actual := buildKarpenterMetadataOptions(ig)
+			if diff := cmp.Diff(g.expected, actual); diff != "" {
+				t.Errorf("unexpected metadataOptions (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 	// rootEBS returns the defaults every case starts from, so that each case below
 	// only has to state what it changes.
