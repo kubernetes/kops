@@ -53,7 +53,9 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 			}
 		}
 		for _, volume := range ig.Spec.Volumes {
-			if fi.ValueOf(volume.Key) != "" {
+			// Encryption defaults to true; the EC2NodeClass omits the key for unencrypted volumes.
+			encrypted := volume.Encrypted == nil || *volume.Encrypted
+			if encrypted && fi.ValueOf(volume.Key) != "" {
 				useCustomerManagedKeys = true
 			}
 		}
