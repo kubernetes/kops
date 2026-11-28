@@ -316,6 +316,31 @@ func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *kopsapi.Cluster
 	}
 }
 
+func TestPopulateInstanceGroup_MachineTypeArchitectures(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	g := buildMinimalNodeInstanceGroup()
+	g.Spec.Image = ""
+	g.Spec.MachineType = "m5.large"
+	g.Spec.MixedInstancesPolicy = &kopsapi.MixedInstancesPolicySpec{Instances: []string{"m5.large", "m6g.xlarge"}}
+
+	channel := &kopsapi.Channel{}
+
+	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, `unable to determine machine architecture for InstanceGroup "nodes": machine types "m5.large" and "m6g.xlarge" have different architectures (amd64 and arm64)`)
+}
+
+// TestPopulateInstanceGroup_MachineTypeArchitecturesWithImage ensures the machine types are only compared
+// when the image is selected from them. An image that is set is checked against them in validation.
+func TestPopulateInstanceGroup_MachineTypeArchitecturesWithImage(t *testing.T) {
+	cloud, cluster := buildMinimalCluster()
+	g := buildMinimalNodeInstanceGroup()
+	g.Spec.MachineType = "m5.large"
+	g.Spec.MixedInstancesPolicy = &kopsapi.MixedInstancesPolicySpec{Instances: []string{"m5.large", "m6g.xlarge"}}
+
+	if _, err := PopulateInstanceGroupSpec(cluster, g, cloud, &kopsapi.Channel{}); err != nil {
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+	}
+}
+
 func TestMachineArchitecture(t *testing.T) {
 	tests := []struct {
 		machineType string
@@ -355,6 +380,86 @@ func TestMachineArchitecture(t *testing.T) {
 			if arch != test.arch {
 				t.Errorf("actual architecture %q differs from expected architecture %q", arch, test.arch)
 				return
+			}
+		})
+	}
+}
+
+func TestInstanceGroupArchitecture(t *testing.T) {
+	tests := []struct {
+		name          string
+		machineType   string
+		instances     []string
+		arch          architectures.Architecture
+		expectedError string
+	}{
+		{
+			name:        "single",
+			machineType: "a1.large",
+			arch:        architectures.ArchitectureArm64,
+		},
+		{
+			name:        "same architecture",
+			machineType: "m5.large",
+			instances:   []string{"m5.large", "c5.large", "t2.medium"},
+			arch:        architectures.ArchitectureAmd64,
+		},
+		{
+			name:        "comma-separated and empty entries",
+			machineType: "a1.large",
+			instances:   []string{"a1.large,m6g.xlarge", ""},
+			arch:        architectures.ArchitectureArm64,
+		},
+		{
+			name:      "no machine type",
+			instances: []string{"m6g.xlarge", "t2.invalidType"},
+			arch:      architectures.ArchitectureAmd64,
+		},
+		{
+			name:          "different architecture",
+			machineType:   "m5.large",
+			instances:     []string{"m5.large", "m6g.xlarge"},
+			expectedError: `machine types "m5.large" and "m6g.xlarge" have different architectures (amd64 and arm64)`,
+		},
+		{
+			name:          "different architecture in a comma-separated entry",
+			machineType:   "m6g.xlarge",
+			instances:     []string{"m6g.xlarge,m5.large"},
+			expectedError: `machine types "m6g.xlarge" and "m5.large" have different architectures (arm64 and amd64)`,
+		},
+		{
+			name:          "unknown machine type",
+			machineType:   "m5.large",
+			instances:     []string{"t2.invalidType"},
+			expectedError: `invalid instance type "t2.invalidType" specified`,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, cluster := buildMinimalCluster()
+			cloud, err := BuildCloud(cluster)
+			if err != nil {
+				t.Fatalf("error from BuildCloud: %v", err)
+			}
+
+			ig := &kopsapi.InstanceGroup{}
+			ig.Spec.MachineType = test.machineType
+			if test.instances != nil {
+				ig.Spec.MixedInstancesPolicy = &kopsapi.MixedInstancesPolicySpec{Instances: test.instances}
+			}
+
+			arch, err := instanceGroupArchitecture(cloud, ig)
+			if test.expectedError != "" {
+				if err == nil || !strings.Contains(err.Error(), test.expectedError) {
+					t.Fatalf("expected error containing %q, got %v", test.expectedError, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if arch != test.arch {
+				t.Errorf("actual architecture %q differs from expected architecture %q", arch, test.arch)
 			}
 		})
 	}

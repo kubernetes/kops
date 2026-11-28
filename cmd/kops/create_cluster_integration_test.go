@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -361,4 +362,63 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	actualYAML := strings.Join(yamlAll, "\n\n---\n\n")
 	golden.AssertMatchesFile(t, actualYAML, path.Join(srcDir, expectedClusterPath))
+}
+
+// TestCreateClusterInvalidMachineTypes checks that a list of machine types that cannot share one image,
+// or that has an empty element, is rejected before the cluster is stored.
+func TestCreateClusterInvalidMachineTypes(t *testing.T) {
+	tests := []struct {
+		name              string
+		nodeSizes         []string
+		controlPlaneSizes []string
+		expectedError     string
+	}{
+		{
+			name:          "different architectures",
+			nodeSizes:     []string{"m5.large", "m6g.xlarge"},
+			expectedError: `unable to determine machine architecture for InstanceGroup "nodes-us-test-1a": machine types "m5.large" and "m6g.xlarge" have different architectures (amd64 and arm64)`,
+		},
+		{
+			name:          "empty node size",
+			nodeSizes:     []string{"", "m6g.xlarge"},
+			expectedError: "--node-size cannot contain an empty machine type",
+		},
+		{
+			name:              "empty control-plane size",
+			controlPlaneSizes: []string{"m5.large", ""},
+			expectedError:     "--control-plane-size cannot contain an empty machine type",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			h := testutils.NewIntegrationTestHarness(t)
+			defer h.Close()
+			h.SetupMockAWS()
+
+			factory := util.NewFactory(&util.FactoryOptions{RegistryPath: "memfs://tests"})
+
+			options := &CreateClusterOptions{}
+			options.InitDefaults()
+			options.ClusterName = "mixed.example.com"
+			options.CloudProvider = "aws"
+			options.Zones = []string{"us-test-1a"}
+			options.KubernetesVersion = "v1.32.0"
+			options.NodeSizes = test.nodeSizes
+			options.ControlPlaneSizes = test.controlPlaneSizes
+
+			var stdout bytes.Buffer
+			err := RunCreateCluster(context.Background(), factory, &stdout, options)
+			if err == nil || !strings.Contains(err.Error(), test.expectedError) {
+				t.Fatalf("expected error containing %q, got %v", test.expectedError, err)
+			}
+
+			clientset, err := factory.KopsClient()
+			if err != nil {
+				t.Fatalf("error getting clientset: %v", err)
+			}
+			if _, err := clientset.GetCluster(context.Background(), options.ClusterName); !errors.IsNotFound(err) {
+				t.Errorf("expected cluster to not be stored, got %v", err)
+			}
+		})
+	}
 }
