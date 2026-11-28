@@ -151,3 +151,12 @@ spec:
       - t2.nano
   subnets:
   - us-test-1a
+  volumes:
+  - device: /dev/sdf
+    size: 50
+    type: gp3
+    throughput: 250
+  volumeMounts:
+  - device: /dev/sdf
+    filesystem: ext4
+    path: /data

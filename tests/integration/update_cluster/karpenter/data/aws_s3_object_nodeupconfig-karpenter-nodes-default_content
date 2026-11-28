@@ -58,6 +58,10 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
+VolumeMounts:
+- device: /dev/sdf
+  filesystem: ext4
+  path: /data
 containerdConfig:
   logLevel: info
   runc:

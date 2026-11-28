@@ -3229,6 +3229,14 @@ spec:
       volumeSize: 128Gi
       volumeType: gp3
     rootVolume: true
+  - deviceName: /dev/sdf
+    ebs:
+      deleteOnTermination: true
+      encrypted: true
+      iops: 3000
+      throughput: 250
+      volumeSize: 50Gi
+      volumeType: gp3
   instanceProfile: nodes.minimal.example.com
   kubelet:
     kubeReserved:
@@ -3392,7 +3400,7 @@ spec:
       - https://kops-controller.internal.minimal.example.com:3988/
     InstanceGroupName: karpenter-nodes-default
     InstanceGroupRole: Node
-    NodeupConfigHash: EAmpK0iG6ORF5m1m/9T5lJPh7/MUtRwqlnNvgzRFdo4=
+    NodeupConfigHash: fS2OhzHBt1UGNDLNaPnCsObCQVSZiIqWF2EjeG3R+00=
 
     __EOF_KUBE_ENV
 

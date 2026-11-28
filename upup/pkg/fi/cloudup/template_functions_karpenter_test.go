@@ -573,11 +573,13 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 	}
 
 	grid := []struct {
-		desc        string
-		role        kops.InstanceGroupRole
-		rootVolume  *kops.InstanceRootVolumeSpec
-		expected    *karpenterBlockDeviceEBS
-		expectError bool
+		desc            string
+		role            kops.InstanceGroupRole
+		rootVolume      *kops.InstanceRootVolumeSpec
+		volumes         []kops.VolumeSpec
+		expected        *karpenterBlockDeviceEBS
+		expectedVolumes []karpenterBlockDeviceMapping
+		expectError     bool
 	}{
 		{
 			desc:     "no rootVolume uses the kOps defaults",
@@ -692,6 +694,24 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 			role:        kops.InstanceGroupRole("Bogus"),
 			expectError: true,
 		},
+		{
+			desc:     "volumes follow the root volume",
+			volumes:  []kops.VolumeSpec{{Device: "/dev/sdf", Size: 50}},
+			expected: rootEBS(),
+			expectedVolumes: []karpenterBlockDeviceMapping{
+				buildKarpenterVolumeBlockDeviceMapping(kops.VolumeSpec{Device: "/dev/sdf", Size: 50}),
+			},
+		},
+		{
+			desc:        "volume on the root device",
+			volumes:     []kops.VolumeSpec{{Device: "/dev/xvda", Size: 10}},
+			expectError: true,
+		},
+		{
+			desc:        "volume on the root device without the /dev/ prefix",
+			volumes:     []kops.VolumeSpec{{Device: "xvda", Size: 10}},
+			expectError: true,
+		},
 	}
 
 	for _, g := range grid {
@@ -704,6 +724,7 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:       role,
 					RootVolume: g.rootVolume,
+					Volumes:    g.volumes,
 				},
 			}
 			actual, err := buildKarpenterBlockDeviceMappings(ig, "/dev/xvda")
@@ -723,8 +744,115 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 					RootVolume: new(true),
 				},
 			}
+			expected = append(expected, g.expectedVolumes...)
 			if diff := cmp.Diff(expected, actual); diff != "" {
 				t.Errorf("unexpected blockDeviceMappings, diff=%v", diff)
+			}
+		})
+	}
+}
+
+func TestBuildKarpenterVolumeBlockDeviceMapping(t *testing.T) {
+	volumeEBS := func(mutators ...func(*karpenterBlockDeviceEBS)) *karpenterBlockDeviceEBS {
+		ebs := &karpenterBlockDeviceEBS{
+			DeleteOnTermination: new(true),
+			Encrypted:           new(true),
+			IOPS:                new(int64(3000)),
+			Throughput:          new(int64(125)),
+			VolumeSize:          "100Gi",
+			VolumeType:          "gp3",
+		}
+		for _, mutate := range mutators {
+			mutate(ebs)
+		}
+		return ebs
+	}
+
+	grid := []struct {
+		desc     string
+		volume   kops.VolumeSpec
+		expected *karpenterBlockDeviceEBS
+	}{
+		{
+			desc:     "defaults",
+			volume:   kops.VolumeSpec{},
+			expected: volumeEBS(),
+		},
+		{
+			desc:   "gp3 with iops and throughput",
+			volume: kops.VolumeSpec{Type: "gp3", IOPS: new(int64(6000)), Throughput: new(int64(500))},
+			expected: volumeEBS(func(e *karpenterBlockDeviceEBS) {
+				e.IOPS = new(int64(6000))
+				e.Throughput = new(int64(500))
+			}),
+		},
+		{
+			desc:   "io2 defaults iops and drops throughput",
+			volume: kops.VolumeSpec{Type: "io2", Throughput: new(int64(500))},
+			expected: volumeEBS(func(e *karpenterBlockDeviceEBS) {
+				e.VolumeType = "io2"
+				e.IOPS = new(int64(100))
+				e.Throughput = nil
+			}),
+		},
+		{
+			desc:   "io1 keeps iops",
+			volume: kops.VolumeSpec{Type: "io1", IOPS: new(int64(4000))},
+			expected: volumeEBS(func(e *karpenterBlockDeviceEBS) {
+				e.VolumeType = "io1"
+				e.IOPS = new(int64(4000))
+				e.Throughput = nil
+			}),
+		},
+		{
+			desc:   "st1 drops iops and throughput",
+			volume: kops.VolumeSpec{Type: "st1", IOPS: new(int64(4000)), Throughput: new(int64(500))},
+			expected: volumeEBS(func(e *karpenterBlockDeviceEBS) {
+				e.VolumeType = "st1"
+				e.IOPS = nil
+				e.Throughput = nil
+			}),
+		},
+		{
+			desc: "retained, unencrypted volume",
+			volume: kops.VolumeSpec{
+				DeleteOnTermination: new(false),
+				Encrypted:           new(false),
+			},
+			expected: volumeEBS(func(e *karpenterBlockDeviceEBS) {
+				e.DeleteOnTermination = new(false)
+				e.Encrypted = new(false)
+			}),
+		},
+		{
+			desc:   "encryption key",
+			volume: kops.VolumeSpec{Key: new("arn:aws:kms:us-test-1:123456789012:key/test")},
+			expected: volumeEBS(func(e *karpenterBlockDeviceEBS) {
+				e.KMSKeyID = new("arn:aws:kms:us-test-1:123456789012:key/test")
+			}),
+		},
+		{
+			desc: "encryption key of an unencrypted volume is dropped",
+			volume: kops.VolumeSpec{
+				Encrypted: new(false),
+				Key:       new("arn:aws:kms:us-test-1:123456789012:key/test"),
+			},
+			expected: volumeEBS(func(e *karpenterBlockDeviceEBS) { e.Encrypted = new(false) }),
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			volume := g.volume
+			volume.Device = "/dev/sdf"
+			volume.Size = 100
+			expected := karpenterBlockDeviceMapping{
+				DeviceName: "/dev/sdf",
+				EBS:        g.expected,
+			}
+			actual := buildKarpenterVolumeBlockDeviceMapping(volume)
+			if diff := cmp.Diff(expected, actual); diff != "" {
+				t.Errorf("unexpected blockDeviceMapping, diff=%v", diff)
 			}
 		})
 	}
