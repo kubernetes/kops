@@ -96,7 +96,8 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 			env = append(env, fmt.Sprintf("%s=%s", k, v))
 		}
 	}
-	if strings.HasPrefix(b.StageLocation, "s3://") {
+	switch {
+	case strings.HasPrefix(b.StageLocation, "s3://"):
 		store, err := b.s3Store()
 		if err != nil {
 			return nil, err
@@ -104,7 +105,15 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		if err := b.publishKops(ctx, env, store); err != nil {
 			return nil, err
 		}
-	} else {
+	case strings.HasPrefix(b.StageLocation, "azureblob://"):
+		store, err := b.azureBlobStore()
+		if err != nil {
+			return nil, err
+		}
+		if err := b.publishKops(ctx, env, store); err != nil {
+			return nil, err
+		}
+	default:
 		env = append(env, fmt.Sprintf("GCS_LOCATION=%v", gcsLocation))
 		if err := b.runKopsMake("gcs-publish-ci", env); err != nil {
 			return nil, err
@@ -147,6 +156,9 @@ func (b *BuildOptions) kubeStageLocation(ctx context.Context) (bucket, bucketRoo
 	// krel can push to S3, but neither to another endpoint nor with public-read ACLs.
 	if b.StageEndpoint != "" {
 		return "", "", "", fmt.Errorf("building Kubernetes is not supported with a stage location at %s", b.StageEndpoint)
+	}
+	if strings.HasPrefix(b.StageLocation, "azureblob://") {
+		return "", "", "", fmt.Errorf("building Kubernetes is not supported with an azureblob:// stage location")
 	}
 	if strings.HasPrefix(b.StageLocation, "s3://") {
 		return b.s3KubeStageLocation(ctx)

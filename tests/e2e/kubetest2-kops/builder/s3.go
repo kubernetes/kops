@@ -35,6 +35,16 @@ import (
 // staging bucket. Their keys follow krel.S3ObjectKey, the convention krel uses for the Kubernetes
 // artifacts, so that the URLs that kops builds from a version containing a "+" resolve.
 
+// artifactStore is a bucket that publishKops uploads the kops artifacts to.
+type artifactStore interface {
+	// stagePrefix is the path of the stage location within the bucket.
+	stagePrefix() string
+	sync(dir, urlPath string) error
+	copy(file, urlPath string) error
+	// objectURL returns the https:// URL that serves urlPath.
+	objectURL(ctx context.Context, urlPath string) (string, error)
+}
+
 // objectStore is an S3-compatible bucket that the AWS CLI uploads the staged artifacts to, and that
 // serves them over https://.
 type objectStore struct {
@@ -77,7 +87,7 @@ func (b *BuildOptions) s3Store() (*objectStore, error) {
 
 // publishKops is the object store counterpart of "make gcs-publish-ci". The upload runs outside of
 // make, because the Makefile unexports the AWS credential env vars.
-func (b *BuildOptions) publishKops(ctx context.Context, env []string, store *objectStore) error {
+func (b *BuildOptions) publishKops(ctx context.Context, env []string, store artifactStore) error {
 	if err := b.runKopsMake("version-dist-ci", env); err != nil {
 		return err
 	}
@@ -87,12 +97,12 @@ func (b *BuildOptions) publishKops(ctx context.Context, env []string, store *obj
 	}
 
 	uploadDir := filepath.Join(b.KopsRoot, ".build", "upload")
-	versionPath := path.Join(store.prefix, version)
+	versionPath := path.Join(store.stagePrefix(), version)
 	if err := store.sync(filepath.Join(uploadDir, "kops", version), versionPath); err != nil {
 		return err
 	}
 
-	kopsBaseURL, err := store.publicURL(ctx, versionPath)
+	kopsBaseURL, err := store.objectURL(ctx, versionPath)
 	if err != nil {
 		return err
 	}
@@ -101,7 +111,7 @@ func (b *BuildOptions) publishKops(ctx context.Context, env []string, store *obj
 	if err := os.WriteFile(latestPath, []byte(kopsBaseURL+"\n"), 0o600); err != nil {
 		return fmt.Errorf("failed to WriteFile(%q): %w", latestPath, err)
 	}
-	return store.copy(latestPath, path.Join(store.prefix, "latest-ci.txt"))
+	return store.copy(latestPath, path.Join(store.stagePrefix(), "latest-ci.txt"))
 }
 
 // s3KubeStageLocation is the s3:// counterpart of kubeStageLocation.
@@ -148,6 +158,14 @@ func parseKopsVersion(lines []string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("no VERSION in the output of tools/get_version.sh: %q", lines)
+}
+
+func (s *objectStore) stagePrefix() string {
+	return s.prefix
+}
+
+func (s *objectStore) objectURL(ctx context.Context, urlPath string) (string, error) {
+	return s.publicURL(ctx, urlPath)
 }
 
 // sync uploads the contents of dir to the objects served under urlPath.

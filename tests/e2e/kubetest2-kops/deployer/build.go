@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/azure"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/util"
@@ -38,6 +39,7 @@ const (
 	defaultJobName    = "pull-kops-e2e-kubernetes-aws"
 	defaultGCSPath    = "gs://k8s-staging-kops/pulls/%v/pull-%v"
 	defaultSpacesPath = "s3://" + do.StagingBucket + "/pulls/%v/pull-%v"
+	defaultAzurePath  = azure.StagingContainer + "/pulls/%v/pull-%v"
 )
 
 func (d *deployer) Build() (err error) {
@@ -124,7 +126,7 @@ func (d *deployer) verifyBuildFlags() error {
 	ctx := context.Background()
 	if d.StageLocation == "" {
 		switch {
-		case d.boskos != nil:
+		case d.boskos != nil && d.CloudProvider == "gce":
 			d.StageLocation = d.stagingStore()
 			klog.Infof("creating staging bucket %s to hold kops/kubernetes build artifacts", d.StageLocation)
 			if err := gce.EnsureGCSBucket(d.StageLocation, d.region, d.GCPProject, true); err != nil {
@@ -146,6 +148,13 @@ func (d *deployer) verifyBuildFlags() error {
 				return err
 			}
 			d.StageLocation = stageLocation
+		case d.CloudProvider == "azure":
+			stageLocation, err := defaultStageLocation(d.KopsRoot, defaultAzurePath)
+			if err != nil {
+				return err
+			}
+			d.StageLocation = stageLocation
+
 		default:
 			stageLocation, err := defaultStageLocation(d.KopsRoot, defaultGCSPath)
 			if err != nil {
@@ -155,11 +164,21 @@ func (d *deployer) verifyBuildFlags() error {
 		}
 	}
 	// The location can also come from KOPS_STAGING_BUCKET.
-	if !strings.HasPrefix(d.StageLocation, "gs://") && !strings.HasPrefix(d.StageLocation, "s3://") {
-		return fmt.Errorf("stage-location %q must be a gs:// or s3:// path", d.StageLocation)
+	if !strings.HasPrefix(d.StageLocation, "gs://") && !strings.HasPrefix(d.StageLocation, "s3://") && !strings.HasPrefix(d.StageLocation, "azureblob://") {
+		return fmt.Errorf("stage-location %q must be a gs://, s3:// or azureblob:// path", d.StageLocation)
 	}
 
 	stageURL := strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
+	if strings.HasPrefix(d.StageLocation, "azureblob://") {
+		if d.BuildOptions.BuildKubernetes {
+			return errors.New("--build-kubernetes is not supported with an azureblob:// stage-location")
+		}
+		account, container, prefix, err := azure.SplitBlobURL(d.StageLocation)
+		if err != nil {
+			return err
+		}
+		stageURL = azure.PublicObjectURL(account, container, prefix)
+	}
 	if strings.HasPrefix(d.StageLocation, "s3://") {
 		bucket, prefix, err := aws.SplitS3URL(d.StageLocation)
 		if err != nil {
