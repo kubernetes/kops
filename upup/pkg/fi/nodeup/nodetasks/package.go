@@ -60,6 +60,18 @@ const (
 	dockerPackageName           = "docker-ce"
 )
 
+// aptGetArgs builds apt-get arguments with bounded HTTP/HTTPS socket timeouts and dpkg lock wait
+// so mirror or lock stalls fail and rely on nodeup's existing task retries.
+func aptGetArgs(subcommandArgs ...string) []string {
+	args := []string{
+		"apt-get",
+		"-o", "Acquire::http::Timeout=30",
+		"-o", "Acquire::https::Timeout=30",
+		"-o", "DPkg::Lock::Timeout=60",
+	}
+	return append(args, subcommandArgs...)
+}
+
 var _ fi.NodeupHasDependencies = (*Package)(nil)
 
 // GetDependencies computes dependencies for the package task
@@ -337,8 +349,9 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 		// If the package manager update was less than 10 minutes ago, skip updating the package list.
 		if d.IsDebianFamily() && time.Since(packageManagerLastUpdated) > 10*time.Minute {
-			klog.Infof("Running command apt-get update")
-			cmd := exec.Command("apt-get", "update")
+			updateArgs := aptGetArgs("update")
+			klog.Infof("Running command %s", updateArgs)
+			cmd := exec.Command(updateArgs[0], updateArgs[1:]...)
 			cmd.Env = env
 			output, err := cmd.CombinedOutput()
 			if err != nil {
@@ -350,7 +363,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 		var args []string
 		if d.IsDebianFamily() {
-			args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
+			args = aptGetArgs("install", "--yes", "--no-install-recommends")
 		} else if d.IsRHELFamily() {
 
 			if d.HasDNF() {
