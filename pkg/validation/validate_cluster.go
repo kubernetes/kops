@@ -76,6 +76,10 @@ type clusterValidatorImpl struct {
 	// filterPodsForValidation is a function that returns true if the pod should be validated
 	filterPodsForValidation func(pod *v1.Pod) bool
 
+	// podsOnValidatedNodesOnly restricts pod validation to the pods scheduled
+	// on the nodes of the instance groups being validated.
+	podsOnValidatedNodesOnly bool
+
 	maxUnreadyNodes int
 }
 
@@ -148,6 +152,33 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 		filterInstanceGroups:    filterInstanceGroups,
 		filterPodsForValidation: filterPodsForValidation,
 		maxUnreadyNodes:         maxUnreadyNodes,
+	}, nil
+}
+
+// NewInstanceGroupValidator returns a validator that only considers the given
+// instance groups: their cloud groups, the nodes backing them, and the critical
+// pods scheduled on those nodes.
+//
+// The rest of the cluster is ignored. In a very large cluster there is often a
+// node or a pod somewhere that is not ready, so validating the whole cluster
+// cannot be relied on to wait for a single instance group to come up.
+func NewInstanceGroupValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroups []*kops.InstanceGroup, maxUnreadyNodes int, restConfig *rest.Config, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+	if len(instanceGroups) == 0 {
+		return nil, fmt.Errorf("no InstanceGroup objects to validate")
+	}
+
+	return &clusterValidatorImpl{
+		cluster: cluster,
+		cloud:   cloud,
+		// Only these instance groups are passed to the cloud provider, which
+		// then skips the cloud groups (and their instances) of all the others.
+		allInstanceGroups:        instanceGroups,
+		restConfig:               restConfig,
+		k8sClient:                k8sClient,
+		filterInstanceGroups:     func(ig *kops.InstanceGroup) bool { return true },
+		filterPodsForValidation:  func(pod *v1.Pod) bool { return true },
+		podsOnValidatedNodesOnly: true,
+		maxUnreadyNodes:          maxUnreadyNodes,
 	}, nil
 }
 
@@ -256,7 +287,20 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 
 	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(ctx, cloudGroups, v.allInstanceGroups, v.filterInstanceGroups, toleratedNodes, failureReporter)
 
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filterPodsForValidation, toleratedNodes); err != nil {
+	filterPodsForValidation := v.filterPodsForValidation
+	if v.podsOnValidatedNodesOnly {
+		// A pod that is not bound to a node yet cannot be attributed to an
+		// instance group, so it is ignored as well.
+		baseFilter := filterPodsForValidation
+		filterPodsForValidation = func(pod *v1.Pod) bool {
+			if _, found := nodeInstanceGroupMapping[pod.Spec.NodeName]; !found {
+				return false
+			}
+			return baseFilter(pod)
+		}
+	}
+
+	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, filterPodsForValidation, toleratedNodes); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
 	}
 

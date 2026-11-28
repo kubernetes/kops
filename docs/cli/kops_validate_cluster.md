@@ -14,6 +14,8 @@ This commands validates the following components:
   3.  All control plane nodes have the expected pods.
   4.  All pods with a critical priority are running and have "Ready" status.
 
+ When --instance-group or --instance-group-roles is specified, only the matching instance groups, their nodes, and the critical pods scheduled on those nodes are validated. Nodes and pods outside those instance groups cannot fail the validation.
+
 ```
 kops validate cluster [CLUSTER] [flags]
 ```
@@ -24,20 +26,28 @@ kops validate cluster [CLUSTER] [flags]
   # Validate the cluster set as the current context of the kube config.
   # Kops will try for 10 minutes to validate the cluster 3 times.
   kops validate cluster --wait 10m --count 3
+  
+  # Validate only the "addons" instance group, waiting up to 10 minutes.
+  kops validate cluster --instance-group addons --wait 10m
+  
+  # Validate all control-plane instance groups.
+  kops validate cluster --instance-group-roles control-plane --wait 10m
 ```
 
 ### Options
 
 ```
-      --api-server string       Override the API server URL without changing TLS or authentication settings
-      --count int               Number of consecutive successful validations required
-  -h, --help                    help for cluster
-      --interval duration       Time in duration to wait between validation attempts (default 10s)
-      --kubeconfig string       Path to the kubeconfig file
-      --max-unready-nodes int   The maximum number of non-ready worker nodes tolerated during validation
-  -o, --output string           Output format. One of json|yaml|table. (default "table")
-      --use-kubeconfig          Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings
-      --wait duration           Amount of time to wait for the cluster to become ready
+      --api-server string              Override the API server URL without changing TLS or authentication settings
+      --count int                      Number of consecutive successful validations required
+  -h, --help                           help for cluster
+      --instance-group strings         Instance groups to validate (defaults to all if not specified)
+      --instance-group-roles strings   Instance group roles to validate (control-plane,apiserver,node,bastion,etcd,scheduler,kubecontrollermanager)
+      --interval duration              Time in duration to wait between validation attempts (default 10s)
+      --kubeconfig string              Path to the kubeconfig file
+      --max-unready-nodes int          The maximum number of non-ready worker nodes tolerated during validation
+  -o, --output string                  Output format. One of json|yaml|table. (default "table")
+      --use-kubeconfig                 Use the cluster's local kubeconfig context, including TLS, proxy and authentication settings
+      --wait duration                  Amount of time to wait for the cluster to become ready
 ```
 
 ### Options inherited from parent commands
