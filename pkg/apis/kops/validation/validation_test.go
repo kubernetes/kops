@@ -317,6 +317,19 @@ func TestValidateKubeAPIServer(t *testing.T) {
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
+				ServiceAccountMaxTokenExpiration: &metav1.Duration{Duration: 30 * time.Minute},
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer.serviceAccountMaxTokenExpiration",
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				ServiceAccountMaxTokenExpiration: &metav1.Duration{Duration: 2 * time.Hour},
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
 				AuthorizationMode: &authzMode,
 			},
 			ExpectedErrors: []string{
