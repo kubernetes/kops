@@ -105,6 +105,59 @@ spec:
     needsRollingUpdate: all
     selector:
       role.kubernetes.io/networking: "1"
+  - id: k8s-1.25
+    manifest: aws-network-policy-controller.addons.k8s.io/k8s-1.25.yaml
+    manifestHash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    name: aws-network-policy-controller.addons.k8s.io
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io
+        kind: MutatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io
+        kind: ValidatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apiregistration.k8s.io
+        kind: APIService
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: networking.k8s.io
+        kind: IngressClass
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: storage.k8s.io
+        kind: CSIDriver
+        labelSelector: addon.kops.k8s.io/name=aws-network-policy-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+    selector:
+      k8s-addon: aws-network-policy-controller.addons.k8s.io
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
     manifestHash: b78016a84a21bc62c130521ef29ffdaec65874360dc911b65a50d94a1fc7a546
