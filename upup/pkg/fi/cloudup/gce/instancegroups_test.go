@@ -21,6 +21,7 @@ import (
 	"time"
 
 	compute "google.golang.org/api/compute/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/pkg/apis/kops"
@@ -314,5 +315,72 @@ func TestGetCloudGroups(t *testing.T) {
 	g := groups[testMIG]
 	if g == nil || len(g.NeedUpdate) != 1 || g.NeedUpdate[0].ID != testMIG {
 		t.Fatalf("unexpected group %q: %+v", testMIG, g)
+	}
+}
+
+func TestGetCloudGroupsKarpenter(t *testing.T) {
+	cloud := newTestCloud(t)
+	clusterName := "testcluster.example.com"
+	clusterLabel := gceup.LabelForCluster(clusterName)
+
+	// Matching Karpenter instance for the cluster and instance group.
+	if _, err := cloud.Compute().Instances().Insert(testProject, testZone, &compute.Instance{
+		Name: "karpenter-node-1",
+		Labels: map[string]string{
+			clusterLabel.Key:                clusterLabel.Value,
+			gceup.GceLabelNameInstanceGroup: "karpenter-nodes",
+		},
+	}); err != nil {
+		t.Fatalf("Insert Instance: %v", err)
+	}
+	// Instance from another cluster with the same instance group label must be ignored.
+	if _, err := cloud.Compute().Instances().Insert(testProject, testZone, &compute.Instance{
+		Name: "karpenter-node-other-cluster",
+		Labels: map[string]string{
+			clusterLabel.Key:                "othercluster-example-com",
+			gceup.GceLabelNameInstanceGroup: "karpenter-nodes",
+		},
+	}); err != nil {
+		t.Fatalf("Insert Instance: %v", err)
+	}
+	// Instance belonging to a non-Karpenter instance group must not be matched into the Karpenter group.
+	if _, err := cloud.Compute().Instances().Insert(testProject, testZone, &compute.Instance{
+		Name: "mig-node-1",
+		Labels: map[string]string{
+			clusterLabel.Key:                clusterLabel.Value,
+			gceup.GceLabelNameInstanceGroup: "other-ig",
+		},
+	}); err != nil {
+		t.Fatalf("Insert Instance: %v", err)
+	}
+
+	cluster := &kops.Cluster{ObjectMeta: metav1.ObjectMeta{Name: clusterName}}
+	ig := &kops.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "karpenter-nodes"},
+		Spec: kops.InstanceGroupSpec{
+			Role:    kops.InstanceGroupRoleNode,
+			Manager: kops.InstanceManagerKarpenter,
+		},
+	}
+	nodes := []v1.Node{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "karpenter-node-1"},
+			Spec:       v1.NodeSpec{ProviderID: "gce://" + testProject + "/" + testZone + "/karpenter-node-1"},
+		},
+	}
+
+	groups, err := gceup.GetCloudGroups(cloud, cluster, []*kops.InstanceGroup{ig}, false, nodes)
+	if err != nil {
+		t.Fatalf("GetCloudGroups() error = %v", err)
+	}
+	g := groups["karpenter-nodes"]
+	if g == nil {
+		t.Fatalf("expected group %q in %+v", "karpenter-nodes", groups)
+	}
+	if len(g.Ready) != 1 || len(g.NeedUpdate) != 0 {
+		t.Fatalf("got Ready=%d NeedUpdate=%d, want 1 and 0", len(g.Ready), len(g.NeedUpdate))
+	}
+	if g.Ready[0].Node == nil || g.Ready[0].Node.Name != "karpenter-node-1" {
+		t.Errorf("got Node=%+v, want karpenter-node-1", g.Ready[0].Node)
 	}
 }

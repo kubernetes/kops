@@ -371,8 +371,10 @@ func validateKarpenterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster
 		return allErrs
 	}
 
-	if cluster.GetCloudProvider() != kops.CloudProviderAWS {
-		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups are only supported on AWS"))
+	switch cluster.GetCloudProvider() {
+	case kops.CloudProviderAWS, kops.CloudProviderGCE:
+	default:
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups are only supported on AWS and GCE"))
 	}
 	if !cluster.Spec.Karpenter.IsEnabled() {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups require cluster.spec.karpenter.enabled"))
@@ -383,7 +385,9 @@ func validateKarpenterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster
 	if g.Spec.MaxSize != nil && *g.Spec.MaxSize <= 0 {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "maxSize"), *g.Spec.MaxSize, "must be greater than zero"))
 	}
-	allErrs = append(allErrs, validateKarpenterAMISelectorImage(g.Spec.Image, field.NewPath("spec", "image"))...)
+	if cluster.GetCloudProvider() == kops.CloudProviderAWS {
+		allErrs = append(allErrs, validateKarpenterAMISelectorImage(g.Spec.Image, field.NewPath("spec", "image"))...)
+	}
 	allErrs = append(allErrs, validateKarpenterStaticCapacity(g, cluster)...)
 	allErrs = append(allErrs, validateKarpenterInstanceRequirements(g)...)
 	return allErrs

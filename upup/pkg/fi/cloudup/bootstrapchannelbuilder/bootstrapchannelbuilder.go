@@ -1180,6 +1180,10 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			// A partial update copies the objects of the other instance groups from the manifest at
 			// this location, so changing the id would make the next partial update prune them.
 			id := "k8s-1.19"
+			if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
+				// GCE clusters deploy karpenter-provider-gcp in self-hosted mode.
+				id = "k8s-1.19-gce"
+			}
 			location := key + "/" + id + ".yaml"
 			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     new(key),
@@ -1191,7 +1195,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				serviceAccountRoles = append(serviceAccountRoles, &karpenter.ServiceAccount{})
 			}
 			addon.BuildPrune = true
-			addon.InstanceGroupKinds = karpenterInstanceGroupKinds
+			addon.InstanceGroupKinds = karpenterInstanceGroupKinds(b.Cluster.GetCloudProvider())
 		}
 	}
 

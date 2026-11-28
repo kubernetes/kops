@@ -45,7 +45,8 @@ func gceValidateInstanceGroup(ig *kops.InstanceGroup, cloud gce.GCECloud) field.
 		allErrs = append(allErrs, IsValidValue(fieldSpec.Child("gcpProvisioningModel"), ig.Spec.GCPProvisioningModel, []string{"STANDARD", "SPOT"})...)
 	}
 
-	if len(ig.Spec.Zones) == 0 {
+	// Karpenter chooses zones within the subnet's region rather than using spec.zones.
+	if !ig.IsKarpenterManaged() && len(ig.Spec.Zones) == 0 {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec", "zones"), "zones should be specified"))
 	}
 	return allErrs

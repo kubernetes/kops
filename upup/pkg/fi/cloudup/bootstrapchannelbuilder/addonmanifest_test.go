@@ -306,7 +306,7 @@ func TestAddonManifestNormalizeKeepsInstanceGroupObjects(t *testing.T) {
 					AllInstanceGroups: testInstanceGroups(g.cloudGroups, g.allInstanceGroups...),
 					InstanceGroups:    testInstanceGroups(g.cloudGroups, g.instanceGroups...),
 				},
-				instanceGroupKinds: karpenterInstanceGroupKinds,
+				instanceGroupKinds: karpenterInstanceGroupKinds(kops.CloudProviderAWS),
 			}
 
 			err = addon.Normalize(cloudupContext)
@@ -327,6 +327,56 @@ func TestAddonManifestNormalizeKeepsInstanceGroupObjects(t *testing.T) {
 				t.Errorf("addon contents:\n%s\nwant:\n%s", actual, expected)
 			}
 		})
+	}
+}
+
+func TestAddonManifestNormalizeKeepsInstanceGroupObjectsGCE(t *testing.T) {
+	settings := func(version string) string {
+		return fmt.Sprintf("apiVersion: v1\ndata:\n  version: %s\nkind: ConfigMap\nmetadata:\n  name: settings\n", version)
+	}
+	objects := func(name, version string) string {
+		return testManifest(
+			fmt.Sprintf("apiVersion: karpenter.k8s.gcp/v1alpha1\nkind: GCENodeClass\nmetadata:\n  name: %s\nspec:\n  version: %s\n", name, version),
+			fmt.Sprintf("apiVersion: karpenter.sh/v1\nkind: NodePool\nmetadata:\n  name: %s\nspec:\n  version: %s\n", name, version),
+		)
+	}
+	previousManifest := testManifest(settings("old"), objects("a", "old"), objects("b", "old"))
+
+	ctx := context.Background()
+	configBase := vfs.NewMemFSPath(vfs.NewMemFSContext(), "clusters.example.com/minimal-gce.example.com")
+	location := "addons/karpenter.sh/k8s-1.19-gce.yaml"
+	if err := configBase.Join(location).WriteFile(ctx, bytes.NewReader([]byte(previousManifest)), nil); err != nil {
+		t.Fatalf("writing the previous manifest: %v", err)
+	}
+	cloudupContext, err := fi.NewCloudupContext(ctx, fi.DeletionProcessingModeDeleteIncludingDeferred, nil, nil, nil, nil, nil, configBase, map[string]fi.CloudupTask{})
+	if err != nil {
+		t.Fatalf("building cloudup context: %v", err)
+	}
+
+	addon := &AddonManifest{
+		Name:          new("karpenter.sh"),
+		Location:      new(location),
+		source:        fi.NewBytesResource([]byte("{{ template }}")),
+		addonRenderer: &recordingAddonRenderer{rendered: []byte(testManifest(settings("new"), objects("a", "new")))},
+		addonSpec:     testAddonSpec("karpenter.sh"),
+		skipRemap:     true,
+		modelContext: &model.KopsModelContext{
+			AllInstanceGroups: testInstanceGroups(nil, "control-plane", "b", "a"),
+			InstanceGroups:    testInstanceGroups(nil, "a"),
+		},
+		instanceGroupKinds: karpenterInstanceGroupKinds(kops.CloudProviderGCE),
+	}
+
+	if err := addon.Normalize(cloudupContext); err != nil {
+		t.Fatalf("normalizing GCE addon: %v", err)
+	}
+	actual, err := fi.ResourceAsString(addon.Contents)
+	if err != nil {
+		t.Fatalf("reading addon contents: %v", err)
+	}
+	expected := strings.TrimSpace(testManifest(settings("new"), objects("b", "old"), objects("a", "new")))
+	if actual != expected {
+		t.Errorf("addon contents:\n%s\nwant:\n%s", actual, expected)
 	}
 }
 

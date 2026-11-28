@@ -44,11 +44,9 @@ const (
 	karpenterNodePoolLabel     = "karpenter.sh/nodepool"
 	karpenterCapacityTypeLabel = "karpenter.sh/capacity-type"
 
-	karpenterOSLabel             = "kubernetes.io/os"
-	karpenterInstanceTypeLabel   = "node.kubernetes.io/instance-type"
-	karpenterInstanceCPULabel    = "karpenter.k8s.aws/instance-cpu"
-	karpenterInstanceMemoryLabel = "karpenter.k8s.aws/instance-memory"
-	karpenterInstanceFamilyLabel = "karpenter.k8s.aws/instance-family"
+	karpenterOSLabel                     = "kubernetes.io/os"
+	karpenterInstanceTypeLabel           = "node.kubernetes.io/instance-type"
+	karpenterCiliumAgentNotReadyTaintKey = "node.cilium.io/agent-not-ready"
 )
 
 type karpenterObjectMeta struct {
@@ -153,9 +151,10 @@ type karpenterNodeClaimMetadata struct {
 }
 
 type karpenterNodeClaimSpec struct {
-	Requirements []karpenterRequirement `json:"requirements,omitempty"`
-	Taints       []karpenterTaint       `json:"taints,omitempty"`
-	NodeClassRef karpenterNodeClassRef  `json:"nodeClassRef"`
+	Requirements  []karpenterRequirement `json:"requirements,omitempty"`
+	Taints        []karpenterTaint       `json:"taints,omitempty"`
+	StartupTaints []karpenterTaint       `json:"startupTaints,omitempty"`
+	NodeClassRef  karpenterNodeClassRef  `json:"nodeClassRef"`
 }
 
 type karpenterRequirement struct {
@@ -180,7 +179,12 @@ func (tf *TemplateFunctions) KarpenterInstanceGroups() []*kops.InstanceGroup {
 	if tf.tasks == nil {
 		return nil
 	}
-	if tf.Cluster == nil || tf.Cluster.GetCloudProvider() != kops.CloudProviderAWS {
+	if tf.Cluster == nil {
+		return nil
+	}
+	switch tf.Cluster.GetCloudProvider() {
+	case kops.CloudProviderAWS, kops.CloudProviderGCE:
+	default:
 		return nil
 	}
 	if !tf.Cluster.Spec.Karpenter.IsEnabled() {
@@ -209,6 +213,8 @@ func (tf *TemplateFunctions) KarpenterNodePool(ig *kops.InstanceGroup) (string, 
 	switch cloudProvider := tf.Cluster.GetCloudProvider(); cloudProvider {
 	case kops.CloudProviderAWS:
 		nodeClassKind = schema.GroupKind{Group: karpenterAWSAPIGroup, Kind: "EC2NodeClass"}
+	case kops.CloudProviderGCE:
+		nodeClassKind = schema.GroupKind{Group: karpenterGCPAPIGroup, Kind: "GCENodeClass"}
 	default:
 		return "", fmt.Errorf("Karpenter NodePool is not supported for cloud provider %q", cloudProvider)
 	}
@@ -439,7 +445,7 @@ func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup, node
 
 	template := karpenterNodeClaimTemplate{
 		Spec: karpenterNodeClaimSpec{
-			Requirements: tf.karpenterRequirements(ig),
+			Requirements: tf.karpenterRequirements(ig, nodeClassKind.Group),
 			NodeClassRef: karpenterNodeClassRef{
 				Group: nodeClassKind.Group,
 				Kind:  nodeClassKind.Kind,
@@ -459,6 +465,16 @@ func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup, node
 			Key:    taint["key"],
 			Value:  taint["value"],
 			Effect: taint["effect"],
+		})
+	}
+	// Cilium always enables set-cilium-node-taints with agent-not-ready-taint-key in kOps, so
+	// newly registered nodes carry node.cilium.io/agent-not-ready:NoSchedule until cilium-agent
+	// is ready. Declaring it as a startupTaint prevents Karpenter from launching a duplicate
+	// NodeClaim for the pending pod while the first node is still initializing.
+	if tf.Cluster.Spec.Networking.Cilium != nil {
+		template.Spec.StartupTaints = append(template.Spec.StartupTaints, karpenterTaint{
+			Key:    karpenterCiliumAgentNotReadyTaintKey,
+			Effect: "NoSchedule",
 		})
 	}
 
@@ -533,7 +549,7 @@ func (tf *TemplateFunctions) karpenterAssociatePublicIP(ig *kops.InstanceGroup) 
 	}
 }
 
-func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup) []karpenterRequirement {
+func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup, nodeClassGroup string) []karpenterRequirement {
 	requirements := []karpenterRequirement{
 		{
 			Key:      karpenterOSLabel,
@@ -555,7 +571,7 @@ func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup) []kar
 		})
 	}
 	if instanceRequirements != nil {
-		requirements = append(requirements, karpenterInstanceRequirements(instanceRequirements)...)
+		requirements = append(requirements, karpenterInstanceRequirements(instanceRequirements, nodeClassGroup)...)
 	}
 
 	requirements = append(requirements, karpenterRequirement{
@@ -567,7 +583,7 @@ func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup) []kar
 	return requirements
 }
 
-func karpenterInstanceRequirements(spec *kops.InstanceRequirementsSpec) []karpenterRequirement {
+func karpenterInstanceRequirements(spec *kops.InstanceRequirementsSpec, nodeClassGroup string) []karpenterRequirement {
 	var requirements []karpenterRequirement
 
 	// Karpenter's Gt/Lt/Gte/Lte operators take exactly one value, interpreted as an integer.
@@ -583,25 +599,27 @@ func karpenterInstanceRequirements(spec *kops.InstanceRequirementsSpec) []karpen
 	}
 
 	if cpu := spec.CPU; cpu != nil {
-		addBound(karpenterInstanceCPULabel, cpu.Min, "Gte", quantityToCount)
-		addBound(karpenterInstanceCPULabel, cpu.Max, "Lte", quantityToCount)
+		cpuLabel := nodeClassGroup + "/instance-cpu"
+		addBound(cpuLabel, cpu.Min, "Gte", quantityToCount)
+		addBound(cpuLabel, cpu.Max, "Lte", quantityToCount)
 	}
 
 	if memory := spec.Memory; memory != nil {
 		// Round the lower bound up and the upper bound down, so the generated envelope
 		// never admits an instance outside the requested range.
-		addBound(karpenterInstanceMemoryLabel, memory.Min, "Gte", quantityToMiBRoundUp)
-		addBound(karpenterInstanceMemoryLabel, memory.Max, "Lte", quantityToMiBRoundDown)
+		memoryLabel := nodeClassGroup + "/instance-memory"
+		addBound(memoryLabel, memory.Min, "Gte", quantityToMiBRoundUp)
+		addBound(memoryLabel, memory.Max, "Lte", quantityToMiBRoundDown)
 	}
 
-	return append(requirements, karpenterExcludedTypeRequirements(spec.ExcludedInstanceTypes)...)
+	return append(requirements, karpenterExcludedTypeRequirements(spec.ExcludedInstanceTypes, nodeClassGroup)...)
 }
 
 // karpenterExcludedInstanceFamily matches the "<family>.*" wildcard form of
 // excludedInstanceTypes, which maps to an instance family rather than an instance type.
 var karpenterExcludedInstanceFamily = regexp.MustCompile(`^([a-z0-9][a-z0-9-]*)\.\*$`)
 
-func karpenterExcludedTypeRequirements(excluded []string) []karpenterRequirement {
+func karpenterExcludedTypeRequirements(excluded []string, nodeClassGroup string) []karpenterRequirement {
 	var families, instanceTypes []string
 	for _, entry := range excluded {
 		entry = strings.TrimSpace(entry)
@@ -619,7 +637,7 @@ func karpenterExcludedTypeRequirements(excluded []string) []karpenterRequirement
 	if len(families) != 0 {
 		sort.Strings(families)
 		requirements = append(requirements, karpenterRequirement{
-			Key:      karpenterInstanceFamilyLabel,
+			Key:      nodeClassGroup + "/instance-family",
 			Operator: "NotIn",
 			Values:   families,
 		})
@@ -685,6 +703,9 @@ func karpenterInstanceTypes(ig *kops.InstanceGroup) []string {
 
 func karpenterCapacityTypes(ig *kops.InstanceGroup) []string {
 	if ig.Spec.MaxPrice != nil || ig.Spec.SpotDurationInMinutes != nil {
+		return []string{"spot"}
+	}
+	if fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT" {
 		return []string{"spot"}
 	}
 	if ig.Spec.MixedInstancesPolicy != nil {

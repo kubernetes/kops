@@ -353,6 +353,14 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			Karpenter: &kops.KarpenterConfig{Enabled: true},
 		},
 	}
+	doCluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				DO: &kops.DOSpec{},
+			},
+			Karpenter: &kops.KarpenterConfig{Enabled: true},
+		},
+	}
 
 	grid := []struct {
 		desc     string
@@ -386,8 +394,14 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			image:   "ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*",
 		},
 		{
-			desc:     "not aws",
-			cluster:  gceCluster,
+			desc:    "gce",
+			cluster: gceCluster,
+			role:    kops.InstanceGroupRoleNode,
+			image:   "ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615",
+		},
+		{
+			desc:     "not aws or gce",
+			cluster:  doCluster,
 			role:     kops.InstanceGroupRoleNode,
 			image:    "ami-0123456789abcdef0",
 			expected: []string{"Forbidden::spec.manager"},
@@ -693,6 +707,44 @@ func TestValidateKarpenterInstanceRequirements(t *testing.T) {
 			}
 
 			errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
+			testErrors(t, g.desc, errs, g.expected)
+		})
+	}
+}
+
+func TestGCEValidateInstanceGroupZones(t *testing.T) {
+	grid := []struct {
+		desc     string
+		manager  kops.InstanceManager
+		zones    []string
+		expected []string
+	}{
+		{
+			desc:     "cloud group without zones",
+			expected: []string{"Required value::spec.zones"},
+		},
+		{
+			desc:  "cloud group with zones",
+			zones: []string{"us-central1-a"},
+		},
+		{
+			desc:    "karpenter without zones",
+			manager: kops.InstanceManagerKarpenter,
+		},
+		{
+			desc:    "karpenter with zones",
+			manager: kops.InstanceManagerKarpenter,
+			zones:   []string{"us-central1-a"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Manager = g.manager
+			ig.Spec.Zones = g.zones
+
+			errs := gceValidateInstanceGroup(ig, nil)
 			testErrors(t, g.desc, errs, g.expected)
 		})
 	}

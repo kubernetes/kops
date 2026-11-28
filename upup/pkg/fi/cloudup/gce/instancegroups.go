@@ -163,13 +163,44 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 		return nil, err
 	}
 
+	// Karpenter-managed instance groups have no MIG; their instances are found by the kOps
+	// ownership labels that the generated GCENodeClass applies to every instance Karpenter launches.
+	karpenterGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	for _, ig := range instancegroups {
+		if !ig.IsKarpenterManaged() {
+			continue
+		}
+		g := &cloudinstances.CloudInstanceGroup{
+			HumanName:     ig.ObjectMeta.Name,
+			InstanceGroup: ig,
+		}
+		karpenterGroups[ig.ObjectMeta.Name] = g
+		groups[ig.ObjectMeta.Name] = g
+	}
+
 	for _, zoneName := range zones {
 		migs, err := c.Compute().InstanceGroupManagers().List(ctx, project, zoneName)
 		if err != nil {
 			return nil, fmt.Errorf("error listing InstanceGroupManagers: %v", err)
 		}
 
+		var zoneInstances []*compute.Instance
 		var instancesByName map[string]*compute.Instance
+		ensureZoneInstances := func() error {
+			if instancesByName != nil {
+				return nil
+			}
+			var err error
+			zoneInstances, err = c.Compute().Instances().List(ctx, project, zoneName, clusterLabel)
+			if err != nil {
+				return fmt.Errorf("error listing Instances in zone %q: %v", zoneName, err)
+			}
+			instancesByName = make(map[string]*compute.Instance, len(zoneInstances))
+			for _, inst := range zoneInstances {
+				instancesByName[inst.Name] = inst
+			}
+			return nil
+		}
 
 		for _, mig := range migs {
 			name := mig.Name
@@ -208,14 +239,9 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				return nil, err
 			}
 
-			if len(instances) > 0 && instancesByName == nil {
-				zoneInstances, err := c.Compute().Instances().List(ctx, project, zoneName, clusterLabel)
-				if err != nil {
-					return nil, fmt.Errorf("error listing Instances in zone %q: %v", zoneName, err)
-				}
-				instancesByName = make(map[string]*compute.Instance, len(zoneInstances))
-				for _, inst := range zoneInstances {
-					instancesByName[inst.Name] = inst
+			if len(instances) > 0 {
+				if err := ensureZoneInstances(); err != nil {
+					return nil, err
 				}
 			}
 
@@ -250,6 +276,37 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				}
 			}
 
+		}
+
+		if len(karpenterGroups) > 0 {
+			if err := ensureZoneInstances(); err != nil {
+				return nil, err
+			}
+			for _, instance := range zoneInstances {
+				if instance.Labels[clusterLabel.Key] != clusterLabel.Value {
+					continue
+				}
+				g := karpenterGroups[instance.Labels[GceLabelNameInstanceGroup]]
+				if g == nil {
+					continue
+				}
+				cm := &cloudinstances.CloudInstance{
+					ID:                 instance.SelfLink,
+					CloudInstanceGroup: g,
+				}
+				addCloudInstanceData(cm, instance)
+
+				providerID := "gce://" + project + "/" + zoneName + "/" + instance.Name
+				if node := nodesByProviderID[providerID]; node != nil {
+					cm.Node = node
+				} else {
+					klog.V(8).Infof("unable to find node for instance: %s", instance.SelfLink)
+				}
+
+				// Karpenter owns replacement of outdated instances (drift), so its instances are
+				// always reported as up to date.
+				g.Ready = append(g.Ready, cm)
+			}
 		}
 	}
 

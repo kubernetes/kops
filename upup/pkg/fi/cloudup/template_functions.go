@@ -227,6 +227,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["AzureCloudConfig"] = tf.AzureCloudConfig
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
+	dest["GCEProjectID"] = tf.gceProjectID
 	dest["Region"] = func() string {
 		return tf.Region
 	}
@@ -498,6 +499,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["KarpenterEC2NodeClass"] = tf.KarpenterEC2NodeClass
+	dest["KarpenterGCENodeClass"] = tf.KarpenterGCENodeClass
 	dest["KarpenterInstanceGroups"] = tf.KarpenterInstanceGroups
 	dest["KarpenterNodePool"] = tf.KarpenterNodePool
 	dest["InterruptionQueueName"] = func() string {
@@ -1154,7 +1156,7 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() (map[string]Cluste
 	}
 	groups := make(map[string]ClusterAutoscalerNodeGroup)
 	for _, ig := range instanceGroups {
-		if ig.Spec.Role.HasNode() && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
+		if ig.Spec.Role.HasNode() && !ig.IsKarpenterManaged() && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
 			group := ClusterAutoscalerNodeGroup{
 				AutoScale: ig.Spec.Autoscale,
 				MinSize:   fi.ValueOf(ig.Spec.MinSize),

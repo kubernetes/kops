@@ -94,16 +94,23 @@ func TestKarpenterNodePoolProvider(t *testing.T) {
 	grid := []struct {
 		desc          string
 		cloudProvider kops.CloudProviderSpec
+		expectedRef   karpenterNodeClassRef
 		expectedError string
 	}{
 		{
 			desc:          "aws",
 			cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			expectedRef:   karpenterNodeClassRef{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass", Name: "nodes"},
 		},
 		{
 			desc:          "gce",
 			cloudProvider: kops.CloudProviderSpec{GCE: &kops.GCESpec{}},
-			expectedError: `Karpenter NodePool is not supported for cloud provider "gce"`,
+			expectedRef:   karpenterNodeClassRef{Group: "karpenter.k8s.gcp", Kind: "GCENodeClass", Name: "nodes"},
+		},
+		{
+			desc:          "digitalocean",
+			cloudProvider: kops.CloudProviderSpec{DO: &kops.DOSpec{}},
+			expectedError: `Karpenter NodePool is not supported for cloud provider "digitalocean"`,
 		},
 		{
 			desc:          "unspecified",
@@ -137,9 +144,8 @@ func TestKarpenterNodePoolProvider(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(rendered), &nodePool); err != nil {
 				t.Fatalf("unmarshaling NodePool: %v", err)
 			}
-			expected := karpenterNodeClassRef{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass", Name: ig.Name}
-			if actual := nodePool.Spec.Template.Spec.NodeClassRef; actual != expected {
-				t.Errorf("expected NodeClass reference %#v, got %#v", expected, actual)
+			if actual := nodePool.Spec.Template.Spec.NodeClassRef; actual != g.expectedRef {
+				t.Errorf("expected NodeClass reference %#v, got %#v", g.expectedRef, actual)
 			}
 		})
 	}
@@ -388,7 +394,7 @@ func TestKarpenterRequirements(t *testing.T) {
 	tf := &TemplateFunctions{}
 	for _, g := range grid {
 		t.Run(g.desc, func(t *testing.T) {
-			actual := tf.karpenterRequirements(&kops.InstanceGroup{Spec: g.spec})
+			actual := tf.karpenterRequirements(&kops.InstanceGroup{Spec: g.spec}, karpenterAWSAPIGroup)
 			if diff := cmp.Diff(g.expected, actual); diff != "" {
 				t.Errorf("unexpected requirements, diff=%v", diff)
 			}
@@ -710,6 +716,64 @@ func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
 			}
 			if diff := cmp.Diff(expected, actual); diff != "" {
 				t.Errorf("unexpected blockDeviceMappings, diff=%v", diff)
+			}
+		})
+	}
+}
+
+func TestKarpenterNodePoolCiliumStartupTaints(t *testing.T) {
+	grid := []struct {
+		desc              string
+		cloudProvider     kops.CloudProviderSpec
+		networking        kops.NetworkingSpec
+		wantStartupTaints []karpenterTaint
+	}{
+		{
+			desc:          "aws with cilium",
+			cloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			networking:    kops.NetworkingSpec{Cilium: &kops.CiliumNetworkingSpec{}},
+			wantStartupTaints: []karpenterTaint{
+				{Key: "node.cilium.io/agent-not-ready", Effect: "NoSchedule"},
+			},
+		},
+		{
+			desc:          "gce with cilium",
+			cloudProvider: kops.CloudProviderSpec{GCE: &kops.GCESpec{}},
+			networking:    kops.NetworkingSpec{Cilium: &kops.CiliumNetworkingSpec{}},
+			wantStartupTaints: []karpenterTaint{
+				{Key: "node.cilium.io/agent-not-ready", Effect: "NoSchedule"},
+			},
+		},
+		{
+			desc:          "non-cilium omits startupTaints",
+			cloudProvider: kops.CloudProviderSpec{GCE: &kops.GCESpec{}},
+			networking:    kops.NetworkingSpec{CNI: &kops.CNINetworkingSpec{}},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			tf := &TemplateFunctions{}
+			tf.Cluster = &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: g.cloudProvider,
+					Networking:    g.networking,
+				},
+			}
+			ig := &kops.InstanceGroup{}
+			ig.Name = "nodes"
+			ig.Spec.Role = kops.InstanceGroupRoleNode
+
+			rendered, err := tf.KarpenterNodePool(ig)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			var nodePool karpenterNodePool
+			if err := yaml.Unmarshal([]byte(rendered), &nodePool); err != nil {
+				t.Fatalf("unmarshaling NodePool: %v", err)
+			}
+			if diff := cmp.Diff(g.wantStartupTaints, nodePool.Spec.Template.Spec.StartupTaints); diff != "" {
+				t.Errorf("unexpected startupTaints, diff=%v", diff)
 			}
 		})
 	}
