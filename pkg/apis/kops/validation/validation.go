@@ -310,7 +310,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
-	if spec.Karpenter.IsEnabled() {
+	if spec.Karpenter.IsManaged() {
 		fldPath := fieldPath.Child("karpenter", "enabled")
 		if !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))

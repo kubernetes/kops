@@ -825,6 +825,63 @@ func Test_Validate_Addons(t *testing.T) {
 	}
 }
 
+func TestValidateKarpenterManaged(t *testing.T) {
+	grid := []struct {
+		desc                        string
+		karpenter                   *kops.KarpenterConfig
+		serviceAccountExternalPerms bool
+		expectedErrors              []string
+	}{
+		{
+			desc:                        "managed by kOps",
+			karpenter:                   &kops.KarpenterConfig{Enabled: true},
+			serviceAccountExternalPerms: true,
+		},
+		{
+			desc:           "managed by kOps without external permissions",
+			karpenter:      &kops.KarpenterConfig{Enabled: true},
+			expectedErrors: []string{"Forbidden::spec.karpenter.enabled"},
+		},
+		{
+			desc:      "not managed by kOps without external permissions",
+			karpenter: &kops.KarpenterConfig{Enabled: true, Managed: new(false)},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			clusterSpec := &kops.ClusterSpec{
+				KubernetesVersion: "1.35.0",
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
+				IAM: &kops.IAMSpec{
+					UseServiceAccountExternalPermissions: new(g.serviceAccountExternalPerms),
+				},
+				Karpenter: g.karpenter,
+				Networking: kops.NetworkingSpec{
+					NetworkCIDR:           "10.10.0.0/16",
+					NonMasqueradeCIDR:     "100.64.0.0/10",
+					PodCIDR:               "100.96.0.0/11",
+					ServiceClusterIPRange: "100.64.0.0/13",
+					Subnets: []kops.ClusterSubnetSpec{
+						{Name: "subnet1", Type: kops.SubnetTypePublic, CIDR: "10.10.10.0/24"},
+					},
+				},
+				EtcdClusters: []kops.EtcdClusterSpec{
+					{
+						Name: "main",
+						Members: []kops.EtcdMemberSpec{
+							{Name: "us-test-1a", InstanceGroup: new("master-us-test-1a")},
+						},
+					},
+				},
+			}
+			errs := validateClusterSpec(clusterSpec, &kops.Cluster{Spec: *clusterSpec}, field.NewPath("spec"), true)
+			testErrors(t, g.desc, errs, g.expectedErrors)
+		})
+	}
+}
+
 type caliInput struct {
 	Cluster *kops.ClusterSpec
 	Calico  *kops.CalicoNetworkingSpec

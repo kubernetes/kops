@@ -138,6 +138,28 @@ When set, `maxSize` is mapped to `NodePool.spec.limits.nodes`, capping the numbe
 Karpenter does not allow an existing NodePool to transition between dynamic and static modes.
 Delete the generated NodePool before running `kops update cluster` after adding or removing `minSize`.
 
+## Karpenter managed outside kOps
+
+A cluster that runs its own Karpenter, `EC2NodeClass` and `NodePool` objects can still use Karpenter InstanceGroups for the nodeup bootstrap script. Set `spec.karpenter.managed: false` together with `spec.karpenter.enabled`:
+
+```yaml
+spec:
+  karpenter:
+    enabled: true
+    managed: false
+```
+
+kOps then does not deploy Karpenter, generate `EC2NodeClass` or `NodePool` objects, create the Karpenter IAM role, or provision the interruption handling resources. Service accounts are not required to use external permissions.
+
+The rest of the Karpenter integration is kept:
+
+* The Node Termination Handler cannot be enabled.
+* CoreDNS and the AWS EBS CSI driver controller tolerate the control plane taints, and the CoreDNS autoscaler has no priority class.
+* kOps writes the bootstrap script of each Karpenter InstanceGroup to `igconfig/node/<instance-group>/nodeupscript.sh` in the state store. Set it as the `userData` of the `EC2NodeClass` after each `kops update cluster`, because nodes with an outdated script fail to join the cluster.
+* kOps finds the instances of a Karpenter InstanceGroup by the `kops.k8s.io/instancegroup` and `KubernetesCluster` tags. Set these tags in the `EC2NodeClass`, so that `kops get instances`, `kops validate cluster` and `kops toolbox dump` include the nodes.
+
+When `managed: false` is set on a cluster that runs the Karpenter that kOps deployed, kOps deletes the Karpenter IAM role on the next update, but does not remove the Karpenter deployment, its `EC2NodeClass` and `NodePool` objects, or the interruption queue. Deploy your own Karpenter with its own IAM role and remove the kOps resources before you make this change.
+
 ## Interruption handling
 
 kOps provisions the SQS queue, the EventBridge rules and the IAM permissions that Karpenter needs for [interruption handling](https://karpenter.sh/docs/concepts/disruption/#interruption). The queue is shared with the Node Termination Handler, so an existing cluster keeps its queue when Karpenter replaces it.

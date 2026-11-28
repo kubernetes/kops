@@ -1781,6 +1781,12 @@ spec:
                     type: string
                   logLevel:
                     type: string
+                  managed:
+                    description: |-
+                      Managed controls if Karpenter is managed and deployed by kOps.
+                      If set to false, kOps keeps the Karpenter integration but does not deploy Karpenter,
+                      generate EC2NodeClass and NodePool objects, or create the Karpenter IAM role and interruption queue.
+                    type: boolean
                   memoryLimit:
                     anyOf:
                     - type: integer

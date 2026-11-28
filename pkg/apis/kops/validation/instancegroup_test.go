@@ -411,6 +411,29 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			expected: []string{"Forbidden::spec.manager"},
 		},
 		{
+			desc: "not managed by kOps",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+					Karpenter:     &kops.KarpenterConfig{Enabled: true, Managed: new(false)},
+				},
+			},
+			role:  kops.InstanceGroupRoleNode,
+			image: "ami-0123456789abcdef0",
+		},
+		{
+			desc: "not managed by kOps without enabled",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+					Karpenter:     &kops.KarpenterConfig{Managed: new(false)},
+				},
+			},
+			role:     kops.InstanceGroupRoleNode,
+			image:    "ami-0123456789abcdef0",
+			expected: []string{"Forbidden::spec.manager"},
+		},
+		{
 			desc:     "url image",
 			cluster:  awsCluster,
 			role:     kops.InstanceGroupRoleNode,

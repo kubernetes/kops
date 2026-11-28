@@ -273,7 +273,13 @@ type ScalewaySpec struct {
 type LinodeSpec struct{}
 
 type KarpenterConfig struct {
-	Enabled       bool               `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Managed controls if Karpenter is managed and deployed by kOps.
+	// If set to false, kOps keeps the Karpenter integration but does not deploy Karpenter,
+	// generate EC2NodeClass and NodePool objects, or create the Karpenter IAM role and interruption queue.
+	Managed *bool `json:"managed,omitempty"`
+
 	LogEncoding   string             `json:"logEncoding,omitempty"`
 	LogLevel      string             `json:"logLevel,omitempty"`
 	Image         string             `json:"image,omitempty"`

@@ -24,6 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"sigs.k8s.io/yaml"
@@ -878,5 +879,57 @@ func TestKarpenterNodePoolTemplateLabels(t *testing.T) {
 	actual := karpenterNodePoolTemplateLabels(labels)
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("expected %#v, got %#v", expected, actual)
+	}
+}
+
+func TestKarpenterInstanceGroupsManaged(t *testing.T) {
+	karpenterIG := &kops.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "karpenter"},
+		Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode, Manager: kops.InstanceManagerKarpenter},
+	}
+	asgIG := &kops.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "asg"},
+		Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode, Manager: kops.InstanceManagerCloudGroup},
+	}
+
+	grid := []struct {
+		desc      string
+		karpenter *kops.KarpenterConfig
+		expected  []string
+	}{
+		{
+			desc: "disabled",
+		},
+		{
+			desc:      "managed by kOps",
+			karpenter: &kops.KarpenterConfig{Enabled: true},
+			expected:  []string{"karpenter"},
+		},
+		{
+			desc:      "explicitly managed by kOps",
+			karpenter: &kops.KarpenterConfig{Enabled: true, Managed: new(true)},
+			expected:  []string{"karpenter"},
+		},
+		{
+			desc:      "not managed by kOps",
+			karpenter: &kops.KarpenterConfig{Enabled: true, Managed: new(false)},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			tf := &TemplateFunctions{tasks: map[string]fi.CloudupTask{}}
+			tf.Cluster = &kops.Cluster{}
+			tf.Cluster.Spec.CloudProvider.AWS = &kops.AWSSpec{}
+			tf.Cluster.Spec.Karpenter = g.karpenter
+			tf.InstanceGroups = []*kops.InstanceGroup{karpenterIG, asgIG}
+
+			var names []string
+			for _, ig := range tf.KarpenterInstanceGroups() {
+				names = append(names, ig.Name)
+			}
+			if !reflect.DeepEqual(names, g.expected) {
+				t.Errorf("expected %v, got %v", g.expected, names)
+			}
+		})
 	}
 }
