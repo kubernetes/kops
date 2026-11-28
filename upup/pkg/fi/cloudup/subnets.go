@@ -59,7 +59,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		}
 	}
 
-	if allSubnetsHaveCIDRs(c) && !needZones {
+	if allSubnetsHaveCIDRs(c) && !allSubnetsMustBeResolvedToIPv6CIDRs(c) && !needZones {
 		klog.V(4).Infof("All subnets have CIDRs; skipping assignment logic")
 		return nil
 	}
@@ -78,6 +78,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		for _, subnetInfo := range vpcInfo.Subnets {
 			subnetByID[subnetInfo.ID] = subnetInfo
 		}
+
 		for i := range c.Spec.Networking.Subnets {
 			subnet := &c.Spec.Networking.Subnets[i]
 			if subnet.ID != "" {
@@ -85,6 +86,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 				if cloudSubnet == nil {
 					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ID, c.Spec.Networking.NetworkID)
 				}
+
 				if subnet.CIDR == "" {
 					subnet.CIDR = cloudSubnet.CIDR
 					// IPv6-only private subnets do not have an IPv4 CIDR
@@ -93,6 +95,17 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 					}
 				} else if subnet.CIDR != cloudSubnet.CIDR {
 					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ID, subnet.CIDR, cloudSubnet.CIDR)
+				}
+
+				if c.Spec.IsIPv6Only() && c.GetCloudProvider() == kops.CloudProviderAWS {
+					if subnet.IPv6CIDR == "" {
+						subnet.IPv6CIDR = cloudSubnet.IPv6CIDR
+						if subnet.IPv6CIDR == "" {
+							return fmt.Errorf("Subnet %q did not have IPv6CIDR", subnet.ID)
+						}
+					} else if subnet.IPv6CIDR != cloudSubnet.IPv6CIDR {
+						return fmt.Errorf("Subnet %q has configured IPv6CIDR %q, but the actual IPv6CIDR found was %q", subnet.ID, subnet.IPv6CIDR, cloudSubnet.IPv6CIDR)
+					}
 				}
 
 				if needZones && subnet.Zone == "" {
@@ -269,4 +282,20 @@ func allSubnetsHaveCIDRs(c *kops.Cluster) bool {
 	}
 
 	return true
+}
+
+// allSubnetsMustBeResolvedToIPv6CIDRs returns true when each subnet in the cluster must be resolved to actual IPv6 CIDR
+func allSubnetsMustBeResolvedToIPv6CIDRs(c *kops.Cluster) bool {
+	if !c.Spec.IsIPv6Only() || c.GetCloudProvider() != kops.CloudProviderAWS {
+		return false
+	}
+
+	for i := range c.Spec.Networking.Subnets {
+		subnet := &c.Spec.Networking.Subnets[i]
+		if subnet.ID != "" && subnet.IPv6CIDR == "" {
+			return true
+		}
+	}
+
+	return false
 }

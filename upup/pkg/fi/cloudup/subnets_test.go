@@ -152,6 +152,92 @@ func Test_AssignSubnets(t *testing.T) {
 	}
 }
 
+func Test_AssignSubnetsIPv6(t *testing.T) {
+	tests := []struct {
+		vpcId             string
+		subnet            []kops.ClusterSubnetSpec
+		expected          []string
+		nonMasqueradeCIDR string
+	}{
+		{
+			vpcId: "vpc-12345678",
+			subnet: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "us-test-1a", CIDR: "", IPv6CIDR: "", Type: kops.SubnetTypePublic, ID: "subnet-a"},
+			},
+			expected:          []string{"2406:da14:13cc:2101::/64"},
+			nonMasqueradeCIDR: "::/0",
+		},
+		{
+			vpcId: "vpc-12345678",
+			subnet: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "us-test-1a", CIDR: "172.20.0.0/24", IPv6CIDR: "2406:da14:13cc:2101::/64", Type: kops.SubnetTypePublic, ID: "subnet-a"},
+			},
+			expected:          []string{"2406:da14:13cc:2101::/64"},
+			nonMasqueradeCIDR: "::/0",
+		},
+		{
+			vpcId: "",
+			subnet: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "us-test-1a", CIDR: "172.20.0.0/24", IPv6CIDR: "/64#0", Type: kops.SubnetTypePublic, ID: ""},
+			},
+			expected:          []string{"/64#0"},
+			nonMasqueradeCIDR: "::/0",
+		},
+		{
+			vpcId: "vpc-12345678",
+			subnet: []kops.ClusterSubnetSpec{
+				{Name: "a", Zone: "us-test-1a", CIDR: "172.20.0.0/24", IPv6CIDR: "", Type: kops.SubnetTypePublic, ID: "subnet-a"},
+			},
+			expected:          []string{""},
+			nonMasqueradeCIDR: "100.64.0.0/10",
+		},
+	}
+
+	buildCloud := func() *awsup.MockAWSCloud {
+		cloud := awsup.BuildMockAWSCloud("us-test-1", "abc")
+		mockEC2 := &mockec2.MockEC2{}
+		cloud.MockEC2 = mockEC2
+
+		mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
+			CidrBlock: aws.String("172.20.0.0/16"),
+		}, "vpc-12345678")
+		mockEC2.CreateSubnetWithId(&ec2.CreateSubnetInput{
+			VpcId:            aws.String("vpc-12345678"),
+			AvailabilityZone: aws.String("us-test-1a"),
+			CidrBlock:        aws.String("172.20.0.0/24"),
+			Ipv6CidrBlock:    aws.String("2406:da14:13cc:2101::/64"),
+		}, "subnet-a")
+		return cloud
+	}
+
+	buildCluster := func(vpcId string, nonMasqueradeCIDR string, subnets []kops.ClusterSubnetSpec) *kops.Cluster {
+		c := &kops.Cluster{}
+		c.Spec.CloudProvider.AWS = &kops.AWSSpec{}
+		c.Spec.Networking.NetworkID = vpcId
+		c.Spec.Networking.NetworkCIDR = "172.20.0.0/16"
+		c.Spec.Networking.NonMasqueradeCIDR = nonMasqueradeCIDR
+		c.Spec.Networking.Subnets = subnets
+		return c
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("test-%d", i+1), func(t *testing.T) {
+			c := buildCluster(test.vpcId, test.nonMasqueradeCIDR, test.subnet)
+			if err := assignCIDRsToSubnets(c, buildCloud()); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			var actual []string
+			for _, subnet := range c.Spec.Networking.Subnets {
+				actual = append(actual, subnet.IPv6CIDR)
+			}
+			if !reflect.DeepEqual(actual, test.expected) {
+				t.Fatalf("unexpected result of network allocation: actual=%v, expected=%v", actual, test.expected)
+			}
+		})
+	}
+}
+
 func Test_AssignSubnetZones(t *testing.T) {
 	buildCloud := func() *awsup.MockAWSCloud {
 		cloud := awsup.BuildMockAWSCloud("us-test-1", "abc")

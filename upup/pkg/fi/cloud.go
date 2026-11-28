@@ -64,9 +64,10 @@ type VPCInfo struct {
 }
 
 type SubnetInfo struct {
-	ID   string
-	Zone string
-	CIDR string
+	ID       string
+	Zone     string
+	CIDR     string
+	IPv6CIDR string
 }
 
 // ApiIngressStatus represents the status of an ingress point:
